@@ -1,0 +1,1158 @@
+{
+  "rule_id": "RULE-505",
+  "date": "2026-10-28",
+  "base_commit": "aef185f44d71580a1b021600e19bea1ef31e5403",
+  "status": "动作/效果快照队首配对及参数映射受控验证；上游配对生成和存在可视对象的效果调用链仍开放",
+  "findings": [
+    "当前客户端只读复读StartVisualActionQueue1531B、MapSubActionValues1363B、ExecuteEffectbarChanges3136B，三者完整语法解码。VisualController45003B ubergraph整体仍有30798 opcode2b缺口，未升级为完整解码或完整规则认证。",
+    "StartVisualActionQueue前缀：0置运行标志，11复制actionQueue[0]、44移除；90参数映射后131赋tmpCurrentSubActions；158读取EffectBarSnapshotQueue[0]、213复制currentEffectBarSnapshot、240移除。286才进入动作类型路由。本轮严格停在286前，不把后段各动作视觉处理当成已执行。",
+    "6组双队列案例/12次前缀进入覆盖0/1/3子动作及快照正常/交换次序；均独立取各自队首，没有在此前缀按action_id重找快照。交换fixture_tag仅说明当前分支的按位置行为，不证明真实客户端会产生错序，也不是规则修复依据。空动作队列或空快照队列未执行，不能用Python索引错误替代UE的数组异常/默认值语义。",
+    "MapSubActionValues每条子动作253/268创建空Map，283保留Name，811/1024将所有Values项Name分别映射Value和Text，1217按输入顺序追加结果；整数和字符串映射都包含每个键，没有按字段类型二选一。24组覆盖0/1/3条、重复键、正反顺序、空Values。供给Map_Add覆盖语义下最后同名字段生效，后续子动作无前条键残留；空Map/容器复制和Map_Add原生存储语义为声明供给，未做UE原生Map生命周期认证。",
+    "ExecuteEffectbarChanges16/107先读并移除currentEffectBarSnapshot.cards首项。3组1/2/3快照且卡牌Map为空的真实AST执行均消费一项返回。另2组非空Map含1/3个ID，供给GetVisualBoardCardCardFromID不存在，585跳过当前卡片并继续下一项，未触及后续控件函数。只支持所测不存在可视卡牌分支，不能推出存在对象的效果差分无PvP副作用。",
+    "静态调用表保留了后续Map/Set差分及RemoveEffect/AddEffect，当前没有直接以视觉类名宣称排除。GetVisualBoardCardCardFromID/控件effectBar、unrevealedCovert字段和传递调用需继续确认边界；本轮不扩展恢复UI本身。",
+    "DeepSeek提取实例写入和数组移除/Map_Add位置，主agent独立递归AST逐字段核对。未改产品代码，未重跑C#；历史929/929非本轮验证。完整认证卡数仍0，游戏写入/注入/真实函数调用0。"
+  ],
+  "verification": {
+    "rule": "RULE-505",
+    "mapping_cases": 24,
+    "alignment_cases": 6,
+    "alignment_entries": 12,
+    "empty_effect_map_cases": 3,
+    "absent_visual_card_cases": 2,
+    "absent_visual_profiles": [
+      {
+        "card_count": 1,
+        "events": [
+          {
+            "call": "GetVisualBoardCardCardFromID",
+            "id": 11
+          }
+        ],
+        "trace": {
+          "steps": 25,
+          "sha256": "37af178eb27be2d8f1abcb60568d226097965e69b3befc31e761399a92d7c74e"
+        }
+      },
+      {
+        "card_count": 3,
+        "events": [
+          {
+            "call": "GetVisualBoardCardCardFromID",
+            "id": 11
+          },
+          {
+            "call": "GetVisualBoardCardCardFromID",
+            "id": 12
+          },
+          {
+            "call": "GetVisualBoardCardCardFromID",
+            "id": 13
+          }
+        ],
+        "trace": {
+          "steps": 49,
+          "sha256": "c1f125d081658f3fc57f47e3135e5e86c885433400c0d227c3e45f60b0fe8e37"
+        }
+      }
+    ],
+    "mapping_profiles": [
+      {
+        "count": 0,
+        "duplicate": false,
+        "reverse": false,
+        "empty": false,
+        "expected": [],
+        "trace": {
+          "steps": 9,
+          "sha256": "1e23913af2a8e98201d2f994dbf33b579bfbce10a863769a039da900096ae828"
+        }
+      },
+      {
+        "count": 0,
+        "duplicate": false,
+        "reverse": false,
+        "empty": true,
+        "expected": [],
+        "trace": {
+          "steps": 9,
+          "sha256": "1e23913af2a8e98201d2f994dbf33b579bfbce10a863769a039da900096ae828"
+        }
+      },
+      {
+        "count": 0,
+        "duplicate": false,
+        "reverse": true,
+        "empty": false,
+        "expected": [],
+        "trace": {
+          "steps": 9,
+          "sha256": "1e23913af2a8e98201d2f994dbf33b579bfbce10a863769a039da900096ae828"
+        }
+      },
+      {
+        "count": 0,
+        "duplicate": false,
+        "reverse": true,
+        "empty": true,
+        "expected": [],
+        "trace": {
+          "steps": 9,
+          "sha256": "1e23913af2a8e98201d2f994dbf33b579bfbce10a863769a039da900096ae828"
+        }
+      },
+      {
+        "count": 0,
+        "duplicate": true,
+        "reverse": false,
+        "empty": false,
+        "expected": [],
+        "trace": {
+          "steps": 9,
+          "sha256": "1e23913af2a8e98201d2f994dbf33b579bfbce10a863769a039da900096ae828"
+        }
+      },
+      {
+        "count": 0,
+        "duplicate": true,
+        "reverse": false,
+        "empty": true,
+        "expected": [],
+        "trace": {
+          "steps": 9,
+          "sha256": "1e23913af2a8e98201d2f994dbf33b579bfbce10a863769a039da900096ae828"
+        }
+      },
+      {
+        "count": 0,
+        "duplicate": true,
+        "reverse": true,
+        "empty": false,
+        "expected": [],
+        "trace": {
+          "steps": 9,
+          "sha256": "1e23913af2a8e98201d2f994dbf33b579bfbce10a863769a039da900096ae828"
+        }
+      },
+      {
+        "count": 0,
+        "duplicate": true,
+        "reverse": true,
+        "empty": true,
+        "expected": [],
+        "trace": {
+          "steps": 9,
+          "sha256": "1e23913af2a8e98201d2f994dbf33b579bfbce10a863769a039da900096ae828"
+        }
+      },
+      {
+        "count": 1,
+        "duplicate": false,
+        "reverse": false,
+        "empty": false,
+        "expected": [
+          {
+            "Name": "ZActionAppendNumberToCardText",
+            "integerMap": {
+              "cardID": 11,
+              "number": 100
+            },
+            "stringMap": {
+              "cardID": "id-0",
+              "number": "0"
+            }
+          }
+        ],
+        "trace": {
+          "steps": 64,
+          "sha256": "3072e8107ab6b6a4071dedd3ad638204e90fa4369a40cb52b1e3eb175b3ea50b"
+        }
+      },
+      {
+        "count": 1,
+        "duplicate": false,
+        "reverse": false,
+        "empty": true,
+        "expected": [
+          {
+            "Name": "ZActionAppendNumberToCardText",
+            "integerMap": {},
+            "stringMap": {}
+          }
+        ],
+        "trace": {
+          "steps": 32,
+          "sha256": "b65ea3a83d1ba5503794704cc3f46e53a4b116c36332b1258fc385ad325cc871"
+        }
+      },
+      {
+        "count": 1,
+        "duplicate": false,
+        "reverse": true,
+        "empty": false,
+        "expected": [
+          {
+            "Name": "ZActionAppendNumberToCardText",
+            "integerMap": {
+              "number": 100,
+              "cardID": 11
+            },
+            "stringMap": {
+              "number": "0",
+              "cardID": "id-0"
+            }
+          }
+        ],
+        "trace": {
+          "steps": 64,
+          "sha256": "3072e8107ab6b6a4071dedd3ad638204e90fa4369a40cb52b1e3eb175b3ea50b"
+        }
+      },
+      {
+        "count": 1,
+        "duplicate": false,
+        "reverse": true,
+        "empty": true,
+        "expected": [
+          {
+            "Name": "ZActionAppendNumberToCardText",
+            "integerMap": {},
+            "stringMap": {}
+          }
+        ],
+        "trace": {
+          "steps": 32,
+          "sha256": "b65ea3a83d1ba5503794704cc3f46e53a4b116c36332b1258fc385ad325cc871"
+        }
+      },
+      {
+        "count": 1,
+        "duplicate": true,
+        "reverse": false,
+        "empty": false,
+        "expected": [
+          {
+            "Name": "ZActionAppendNumberToCardText",
+            "integerMap": {
+              "cardID": 11,
+              "number": -7
+            },
+            "stringMap": {
+              "cardID": "id-0",
+              "number": "last-0"
+            }
+          }
+        ],
+        "trace": {
+          "steps": 80,
+          "sha256": "a84fbf4fecdb3d859c37a32ea34ca56d9f823d7677fdaed0873429d8a89fbb16"
+        }
+      },
+      {
+        "count": 1,
+        "duplicate": true,
+        "reverse": false,
+        "empty": true,
+        "expected": [
+          {
+            "Name": "ZActionAppendNumberToCardText",
+            "integerMap": {},
+            "stringMap": {}
+          }
+        ],
+        "trace": {
+          "steps": 32,
+          "sha256": "b65ea3a83d1ba5503794704cc3f46e53a4b116c36332b1258fc385ad325cc871"
+        }
+      },
+      {
+        "count": 1,
+        "duplicate": true,
+        "reverse": true,
+        "empty": false,
+        "expected": [
+          {
+            "Name": "ZActionAppendNumberToCardText",
+            "integerMap": {
+              "number": 100,
+              "cardID": 11
+            },
+            "stringMap": {
+              "number": "0",
+              "cardID": "id-0"
+            }
+          }
+        ],
+        "trace": {
+          "steps": 80,
+          "sha256": "a84fbf4fecdb3d859c37a32ea34ca56d9f823d7677fdaed0873429d8a89fbb16"
+        }
+      },
+      {
+        "count": 1,
+        "duplicate": true,
+        "reverse": true,
+        "empty": true,
+        "expected": [
+          {
+            "Name": "ZActionAppendNumberToCardText",
+            "integerMap": {},
+            "stringMap": {}
+          }
+        ],
+        "trace": {
+          "steps": 32,
+          "sha256": "b65ea3a83d1ba5503794704cc3f46e53a4b116c36332b1258fc385ad325cc871"
+        }
+      },
+      {
+        "count": 3,
+        "duplicate": false,
+        "reverse": false,
+        "empty": false,
+        "expected": [
+          {
+            "Name": "ZActionAppendNumberToCardText",
+            "integerMap": {
+              "cardID": 11,
+              "number": 100
+            },
+            "stringMap": {
+              "cardID": "id-0",
+              "number": "0"
+            }
+          },
+          {
+            "Name": "ZUnknown",
+            "integerMap": {
+              "cardID": 12,
+              "number": 101
+            },
+            "stringMap": {
+              "cardID": "id-1",
+              "number": "1"
+            }
+          },
+          {
+            "Name": "ZActionAppendNumberToCardText",
+            "integerMap": {
+              "cardID": 13,
+              "number": 102
+            },
+            "stringMap": {
+              "cardID": "id-2",
+              "number": "2"
+            }
+          }
+        ],
+        "trace": {
+          "steps": 174,
+          "sha256": "a7e64fc8351b5b41f6317b0c3a8a780902193b88a3acd6c981e1f018bf2c3347"
+        }
+      },
+      {
+        "count": 3,
+        "duplicate": false,
+        "reverse": false,
+        "empty": true,
+        "expected": [
+          {
+            "Name": "ZActionAppendNumberToCardText",
+            "integerMap": {},
+            "stringMap": {}
+          },
+          {
+            "Name": "ZUnknown",
+            "integerMap": {},
+            "stringMap": {}
+          },
+          {
+            "Name": "ZActionAppendNumberToCardText",
+            "integerMap": {},
+            "stringMap": {}
+          }
+        ],
+        "trace": {
+          "steps": 78,
+          "sha256": "3e933e7f9c11a8c875b6617d59263eb6800e8a0e5d7c0893ebcb4ab82e8fbf57"
+        }
+      },
+      {
+        "count": 3,
+        "duplicate": false,
+        "reverse": true,
+        "empty": false,
+        "expected": [
+          {
+            "Name": "ZActionAppendNumberToCardText",
+            "integerMap": {
+              "number": 100,
+              "cardID": 11
+            },
+            "stringMap": {
+              "number": "0",
+              "cardID": "id-0"
+            }
+          },
+          {
+            "Name": "ZUnknown",
+            "integerMap": {
+              "number": 101,
+              "cardID": 12
+            },
+            "stringMap": {
+              "number": "1",
+              "cardID": "id-1"
+            }
+          },
+          {
+            "Name": "ZActionAppendNumberToCardText",
+            "integerMap": {
+              "number": 102,
+              "cardID": 13
+            },
+            "stringMap": {
+              "number": "2",
+              "cardID": "id-2"
+            }
+          }
+        ],
+        "trace": {
+          "steps": 174,
+          "sha256": "a7e64fc8351b5b41f6317b0c3a8a780902193b88a3acd6c981e1f018bf2c3347"
+        }
+      },
+      {
+        "count": 3,
+        "duplicate": false,
+        "reverse": true,
+        "empty": true,
+        "expected": [
+          {
+            "Name": "ZActionAppendNumberToCardText",
+            "integerMap": {},
+            "stringMap": {}
+          },
+          {
+            "Name": "ZUnknown",
+            "integerMap": {},
+            "stringMap": {}
+          },
+          {
+            "Name": "ZActionAppendNumberToCardText",
+            "integerMap": {},
+            "stringMap": {}
+          }
+        ],
+        "trace": {
+          "steps": 78,
+          "sha256": "3e933e7f9c11a8c875b6617d59263eb6800e8a0e5d7c0893ebcb4ab82e8fbf57"
+        }
+      },
+      {
+        "count": 3,
+        "duplicate": true,
+        "reverse": false,
+        "empty": false,
+        "expected": [
+          {
+            "Name": "ZActionAppendNumberToCardText",
+            "integerMap": {
+              "cardID": 11,
+              "number": -7
+            },
+            "stringMap": {
+              "cardID": "id-0",
+              "number": "last-0"
+            }
+          },
+          {
+            "Name": "ZUnknown",
+            "integerMap": {
+              "cardID": 12,
+              "number": -8
+            },
+            "stringMap": {
+              "cardID": "id-1",
+              "number": "last-1"
+            }
+          },
+          {
+            "Name": "ZActionAppendNumberToCardText",
+            "integerMap": {
+              "cardID": 13,
+              "number": -9
+            },
+            "stringMap": {
+              "cardID": "id-2",
+              "number": "last-2"
+            }
+          }
+        ],
+        "trace": {
+          "steps": 222,
+          "sha256": "37bda54e6f467be744f440710c5f61b2e9d543dc122bd937cdf11613eedd976e"
+        }
+      },
+      {
+        "count": 3,
+        "duplicate": true,
+        "reverse": false,
+        "empty": true,
+        "expected": [
+          {
+            "Name": "ZActionAppendNumberToCardText",
+            "integerMap": {},
+            "stringMap": {}
+          },
+          {
+            "Name": "ZUnknown",
+            "integerMap": {},
+            "stringMap": {}
+          },
+          {
+            "Name": "ZActionAppendNumberToCardText",
+            "integerMap": {},
+            "stringMap": {}
+          }
+        ],
+        "trace": {
+          "steps": 78,
+          "sha256": "3e933e7f9c11a8c875b6617d59263eb6800e8a0e5d7c0893ebcb4ab82e8fbf57"
+        }
+      },
+      {
+        "count": 3,
+        "duplicate": true,
+        "reverse": true,
+        "empty": false,
+        "expected": [
+          {
+            "Name": "ZActionAppendNumberToCardText",
+            "integerMap": {
+              "number": 100,
+              "cardID": 11
+            },
+            "stringMap": {
+              "number": "0",
+              "cardID": "id-0"
+            }
+          },
+          {
+            "Name": "ZUnknown",
+            "integerMap": {
+              "number": 101,
+              "cardID": 12
+            },
+            "stringMap": {
+              "number": "1",
+              "cardID": "id-1"
+            }
+          },
+          {
+            "Name": "ZActionAppendNumberToCardText",
+            "integerMap": {
+              "number": 102,
+              "cardID": 13
+            },
+            "stringMap": {
+              "number": "2",
+              "cardID": "id-2"
+            }
+          }
+        ],
+        "trace": {
+          "steps": 222,
+          "sha256": "37bda54e6f467be744f440710c5f61b2e9d543dc122bd937cdf11613eedd976e"
+        }
+      },
+      {
+        "count": 3,
+        "duplicate": true,
+        "reverse": true,
+        "empty": true,
+        "expected": [
+          {
+            "Name": "ZActionAppendNumberToCardText",
+            "integerMap": {},
+            "stringMap": {}
+          },
+          {
+            "Name": "ZUnknown",
+            "integerMap": {},
+            "stringMap": {}
+          },
+          {
+            "Name": "ZActionAppendNumberToCardText",
+            "integerMap": {},
+            "stringMap": {}
+          }
+        ],
+        "trace": {
+          "steps": 78,
+          "sha256": "3e933e7f9c11a8c875b6617d59263eb6800e8a0e5d7c0893ebcb4ab82e8fbf57"
+        }
+      }
+    ],
+    "alignment_profiles": [
+      {
+        "snapshots_reversed": false,
+        "sub_count": 0,
+        "observations": [
+          {
+            "action_id": 10,
+            "snapshot_tag": 10,
+            "trace": {
+              "steps": 8,
+              "sha256": "ac0db95149adf6310bcf2f1cd42705da96199ca8177130934dad2ebd366862ea"
+            }
+          },
+          {
+            "action_id": 11,
+            "snapshot_tag": 11,
+            "trace": {
+              "steps": 8,
+              "sha256": "ac0db95149adf6310bcf2f1cd42705da96199ca8177130934dad2ebd366862ea"
+            }
+          }
+        ]
+      },
+      {
+        "snapshots_reversed": false,
+        "sub_count": 1,
+        "observations": [
+          {
+            "action_id": 10,
+            "snapshot_tag": 10,
+            "trace": {
+              "steps": 8,
+              "sha256": "ac0db95149adf6310bcf2f1cd42705da96199ca8177130934dad2ebd366862ea"
+            }
+          },
+          {
+            "action_id": 11,
+            "snapshot_tag": 11,
+            "trace": {
+              "steps": 8,
+              "sha256": "ac0db95149adf6310bcf2f1cd42705da96199ca8177130934dad2ebd366862ea"
+            }
+          }
+        ]
+      },
+      {
+        "snapshots_reversed": false,
+        "sub_count": 3,
+        "observations": [
+          {
+            "action_id": 10,
+            "snapshot_tag": 10,
+            "trace": {
+              "steps": 8,
+              "sha256": "ac0db95149adf6310bcf2f1cd42705da96199ca8177130934dad2ebd366862ea"
+            }
+          },
+          {
+            "action_id": 11,
+            "snapshot_tag": 11,
+            "trace": {
+              "steps": 8,
+              "sha256": "ac0db95149adf6310bcf2f1cd42705da96199ca8177130934dad2ebd366862ea"
+            }
+          }
+        ]
+      },
+      {
+        "snapshots_reversed": true,
+        "sub_count": 0,
+        "observations": [
+          {
+            "action_id": 10,
+            "snapshot_tag": 11,
+            "trace": {
+              "steps": 8,
+              "sha256": "ac0db95149adf6310bcf2f1cd42705da96199ca8177130934dad2ebd366862ea"
+            }
+          },
+          {
+            "action_id": 11,
+            "snapshot_tag": 10,
+            "trace": {
+              "steps": 8,
+              "sha256": "ac0db95149adf6310bcf2f1cd42705da96199ca8177130934dad2ebd366862ea"
+            }
+          }
+        ]
+      },
+      {
+        "snapshots_reversed": true,
+        "sub_count": 1,
+        "observations": [
+          {
+            "action_id": 10,
+            "snapshot_tag": 11,
+            "trace": {
+              "steps": 8,
+              "sha256": "ac0db95149adf6310bcf2f1cd42705da96199ca8177130934dad2ebd366862ea"
+            }
+          },
+          {
+            "action_id": 11,
+            "snapshot_tag": 10,
+            "trace": {
+              "steps": 8,
+              "sha256": "ac0db95149adf6310bcf2f1cd42705da96199ca8177130934dad2ebd366862ea"
+            }
+          }
+        ]
+      },
+      {
+        "snapshots_reversed": true,
+        "sub_count": 3,
+        "observations": [
+          {
+            "action_id": 10,
+            "snapshot_tag": 11,
+            "trace": {
+              "steps": 8,
+              "sha256": "ac0db95149adf6310bcf2f1cd42705da96199ca8177130934dad2ebd366862ea"
+            }
+          },
+          {
+            "action_id": 11,
+            "snapshot_tag": 10,
+            "trace": {
+              "steps": 8,
+              "sha256": "ac0db95149adf6310bcf2f1cd42705da96199ca8177130934dad2ebd366862ea"
+            }
+          }
+        ]
+      }
+    ],
+    "effect_profiles": [
+      {
+        "count": 1,
+        "remaining": 0,
+        "trace": {
+          "steps": 13,
+          "sha256": "34487e1156cda194a8df1a17a7f0f25d036dcd1500afbab1b1d6948b5905996e"
+        }
+      },
+      {
+        "count": 2,
+        "remaining": 1,
+        "trace": {
+          "steps": 13,
+          "sha256": "34487e1156cda194a8df1a17a7f0f25d036dcd1500afbab1b1d6948b5905996e"
+        }
+      },
+      {
+        "count": 3,
+        "remaining": 2,
+        "trace": {
+          "steps": 13,
+          "sha256": "34487e1156cda194a8df1a17a7f0f25d036dcd1500afbab1b1d6948b5905996e"
+        }
+      }
+    ],
+    "scope": "Actual MapSubActionValues1363B AST with supplied empty-map/Map_Add last-write and container copy semantics. StartVisualActionQueue1531B executed only prefix before286 (two valid nonempty queues); synthetic swapped snapshot tags demonstrate positional behavior only, not valid client state. ExecuteEffectbarChanges3136B actual AST for 1/2/3 snapshots with empty card maps; 1/3 nonempty card IDs also executed with visual lookup supplied absent, exercising585 skip; present-widget branches and empty snapshot array not executed. No native map/copy/GC semantics or full scheduler/PvP noninterference certification.",
+    "game_writes": 0,
+    "real_game_function_calls": 0,
+    "fully_certified_cards": 0,
+    "case_sha256": "6ffe4824ac5d639c53d0ec342c60f14c10c17f465c9feb3aca8004cd9a1c73c1"
+  },
+  "worker_index": [
+    {
+      "name": "MapSubActionValues",
+      "instance_writes": [],
+      "array_remove_indexes": [],
+      "map_add_indexes": [
+        811,
+        1024
+      ]
+    },
+    {
+      "name": "StartVisualActionQueue",
+      "instance_writes": [
+        {
+          "index": 0,
+          "field": "actionQueueIsRunning"
+        },
+        {
+          "index": 11,
+          "field": "currentAction"
+        },
+        {
+          "index": 131,
+          "field": "tmpCurrentSubActions"
+        },
+        {
+          "index": 213,
+          "field": "currentEffectBarSnapshot"
+        },
+        {
+          "index": 1389,
+          "field": "EndMatchExecuted"
+        },
+        {
+          "index": 1498,
+          "field": "EndMatchExecuted"
+        }
+      ],
+      "array_remove_indexes": [
+        44,
+        240
+      ],
+      "map_add_indexes": []
+    }
+  ],
+  "effectbar_call_index": [
+    {
+      "index": 16,
+      "name": "Array_Get"
+    },
+    {
+      "index": 107,
+      "name": "Array_Remove"
+    },
+    {
+      "index": 173,
+      "name": "Map_Keys"
+    },
+    {
+      "index": 278,
+      "name": "Array_Length"
+    },
+    {
+      "index": 337,
+      "name": "Less_IntInt"
+    },
+    {
+      "index": 417,
+      "name": "Array_Get"
+    },
+    {
+      "index": 476,
+      "name": "GetBoard"
+    },
+    {
+      "index": 522,
+      "name": "GetVisualBoardCardCardFromID"
+    },
+    {
+      "index": 595,
+      "name": "Array_Get"
+    },
+    {
+      "index": 654,
+      "name": "GetBoard"
+    },
+    {
+      "index": 700,
+      "name": "GetVisualBoardCardCardFromID"
+    },
+    {
+      "index": 804,
+      "name": "Array_Get"
+    },
+    {
+      "index": 863,
+      "name": "GetBoard"
+    },
+    {
+      "index": 909,
+      "name": "GetVisualBoardCardCardFromID"
+    },
+    {
+      "index": 1024,
+      "name": "Map_Keys"
+    },
+    {
+      "index": 1096,
+      "name": "Set_Clear"
+    },
+    {
+      "index": 1137,
+      "name": "Set_AddItems"
+    },
+    {
+      "index": 1187,
+      "name": "Array_Get"
+    },
+    {
+      "index": 1246,
+      "name": "Map_Find"
+    },
+    {
+      "index": 1324,
+      "name": "Set_Difference"
+    },
+    {
+      "index": 1403,
+      "name": "Set_ToArray"
+    },
+    {
+      "index": 1499,
+      "name": "Array_Length"
+    },
+    {
+      "index": 1558,
+      "name": "Less_IntInt"
+    },
+    {
+      "index": 1642,
+      "name": "Array_Get"
+    },
+    {
+      "index": 1701,
+      "name": "RemoveEffect"
+    },
+    {
+      "index": 1747,
+      "name": "Add_IntInt"
+    },
+    {
+      "index": 1821,
+      "name": "Array_Get"
+    },
+    {
+      "index": 1880,
+      "name": "Map_Find"
+    },
+    {
+      "index": 1958,
+      "name": "Set_Difference"
+    },
+    {
+      "index": 2037,
+      "name": "Set_ToArray"
+    },
+    {
+      "index": 2133,
+      "name": "Array_Length"
+    },
+    {
+      "index": 2192,
+      "name": "Less_IntInt"
+    },
+    {
+      "index": 2290,
+      "name": "Array_Get"
+    },
+    {
+      "index": 2349,
+      "name": "EqualEqual_ByteByte"
+    },
+    {
+      "index": 2380,
+      "name": "EqualEqual_ByteByte"
+    },
+    {
+      "index": 2411,
+      "name": "BooleanOR"
+    },
+    {
+      "index": 2463,
+      "name": "Array_Get"
+    },
+    {
+      "index": 2522,
+      "name": "AddEffect"
+    },
+    {
+      "index": 2569,
+      "name": "Add_IntInt"
+    },
+    {
+      "index": 2663,
+      "name": "Array_Get"
+    },
+    {
+      "index": 2722,
+      "name": "Map_Find"
+    },
+    {
+      "index": 2800,
+      "name": "Set_Contains"
+    },
+    {
+      "index": 2879,
+      "name": "AddEffect"
+    },
+    {
+      "index": 2919,
+      "name": "Add_IntInt"
+    },
+    {
+      "index": 2993,
+      "name": "Array_Get"
+    },
+    {
+      "index": 3052,
+      "name": "EqualEqual_ByteByte"
+    },
+    {
+      "index": 3093,
+      "name": "AddEffect"
+    }
+  ],
+  "captured_functions": [
+    {
+      "owner": "BP_OnlineMatch_C",
+      "name": "GetUseLocalSubActions",
+      "script_size": 65,
+      "decode_complete": true,
+      "decode_error": null
+    },
+    {
+      "owner": "BP_OnlineMatch_C",
+      "name": "ExecuteXActionsWithLocalSubActions",
+      "script_size": 175,
+      "decode_complete": true,
+      "decode_error": null
+    },
+    {
+      "owner": "BP_OnlineMatch_C",
+      "name": "ReceiveSubActionAppendNumberToCardText",
+      "script_size": 2161,
+      "decode_complete": true,
+      "decode_error": null
+    },
+    {
+      "owner": "BP_OnlineMatch_C",
+      "name": "ResolveSubAction",
+      "script_size": 9812,
+      "decode_complete": true,
+      "decode_error": null
+    },
+    {
+      "owner": "BP_OnlineMatch_C",
+      "name": "DoSubActions",
+      "script_size": 2682,
+      "decode_complete": true,
+      "decode_error": null
+    },
+    {
+      "owner": "BP_OnlineMatch_C",
+      "name": "CreateAction_SendActionWithSub",
+      "script_size": 2068,
+      "decode_complete": true,
+      "decode_error": null
+    },
+    {
+      "owner": "BP_VisualController_C",
+      "name": "ExecuteUbergraph_BP_VisualController",
+      "script_size": 45003,
+      "decode_complete": false,
+      "decode_error": "unsupported opcode 2b at 30798"
+    },
+    {
+      "owner": "BP_VisualController_C",
+      "name": "ExecuteSubActionAddNumberToText",
+      "script_size": 3069,
+      "decode_complete": true,
+      "decode_error": null
+    },
+    {
+      "owner": "BP_VisualController_C",
+      "name": "ExecuteSubAction",
+      "script_size": 6502,
+      "decode_complete": true,
+      "decode_error": null
+    },
+    {
+      "owner": "BP_VisualController_C",
+      "name": "ExecuteEffectbarChanges",
+      "script_size": 3136,
+      "decode_complete": true,
+      "decode_error": null
+    },
+    {
+      "owner": "BP_VisualController_C",
+      "name": "MapSubActionValues",
+      "script_size": 1363,
+      "decode_complete": true,
+      "decode_error": null
+    },
+    {
+      "owner": "BP_VisualController_C",
+      "name": "ActionFinished",
+      "script_size": 280,
+      "decode_complete": true,
+      "decode_error": null
+    },
+    {
+      "owner": "BP_VisualController_C",
+      "name": "StartVisualActionQueue",
+      "script_size": 1531,
+      "decode_complete": true,
+      "decode_error": null
+    },
+    {
+      "owner": "BP_VisualController_C",
+      "name": "SubActionResolved",
+      "script_size": 18,
+      "decode_complete": true,
+      "decode_error": null
+    }
+  ],
+  "worker_job": "20261028-030051-rule505-alignment-index-9a838077",
+  "evidence": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule505-alignment.py",
+      "bytes": 474,
+      "sha256": "4e057f76b6794c6803d20c4dd93321a483be6321a6241ab8b000b1a794160e2b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule504-queue.py",
+      "bytes": 626,
+      "sha256": "436808250e500cc72bb62616d06cd5dde4a53c34dac148bf272c6f61a18c1402"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule503-completion.py",
+      "bytes": 1522,
+      "sha256": "e40fb88aea6f8dd3e3e380ef211513045e75068cabb4afe15b88d1a995e66cf0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule505-action-snapshot-alignment-20261028.json",
+      "bytes": 6359035,
+      "sha256": "59c636d2c8ab883973c8f2e0aeb93eaff476667e2226666f88ca01e66d2b360d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule505-alignment.py",
+      "bytes": 11452,
+      "sha256": "4302b983abcfd0df7468250dfc6e3eb6083ada905496a624de811ea28f77a82a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule505-alignment-verification-20261028.json",
+      "bytes": 39804,
+      "sha256": "12818d9c875474c083f197b4e62b25f30b05c77fe449fe4e776e78ce18313862"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule505-worker\\input.json",
+      "bytes": 24866,
+      "sha256": "0b1efaa1e65daaac75da6a2d5ba31b8bce2e345a6fc729646244320a225a601e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule505-worker\\output.json",
+      "bytes": 601,
+      "sha256": "3e4b9f263f22c8c039491219532bfee7141d88b577032e786efe578cfe550c68"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule505-worker\\task.txt",
+      "bytes": 474,
+      "sha256": "254af3d562388cd18dbf6add1e65ac45d1eab9111bd7dc9ffdba714dadf3c440"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-498.py",
+      "bytes": 752,
+      "sha256": "254664d0aa1146756993fda4ac54e58891709c0ec5bcdd2cfa852f874c4e67ef"
+    }
+  ],
+  "remaining": [
+    "上游actionQueue/EffectBarSnapshotQueue入队和数量/顺序不变量，实际接口实例绑定。",
+    "存在可视卡牌/效果栏的差分分支及其对逻辑卡牌状态的实际写入边界；空快照数组原生语义。",
+    "回到PvP规则依赖和全卡池语义认证，不恢复UI/观战功能。"
+  ],
+  "game_writes": 0,
+  "real_game_function_calls": 0,
+  "fully_certified_cards": 0
+}
