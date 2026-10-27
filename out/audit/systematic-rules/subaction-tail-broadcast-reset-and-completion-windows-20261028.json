@@ -1,0 +1,2378 @@
+{
+  "rule_id": "RULE-503",
+  "date": "2026-10-28",
+  "base_commit": "28167bf27ec88f0b9bc04029dc7c788e055bacd9",
+  "status": "非回放DoSubActions提交/复位及视觉完成局部窗口已验证；完整调度未认证",
+  "findings": [
+    "重新只读采集DoSubActions2682B、ExecuteXActionsWithLocalSubActions175B、GetUseLocalSubActions65B和SubActionResolved18B；均完整语法解码。VisualController45003B完整字节保留，但整体AST在30798遇未支持opcode2b，不能标成完整解码；单独解码44755/446/848/1020窗口，并验证44755处原始跳转字节指向446。",
+    "DoSubActions循环后1080/1139/1173检查AllMatchActions非空才广播1559 OnAddMatchAction。1183调用实际模式选择器，其返回 controller.bUseLocalSubActions OR receivedAction.player_id==GetMyPlayerID。此选择条件不同于输入receiveFromLocal，32场景将两者独立组合验证。控制器和玩家ID为供给值，不推定实际对局取值。",
+    "模式false广播最后原动作；true重建action_id/action_type/player_id/action_data并以实例subActions替换sub_actions。重建未写回AllMatchActions。当前快照一起作为第二参数广播；receiveFromLocal=false先创建快照，true保留输入快照。委托仅记录参数，不执行订阅者，不能视为已验证持久化或后继规则触发。",
+    "在Logic.isReplayMatch=false供给路径，1641跳过回放显示分支，977复位ResolveSubActionsFromLocal=false、988写_visualActions后返回2679；32例覆盖输入模式/动作表空非空/控制器模式/收到动作所属玩家/零或两个子动作，均通过。实际ResolveSubAction路由及模式选择/取值函数AST执行；文字/错误处理回调、快照、空棋盘对象及容器供给。未执行回放或UI分支。",
+    "SubActionResolved入口0转ubergraph44755，继而跳446。delayAfter>0时536调用Delay，latent参数指明恢复入口1020；603终止本次窗口。离线测试仅记录Delay并显式模拟恢复1020，此处清零loopsWithoutDelay并1043跳65。未执行原生延迟管理器。",
+    "delayAfter<=0时848/917将loopsWithoutDelay加1，944比较>20，超过阈值则992清零并1015跳15，否则978跳65。12例覆盖delay -1/0/0.25与计数0/19/20/21。PrimitiveCast tag4的float转换为显式供给，未认证VM转换实现；15/65后继入口本轮停止，不把这称为完整调度器或全部视觉系统认证。",
+    "DeepSeek机械提取广播/复位/输出位置和重建字段，主agent独立按AST条件重算并逐字段精确核对。证据未要求产品规则修复，本轮仅审计文档；未重跑C#，历史929/929非本轮验证。完整认证卡数0，游戏写入/注入/真实函数调用0。"
+  ],
+  "verification": {
+    "rule": "RULE-503",
+    "do_subactions_cases": 32,
+    "completion_window_cases": 12,
+    "tail_profiles": [
+      {
+        "receiveFromLocal": false,
+        "has_actions": false,
+        "use_local": false,
+        "same_player": false,
+        "names": [],
+        "events": [
+          {
+            "call": "CreateSnapshot",
+            "args": []
+          }
+        ],
+        "trace": {
+          "steps": 22,
+          "sha256": "15ea0e0f2b8d0e88eebb695848069fb0ff2d332a0fbb75f0f6bebf2030abad86"
+        },
+        "broadcast_count": 0
+      },
+      {
+        "receiveFromLocal": false,
+        "has_actions": false,
+        "use_local": false,
+        "same_player": false,
+        "names": [
+          "ZActionAppendNumberToCardText",
+          "ZUnknown"
+        ],
+        "events": [
+          {
+            "call": "CreateSnapshot",
+            "args": []
+          },
+          {
+            "call": "ResolveSubAction",
+            "id": 0,
+            "name": "ZActionAppendNumberToCardText",
+            "events": [
+              {
+                "call": "ReceiveSubActionAppendNumberToCardText",
+                "args": [
+                  [
+                    {
+                      "ordinal": 0
+                    }
+                  ]
+                ]
+              }
+            ],
+            "dispatch_trace": {
+              "steps": 169,
+              "sha256": "31c82f13f84870c7c653a1721a8abe69047ca350a17151bdf9f291a5e0c3ee8e"
+            }
+          },
+          {
+            "call": "ResolveSubAction",
+            "id": 1,
+            "name": "ZUnknown",
+            "events": [
+              {
+                "call": "ErrorWithStackTrace",
+                "message": "Got subAction that I don't know about: ZUnknown"
+              }
+            ],
+            "dispatch_trace": {
+              "steps": 198,
+              "sha256": "e91f97a559bb7d9affe2a07199248b3097b7ff7fca864b456fd6f9a86eaebf87"
+            }
+          }
+        ],
+        "trace": {
+          "steps": 62,
+          "sha256": "5c3b26e95288f6f4a16482ec727706ec09d6c7b0c5a1340fd5c74a71b27b6c07"
+        },
+        "broadcast_count": 0
+      },
+      {
+        "receiveFromLocal": false,
+        "has_actions": false,
+        "use_local": false,
+        "same_player": true,
+        "names": [],
+        "events": [
+          {
+            "call": "CreateSnapshot",
+            "args": []
+          }
+        ],
+        "trace": {
+          "steps": 22,
+          "sha256": "15ea0e0f2b8d0e88eebb695848069fb0ff2d332a0fbb75f0f6bebf2030abad86"
+        },
+        "broadcast_count": 0
+      },
+      {
+        "receiveFromLocal": false,
+        "has_actions": false,
+        "use_local": false,
+        "same_player": true,
+        "names": [
+          "ZActionAppendNumberToCardText",
+          "ZUnknown"
+        ],
+        "events": [
+          {
+            "call": "CreateSnapshot",
+            "args": []
+          },
+          {
+            "call": "ResolveSubAction",
+            "id": 0,
+            "name": "ZActionAppendNumberToCardText",
+            "events": [
+              {
+                "call": "ReceiveSubActionAppendNumberToCardText",
+                "args": [
+                  [
+                    {
+                      "ordinal": 0
+                    }
+                  ]
+                ]
+              }
+            ],
+            "dispatch_trace": {
+              "steps": 169,
+              "sha256": "31c82f13f84870c7c653a1721a8abe69047ca350a17151bdf9f291a5e0c3ee8e"
+            }
+          },
+          {
+            "call": "ResolveSubAction",
+            "id": 1,
+            "name": "ZUnknown",
+            "events": [
+              {
+                "call": "ErrorWithStackTrace",
+                "message": "Got subAction that I don't know about: ZUnknown"
+              }
+            ],
+            "dispatch_trace": {
+              "steps": 198,
+              "sha256": "e91f97a559bb7d9affe2a07199248b3097b7ff7fca864b456fd6f9a86eaebf87"
+            }
+          }
+        ],
+        "trace": {
+          "steps": 62,
+          "sha256": "5c3b26e95288f6f4a16482ec727706ec09d6c7b0c5a1340fd5c74a71b27b6c07"
+        },
+        "broadcast_count": 0
+      },
+      {
+        "receiveFromLocal": false,
+        "has_actions": false,
+        "use_local": true,
+        "same_player": false,
+        "names": [],
+        "events": [
+          {
+            "call": "CreateSnapshot",
+            "args": []
+          }
+        ],
+        "trace": {
+          "steps": 22,
+          "sha256": "15ea0e0f2b8d0e88eebb695848069fb0ff2d332a0fbb75f0f6bebf2030abad86"
+        },
+        "broadcast_count": 0
+      },
+      {
+        "receiveFromLocal": false,
+        "has_actions": false,
+        "use_local": true,
+        "same_player": false,
+        "names": [
+          "ZActionAppendNumberToCardText",
+          "ZUnknown"
+        ],
+        "events": [
+          {
+            "call": "CreateSnapshot",
+            "args": []
+          },
+          {
+            "call": "ResolveSubAction",
+            "id": 0,
+            "name": "ZActionAppendNumberToCardText",
+            "events": [
+              {
+                "call": "ReceiveSubActionAppendNumberToCardText",
+                "args": [
+                  [
+                    {
+                      "ordinal": 0
+                    }
+                  ]
+                ]
+              }
+            ],
+            "dispatch_trace": {
+              "steps": 169,
+              "sha256": "31c82f13f84870c7c653a1721a8abe69047ca350a17151bdf9f291a5e0c3ee8e"
+            }
+          },
+          {
+            "call": "ResolveSubAction",
+            "id": 1,
+            "name": "ZUnknown",
+            "events": [
+              {
+                "call": "ErrorWithStackTrace",
+                "message": "Got subAction that I don't know about: ZUnknown"
+              }
+            ],
+            "dispatch_trace": {
+              "steps": 198,
+              "sha256": "e91f97a559bb7d9affe2a07199248b3097b7ff7fca864b456fd6f9a86eaebf87"
+            }
+          }
+        ],
+        "trace": {
+          "steps": 62,
+          "sha256": "5c3b26e95288f6f4a16482ec727706ec09d6c7b0c5a1340fd5c74a71b27b6c07"
+        },
+        "broadcast_count": 0
+      },
+      {
+        "receiveFromLocal": false,
+        "has_actions": false,
+        "use_local": true,
+        "same_player": true,
+        "names": [],
+        "events": [
+          {
+            "call": "CreateSnapshot",
+            "args": []
+          }
+        ],
+        "trace": {
+          "steps": 22,
+          "sha256": "15ea0e0f2b8d0e88eebb695848069fb0ff2d332a0fbb75f0f6bebf2030abad86"
+        },
+        "broadcast_count": 0
+      },
+      {
+        "receiveFromLocal": false,
+        "has_actions": false,
+        "use_local": true,
+        "same_player": true,
+        "names": [
+          "ZActionAppendNumberToCardText",
+          "ZUnknown"
+        ],
+        "events": [
+          {
+            "call": "CreateSnapshot",
+            "args": []
+          },
+          {
+            "call": "ResolveSubAction",
+            "id": 0,
+            "name": "ZActionAppendNumberToCardText",
+            "events": [
+              {
+                "call": "ReceiveSubActionAppendNumberToCardText",
+                "args": [
+                  [
+                    {
+                      "ordinal": 0
+                    }
+                  ]
+                ]
+              }
+            ],
+            "dispatch_trace": {
+              "steps": 169,
+              "sha256": "31c82f13f84870c7c653a1721a8abe69047ca350a17151bdf9f291a5e0c3ee8e"
+            }
+          },
+          {
+            "call": "ResolveSubAction",
+            "id": 1,
+            "name": "ZUnknown",
+            "events": [
+              {
+                "call": "ErrorWithStackTrace",
+                "message": "Got subAction that I don't know about: ZUnknown"
+              }
+            ],
+            "dispatch_trace": {
+              "steps": 198,
+              "sha256": "e91f97a559bb7d9affe2a07199248b3097b7ff7fca864b456fd6f9a86eaebf87"
+            }
+          }
+        ],
+        "trace": {
+          "steps": 62,
+          "sha256": "5c3b26e95288f6f4a16482ec727706ec09d6c7b0c5a1340fd5c74a71b27b6c07"
+        },
+        "broadcast_count": 0
+      },
+      {
+        "receiveFromLocal": false,
+        "has_actions": true,
+        "use_local": false,
+        "same_player": false,
+        "names": [],
+        "events": [
+          {
+            "call": "CreateSnapshot",
+            "args": []
+          },
+          {
+            "call": "OnAddMatchAction__DelegateSignature",
+            "args": [
+              {
+                "action_id": 81,
+                "action_type": "order",
+                "player_id": 2,
+                "action_data": [
+                  {
+                    "retained": 9
+                  }
+                ],
+                "sub_actions": [
+                  {
+                    "old": true
+                  }
+                ]
+              },
+              {
+                "supplied_snapshot": true
+              }
+            ]
+          }
+        ],
+        "trace": {
+          "steps": 33,
+          "sha256": "eff0e4cffacd08447dfafe3bee9a281b213da24868b267a57a21b4d29cc230e7"
+        },
+        "broadcast_count": 1
+      },
+      {
+        "receiveFromLocal": false,
+        "has_actions": true,
+        "use_local": false,
+        "same_player": false,
+        "names": [
+          "ZActionAppendNumberToCardText",
+          "ZUnknown"
+        ],
+        "events": [
+          {
+            "call": "CreateSnapshot",
+            "args": []
+          },
+          {
+            "call": "ResolveSubAction",
+            "id": 0,
+            "name": "ZActionAppendNumberToCardText",
+            "events": [
+              {
+                "call": "ReceiveSubActionAppendNumberToCardText",
+                "args": [
+                  [
+                    {
+                      "ordinal": 0
+                    }
+                  ]
+                ]
+              }
+            ],
+            "dispatch_trace": {
+              "steps": 169,
+              "sha256": "31c82f13f84870c7c653a1721a8abe69047ca350a17151bdf9f291a5e0c3ee8e"
+            }
+          },
+          {
+            "call": "ResolveSubAction",
+            "id": 1,
+            "name": "ZUnknown",
+            "events": [
+              {
+                "call": "ErrorWithStackTrace",
+                "message": "Got subAction that I don't know about: ZUnknown"
+              }
+            ],
+            "dispatch_trace": {
+              "steps": 198,
+              "sha256": "e91f97a559bb7d9affe2a07199248b3097b7ff7fca864b456fd6f9a86eaebf87"
+            }
+          },
+          {
+            "call": "OnAddMatchAction__DelegateSignature",
+            "args": [
+              {
+                "action_id": 81,
+                "action_type": "order",
+                "player_id": 2,
+                "action_data": [
+                  {
+                    "retained": 9
+                  }
+                ],
+                "sub_actions": [
+                  {
+                    "old": true
+                  }
+                ]
+              },
+              {
+                "supplied_snapshot": true
+              }
+            ]
+          }
+        ],
+        "trace": {
+          "steps": 73,
+          "sha256": "4ff0731bcb9a5b232c8f9a51d046dd081fd88bb084e6e4eb75e867d3f1d98589"
+        },
+        "broadcast_count": 1
+      },
+      {
+        "receiveFromLocal": false,
+        "has_actions": true,
+        "use_local": false,
+        "same_player": true,
+        "names": [],
+        "events": [
+          {
+            "call": "CreateSnapshot",
+            "args": []
+          },
+          {
+            "call": "OnAddMatchAction__DelegateSignature",
+            "args": [
+              {
+                "action_id": 81,
+                "action_type": "order",
+                "player_id": 2,
+                "action_data": [
+                  {
+                    "retained": 9
+                  }
+                ],
+                "sub_actions": []
+              },
+              {
+                "supplied_snapshot": true
+              }
+            ]
+          }
+        ],
+        "trace": {
+          "steps": 33,
+          "sha256": "eff0e4cffacd08447dfafe3bee9a281b213da24868b267a57a21b4d29cc230e7"
+        },
+        "broadcast_count": 1
+      },
+      {
+        "receiveFromLocal": false,
+        "has_actions": true,
+        "use_local": false,
+        "same_player": true,
+        "names": [
+          "ZActionAppendNumberToCardText",
+          "ZUnknown"
+        ],
+        "events": [
+          {
+            "call": "CreateSnapshot",
+            "args": []
+          },
+          {
+            "call": "ResolveSubAction",
+            "id": 0,
+            "name": "ZActionAppendNumberToCardText",
+            "events": [
+              {
+                "call": "ReceiveSubActionAppendNumberToCardText",
+                "args": [
+                  [
+                    {
+                      "ordinal": 0
+                    }
+                  ]
+                ]
+              }
+            ],
+            "dispatch_trace": {
+              "steps": 169,
+              "sha256": "31c82f13f84870c7c653a1721a8abe69047ca350a17151bdf9f291a5e0c3ee8e"
+            }
+          },
+          {
+            "call": "ResolveSubAction",
+            "id": 1,
+            "name": "ZUnknown",
+            "events": [
+              {
+                "call": "ErrorWithStackTrace",
+                "message": "Got subAction that I don't know about: ZUnknown"
+              }
+            ],
+            "dispatch_trace": {
+              "steps": 198,
+              "sha256": "e91f97a559bb7d9affe2a07199248b3097b7ff7fca864b456fd6f9a86eaebf87"
+            }
+          },
+          {
+            "call": "OnAddMatchAction__DelegateSignature",
+            "args": [
+              {
+                "action_id": 81,
+                "action_type": "order",
+                "player_id": 2,
+                "action_data": [
+                  {
+                    "retained": 9
+                  }
+                ],
+                "sub_actions": [
+                  {
+                    "Name": "ZActionAppendNumberToCardText",
+                    "Values": [
+                      {
+                        "ordinal": 0
+                      }
+                    ]
+                  },
+                  {
+                    "Name": "ZUnknown",
+                    "Values": [
+                      {
+                        "ordinal": 1
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "supplied_snapshot": true
+              }
+            ]
+          }
+        ],
+        "trace": {
+          "steps": 73,
+          "sha256": "4ff0731bcb9a5b232c8f9a51d046dd081fd88bb084e6e4eb75e867d3f1d98589"
+        },
+        "broadcast_count": 1
+      },
+      {
+        "receiveFromLocal": false,
+        "has_actions": true,
+        "use_local": true,
+        "same_player": false,
+        "names": [],
+        "events": [
+          {
+            "call": "CreateSnapshot",
+            "args": []
+          },
+          {
+            "call": "OnAddMatchAction__DelegateSignature",
+            "args": [
+              {
+                "action_id": 81,
+                "action_type": "order",
+                "player_id": 2,
+                "action_data": [
+                  {
+                    "retained": 9
+                  }
+                ],
+                "sub_actions": []
+              },
+              {
+                "supplied_snapshot": true
+              }
+            ]
+          }
+        ],
+        "trace": {
+          "steps": 33,
+          "sha256": "eff0e4cffacd08447dfafe3bee9a281b213da24868b267a57a21b4d29cc230e7"
+        },
+        "broadcast_count": 1
+      },
+      {
+        "receiveFromLocal": false,
+        "has_actions": true,
+        "use_local": true,
+        "same_player": false,
+        "names": [
+          "ZActionAppendNumberToCardText",
+          "ZUnknown"
+        ],
+        "events": [
+          {
+            "call": "CreateSnapshot",
+            "args": []
+          },
+          {
+            "call": "ResolveSubAction",
+            "id": 0,
+            "name": "ZActionAppendNumberToCardText",
+            "events": [
+              {
+                "call": "ReceiveSubActionAppendNumberToCardText",
+                "args": [
+                  [
+                    {
+                      "ordinal": 0
+                    }
+                  ]
+                ]
+              }
+            ],
+            "dispatch_trace": {
+              "steps": 169,
+              "sha256": "31c82f13f84870c7c653a1721a8abe69047ca350a17151bdf9f291a5e0c3ee8e"
+            }
+          },
+          {
+            "call": "ResolveSubAction",
+            "id": 1,
+            "name": "ZUnknown",
+            "events": [
+              {
+                "call": "ErrorWithStackTrace",
+                "message": "Got subAction that I don't know about: ZUnknown"
+              }
+            ],
+            "dispatch_trace": {
+              "steps": 198,
+              "sha256": "e91f97a559bb7d9affe2a07199248b3097b7ff7fca864b456fd6f9a86eaebf87"
+            }
+          },
+          {
+            "call": "OnAddMatchAction__DelegateSignature",
+            "args": [
+              {
+                "action_id": 81,
+                "action_type": "order",
+                "player_id": 2,
+                "action_data": [
+                  {
+                    "retained": 9
+                  }
+                ],
+                "sub_actions": [
+                  {
+                    "Name": "ZActionAppendNumberToCardText",
+                    "Values": [
+                      {
+                        "ordinal": 0
+                      }
+                    ]
+                  },
+                  {
+                    "Name": "ZUnknown",
+                    "Values": [
+                      {
+                        "ordinal": 1
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "supplied_snapshot": true
+              }
+            ]
+          }
+        ],
+        "trace": {
+          "steps": 73,
+          "sha256": "4ff0731bcb9a5b232c8f9a51d046dd081fd88bb084e6e4eb75e867d3f1d98589"
+        },
+        "broadcast_count": 1
+      },
+      {
+        "receiveFromLocal": false,
+        "has_actions": true,
+        "use_local": true,
+        "same_player": true,
+        "names": [],
+        "events": [
+          {
+            "call": "CreateSnapshot",
+            "args": []
+          },
+          {
+            "call": "OnAddMatchAction__DelegateSignature",
+            "args": [
+              {
+                "action_id": 81,
+                "action_type": "order",
+                "player_id": 2,
+                "action_data": [
+                  {
+                    "retained": 9
+                  }
+                ],
+                "sub_actions": []
+              },
+              {
+                "supplied_snapshot": true
+              }
+            ]
+          }
+        ],
+        "trace": {
+          "steps": 33,
+          "sha256": "eff0e4cffacd08447dfafe3bee9a281b213da24868b267a57a21b4d29cc230e7"
+        },
+        "broadcast_count": 1
+      },
+      {
+        "receiveFromLocal": false,
+        "has_actions": true,
+        "use_local": true,
+        "same_player": true,
+        "names": [
+          "ZActionAppendNumberToCardText",
+          "ZUnknown"
+        ],
+        "events": [
+          {
+            "call": "CreateSnapshot",
+            "args": []
+          },
+          {
+            "call": "ResolveSubAction",
+            "id": 0,
+            "name": "ZActionAppendNumberToCardText",
+            "events": [
+              {
+                "call": "ReceiveSubActionAppendNumberToCardText",
+                "args": [
+                  [
+                    {
+                      "ordinal": 0
+                    }
+                  ]
+                ]
+              }
+            ],
+            "dispatch_trace": {
+              "steps": 169,
+              "sha256": "31c82f13f84870c7c653a1721a8abe69047ca350a17151bdf9f291a5e0c3ee8e"
+            }
+          },
+          {
+            "call": "ResolveSubAction",
+            "id": 1,
+            "name": "ZUnknown",
+            "events": [
+              {
+                "call": "ErrorWithStackTrace",
+                "message": "Got subAction that I don't know about: ZUnknown"
+              }
+            ],
+            "dispatch_trace": {
+              "steps": 198,
+              "sha256": "e91f97a559bb7d9affe2a07199248b3097b7ff7fca864b456fd6f9a86eaebf87"
+            }
+          },
+          {
+            "call": "OnAddMatchAction__DelegateSignature",
+            "args": [
+              {
+                "action_id": 81,
+                "action_type": "order",
+                "player_id": 2,
+                "action_data": [
+                  {
+                    "retained": 9
+                  }
+                ],
+                "sub_actions": [
+                  {
+                    "Name": "ZActionAppendNumberToCardText",
+                    "Values": [
+                      {
+                        "ordinal": 0
+                      }
+                    ]
+                  },
+                  {
+                    "Name": "ZUnknown",
+                    "Values": [
+                      {
+                        "ordinal": 1
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "supplied_snapshot": true
+              }
+            ]
+          }
+        ],
+        "trace": {
+          "steps": 73,
+          "sha256": "4ff0731bcb9a5b232c8f9a51d046dd081fd88bb084e6e4eb75e867d3f1d98589"
+        },
+        "broadcast_count": 1
+      },
+      {
+        "receiveFromLocal": true,
+        "has_actions": false,
+        "use_local": false,
+        "same_player": false,
+        "names": [],
+        "events": [],
+        "trace": {
+          "steps": 19,
+          "sha256": "25eaf13ba2c389b6756ea8630fdf49521d0f811e66a0489553be1bd75dab3241"
+        },
+        "broadcast_count": 0
+      },
+      {
+        "receiveFromLocal": true,
+        "has_actions": false,
+        "use_local": false,
+        "same_player": false,
+        "names": [
+          "ZActionAppendNumberToCardText",
+          "ZUnknown"
+        ],
+        "events": [
+          {
+            "call": "ResolveSubAction",
+            "id": 0,
+            "name": "ZActionAppendNumberToCardText",
+            "events": [
+              {
+                "call": "ReceiveSubActionAppendNumberToCardText",
+                "args": [
+                  [
+                    {
+                      "ordinal": 0
+                    }
+                  ]
+                ]
+              }
+            ],
+            "dispatch_trace": {
+              "steps": 169,
+              "sha256": "31c82f13f84870c7c653a1721a8abe69047ca350a17151bdf9f291a5e0c3ee8e"
+            }
+          },
+          {
+            "call": "ResolveSubAction",
+            "id": 1,
+            "name": "ZUnknown",
+            "events": [
+              {
+                "call": "ErrorWithStackTrace",
+                "message": "Got subAction that I don't know about: ZUnknown"
+              }
+            ],
+            "dispatch_trace": {
+              "steps": 198,
+              "sha256": "e91f97a559bb7d9affe2a07199248b3097b7ff7fca864b456fd6f9a86eaebf87"
+            }
+          }
+        ],
+        "trace": {
+          "steps": 59,
+          "sha256": "8bf37d63107c7722088c2f1ca91deb53ac4063493d6ee13152928f4f1a234541"
+        },
+        "broadcast_count": 0
+      },
+      {
+        "receiveFromLocal": true,
+        "has_actions": false,
+        "use_local": false,
+        "same_player": true,
+        "names": [],
+        "events": [],
+        "trace": {
+          "steps": 19,
+          "sha256": "25eaf13ba2c389b6756ea8630fdf49521d0f811e66a0489553be1bd75dab3241"
+        },
+        "broadcast_count": 0
+      },
+      {
+        "receiveFromLocal": true,
+        "has_actions": false,
+        "use_local": false,
+        "same_player": true,
+        "names": [
+          "ZActionAppendNumberToCardText",
+          "ZUnknown"
+        ],
+        "events": [
+          {
+            "call": "ResolveSubAction",
+            "id": 0,
+            "name": "ZActionAppendNumberToCardText",
+            "events": [
+              {
+                "call": "ReceiveSubActionAppendNumberToCardText",
+                "args": [
+                  [
+                    {
+                      "ordinal": 0
+                    }
+                  ]
+                ]
+              }
+            ],
+            "dispatch_trace": {
+              "steps": 169,
+              "sha256": "31c82f13f84870c7c653a1721a8abe69047ca350a17151bdf9f291a5e0c3ee8e"
+            }
+          },
+          {
+            "call": "ResolveSubAction",
+            "id": 1,
+            "name": "ZUnknown",
+            "events": [
+              {
+                "call": "ErrorWithStackTrace",
+                "message": "Got subAction that I don't know about: ZUnknown"
+              }
+            ],
+            "dispatch_trace": {
+              "steps": 198,
+              "sha256": "e91f97a559bb7d9affe2a07199248b3097b7ff7fca864b456fd6f9a86eaebf87"
+            }
+          }
+        ],
+        "trace": {
+          "steps": 59,
+          "sha256": "8bf37d63107c7722088c2f1ca91deb53ac4063493d6ee13152928f4f1a234541"
+        },
+        "broadcast_count": 0
+      },
+      {
+        "receiveFromLocal": true,
+        "has_actions": false,
+        "use_local": true,
+        "same_player": false,
+        "names": [],
+        "events": [],
+        "trace": {
+          "steps": 19,
+          "sha256": "25eaf13ba2c389b6756ea8630fdf49521d0f811e66a0489553be1bd75dab3241"
+        },
+        "broadcast_count": 0
+      },
+      {
+        "receiveFromLocal": true,
+        "has_actions": false,
+        "use_local": true,
+        "same_player": false,
+        "names": [
+          "ZActionAppendNumberToCardText",
+          "ZUnknown"
+        ],
+        "events": [
+          {
+            "call": "ResolveSubAction",
+            "id": 0,
+            "name": "ZActionAppendNumberToCardText",
+            "events": [
+              {
+                "call": "ReceiveSubActionAppendNumberToCardText",
+                "args": [
+                  [
+                    {
+                      "ordinal": 0
+                    }
+                  ]
+                ]
+              }
+            ],
+            "dispatch_trace": {
+              "steps": 169,
+              "sha256": "31c82f13f84870c7c653a1721a8abe69047ca350a17151bdf9f291a5e0c3ee8e"
+            }
+          },
+          {
+            "call": "ResolveSubAction",
+            "id": 1,
+            "name": "ZUnknown",
+            "events": [
+              {
+                "call": "ErrorWithStackTrace",
+                "message": "Got subAction that I don't know about: ZUnknown"
+              }
+            ],
+            "dispatch_trace": {
+              "steps": 198,
+              "sha256": "e91f97a559bb7d9affe2a07199248b3097b7ff7fca864b456fd6f9a86eaebf87"
+            }
+          }
+        ],
+        "trace": {
+          "steps": 59,
+          "sha256": "8bf37d63107c7722088c2f1ca91deb53ac4063493d6ee13152928f4f1a234541"
+        },
+        "broadcast_count": 0
+      },
+      {
+        "receiveFromLocal": true,
+        "has_actions": false,
+        "use_local": true,
+        "same_player": true,
+        "names": [],
+        "events": [],
+        "trace": {
+          "steps": 19,
+          "sha256": "25eaf13ba2c389b6756ea8630fdf49521d0f811e66a0489553be1bd75dab3241"
+        },
+        "broadcast_count": 0
+      },
+      {
+        "receiveFromLocal": true,
+        "has_actions": false,
+        "use_local": true,
+        "same_player": true,
+        "names": [
+          "ZActionAppendNumberToCardText",
+          "ZUnknown"
+        ],
+        "events": [
+          {
+            "call": "ResolveSubAction",
+            "id": 0,
+            "name": "ZActionAppendNumberToCardText",
+            "events": [
+              {
+                "call": "ReceiveSubActionAppendNumberToCardText",
+                "args": [
+                  [
+                    {
+                      "ordinal": 0
+                    }
+                  ]
+                ]
+              }
+            ],
+            "dispatch_trace": {
+              "steps": 169,
+              "sha256": "31c82f13f84870c7c653a1721a8abe69047ca350a17151bdf9f291a5e0c3ee8e"
+            }
+          },
+          {
+            "call": "ResolveSubAction",
+            "id": 1,
+            "name": "ZUnknown",
+            "events": [
+              {
+                "call": "ErrorWithStackTrace",
+                "message": "Got subAction that I don't know about: ZUnknown"
+              }
+            ],
+            "dispatch_trace": {
+              "steps": 198,
+              "sha256": "e91f97a559bb7d9affe2a07199248b3097b7ff7fca864b456fd6f9a86eaebf87"
+            }
+          }
+        ],
+        "trace": {
+          "steps": 59,
+          "sha256": "8bf37d63107c7722088c2f1ca91deb53ac4063493d6ee13152928f4f1a234541"
+        },
+        "broadcast_count": 0
+      },
+      {
+        "receiveFromLocal": true,
+        "has_actions": true,
+        "use_local": false,
+        "same_player": false,
+        "names": [],
+        "events": [
+          {
+            "call": "OnAddMatchAction__DelegateSignature",
+            "args": [
+              {
+                "action_id": 81,
+                "action_type": "order",
+                "player_id": 2,
+                "action_data": [
+                  {
+                    "retained": 9
+                  }
+                ],
+                "sub_actions": [
+                  {
+                    "old": true
+                  }
+                ]
+              },
+              {
+                "prior": true
+              }
+            ]
+          }
+        ],
+        "trace": {
+          "steps": 30,
+          "sha256": "ef66b396a632e0b257d00fcf41a0168f2d6759bb14e04c94fc156f90e8471edc"
+        },
+        "broadcast_count": 1
+      },
+      {
+        "receiveFromLocal": true,
+        "has_actions": true,
+        "use_local": false,
+        "same_player": false,
+        "names": [
+          "ZActionAppendNumberToCardText",
+          "ZUnknown"
+        ],
+        "events": [
+          {
+            "call": "ResolveSubAction",
+            "id": 0,
+            "name": "ZActionAppendNumberToCardText",
+            "events": [
+              {
+                "call": "ReceiveSubActionAppendNumberToCardText",
+                "args": [
+                  [
+                    {
+                      "ordinal": 0
+                    }
+                  ]
+                ]
+              }
+            ],
+            "dispatch_trace": {
+              "steps": 169,
+              "sha256": "31c82f13f84870c7c653a1721a8abe69047ca350a17151bdf9f291a5e0c3ee8e"
+            }
+          },
+          {
+            "call": "ResolveSubAction",
+            "id": 1,
+            "name": "ZUnknown",
+            "events": [
+              {
+                "call": "ErrorWithStackTrace",
+                "message": "Got subAction that I don't know about: ZUnknown"
+              }
+            ],
+            "dispatch_trace": {
+              "steps": 198,
+              "sha256": "e91f97a559bb7d9affe2a07199248b3097b7ff7fca864b456fd6f9a86eaebf87"
+            }
+          },
+          {
+            "call": "OnAddMatchAction__DelegateSignature",
+            "args": [
+              {
+                "action_id": 81,
+                "action_type": "order",
+                "player_id": 2,
+                "action_data": [
+                  {
+                    "retained": 9
+                  }
+                ],
+                "sub_actions": [
+                  {
+                    "old": true
+                  }
+                ]
+              },
+              {
+                "prior": true
+              }
+            ]
+          }
+        ],
+        "trace": {
+          "steps": 70,
+          "sha256": "08edc6905640f70230de9a409b9c4d21016b9dec3014516331c28604e9d07620"
+        },
+        "broadcast_count": 1
+      },
+      {
+        "receiveFromLocal": true,
+        "has_actions": true,
+        "use_local": false,
+        "same_player": true,
+        "names": [],
+        "events": [
+          {
+            "call": "OnAddMatchAction__DelegateSignature",
+            "args": [
+              {
+                "action_id": 81,
+                "action_type": "order",
+                "player_id": 2,
+                "action_data": [
+                  {
+                    "retained": 9
+                  }
+                ],
+                "sub_actions": []
+              },
+              {
+                "prior": true
+              }
+            ]
+          }
+        ],
+        "trace": {
+          "steps": 30,
+          "sha256": "ef66b396a632e0b257d00fcf41a0168f2d6759bb14e04c94fc156f90e8471edc"
+        },
+        "broadcast_count": 1
+      },
+      {
+        "receiveFromLocal": true,
+        "has_actions": true,
+        "use_local": false,
+        "same_player": true,
+        "names": [
+          "ZActionAppendNumberToCardText",
+          "ZUnknown"
+        ],
+        "events": [
+          {
+            "call": "ResolveSubAction",
+            "id": 0,
+            "name": "ZActionAppendNumberToCardText",
+            "events": [
+              {
+                "call": "ReceiveSubActionAppendNumberToCardText",
+                "args": [
+                  [
+                    {
+                      "ordinal": 0
+                    }
+                  ]
+                ]
+              }
+            ],
+            "dispatch_trace": {
+              "steps": 169,
+              "sha256": "31c82f13f84870c7c653a1721a8abe69047ca350a17151bdf9f291a5e0c3ee8e"
+            }
+          },
+          {
+            "call": "ResolveSubAction",
+            "id": 1,
+            "name": "ZUnknown",
+            "events": [
+              {
+                "call": "ErrorWithStackTrace",
+                "message": "Got subAction that I don't know about: ZUnknown"
+              }
+            ],
+            "dispatch_trace": {
+              "steps": 198,
+              "sha256": "e91f97a559bb7d9affe2a07199248b3097b7ff7fca864b456fd6f9a86eaebf87"
+            }
+          },
+          {
+            "call": "OnAddMatchAction__DelegateSignature",
+            "args": [
+              {
+                "action_id": 81,
+                "action_type": "order",
+                "player_id": 2,
+                "action_data": [
+                  {
+                    "retained": 9
+                  }
+                ],
+                "sub_actions": [
+                  {
+                    "Name": "ZActionAppendNumberToCardText",
+                    "Values": [
+                      {
+                        "ordinal": 0
+                      }
+                    ]
+                  },
+                  {
+                    "Name": "ZUnknown",
+                    "Values": [
+                      {
+                        "ordinal": 1
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "prior": true
+              }
+            ]
+          }
+        ],
+        "trace": {
+          "steps": 70,
+          "sha256": "08edc6905640f70230de9a409b9c4d21016b9dec3014516331c28604e9d07620"
+        },
+        "broadcast_count": 1
+      },
+      {
+        "receiveFromLocal": true,
+        "has_actions": true,
+        "use_local": true,
+        "same_player": false,
+        "names": [],
+        "events": [
+          {
+            "call": "OnAddMatchAction__DelegateSignature",
+            "args": [
+              {
+                "action_id": 81,
+                "action_type": "order",
+                "player_id": 2,
+                "action_data": [
+                  {
+                    "retained": 9
+                  }
+                ],
+                "sub_actions": []
+              },
+              {
+                "prior": true
+              }
+            ]
+          }
+        ],
+        "trace": {
+          "steps": 30,
+          "sha256": "ef66b396a632e0b257d00fcf41a0168f2d6759bb14e04c94fc156f90e8471edc"
+        },
+        "broadcast_count": 1
+      },
+      {
+        "receiveFromLocal": true,
+        "has_actions": true,
+        "use_local": true,
+        "same_player": false,
+        "names": [
+          "ZActionAppendNumberToCardText",
+          "ZUnknown"
+        ],
+        "events": [
+          {
+            "call": "ResolveSubAction",
+            "id": 0,
+            "name": "ZActionAppendNumberToCardText",
+            "events": [
+              {
+                "call": "ReceiveSubActionAppendNumberToCardText",
+                "args": [
+                  [
+                    {
+                      "ordinal": 0
+                    }
+                  ]
+                ]
+              }
+            ],
+            "dispatch_trace": {
+              "steps": 169,
+              "sha256": "31c82f13f84870c7c653a1721a8abe69047ca350a17151bdf9f291a5e0c3ee8e"
+            }
+          },
+          {
+            "call": "ResolveSubAction",
+            "id": 1,
+            "name": "ZUnknown",
+            "events": [
+              {
+                "call": "ErrorWithStackTrace",
+                "message": "Got subAction that I don't know about: ZUnknown"
+              }
+            ],
+            "dispatch_trace": {
+              "steps": 198,
+              "sha256": "e91f97a559bb7d9affe2a07199248b3097b7ff7fca864b456fd6f9a86eaebf87"
+            }
+          },
+          {
+            "call": "OnAddMatchAction__DelegateSignature",
+            "args": [
+              {
+                "action_id": 81,
+                "action_type": "order",
+                "player_id": 2,
+                "action_data": [
+                  {
+                    "retained": 9
+                  }
+                ],
+                "sub_actions": [
+                  {
+                    "Name": "ZActionAppendNumberToCardText",
+                    "Values": [
+                      {
+                        "ordinal": 0
+                      }
+                    ]
+                  },
+                  {
+                    "Name": "ZUnknown",
+                    "Values": [
+                      {
+                        "ordinal": 1
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "prior": true
+              }
+            ]
+          }
+        ],
+        "trace": {
+          "steps": 70,
+          "sha256": "08edc6905640f70230de9a409b9c4d21016b9dec3014516331c28604e9d07620"
+        },
+        "broadcast_count": 1
+      },
+      {
+        "receiveFromLocal": true,
+        "has_actions": true,
+        "use_local": true,
+        "same_player": true,
+        "names": [],
+        "events": [
+          {
+            "call": "OnAddMatchAction__DelegateSignature",
+            "args": [
+              {
+                "action_id": 81,
+                "action_type": "order",
+                "player_id": 2,
+                "action_data": [
+                  {
+                    "retained": 9
+                  }
+                ],
+                "sub_actions": []
+              },
+              {
+                "prior": true
+              }
+            ]
+          }
+        ],
+        "trace": {
+          "steps": 30,
+          "sha256": "ef66b396a632e0b257d00fcf41a0168f2d6759bb14e04c94fc156f90e8471edc"
+        },
+        "broadcast_count": 1
+      },
+      {
+        "receiveFromLocal": true,
+        "has_actions": true,
+        "use_local": true,
+        "same_player": true,
+        "names": [
+          "ZActionAppendNumberToCardText",
+          "ZUnknown"
+        ],
+        "events": [
+          {
+            "call": "ResolveSubAction",
+            "id": 0,
+            "name": "ZActionAppendNumberToCardText",
+            "events": [
+              {
+                "call": "ReceiveSubActionAppendNumberToCardText",
+                "args": [
+                  [
+                    {
+                      "ordinal": 0
+                    }
+                  ]
+                ]
+              }
+            ],
+            "dispatch_trace": {
+              "steps": 169,
+              "sha256": "31c82f13f84870c7c653a1721a8abe69047ca350a17151bdf9f291a5e0c3ee8e"
+            }
+          },
+          {
+            "call": "ResolveSubAction",
+            "id": 1,
+            "name": "ZUnknown",
+            "events": [
+              {
+                "call": "ErrorWithStackTrace",
+                "message": "Got subAction that I don't know about: ZUnknown"
+              }
+            ],
+            "dispatch_trace": {
+              "steps": 198,
+              "sha256": "e91f97a559bb7d9affe2a07199248b3097b7ff7fca864b456fd6f9a86eaebf87"
+            }
+          },
+          {
+            "call": "OnAddMatchAction__DelegateSignature",
+            "args": [
+              {
+                "action_id": 81,
+                "action_type": "order",
+                "player_id": 2,
+                "action_data": [
+                  {
+                    "retained": 9
+                  }
+                ],
+                "sub_actions": [
+                  {
+                    "Name": "ZActionAppendNumberToCardText",
+                    "Values": [
+                      {
+                        "ordinal": 0
+                      }
+                    ]
+                  },
+                  {
+                    "Name": "ZUnknown",
+                    "Values": [
+                      {
+                        "ordinal": 1
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "prior": true
+              }
+            ]
+          }
+        ],
+        "trace": {
+          "steps": 70,
+          "sha256": "08edc6905640f70230de9a409b9c4d21016b9dec3014516331c28604e9d07620"
+        },
+        "broadcast_count": 1
+      }
+    ],
+    "completion_profiles": [
+      {
+        "delay": -1.0,
+        "initial_loops": 0,
+        "final_loops": 1,
+        "events": [],
+        "trace": {
+          "steps": 9,
+          "sha256": "419a13883d18fa2a47dde9973e98df5a34b38b81214bb0f75e37d8b465846f1c"
+        },
+        "resume_trace": {
+          "steps": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        }
+      },
+      {
+        "delay": -1.0,
+        "initial_loops": 19,
+        "final_loops": 20,
+        "events": [],
+        "trace": {
+          "steps": 9,
+          "sha256": "419a13883d18fa2a47dde9973e98df5a34b38b81214bb0f75e37d8b465846f1c"
+        },
+        "resume_trace": {
+          "steps": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        }
+      },
+      {
+        "delay": -1.0,
+        "initial_loops": 20,
+        "final_loops": 0,
+        "events": [],
+        "trace": {
+          "steps": 11,
+          "sha256": "bd57fa520a48976ad992e1c228dbf2629162aa4db018ef22c9d70ec7169075e8"
+        },
+        "resume_trace": {
+          "steps": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        }
+      },
+      {
+        "delay": -1.0,
+        "initial_loops": 21,
+        "final_loops": 0,
+        "events": [],
+        "trace": {
+          "steps": 11,
+          "sha256": "bd57fa520a48976ad992e1c228dbf2629162aa4db018ef22c9d70ec7169075e8"
+        },
+        "resume_trace": {
+          "steps": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        }
+      },
+      {
+        "delay": 0.0,
+        "initial_loops": 0,
+        "final_loops": 1,
+        "events": [],
+        "trace": {
+          "steps": 9,
+          "sha256": "419a13883d18fa2a47dde9973e98df5a34b38b81214bb0f75e37d8b465846f1c"
+        },
+        "resume_trace": {
+          "steps": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        }
+      },
+      {
+        "delay": 0.0,
+        "initial_loops": 19,
+        "final_loops": 20,
+        "events": [],
+        "trace": {
+          "steps": 9,
+          "sha256": "419a13883d18fa2a47dde9973e98df5a34b38b81214bb0f75e37d8b465846f1c"
+        },
+        "resume_trace": {
+          "steps": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        }
+      },
+      {
+        "delay": 0.0,
+        "initial_loops": 20,
+        "final_loops": 0,
+        "events": [],
+        "trace": {
+          "steps": 11,
+          "sha256": "bd57fa520a48976ad992e1c228dbf2629162aa4db018ef22c9d70ec7169075e8"
+        },
+        "resume_trace": {
+          "steps": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        }
+      },
+      {
+        "delay": 0.0,
+        "initial_loops": 21,
+        "final_loops": 0,
+        "events": [],
+        "trace": {
+          "steps": 11,
+          "sha256": "bd57fa520a48976ad992e1c228dbf2629162aa4db018ef22c9d70ec7169075e8"
+        },
+        "resume_trace": {
+          "steps": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        }
+      },
+      {
+        "delay": 0.25,
+        "initial_loops": 0,
+        "final_loops": 0,
+        "events": [
+          {
+            "call": "Delay",
+            "args": [
+              "supplied-service",
+              0.25,
+              [
+                1020,
+                1747050755,
+                "ExecuteUbergraph_BP_VisualController",
+                "supplied-service"
+              ]
+            ]
+          }
+        ],
+        "trace": {
+          "steps": 6,
+          "sha256": "b9a320cee519f58b15e56e6ec0bac071f43e32b2bd755ab2a6caf12b4c46fccf"
+        },
+        "resume_trace": {
+          "steps": 2,
+          "sha256": "77737c8671c859217d838a6f697c27395dac035efaaf6b0a4c090000c65b37c6"
+        }
+      },
+      {
+        "delay": 0.25,
+        "initial_loops": 19,
+        "final_loops": 0,
+        "events": [
+          {
+            "call": "Delay",
+            "args": [
+              "supplied-service",
+              0.25,
+              [
+                1020,
+                1747050755,
+                "ExecuteUbergraph_BP_VisualController",
+                "supplied-service"
+              ]
+            ]
+          }
+        ],
+        "trace": {
+          "steps": 6,
+          "sha256": "b9a320cee519f58b15e56e6ec0bac071f43e32b2bd755ab2a6caf12b4c46fccf"
+        },
+        "resume_trace": {
+          "steps": 2,
+          "sha256": "77737c8671c859217d838a6f697c27395dac035efaaf6b0a4c090000c65b37c6"
+        }
+      },
+      {
+        "delay": 0.25,
+        "initial_loops": 20,
+        "final_loops": 0,
+        "events": [
+          {
+            "call": "Delay",
+            "args": [
+              "supplied-service",
+              0.25,
+              [
+                1020,
+                1747050755,
+                "ExecuteUbergraph_BP_VisualController",
+                "supplied-service"
+              ]
+            ]
+          }
+        ],
+        "trace": {
+          "steps": 6,
+          "sha256": "b9a320cee519f58b15e56e6ec0bac071f43e32b2bd755ab2a6caf12b4c46fccf"
+        },
+        "resume_trace": {
+          "steps": 2,
+          "sha256": "77737c8671c859217d838a6f697c27395dac035efaaf6b0a4c090000c65b37c6"
+        }
+      },
+      {
+        "delay": 0.25,
+        "initial_loops": 21,
+        "final_loops": 0,
+        "events": [
+          {
+            "call": "Delay",
+            "args": [
+              "supplied-service",
+              0.25,
+              [
+                1020,
+                1747050755,
+                "ExecuteUbergraph_BP_VisualController",
+                "supplied-service"
+              ]
+            ]
+          }
+        ],
+        "trace": {
+          "steps": 6,
+          "sha256": "b9a320cee519f58b15e56e6ec0bac071f43e32b2bd755ab2a6caf12b4c46fccf"
+        },
+        "resume_trace": {
+          "steps": 2,
+          "sha256": "77737c8671c859217d838a6f697c27395dac035efaaf6b0a4c090000c65b37c6"
+        }
+      }
+    ],
+    "scope": "Full DoSubActions AST for non-replay branch with empty board lists, actual ResolveSubAction router and local-mode selector/getter AST. Text/diagnostic callbacks, snapshot/board queries, container semantics, player/controller values and multicast delivery supplied; no real subscriber execution. Completion windows only44755/446/848/1020, float cast4 supplied, Delay recorded and explicit resume1020 simulated; stop before15/65, not full visual scheduler or native latent manager. Full45003B ubergraph remains partial due opcode2b at30798, not certified.",
+    "game_writes": 0,
+    "real_game_function_calls": 0,
+    "fully_certified_cards": 0,
+    "case_sha256": "6331d25d4f163620848f22a20e5d5606dbe403d5afff6c10c01c4ac547e89d22"
+  },
+  "tail_indexes": {
+    "broadcast_indexes": [
+      1559
+    ],
+    "reset_indexes": [
+      977
+    ],
+    "output_indexes": [
+      988
+    ],
+    "rebuilt_action_fields": [
+      "action_id",
+      "action_type",
+      "player_id",
+      "action_data",
+      "sub_actions"
+    ]
+  },
+  "completion_windows": [
+    {
+      "start": 44755,
+      "end": 44760,
+      "decoded": [
+        {
+          "Inst": "Jump",
+          "Offset": 446,
+          "StatementIndex": 44755
+        }
+      ],
+      "references": []
+    },
+    {
+      "start": 446,
+      "end": 604,
+      "decoded": [
+        {
+          "Inst": "Let",
+          "Variable": {
+            "Inst": "LocalVariable",
+            "Variable Name": "CallFunc_Greater_DoubleDouble_A_ImplicitCast_1"
+          },
+          "Expression": {
+            "Inst": "PrimitiveCast",
+            "CastTag": 4,
+            "Expression": {
+              "Inst": "StructMemberContext",
+              "Property Name": "delayAfter",
+              "StructExpression": {
+                "Inst": "InstanceVariable",
+                "Variable Name": "tmpCurrentVisualAction"
+              }
+            },
+            "SemanticStatus": "unresolved-runtime-tag"
+          },
+          "StatementIndex": 446
+        },
+        {
+          "Inst": "LetBool",
+          "Variable": {
+            "Inst": "LocalVariable",
+            "Variable Name": "CallFunc_Greater_DoubleDouble_ReturnValue_1"
+          },
+          "Expression": {
+            "Inst": "CallMath",
+            "Function": "Greater_DoubleDouble",
+            "Parameters": [
+              {
+                "Inst": "LocalVariable",
+                "Variable Name": "CallFunc_Greater_DoubleDouble_A_ImplicitCast_1"
+              },
+              {
+                "Inst": "DoubleConst",
+                "Value": 0.0
+              }
+            ]
+          },
+          "StatementIndex": 484
+        },
+        {
+          "Inst": "JumpIfNot",
+          "Offset": 848,
+          "Condition": {
+            "Inst": "LocalVariable",
+            "Variable Name": "CallFunc_Greater_DoubleDouble_ReturnValue_1"
+          },
+          "StatementIndex": 522
+        },
+        {
+          "Inst": "CallMath",
+          "Function": "Delay",
+          "Parameters": [
+            {
+              "Inst": "Self"
+            },
+            {
+              "Inst": "StructMemberContext",
+              "Property Name": "delayAfter",
+              "StructExpression": {
+                "Inst": "InstanceVariable",
+                "Variable Name": "tmpCurrentVisualAction"
+              }
+            },
+            {
+              "Inst": "StructConst",
+              "Struct": "LatentActionInfo",
+              "SerializedSize": 32,
+              "Values": [
+                {
+                  "Inst": "SkipOffsetConst",
+                  "Value": 1020
+                },
+                {
+                  "Inst": "IntConst",
+                  "Value": 1747050755
+                },
+                {
+                  "Inst": "NameConst",
+                  "Value": "ExecuteUbergraph_BP_VisualController"
+                },
+                {
+                  "Inst": "Self"
+                }
+              ]
+            }
+          ],
+          "StatementIndex": 536
+        },
+        {
+          "Inst": "PopExecutionFlow",
+          "StatementIndex": 603
+        }
+      ],
+      "references": [
+        {
+          "offset": 447,
+          "kind": "property",
+          "address": "0x0",
+          "name": null
+        },
+        {
+          "offset": 456,
+          "kind": "property",
+          "address": "0x1cb0cf0aea0",
+          "name": "CallFunc_Greater_DoubleDouble_A_ImplicitCast_1"
+        },
+        {
+          "offset": 467,
+          "kind": "property",
+          "address": "0x1cb01552460",
+          "name": "delayAfter"
+        },
+        {
+          "offset": 476,
+          "kind": "property",
+          "address": "0x1cb0de20700",
+          "name": "tmpCurrentVisualAction"
+        },
+        {
+          "offset": 486,
+          "kind": "property",
+          "address": "0x1cb1025fc80",
+          "name": "CallFunc_Greater_DoubleDouble_ReturnValue_1"
+        },
+        {
+          "offset": 495,
+          "kind": "function",
+          "address": "0x7ff4958da400",
+          "name": "Greater_DoubleDouble"
+        },
+        {
+          "offset": 504,
+          "kind": "property",
+          "address": "0x1cb0cf0aea0",
+          "name": "CallFunc_Greater_DoubleDouble_A_ImplicitCast_1"
+        },
+        {
+          "offset": 528,
+          "kind": "property",
+          "address": "0x1cb1025fc80",
+          "name": "CallFunc_Greater_DoubleDouble_ReturnValue_1"
+        },
+        {
+          "offset": 537,
+          "kind": "function",
+          "address": "0x7ff49561ce80",
+          "name": "Delay"
+        },
+        {
+          "offset": 547,
+          "kind": "property",
+          "address": "0x1cb01552460",
+          "name": "delayAfter"
+        },
+        {
+          "offset": 556,
+          "kind": "property",
+          "address": "0x1cb0de20700",
+          "name": "tmpCurrentVisualAction"
+        },
+        {
+          "offset": 565,
+          "kind": "object",
+          "address": "0x7ff49561cf60",
+          "name": "LatentActionInfo"
+        }
+      ]
+    },
+    {
+      "start": 848,
+      "end": 1020,
+      "decoded": [
+        {
+          "Inst": "Let",
+          "Variable": {
+            "Inst": "LocalVariable",
+            "Variable Name": "CallFunc_Add_IntInt_ReturnValue_9"
+          },
+          "Expression": {
+            "Inst": "CallMath",
+            "Function": "Add_IntInt",
+            "Parameters": [
+              {
+                "Inst": "InstanceVariable",
+                "Variable Name": "loopsWithoutDelay"
+              },
+              {
+                "Inst": "IntConst",
+                "Value": 1
+              }
+            ]
+          },
+          "StatementIndex": 848
+        },
+        {
+          "Inst": "Let",
+          "Variable": {
+            "Inst": "LocalVariable",
+            "Variable Name": "Temp_int_Variable_2"
+          },
+          "Expression": {
+            "Inst": "LocalVariable",
+            "Variable Name": "CallFunc_Add_IntInt_ReturnValue_9"
+          },
+          "StatementIndex": 890
+        },
+        {
+          "Inst": "Let",
+          "Variable": {
+            "Inst": "InstanceVariable",
+            "Variable Name": "loopsWithoutDelay"
+          },
+          "Expression": {
+            "Inst": "LocalVariable",
+            "Variable Name": "Temp_int_Variable_2"
+          },
+          "StatementIndex": 917
+        },
+        {
+          "Inst": "LetBool",
+          "Variable": {
+            "Inst": "LocalVariable",
+            "Variable Name": "CallFunc_Greater_IntInt_ReturnValue_7"
+          },
+          "Expression": {
+            "Inst": "CallMath",
+            "Function": "Greater_IntInt",
+            "Parameters": [
+              {
+                "Inst": "InstanceVariable",
+                "Variable Name": "loopsWithoutDelay"
+              },
+              {
+                "Inst": "IntConst",
+                "Value": 20
+              }
+            ]
+          },
+          "StatementIndex": 944
+        },
+        {
+          "Inst": "JumpIfNot",
+          "Offset": 65,
+          "Condition": {
+            "Inst": "LocalVariable",
+            "Variable Name": "CallFunc_Greater_IntInt_ReturnValue_7"
+          },
+          "StatementIndex": 978
+        },
+        {
+          "Inst": "Let",
+          "Variable": {
+            "Inst": "InstanceVariable",
+            "Variable Name": "loopsWithoutDelay"
+          },
+          "Expression": {
+            "Inst": "IntConst",
+            "Value": 0
+          },
+          "StatementIndex": 992
+        },
+        {
+          "Inst": "Jump",
+          "Offset": 15,
+          "StatementIndex": 1015
+        }
+      ],
+      "references": [
+        {
+          "offset": 849,
+          "kind": "property",
+          "address": "0x1cb0cf0ba00",
+          "name": "CallFunc_Add_IntInt_ReturnValue_9"
+        },
+        {
+          "offset": 858,
+          "kind": "property",
+          "address": "0x1cb0cf0ba00",
+          "name": "CallFunc_Add_IntInt_ReturnValue_9"
+        },
+        {
+          "offset": 867,
+          "kind": "function",
+          "address": "0x7ff4958cc6a0",
+          "name": "Add_IntInt"
+        },
+        {
+          "offset": 876,
+          "kind": "property",
+          "address": "0x1cb4e3964b0",
+          "name": "loopsWithoutDelay"
+        },
+        {
+          "offset": 891,
+          "kind": "property",
+          "address": "0x1cb0cf05aa0",
+          "name": "Temp_int_Variable_2"
+        },
+        {
+          "offset": 900,
+          "kind": "property",
+          "address": "0x1cb0cf05aa0",
+          "name": "Temp_int_Variable_2"
+        },
+        {
+          "offset": 909,
+          "kind": "property",
+          "address": "0x1cb0cf0ba00",
+          "name": "CallFunc_Add_IntInt_ReturnValue_9"
+        },
+        {
+          "offset": 918,
+          "kind": "property",
+          "address": "0x1cb4e3964b0",
+          "name": "loopsWithoutDelay"
+        },
+        {
+          "offset": 927,
+          "kind": "property",
+          "address": "0x1cb4e3964b0",
+          "name": "loopsWithoutDelay"
+        },
+        {
+          "offset": 936,
+          "kind": "property",
+          "address": "0x1cb0cf05aa0",
+          "name": "Temp_int_Variable_2"
+        },
+        {
+          "offset": 946,
+          "kind": "property",
+          "address": "0x1cb4e381d00",
+          "name": "CallFunc_Greater_IntInt_ReturnValue_7"
+        },
+        {
+          "offset": 955,
+          "kind": "function",
+          "address": "0x7ff4958da5c0",
+          "name": "Greater_IntInt"
+        },
+        {
+          "offset": 964,
+          "kind": "property",
+          "address": "0x1cb4e3964b0",
+          "name": "loopsWithoutDelay"
+        },
+        {
+          "offset": 984,
+          "kind": "property",
+          "address": "0x1cb4e381d00",
+          "name": "CallFunc_Greater_IntInt_ReturnValue_7"
+        },
+        {
+          "offset": 993,
+          "kind": "property",
+          "address": "0x1cb4e3964b0",
+          "name": "loopsWithoutDelay"
+        },
+        {
+          "offset": 1002,
+          "kind": "property",
+          "address": "0x1cb4e3964b0",
+          "name": "loopsWithoutDelay"
+        }
+      ]
+    },
+    {
+      "start": 1020,
+      "end": 1048,
+      "decoded": [
+        {
+          "Inst": "Let",
+          "Variable": {
+            "Inst": "InstanceVariable",
+            "Variable Name": "loopsWithoutDelay"
+          },
+          "Expression": {
+            "Inst": "IntConst",
+            "Value": 0
+          },
+          "StatementIndex": 1020
+        },
+        {
+          "Inst": "Jump",
+          "Offset": 65,
+          "StatementIndex": 1043
+        }
+      ],
+      "references": [
+        {
+          "offset": 1021,
+          "kind": "property",
+          "address": "0x1cb4e3964b0",
+          "name": "loopsWithoutDelay"
+        },
+        {
+          "offset": 1030,
+          "kind": "property",
+          "address": "0x1cb4e3964b0",
+          "name": "loopsWithoutDelay"
+        }
+      ]
+    }
+  ],
+  "captured_functions": [
+    {
+      "owner": "BP_OnlineMatch_C",
+      "name": "GetUseLocalSubActions",
+      "script_size": 65,
+      "decode_complete": true,
+      "decode_error": null
+    },
+    {
+      "owner": "BP_OnlineMatch_C",
+      "name": "ExecuteXActionsWithLocalSubActions",
+      "script_size": 175,
+      "decode_complete": true,
+      "decode_error": null
+    },
+    {
+      "owner": "BP_OnlineMatch_C",
+      "name": "ReceiveSubActionAppendNumberToCardText",
+      "script_size": 2161,
+      "decode_complete": true,
+      "decode_error": null
+    },
+    {
+      "owner": "BP_OnlineMatch_C",
+      "name": "ResolveSubAction",
+      "script_size": 9812,
+      "decode_complete": true,
+      "decode_error": null
+    },
+    {
+      "owner": "BP_OnlineMatch_C",
+      "name": "DoSubActions",
+      "script_size": 2682,
+      "decode_complete": true,
+      "decode_error": null
+    },
+    {
+      "owner": "BP_OnlineMatch_C",
+      "name": "CreateAction_SendActionWithSub",
+      "script_size": 2068,
+      "decode_complete": true,
+      "decode_error": null
+    },
+    {
+      "owner": "BP_VisualController_C",
+      "name": "ExecuteUbergraph_BP_VisualController",
+      "script_size": 45003,
+      "decode_complete": false,
+      "decode_error": "unsupported opcode 2b at 30798"
+    },
+    {
+      "owner": "BP_VisualController_C",
+      "name": "ExecuteSubActionAddNumberToText",
+      "script_size": 3069,
+      "decode_complete": true,
+      "decode_error": null
+    },
+    {
+      "owner": "BP_VisualController_C",
+      "name": "ExecuteSubAction",
+      "script_size": 6502,
+      "decode_complete": true,
+      "decode_error": null
+    },
+    {
+      "owner": "BP_VisualController_C",
+      "name": "SubActionResolved",
+      "script_size": 18,
+      "decode_complete": true,
+      "decode_error": null
+    }
+  ],
+  "worker_job": "20261028-025321-rule503-tail-index-761f9e83",
+  "evidence": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule503-completion.py",
+      "bytes": 1522,
+      "sha256": "e40fb88aea6f8dd3e3e380ef211513045e75068cabb4afe15b88d1a995e66cf0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule503-subaction-completion-20261028.json",
+      "bytes": 6095781,
+      "sha256": "23ee14a3fc57c457d703fa4b91d62a9f4d55b9fb72bb3ba29217c38def66dbe2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\build-rule503-verifier.py",
+      "bytes": 6749,
+      "sha256": "2148480962652e3b6ef59a6afc644ec256033e381f00e4d9fb204249bcef0015"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule503-tail.py",
+      "bytes": 9213,
+      "sha256": "58be4f9c56f6500b6a7825519608a09a02d0adbbf216e1d599fc3528be8ce3cb"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule503-tail-verification-20261028.json",
+      "bytes": 170468,
+      "sha256": "ab0eb2b8f5306bfa20baa3b34a7dad3e73d61837328f55cc67738c4f48a276d6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-498.py",
+      "bytes": 752,
+      "sha256": "254664d0aa1146756993fda4ac54e58891709c0ec5bcdd2cfa852f874c4e67ef"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule503-worker\\input.json",
+      "bytes": 6146,
+      "sha256": "61be4463ce3d92f7bab808709c37c706a4d6c856a71f7c8253d6af67cb2dca98"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule503-worker\\output.json",
+      "bytes": 187,
+      "sha256": "ea848ceef60791f963752ec3965c584f9ed830e581da1db24179e571699c8fa9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule503-worker\\task.txt",
+      "bytes": 619,
+      "sha256": "8eeaea3408613cb3819361d465273a9ebbb2330f276efbd8583b88babdc90ad5"
+    }
+  ],
+  "remaining": [
+    "视觉后继入口15/65以及实际潜伏动作调度、委托订阅者与接口实例绑定。",
+    "非空棋盘效果快照及消费者传递副作用，规则状态与策略输入/快照回灌关系。",
+    "全卡池与原生规则语义认证，仍不能宣称全部1:1还原。"
+  ],
+  "game_writes": 0,
+  "real_game_function_calls": 0,
+  "fully_certified_cards": 0
+}
