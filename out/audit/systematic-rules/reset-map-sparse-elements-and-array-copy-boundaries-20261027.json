@@ -1,0 +1,94 @@
+{
+  "rule_id": "RULE-473",
+  "date": "2026-10-27",
+  "base_commit": "a70b8367bcfbc56e0ff182d67a03f5db587138e3",
+  "status": "两个内部map元素复制本地函数的非空/稀疏槽位行为已模型验证；嵌套map与所有权仍开放",
+  "findings": [
+    "当前只读采集4abb3e0能力来源表元素复制442字节、4abb1d0增益表元素复制527字节，完整本地CFG无未读跳转前沿，内存与安装PE相同并独立重解码。",
+    "两函数按分配位分别处理有效槽和空槽。能力表stride40，复制字符串key、元素内整数TArray及尾部两个32位字段；增益表stride112，有效槽复制key、FText相关字段、嵌套map以及尾部字段，空槽仅复制空闲链。不是把整块内存浅拷贝。",
+    "180组：两helper各90＝槽位0..3全部15种mask形状×三种整数数组内容×自赋值/非别名两种。能力数组测试空、单正值及含负数/零/int32最大值；有效槽检查合计102。自赋值不执行外部调用，原源对象4KB保持。",
+    "在受控分配器、位数组复制、字符串复制及memcpy下，执行两份完整本地代码。能力key与整数数组目标缓冲独立，整数数组副本修改不影响源；增益元素用空FText owner和空嵌套map，验证直接标量/尾字段，嵌套map helper仍跳过。两触发数组头哨兵无写入。",
+    "模型中实际分配器/旧目标析构及bit-array/字符串原生函数未执行；空目标、inline bits、小槽位、空FText owner是显式前提。源自由链改用槽位范围内的prev/next及有效首索引，空数组使用零指针；不把布景合法性扩张为真实UE容器全面认证。",
+    "DeepSeek机械提取11个call、19个jump，主agent解析输出并按原指令对象和顺序全等校验。机械统计不是原生helper语义证据。",
+    "本轮为独立非空helper模型，没有将它们接入完整重置运行模型；不能把这180组与前轮联通场景拼接成完整重置证明。未发现足以确认的新增托管规则错误，保留模板例外补入候选差异。"
+  ],
+  "verification": {
+    "rule": "RULE-473",
+    "pid": 24220,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "helper_sizes": [
+      {
+        "rva": "0x4abb3e0",
+        "bytes": 442
+      },
+      {
+        "rva": "0x4abb1d0",
+        "bytes": 527
+      }
+    ],
+    "offline_profiles": 180,
+    "ability_profiles": 90,
+    "buff_profiles": 90,
+    "allocated_slots_checked": 102,
+    "case_sha256": "c29ca0af9849df897b8aa3f791168af41ecf163ba181aac392433a8c2fc98eb8",
+    "worker_exact_calls": 11,
+    "worker_exact_jumps": 19,
+    "scope": "Whole two local helpers execute under Unicorn. Supplied sparse layouts0..3slots/all masks; empty destination, controlled allocator/bit-array/string/memcpy, null FText owners, nested buff map helper skipped. Ability int-array copies and independence checked; inactive slots copied as raw free-list fields. Not full UE ownership/allocator/lookup certification or linked whole reset.",
+    "game_writes": 0,
+    "real_game_function_calls": 0,
+    "fully_certified_cards": 0
+  },
+  "production_changes": false,
+  "tests": {
+    "offline_profiles": 180,
+    "csharp_tests_rerun": false,
+    "previous_round_csharp_passed": 919,
+    "reason": "仅新增审计证据与离线工具，C#未改；919为RULE-469历史结果。"
+  },
+  "unresolved": [
+    "增益元素内部嵌套map辅助3977650和非空FText引用计数。",
+    "实际分配器、旧目标非空销毁、位数组/字符串所有权、超过32位mask和大集合。",
+    "完整重置联通及诊断/JSON/任意别名和GC。",
+    "模板抑制例外补入合法可达性、全局登记历史、TSet顺序及老兵装甲。"
+  ],
+  "game_writes": 0,
+  "real_game_function_calls": 0,
+  "fully_certified_cards": 0,
+  "artifacts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule473-reset-map-element-helpers-20261027.json",
+      "bytes": 36068,
+      "sha256": "29d4ce1e5c3957123d86af3f3578e2daec8333fb2e1cca10ecc2868a016f71a1"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule473-map-elements.py",
+      "bytes": 2633,
+      "sha256": "0929804eb5a9264bbbe32ecdc9bf5ea2a993e35fdea9deccde5930643fcc4a4a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule473-sparse-elements.py",
+      "bytes": 8013,
+      "sha256": "8ffdeadb39e95f9815ab31e9997499d4fe0c8f03fe090605fc19165760dfc655"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule473-sparse-map-elements-verification-20261027.json",
+      "bytes": 1020,
+      "sha256": "47217e5ee353aadae7a622f5135257ad97b923674a2036f0c0b4c8701b153344"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule473-worker\\input.json",
+      "bytes": 32805,
+      "sha256": "328d290222f857f9232497fb535b51a4385c9ce136dff63a007261303a700264"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule473-worker\\output.json",
+      "bytes": 3283,
+      "sha256": "709965dc0a80909d726e61f7ef33ee087b08d9dd8557f2819abd8868a7f043d2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule473-worker\\task.txt",
+      "bytes": 381,
+      "sha256": "fdbe1360ad27da3ea81fd71f39d7c06d8abaf7c71e18eb0091a1e15f6bff31b1"
+    }
+  ]
+}
