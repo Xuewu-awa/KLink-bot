@@ -861,6 +861,7 @@ internal static class SelfTest
         new("RevealCard移动通知：原生ID0主体与观察者载荷", RevealMovementSentinel),
         new("装甲独立数值：六模式、typed账本与通知门", HeavyArmorIndependentModes),
         new("装甲生命周期：模板双值/复制/重置/VM/快照", HeavyArmorIndependentLifecycle),
+        new("老兵装甲回调：额度捕获与持有对象后续结算", VeteranArmorCallbackContinuation),
         new("老兵烟幕/守护/毁灭：原始覆盖与来源门", VeteranGuardSmokeWrites),
         new("老兵守护：烟幕回调后按当前位置刷新", VeteranGuardSmokeCallbackOrder),
         new("生成老兵：先升级/T35再授予闪击", SpawnVeteranBeforeCreationObservers),
@@ -32822,6 +32823,87 @@ internal static class SelfTest
             }
         }
         return cases == 960 ? null : $"veteran fury profiles={cases}";
+    }
+
+    // RULE-481: controlled synchronous callback mutations, not claims that a
+    // particular live card can legally produce every fixture state.
+    private static string? VeteranArmorCallbackContinuation(CardDatabase db)
+    {
+        const string name = "card_unit_typhoon_mk_ib", ability = "OnOtherCardAbilitiesChanged";
+        using var veteranProbes = InstallVeteranEventProbes();
+        using var abilityProbe = InstallSelectionDrawProbe(name, ability);
+        var locals = (IDictionary<string, IReadOnlyList<KismetStep>>)KismetLibrary.Default!.Find(name)!.Locals;
+        locals[ability] = new[] {
+            new KismetStep(0, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), new KismetExpr { Str = "ability" }, null, -1, "_r469Phase", null) { DestinationScope = "instance" },
+            new KismetStep(1, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), new KismetExpr { Var = "K2Node_Event_cardChanging" }, null, -1, "_r469Subject", null) { DestinationScope = "instance" },
+            new KismetStep(2, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), new KismetExpr { Math = "Add_IntInt", Args = new[] { new KismetExpr { Var = "_r469Serial", Scope = "instance" }, new KismetExpr { Int = 1 } } }, null, -1, "_r469Serial", null) { DestinationScope = "instance" },
+            new KismetStep(3, "call", "SpawnCardInDeckBySide", new[] { new KismetExpr { Int = (int)Side.Right }, new KismetExpr { Str = "card_unit_routed_troops" }, new KismetExpr { Int = 30 }, new KismetExpr { Int = 1 } }, Array.Empty<int>(), null, null, -1, null, null),
+            new KismetStep(4, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null) };
+        var ctor = typeof(CardDatabase).GetConstructors(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).Single();
+        int cases = 0;
+        foreach (bool upgradedFury in new[] { false, true })
+        {
+            var defs = db.All.ToDictionary(x => x.Name, StringComparer.Ordinal);
+            defs[name] = new CardDefinition { Name = name, Type = "infantry", Attack = 1, Defense = 9, OperationCost = 1 };
+            defs[name + "_vet"] = new CardDefinition { Name = name + "_vet", Type = "infantry", Attack = 1, Defense = 9, OperationCost = 1, HeavyArmor = 1,
+                Keywords = upgradedFury ? new[] { Keyword.Ambush, Keyword.Blitz, Keyword.Fury, Keyword.Mobilize, Keyword.Shock } : new[] { Keyword.Ambush, Keyword.Blitz, Keyword.Mobilize, Keyword.Shock } };
+            var fixture = (CardDatabase)ctor.Invoke(new object[] { defs, db.DeckCodeIds.ToDictionary(x => x.Key, x => x.Value, StringComparer.Ordinal) });
+            foreach (Side side in new[] { Side.Left, Side.Right })
+            foreach (int mode in Enumerable.Range(0, 6))
+            foreach (int attacks in new[] { 0, 1, 2 })
+            foreach (int left in new[] { 0, 1 })
+            foreach (int callbackLeft in new[] { 0, 3 })
+            foreach (int temporary in new[] { -1, 2 })
+            {
+                var (engine, state) = EmptyBoard(fixture);
+                var target = state.CreateWithId(name, side, 60, side.HqOf(), 0);
+                var observer = state.CreateWithId(name, side.Opposite(), 70, side.Opposite().HandOf(), 0);
+                RegisterRevealObserver(observer, ability, "OnOtherCardBecomingVeteran");
+                target.BaseHeavyArmor = 2; target.TemporaryHeavyArmor = temporary;
+                target.AttacksThisTurn = attacks; target.SetRemainingAttacks(left);
+                var events = new List<string>(); var seen = new Dictionary<CardInstance, int>();
+                string? failure = null; bool changed = false; CardInstance? replacement = null;
+                var prior = state.CardCreated;
+                state.CardCreated = created => {
+                    prior?.Invoke(created);
+                    if (created.Name != "card_unit_routed_troops") return;
+                    var actor = new[] { target, observer }.FirstOrDefault(c => Convert.ToInt32(c.BlueprintVariables.GetValueOrDefault("_r469Serial")) > seen.GetValueOrDefault(c));
+                    if (actor is null) { failure = "missing callback actor"; return; }
+                    seen[actor] = Convert.ToInt32(actor.BlueprintVariables["_r469Serial"]);
+                    string phase = (string)actor.BlueprintVariables["_r469Phase"]!; events.Add(phase);
+                    if (!ReferenceEquals(actor.BlueprintVariables.GetValueOrDefault("_r469Subject"), target)) failure = "callback lost held target reference";
+                    if (changed || phase != "ability") return;
+                    changed = true;
+                    if (target.BaseHeavyArmor != 1 || target.TemporaryHeavyArmor != temporary || target.Keywords.Contains(Keyword.Fury)
+                        || !engine.Api.JsonGetBool(target, "veteran") || state.ActionLog.SelectMany(a => a.SubActions).Any(a => a.Name == "ZActionMakeVeteran"))
+                        failure = "armor callback must precede raw flag copies and veteran notifier";
+                    target.Keywords.Add(Keyword.Fury); target.ReceivedAbilitiesFromCards["fury"] = new List<int> { 999 };
+                    foreach (var flag in new[] { Keyword.Ambush, Keyword.Blitz, Keyword.Mobilize, Keyword.Shock }) target.Keywords.Remove(flag);
+                    target.AttacksThisTurn = 2; target.SetRemainingAttacks(callbackLeft);
+                    if (mode == 1) target.Keywords.Add(Keyword.Covert);
+                    if (mode is 2 or 3) { state.Remove(target); target.Location = CardLocation.NotAvailable; }
+                    if (mode == 3) replacement = state.CreateWithId(name, side, 60, side.HqOf(), 0);
+                    if (mode == 4) { target.Defense = 0; target.Location = CardLocation.Discard; state.ChangeOwner(target, side.Opposite(), normalize: false); }
+                    if (mode == 5) target.Keywords.Add(Keyword.Suppressed);
+                };
+                engine.Api.MakeVeteran(target);
+                bool capturedEligibility = attacks < 2 && (left > 0 || attacks == 1);
+                int expectedLeft = callbackLeft + (upgradedFury && capturedEligibility ? 1 : 0);
+                var expectedEvents = mode == 5 ? new[] { "ability", "T32", "ability" } : new[] { "ability", "own", "T32", "ability" };
+                var actions = state.ActionLog.SelectMany(a => a.SubActions).Select(a => a.Name).ToList();
+                if (failure is not null || !changed || !events.SequenceEqual(expectedEvents)
+                    || target.RemainingAttacks != expectedLeft || target.AttacksThisTurn != 2
+                    || target.Keywords.Contains(Keyword.Fury) != upgradedFury
+                    || new[] { Keyword.Ambush, Keyword.Blitz, Keyword.Mobilize, Keyword.Shock }.Any(k => !target.Keywords.Contains(k))
+                    || target.BaseHeavyArmor != 1 || target.TemporaryHeavyArmor != temporary
+                    || replacement is not null && (replacement.Keywords.Contains(Keyword.Veteran) || replacement.CustomJson.ContainsKey("veteran"))
+                    || actions.Count(a => a == "ZActionAddHeavyArmor") != 1 || actions.Count(a => a == "ZActionMakeVeteran") != 1
+                    || actions.IndexOf("ZActionAddHeavyArmor") > actions.IndexOf("ZActionMakeVeteran"))
+                    return $"veteran armor continuation {side}/{mode}/{attacks}/{left}/{callbackLeft}/{temporary}/{upgradedFury}: {failure}, events={string.Join(',',events)}, quota={target.RemainingAttacks}/{expectedLeft}";
+                cases++;
+            }
+        }
+        return cases == 576 ? null : $"armor callback continuation profiles={cases}";
     }
 
     private static CardDatabase VeteranObserverFixture(CardDatabase db)
