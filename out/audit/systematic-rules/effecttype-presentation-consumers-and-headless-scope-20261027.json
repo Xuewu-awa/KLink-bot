@@ -1,0 +1,155 @@
+{
+  "rule_id": "RULE-477",
+  "date": "2026-10-27",
+  "base_commit": "af850f51f5630f5cdfd19ad1efd204aee8b9e726",
+  "status": "EffectType当前证据为展示元数据，按用户无头PvP范围排除实现；不计为已证实规则缺口",
+  "findings": [
+    "SDK BaseCardObject.EffectType位于0x135，byte枚举NotAvailable0/Passive9/Trigger13。仅凭命名不足分类，因此进一步查所有当前已加载UFunction脚本的字段引用及读取函数调用链。",
+    "本次枚举30583函数对象，其中18111个非空脚本共7922413字节；按该FProperty指针字节找候选，再完整解码，6个函数9条语句。两个脚本写入是SuppressMultipleUnits2921清0及MakeVeteran1579复制；MakeVeteran赋值右侧也读模板，不能把全部字段节点当成独立规则消费者。",
+    "其余4个读取函数为BP_CardHelp.FindAndSetBubbleTypesToAdd、BP_BoardCard.PopulateEffectBar、OnlineMatch.CreateAction_CardMarker_Start和cardsCheckFunctions.getActiveEffects。比较值9/13后进入帮助气泡、效果栏及视觉标记信息；未发现这些值参与当前已扫描PvP行动合法性、伤害、费用或触发登记判定的证据。",
+    "继续以getActiveEffects的FName/函数指针及CardEffectToEffectBar函数指针扫描，候选为OnlineMatch.DoSubActions与CreateAction_CardMarker_Start。前者736调用getActiveEffects，850把结果写effectBarSet，886放入effectBarAfterSubAction.cards；后者104转换EffectType，163传视觉PassiveEffect开始，随后记录cardMarkers。不能因其位于规则/在线动作流程就把展示载荷当规则字段。",
+    "去重7个函数26448字节头/原始脚本复读、独立完整解码一致。DeepSeek机械提取9条含EffectType的完整语句，主agent解析并按原对象/顺序全等核验，展示/规则范围判断由主agent作出。",
+    "按照用户明确无需UI的范围，本轮不引入EffectType实例/模板字段和生命周期代码，撤销将其列为已证实PvP规则缺口的旧口径；它仍是未实现客户端字段，非1:1客户端整体认证。如果后续发现游戏判定消费者，则重开该项。",
+    "扫描只涉及当前已加载脚本的字面指针/FName候选，不能排除原生、间接、反射或未加载资产。没有作所有代码全局无读者的断言；原生重置等字段复制不等于玩法消费。"
+  ],
+  "verification": {
+    "rule": "RULE-477",
+    "pid": 24220,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "loaded_script_census": {
+      "function_objects": 30583,
+      "scripted_functions": 18111,
+      "script_bytes": 7922413
+    },
+    "verified_functions": {
+      "BP_CardFunctions_C.SuppressMultipleUnits": {
+        "bytes": 8101,
+        "sha256": "6661b1ce6a5e825856328438eb7c76f4c9460116c147a35bce4a3c059bdacc0f"
+      },
+      "BP_CardFunctions_C.MakeVeteran": {
+        "bytes": 2924,
+        "sha256": "3caec2d19e5f9297b711564f5ec2655d8352314ab5626fcd1b43afac455d2d06"
+      },
+      "BP_CardHelp_C.FindAndSetBubbleTypesToAdd": {
+        "bytes": 5021,
+        "sha256": "da98c14beaf418d4e8001da333dcd6c392b251851d3e0c5a4d9705628ee7df25"
+      },
+      "BP_BoardCard_C.PopulateEffectBar": {
+        "bytes": 3015,
+        "sha256": "3633f28b7244497aa8c95f5846291305a9a3f45ffedd6d41b850152e60b7dbdf"
+      },
+      "BP_OnlineMatch_C.CreateAction_CardMarker_Start": {
+        "bytes": 475,
+        "sha256": "d5b282969ff729a174806c8d1b9a2524c59a47207b192953453f68229e907029"
+      },
+      "cardsCheckFunctions_C.getActiveEffects": {
+        "bytes": 4230,
+        "sha256": "caa8efb0e4a88d7cd65a7730a5481b59c2cb1fbe24ccc8e5acaa1f8a5cc896a5"
+      },
+      "BP_OnlineMatch_C.DoSubActions": {
+        "bytes": 2682,
+        "sha256": "7a9acc7bfa7ac4c2059533843436d57b64c36463c5dc98dae1ce0b3db5a0b2c8"
+      }
+    },
+    "verified_unique_bytes": 26448,
+    "property_rows": 9,
+    "write_rows": [
+      {
+        "function": "SuppressMultipleUnits",
+        "statement": 2921
+      },
+      {
+        "function": "MakeVeteran",
+        "statement": 1579
+      }
+    ],
+    "readers": [
+      "BP_BoardCard_C.PopulateEffectBar",
+      "BP_CardHelp_C.FindAndSetBubbleTypesToAdd",
+      "BP_OnlineMatch_C.CreateAction_CardMarker_Start",
+      "cardsCheckFunctions_C.getActiveEffects"
+    ],
+    "worker_exact_match": true,
+    "scope_decision": "No verified gameplay decision reader in the scanned loaded scripts. Observed readers feed help/effect-bar/visual-marker metadata. Exclude implementing EffectType under user headless PvP scope; do not count it as a confirmed missing gameplay rule. Reopen if a gameplay consumer is found.",
+    "limits": [
+      "Literal property pointer and function/FName token candidate scan only; no native/reflective/indirect/unloaded exhaustion.",
+      "Writer functions are rule functions but existence of a write does not prove the written presentation metadata controls PvP mechanics.",
+      "No actual card field implementation or complete MakeVeteran certification. Armor still open."
+    ],
+    "game_writes": 0,
+    "real_game_function_calls": 0,
+    "fully_certified_cards": 0
+  },
+  "production_behavior_changes": false,
+  "source_comment_change": "MakeVeteran说明更新为EffectType展示元数据范围排除，保留装甲/动作边界",
+  "tests": {
+    "csharp_tests_rerun": false,
+    "previous_round_csharp_passed": 924,
+    "reason": "仅审计证据和说明注释变化；924为RULE-476历史结果。"
+  },
+  "unresolved": [
+    "老兵1189装甲mode5仍是真实规则缺口；完整装甲分量与通知生命周期需处理。",
+    "EffectType原生/间接/反射/未加载资产无法全局排除，遇到玩法证据应重开。",
+    "非动作路由、全重入/GC、触发登记历史/TSet和重置复制所有权等既有边界。"
+  ],
+  "game_writes": 0,
+  "real_game_function_calls": 0,
+  "fully_certified_cards": 0,
+  "artifacts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule477-effecttype-field-references-20261027.json",
+      "bytes": 5124721,
+      "sha256": "38d4ed9cc9e0750805ca206155d9bc84deac97f7e5d688c7bff6db1184c4a27c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule477-effecttype-reader-callers-20261027.json",
+      "bytes": 4585643,
+      "sha256": "83240031f6a5d886678ec05d14747e5d043ba96a87919416a618a1134ddd9a14"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule477-effecttype-references.py",
+      "bytes": 2743,
+      "sha256": "c505e46454ed6677d9f53242ab838d60f10017e493339badac98b5e3e061b37f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule477-effecttype-callers.py",
+      "bytes": 2843,
+      "sha256": "0c510ec19e1439b47199bc5180ef6a1016b99e7c62bcb2d1a5fc9116131ea22c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule477-effecttype-scope.py",
+      "bytes": 4402,
+      "sha256": "b7f2ab4d6eeba9635ef21d914f1896c5bc760eb6a8eb21f9e6e37df7478badcd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule477-effecttype-scope-verification-20261027.json",
+      "bytes": 2695,
+      "sha256": "b857a4f2ee58164642bcdbeb5849118bf48cff2ffe324431839998b23b4c7c67"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule477-worker\\input.json",
+      "bytes": 407991,
+      "sha256": "a99211c142f9a01fbd1b1def2a44d9e341d3fba75b2bf1ea4cea187ab046578e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule477-worker\\output.json",
+      "bytes": 7773,
+      "sha256": "eb472bd297c6557f62538b381f2af6579414a1a0501d52a194c8127ee018b358"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule477-worker\\task.txt",
+      "bytes": 438,
+      "sha256": "903909e574a2c7778bcd4be8e2426b27a20c7f0ee1d00450d3e4755a121eb99c"
+    },
+    {
+      "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\ue4ss\\CXXHeaderDump\\kards.hpp",
+      "bytes": 227517,
+      "sha256": "f8039a5583a5db8be8c73470418b5b94f6cc1e856d402ffd75403c0fa8a2ac78"
+    },
+    {
+      "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\ue4ss\\CXXHeaderDump\\kards_enums.hpp",
+      "bytes": 10057,
+      "sha256": "547f570a5bb9ab42ebd69e7628a3e07dcaa10181d7bb4d06e10ed15aac8ac9bd"
+    }
+  ]
+}

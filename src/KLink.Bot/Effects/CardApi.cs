@@ -4780,7 +4780,8 @@ public sealed partial class CardApi
     /// The own hook at2806 is only on the unsuppressed branch, then2842
     /// continues to the T32 query at2463. Both branches reach abilities2782;
     /// the execution-flow stack returns after that observer loop.
-    /// Armor, EffectType and the enclosing action boundary remain open.
+    /// Armor and the enclosing action boundary remain open. EffectType feeds
+    /// observed presentation metadata and is excluded by headless scope (RULE-477).
     /// </summary>
     public void MakeVeteran(CardInstance target)
     {
