@@ -1,0 +1,253 @@
+{
+  "rule_id": "RULE-484",
+  "date": "2026-10-27",
+  "base_commit": "fc0cf41331b54ace096461eccc27a8a29ea4afdb",
+  "status": "静态模板CreateCopy的对象分配边界、CopyData方向与返回值及容器复制分层证据核查；非完整复制认证",
+  "findings": [
+    "当前CreateCopy UFunction包装44B、backend RVA4ae37c0共174B完整局部CFG已获取，当前内存与安装PE一致，无外部尾跳。CopyData RVA4adc340包装/函数体也复读匹配原证据。",
+    "SDK kards.hpp声明void CreateCopy()，但当前包装器RVA4a7fd33把RAX写入结果指针[rbx]，证明实际可返回新对象。UtilityFunctions.CreateCardFromLimitedCardText1316取该返回值，1358赋给_card，与原生相符。SDK声明与当前机器码不一致，未据此猜测版本差异或生成器原因，也未改用户SDK文件。",
+    "CreateCopy保留源对象在RDI，构造分配结果保留在RBX。4ae383f..3845传RCX=源、RDX=新对象调用CopyData；随后RAX=新对象并返回。CopyData开始保存RBX=RCX源/RDI=RDX目标。此方向与RULE-479原始装甲复制片段一致，不能把源模板本身当作新复制对象。",
+    "32组真实CreateCopy主函数及可选UFunction包装离线Unicorn执行，控制构造分配/可选cleanup/CopyData/cookie等helper。检查CopyData收到源到新目标、cleanup先于CopyData、RAX与包装结果槽均为新对象、包装只推进非空字节码指针一字节；供给helper下源4KB不变且主函数无直接源写。该结论不扩张到helper内部。",
+    "复核并重新执行RULE-417 JSON复制块32次（16种每种两次），当前代码/跳表/owned tables复读一致。无效或有效空源JSON，目标原有/空根、重复目标/新目标、分配预填组合中，实际解析adapter/driver/factory产生独立新根，未复用源或旧根；serializer和空token供给受控，非空完整JSON及完整析构仍未认证。",
+    "针对增益/能力嵌套容器，当前两外层稀疏复制helper与嵌套FString-int map机器码重读并重跑420组（90能力、330增益），238外槽/221内槽检查通过。分配/析构/bit-array/string/memcpy受控，空目标/null FText owner，不证明完整引用计数或所有容器复制状态。",
+    "本轮产品规则实现未改。CreateCopy ABI及分层复制证据不能直接替代完整托管通用CreateCopy入口：原生基础类身份、全字段、动态函数分派、JSON/FText与完整所有权还须逐项验证；现有CopyForStealSide不能未经证明视作完全等价。",
+    "DeepSeek机械筛选39条主函数指令中的8调用/1分支/3栈写，经主agent原指令精确核验；worker不负责语义或发布。"
+  ],
+  "verification": {
+    "rule": "RULE-484",
+    "pid": 24220,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "createcopy": {
+      "wrapper_bytes": 44,
+      "backend_bytes": 174,
+      "backend_rva": "0x4ae37c0",
+      "backend_sha256": "d72fb1c1f98ed14329cb97a1021882495b0dbed857f9e804a4d1dad1c204d8d2"
+    },
+    "copydata_rva": "0x4adc340",
+    "offline_cases": 32,
+    "case_sha256": "c8a671df35a6e1a29bccf77ef979b63cd822a79b6301d02554c084afa5c677e2",
+    "worker_call_rows": 8,
+    "worker_branch_rows": 1,
+    "worker_stack_write_rows": 3,
+    "scope": "Full actual CreateCopy174B and optional native wrapper44B executed offline; outer/class/parameter construction/allocation/cleanup/CopyData/cookie helpers controlled. Proves source-to-new-destination argument routing and return slot, optional cleanup order, no direct source writes under supplied helpers. Does NOT prove transitive CopyData/helper source immutability, nonempty container independence, null-allocation/GC or whole-copy semantics. SDK void declaration contradicted by actual wrapper output assignment.",
+    "game_writes": 0,
+    "real_game_function_calls": 0,
+    "fully_certified_cards": 0
+  },
+  "json_block": {
+    "current_bodies": [
+      {
+        "rva": "0x4adc340",
+        "bytes": 2397,
+        "sha256": "ac2022bc5b63dc460410241a7882be547bef12138bbd5c10e87640ead4687176"
+      },
+      {
+        "rva": "0x4517890",
+        "bytes": 344,
+        "sha256": "e4b62deccd97c1695c257aa3296dd0bc4de2e9fe36c7584f46bfab37627cc4b0"
+      },
+      {
+        "rva": "0x45179f0",
+        "bytes": 312,
+        "sha256": "c516705a6b8cb2bbdab3f7d9f829be0a222d6aa29c2e08984f700ea804d2463a"
+      },
+      {
+        "rva": "0x13b0510",
+        "bytes": 393,
+        "sha256": "6bef2cb0880f3e449ed8f6322a8da989ddc6897a1a78c846956f905e3a3714b6"
+      },
+      {
+        "rva": "0x13b3200",
+        "bytes": 4527,
+        "sha256": "5745fdc88c303a29919b78d5cad70a99dea684129f8d312d32b27c7dfee6968c"
+      },
+      {
+        "rva": "0x13d2970",
+        "bytes": 381,
+        "sha256": "c1c972059a2e02ab596974cca2c05476ce4a60f0cf09d1b12ce5f53a543b7988"
+      },
+      {
+        "rva": "0x13af790",
+        "bytes": 3418,
+        "sha256": "2801dead69d949fec9df85d2d230868533be81a6cb2b876edb39ea0275dfa654"
+      },
+      {
+        "rva": "0x13b3200",
+        "bytes": 4527,
+        "sha256": "5745fdc88c303a29919b78d5cad70a99dea684129f8d312d32b27c7dfee6968c"
+      },
+      {
+        "rva": "0x13b2cb0",
+        "bytes": 98,
+        "sha256": "860e78bfa49c962f4ce7711e59ede77175bcd515ba65a8be3bbcabd57b5868f9"
+      },
+      {
+        "rva": "0x13b2f20",
+        "bytes": 122,
+        "sha256": "87930fc771d4add8df1a026759490d2a1d988b92d27ad37d8438dfc1a65bd3d4"
+      },
+      {
+        "rva": "0x13b2fa0",
+        "bytes": 92,
+        "sha256": "9924e74e868690706afb59b8f48ffc6aa469a7e1f6558418ea80c49f597b1403"
+      },
+      {
+        "rva": "0x13c18a0",
+        "bytes": 833,
+        "sha256": "724cc56c99a84104eb9b166ad686fe4077b24f062143ad4e538477e38162ed43"
+      },
+      {
+        "rva": "0x13bb990",
+        "bytes": 277,
+        "sha256": "771c547200ae34b66b509d5cd7868bcbdd5309c47ad773a8ed8fbae705b1d0c2"
+      },
+      {
+        "rva": "0x122a770",
+        "bytes": 123,
+        "sha256": "8c28569ca35e106d285f78adb6b0df3f97eeff8ed9c5eabb265a64eb6124b7ac"
+      },
+      {
+        "rva": "0x11c8e10",
+        "bytes": 117,
+        "sha256": "ae879af5de551d523ae145c2fe3d27c0977775e0565a071c5044c95acfc6bb35"
+      }
+    ],
+    "profiles": 16,
+    "actual_executions": 32,
+    "boundary": "32 actual CopyData JSON block executions (4adc8ab..4adc937), actual parse adapter45179f0, Deserialize object wrapper13b0510, switch-resolved driver13af790 and fresh frame/object factories. Serializer and reader/token stream for empty object/empty input controlled; FString/empty-array helper, allocator/free and selected controller cleanup hooks explicit. Tests invalid versus valid-empty source and fresh parsed destinations, not nonempty lexer/serializer, full CopyData, refcount destruction or named-card semantics."
+  },
+  "nested_copy": {
+    "rule": "RULE-484",
+    "pid": 24220,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "native_helpers": [
+      {
+        "rva": "0x4abb3e0",
+        "bytes": 442
+      },
+      {
+        "rva": "0x4abb1d0",
+        "bytes": 527
+      },
+      {
+        "rva": "0x3977650",
+        "bytes": 401
+      }
+    ],
+    "offline_profiles": 420,
+    "ability_profiles": 90,
+    "buff_profiles": 330,
+    "outer_allocated_slots_checked": 238,
+    "nested_allocated_slots_checked": 221,
+    "case_sha256": "bfc6eeb983b9c3fa60666e791f13359d6f38d4feba21ac8d649f4cbbeb855f35",
+    "worker_exact_calls": 6,
+    "worker_exact_jumps": 11,
+    "scope": "Two outer sparse-copy helpers and nested FString-int map helper execute original call/ret. Supplied sparse masks0..3 outer slots, inner0/1/3slots/all masks; empty destinations, null FText owners. Allocator/destruction/bit-array/string/memcpy controlled. Nested key/value and hash/free headers and copy independence checked. Not complete reset or UE allocator/ownership/lookup certification.",
+    "game_writes": 0,
+    "real_game_function_calls": 0,
+    "fully_certified_cards": 0
+  },
+  "worker": {
+    "job_id": "20261027-173618-rule484-createcopy-native-calls-6fb0fa1b",
+    "exact_call_rows": 8,
+    "exact_branch_rows": 1,
+    "exact_stack_write_rows": 3
+  },
+  "tests": {
+    "createcopy_offline_cases": 32,
+    "json_block_executions": 32,
+    "nested_copy_profiles": 420,
+    "this_round_simulator_selftest_rerun": false,
+    "previous_selftest_passed": 928,
+    "previous_result_is_historical": true
+  },
+  "implementation": [],
+  "remaining": [
+    "分配失败、真实UObject构造/GC/cleanup与helper重入未穷尽。",
+    "非空JSON完整lexer/serializer、实际共享引用计数及FText非空owner析构未认证。",
+    "完整CopyData全字段、数组/字段/跨函数别名、动态类身份、原生内部源写仍待追踪。",
+    "未能从本轮分层证据推出静态模板永不变化或全部卡牌复制1:1；完整认证卡数仍0。"
+  ],
+  "artifacts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule484-copy-headers.py",
+      "bytes": 2351,
+      "sha256": "185de207a9b2a6b2bb628d1345083a0474a594fc4b8fc5c3c0c72114a42f399a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule484-copy-query-headers-20261027.json",
+      "bytes": 4488970,
+      "sha256": "9ce234360e28eaf09c0f0f6709eaa6a4891c86be5c1ec35633593a5cdc122395"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule484-createcopy-native.py",
+      "bytes": 4134,
+      "sha256": "c2ff7095a657e160c3fbb334c9c1f1f8e29254c8abcda8e0bcbbd256541ac31a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule484-CreateCopy-native-20261027.json",
+      "bytes": 8004,
+      "sha256": "d0e108723e611bac1dd610b57b3652d41647be3bcb6807ba307fce7b4ad61b98"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule484-createcopy.py",
+      "bytes": 6582,
+      "sha256": "f44a18fe17fd20352dbb802e5c8082970e5b60065eb64dcff78a3e857d8a4825"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule484-createcopy-verification-20261027.json",
+      "bytes": 1177,
+      "sha256": "e390a0dfc788d819a9871c6a1b1c0ea7053069a1c0480539c9b604e0d97f08b6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule484-worker\\input.json",
+      "bytes": 3599,
+      "sha256": "571e714e603fcc2eab9d0199a26d074f785b6a0f3693cbebd77b7de3f22310b0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule484-worker\\output.json",
+      "bytes": 1264,
+      "sha256": "adde369f6db80d8c92bdc7c03ba8242b167c2a0204a081b3e9f3d04c2a665372"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule484-worker\\task.txt",
+      "bytes": 418,
+      "sha256": "471eaf26db1cffacad6d5a851542c7ce00b3ee3fda4620111644e937a4ced8e2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\model-rule484-json-copy.py",
+      "bytes": 7220,
+      "sha256": "0a41788320eee53e9736dd27e9d716827949679cdaa98fcdfbd407c767472b79"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule484-json-current-bodies-20261027.json",
+      "bytes": 2062,
+      "sha256": "81eb1689bd6073838eb426026ed3058d91ba6d8e6cce96747a296f75be41f60e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule484-json-copy-native-model-20261027.json",
+      "bytes": 24622,
+      "sha256": "c0ca001d415ff9c92917057aaf7d3d5738219b394f6bf05d53a2a6f2de5f6263"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule484-linked-buff-nested-map.py",
+      "bytes": 10459,
+      "sha256": "ada2f7b55d235caf479daddd7ccd801bf69719801b02c793a949f47364bd2c9a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule484-buff-nested-copy-verification-20261027.json",
+      "bytes": 1142,
+      "sha256": "36bc44363d172ce27aeb7f5160f293baaf4ad5e82ff803ba3fe3e9ca4c39b535"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule479-copydata-native-20261027.json",
+      "bytes": 67882,
+      "sha256": "69fa7833b16dfce3e3895d83c7db73c20b9418df2b05967fb3b16cb8aee91756"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule483-static-template-callers-corrected-20261027.json",
+      "bytes": 12851484,
+      "sha256": "732c8bbcb50bce625b117e3347382dee1ee69f6d367bd5998521feaf67b173d1"
+    }
+  ]
+}
