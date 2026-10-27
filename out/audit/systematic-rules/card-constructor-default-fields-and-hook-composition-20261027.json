@@ -1,0 +1,4300 @@
+{
+  "rule_id": "RULE-493",
+  "date": "2026-10-27",
+  "base_commit": "5a5e77e1c61acd11bccf303a60888ad2eb9a1ed4",
+  "status": "完整卡牌构造体及手动串联默认注入已受控验证；完整SpawnObject/初始化调度仍开放",
+  "findings": [
+    "当前PID24220、模块和EXE哈希复核；构造1326B、PrimaryDataAsset父90B、UObject89B全部原机器码在隔离Unicorn执行，共1505B。当前父类全局开关实读00，保持该路径；TLS initializer获取、空FText/容器/JSON helper及移交由明确局部作用供给，非空JSON引用计数销毁分支未执行。",
+    "64构造案例：16当前蓝图类、目标缓冲预填00/A5、initializer.self初始null/目标两种。对象/父/卡构造返回目标，initializer.self指向目标、+13清零；NativeClass+28写实际类，头部+10保留。usedTriggers描述符在+148/+150两次8字节写入归零。每例原机器码写入147次；不能用构造未覆盖的字段推出真实新对象有旧值。",
+    "hasPincer+258、isBeingGuarded+288、CurrentTarget+2b0没有被当前构造机器码直接覆盖。00/A5布景中的hasPincer/CurrentTarget保持输入，说明构造函数本身不是其零值保证；缓冲清零、InitProperties、class hook和CopyData必须分别取证。预填A5仅诊断布景，不是合法游戏状态或漏洞证明。",
+    "又64手动串联案例：原构造体返回后调用实际39cf2b0优化class hook、39cf1a0 walker，以及39cee30数组复制、三个生命周期helper和普通容量/重分配包装。15夹击类的60例写入CDO hasPincer=1，Typhoon4例保留原值。7类非空usedTriggers共28例恢复当前CDO列表及原顺序，9空默认且无定制入口的36例保持构造出的空描述符。CurrentTarget64例保持输入；源CDO缓冲保持。",
+    "串联继续供给mutex、scalar/memory操作、真实堆、identity尺寸取整和MinAlignment；非POD属性虚复制跳过。这里手动从构造返回进入class hook，没有执行finalizer/InitProperties/TLS完整调度，不能把128案例说成端到端SpawnObject、全部属性复制或GC/所有权认证。",
+    "DeepSeek对164属性元数据条目与147次构造写入作区间重叠机械索引，主agent逐项精确复核：34属性条目至少一次重叠、130条目无重叠，共109次字段-写指令匹配。名字重复的不同属性条目保留；字面覆盖表不是字段完整初始化或所有副作用证明。",
+    "与模拟器核对：CopyForStealSide目前复制guard缓存/Keywords但不复制CurrentTarget；KismetVm把hasPincer映射到Pincer关键字。原生CopyData与类默认注入分工不同，尚不能证明合法状态下Pincer差异可达，故本轮不据任意字段突变修补。需要继续取证分配预清零、默认初始化调度和真实规则可达的标志变更。",
+    "未修改产品规则、未重跑C#；929/929仅RULE485历史结果。完整认证卡数仍0。"
+  ],
+  "verification": {
+    "rule": "RULE-493",
+    "pid": 24220,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "native_bytes": 1505,
+    "cases": 64,
+    "parent_flag": {
+      "address": "0x7ff713405600",
+      "raw_hex": "00"
+    },
+    "native_write_events": 147,
+    "case_sha256": "f2d9601147dabc79ab959aede014bcd08b75f4f405e445df8a06229fb190028c",
+    "scope": "Full1326B card constructor plus90B PrimaryDataAsset and89B UObject constructors executed offline. TLS initializer lookup, diagnostic/class side effects, empty text/container/JSON construction and move supplied with declared local effects. Empty JSON branch only; no nonempty refcount teardown, allocator zero-fill, finalizer/InitProperties/class hook or CopyData execution here. Poisoned target is diagnostic fixture, not legal client object state.",
+    "game_writes": 0,
+    "real_game_function_calls": 0,
+    "fully_certified_cards": 0,
+    "composed_cases": 64,
+    "composed_case_sha256": "3bbfbe63a47b20b0acabbcec518796519d408f410c342cd7b6226005eedc081f",
+    "composed_scope": "After actual constructors return, manually invoke actual optimized class hook, recursive walker and usedTriggers array-copy/lifecycle/capacity bodies. Native scalar stores and supplied memcpy run; non-POD property copy skipped, mutex/heap/quantization supplied. Finalizer/InitProperties/TLS sequencing not executed: this is deliberate sequential composition, not complete SpawnObject proof."
+  },
+  "total_cases": 128,
+  "field_write_coverage": {
+    "properties": 164,
+    "trace_events": 147,
+    "overlapped_properties": 34,
+    "property_write_matches": 109,
+    "fields": [
+      {
+        "name": "GameplayTags",
+        "offset": 48,
+        "size": 32,
+        "native_write_rvas": [
+          "0x4aba35e",
+          "0x4aba362",
+          "0x4aba366",
+          "0x4aba36a"
+        ]
+      },
+      {
+        "name": "Name",
+        "offset": 80,
+        "size": 8,
+        "native_write_rvas": [
+          "0x4aba36e"
+        ]
+      },
+      {
+        "name": "title",
+        "offset": 88,
+        "size": 16,
+        "native_write_rvas": []
+      },
+      {
+        "name": "Type",
+        "offset": 104,
+        "size": 1,
+        "native_write_rvas": []
+      },
+      {
+        "name": "attack",
+        "offset": 108,
+        "size": 4,
+        "native_write_rvas": []
+      },
+      {
+        "name": "attackBuff",
+        "offset": 112,
+        "size": 4,
+        "native_write_rvas": []
+      },
+      {
+        "name": "defense",
+        "offset": 116,
+        "size": 4,
+        "native_write_rvas": []
+      },
+      {
+        "name": "range",
+        "offset": 120,
+        "size": 4,
+        "native_write_rvas": []
+      },
+      {
+        "name": "faction",
+        "offset": 124,
+        "size": 1,
+        "native_write_rvas": []
+      },
+      {
+        "name": "kredits",
+        "offset": 128,
+        "size": 4,
+        "native_write_rvas": []
+      },
+      {
+        "name": "kreditsBuff",
+        "offset": 132,
+        "size": 4,
+        "native_write_rvas": []
+      },
+      {
+        "name": "KreditsTax_AsEnemyTarget",
+        "offset": 136,
+        "size": 4,
+        "native_write_rvas": []
+      },
+      {
+        "name": "Text",
+        "offset": 144,
+        "size": 16,
+        "native_write_rvas": []
+      },
+      {
+        "name": "flavorText",
+        "offset": 160,
+        "size": 16,
+        "native_write_rvas": []
+      },
+      {
+        "name": "operationCost",
+        "offset": 176,
+        "size": 4,
+        "native_write_rvas": []
+      },
+      {
+        "name": "operationCostBuff",
+        "offset": 180,
+        "size": 4,
+        "native_write_rvas": []
+      },
+      {
+        "name": "buffsFromCards",
+        "offset": 184,
+        "size": 80,
+        "native_write_rvas": [
+          "0x4aba394",
+          "0x4aba3a2",
+          "0x4aba3a8",
+          "0x4aba3af",
+          "0x4aba3b6",
+          "0x4aba3bc",
+          "0x4aba3c6",
+          "0x4aba3cc",
+          "0x4aba3d3"
+        ]
+      },
+      {
+        "name": "cardsBuffedByThisCard",
+        "offset": 264,
+        "size": 16,
+        "native_write_rvas": [
+          "0x4aba3d9",
+          "0x4aba3e0"
+        ]
+      },
+      {
+        "name": "effectDamage",
+        "offset": 280,
+        "size": 4,
+        "native_write_rvas": []
+      },
+      {
+        "name": "rarity",
+        "offset": 284,
+        "size": 1,
+        "native_write_rvas": []
+      },
+      {
+        "name": "selectTargetOnPlayedFromHand",
+        "offset": 285,
+        "size": 1,
+        "native_write_rvas": []
+      },
+      {
+        "name": "waitWithOnOtherCardPlayedUntilHandTargetSelected",
+        "offset": 286,
+        "size": 1,
+        "native_write_rvas": []
+      },
+      {
+        "name": "selectHandCardNotifyText",
+        "offset": 288,
+        "size": 16,
+        "native_write_rvas": []
+      },
+      {
+        "name": "cardSet",
+        "offset": 304,
+        "size": 1,
+        "native_write_rvas": []
+      },
+      {
+        "name": "returnSet",
+        "offset": 305,
+        "size": 1,
+        "native_write_rvas": []
+      },
+      {
+        "name": "isReserved",
+        "offset": 306,
+        "size": 1,
+        "native_write_rvas": []
+      },
+      {
+        "name": "isInPermanentPool",
+        "offset": 307,
+        "size": 1,
+        "native_write_rvas": []
+      },
+      {
+        "name": "showBoostIcon",
+        "offset": 308,
+        "size": 1,
+        "native_write_rvas": []
+      },
+      {
+        "name": "EffectType",
+        "offset": 309,
+        "size": 1,
+        "native_write_rvas": [
+          "0x4aba3f3"
+        ]
+      },
+      {
+        "name": "chooseOneCards",
+        "offset": 312,
+        "size": 16,
+        "native_write_rvas": [
+          "0x4aba3fa",
+          "0x4aba401"
+        ]
+      },
+      {
+        "name": "usedTriggers",
+        "offset": 328,
+        "size": 16,
+        "native_write_rvas": [
+          "0x4aba408",
+          "0x4aba40f"
+        ]
+      },
+      {
+        "name": "extraHelpTextBubbleTypes",
+        "offset": 344,
+        "size": 80,
+        "native_write_rvas": [
+          "0x4aba416",
+          "0x4aba41d",
+          "0x4aba424",
+          "0x4aba42b",
+          "0x4aba431",
+          "0x4aba43b",
+          "0x4aba441",
+          "0x4aba447",
+          "0x4aba44e"
+        ]
+      },
+      {
+        "name": "campaignUpgradable",
+        "offset": 424,
+        "size": 1,
+        "native_write_rvas": []
+      },
+      {
+        "name": "campaignName",
+        "offset": 432,
+        "size": 16,
+        "native_write_rvas": []
+      },
+      {
+        "name": "draftBaseWeight",
+        "offset": 448,
+        "size": 4,
+        "native_write_rvas": [
+          "0x4aba460"
+        ]
+      },
+      {
+        "name": "draftAllyWeight",
+        "offset": 452,
+        "size": 4,
+        "native_write_rvas": [
+          "0x4aba46d"
+        ]
+      },
+      {
+        "name": "suppressionExceptionTriggers",
+        "offset": 456,
+        "size": 16,
+        "native_write_rvas": [
+          "0x4aba477",
+          "0x4aba47e"
+        ]
+      },
+      {
+        "name": "hasDeployment",
+        "offset": 472,
+        "size": 1,
+        "native_write_rvas": []
+      },
+      {
+        "name": "hasDestruction",
+        "offset": 473,
+        "size": 1,
+        "native_write_rvas": []
+      },
+      {
+        "name": "hasBlitz",
+        "offset": 474,
+        "size": 1,
+        "native_write_rvas": []
+      },
+      {
+        "name": "hasAmbush",
+        "offset": 475,
+        "size": 1,
+        "native_write_rvas": []
+      },
+      {
+        "name": "heavyArmor",
+        "offset": 476,
+        "size": 4,
+        "native_write_rvas": []
+      },
+      {
+        "name": "heavyArmorBuff",
+        "offset": 480,
+        "size": 4,
+        "native_write_rvas": []
+      },
+      {
+        "name": "hasSmokescreen",
+        "offset": 484,
+        "size": 1,
+        "native_write_rvas": []
+      },
+      {
+        "name": "hasMobilize",
+        "offset": 485,
+        "size": 1,
+        "native_write_rvas": []
+      },
+      {
+        "name": "hasAlpine",
+        "offset": 486,
+        "size": 1,
+        "native_write_rvas": []
+      },
+      {
+        "name": "hasFury",
+        "offset": 487,
+        "size": 1,
+        "native_write_rvas": []
+      },
+      {
+        "name": "hasGuard",
+        "offset": 488,
+        "size": 1,
+        "native_write_rvas": []
+      },
+      {
+        "name": "hasShock",
+        "offset": 489,
+        "size": 1,
+        "native_write_rvas": []
+      },
+      {
+        "name": "hasCovert",
+        "offset": 490,
+        "size": 1,
+        "native_write_rvas": []
+      },
+      {
+        "name": "spawnCardName",
+        "offset": 496,
+        "size": 16,
+        "native_write_rvas": [
+          "0x4aba485",
+          "0x4aba48c"
+        ]
+      },
+      {
+        "name": "hasScrying",
+        "offset": 512,
+        "size": 1,
+        "native_write_rvas": []
+      },
+      {
+        "name": "receivedAbilitiesFromCards",
+        "offset": 520,
+        "size": 80,
+        "native_write_rvas": [
+          "0x4aba493",
+          "0x4aba49a",
+          "0x4aba4a1",
+          "0x4aba4a8",
+          "0x4aba4ae",
+          "0x4aba4b8",
+          "0x4aba4be",
+          "0x4aba4c4",
+          "0x4aba4cb"
+        ]
+      },
+      {
+        "name": "hasPincer",
+        "offset": 600,
+        "size": 1,
+        "native_write_rvas": []
+      },
+      {
+        "name": "cipher",
+        "offset": 604,
+        "size": 4,
+        "native_write_rvas": []
+      },
+      {
+        "name": "cardSeen",
+        "offset": 608,
+        "size": 1,
+        "native_write_rvas": []
+      },
+      {
+        "name": "exileNation",
+        "offset": 609,
+        "size": 1,
+        "native_write_rvas": []
+      },
+      {
+        "name": "hasSalvage",
+        "offset": 610,
+        "size": 1,
+        "native_write_rvas": []
+      },
+      {
+        "name": "CardID",
+        "offset": 612,
+        "size": 4,
+        "native_write_rvas": []
+      },
+      {
+        "name": "movementLeft",
+        "offset": 616,
+        "size": 4,
+        "native_write_rvas": []
+      },
+      {
+        "name": "attackLeft",
+        "offset": 620,
+        "size": 4,
+        "native_write_rvas": []
+      },
+      {
+        "name": "enterPlayOnTurn",
+        "offset": 624,
+        "size": 4,
+        "native_write_rvas": []
+      },
+      {
+        "name": "hasEverAttacked",
+        "offset": 628,
+        "size": 1,
+        "native_write_rvas": []
+      },
+      {
+        "name": "Location",
+        "offset": 629,
+        "size": 1,
+        "native_write_rvas": []
+      },
+      {
+        "name": "side",
+        "offset": 630,
+        "size": 1,
+        "native_write_rvas": []
+      },
+      {
+        "name": "originalSide",
+        "offset": 631,
+        "size": 1,
+        "native_write_rvas": []
+      },
+      {
+        "name": "locationNumber",
+        "offset": 632,
+        "size": 4,
+        "native_write_rvas": []
+      },
+      {
+        "name": "pinnedTurns",
+        "offset": 636,
+        "size": 4,
+        "native_write_rvas": []
+      },
+      {
+        "name": "hasBeenAttackedThisTurn",
+        "offset": 640,
+        "size": 1,
+        "native_write_rvas": []
+      },
+      {
+        "name": "hasAttackedThisTurn",
+        "offset": 641,
+        "size": 1,
+        "native_write_rvas": []
+      },
+      {
+        "name": "attackCountThisTurn",
+        "offset": 644,
+        "size": 4,
+        "native_write_rvas": []
+      },
+      {
+        "name": "isBeingGuarded",
+        "offset": 648,
+        "size": 1,
+        "native_write_rvas": []
+      },
+      {
+        "name": "isImmune",
+        "offset": 649,
+        "size": 1,
+        "native_write_rvas": []
+      },
+      {
+        "name": "cardsGivingImmunity",
+        "offset": 656,
+        "size": 16,
+        "native_write_rvas": [
+          "0x4aba4d1",
+          "0x4aba4d8"
+        ]
+      },
+      {
+        "name": "underEnemyControl",
+        "offset": 672,
+        "size": 1,
+        "native_write_rvas": []
+      },
+      {
+        "name": "maxAttack",
+        "offset": 676,
+        "size": 4,
+        "native_write_rvas": []
+      },
+      {
+        "name": "maxDefense",
+        "offset": 680,
+        "size": 4,
+        "native_write_rvas": []
+      },
+      {
+        "name": "CurrentTarget",
+        "offset": 688,
+        "size": 8,
+        "native_write_rvas": []
+      },
+      {
+        "name": "helpTextBubbleTypes",
+        "offset": 696,
+        "size": 80,
+        "native_write_rvas": [
+          "0x4aba4df",
+          "0x4aba4e6",
+          "0x4aba4ed",
+          "0x4aba4f4",
+          "0x4aba4fa",
+          "0x4aba504",
+          "0x4aba50a",
+          "0x4aba510",
+          "0x4aba517"
+        ]
+      },
+      {
+        "name": "gotchaActivated",
+        "offset": 776,
+        "size": 4,
+        "native_write_rvas": []
+      },
+      {
+        "name": "isGoldCard",
+        "offset": 780,
+        "size": 1,
+        "native_write_rvas": []
+      },
+      {
+        "name": "handCardLookDirty",
+        "offset": 781,
+        "size": 1,
+        "native_write_rvas": []
+      },
+      {
+        "name": "chooseOneIndex",
+        "offset": 784,
+        "size": 4,
+        "native_write_rvas": []
+      },
+      {
+        "name": "spawnCardChosen",
+        "offset": 792,
+        "size": 16,
+        "native_write_rvas": [
+          "0x4aba51d",
+          "0x4aba524"
+        ]
+      },
+      {
+        "name": "activeUpgrades",
+        "offset": 808,
+        "size": 16,
+        "native_write_rvas": [
+          "0x4aba52b",
+          "0x4aba532"
+        ]
+      },
+      {
+        "name": "isSalvaged",
+        "offset": 824,
+        "size": 1,
+        "native_write_rvas": []
+      },
+      {
+        "name": "salvageFaction",
+        "offset": 825,
+        "size": 1,
+        "native_write_rvas": []
+      },
+      {
+        "name": "isSuppressed",
+        "offset": 826,
+        "size": 1,
+        "native_write_rvas": []
+      },
+      {
+        "name": "isRevealed",
+        "offset": 827,
+        "size": 1,
+        "native_write_rvas": []
+      },
+      {
+        "name": "cardHighlightBits",
+        "offset": 828,
+        "size": 4,
+        "native_write_rvas": []
+      },
+      {
+        "name": "soundEnterPlay",
+        "offset": 832,
+        "size": 8,
+        "native_write_rvas": []
+      },
+      {
+        "name": "soundMoveToFrontline",
+        "offset": 840,
+        "size": 8,
+        "native_write_rvas": []
+      },
+      {
+        "name": "soundAttack",
+        "offset": 848,
+        "size": 8,
+        "native_write_rvas": []
+      },
+      {
+        "name": "soundBlowUp",
+        "offset": 856,
+        "size": 8,
+        "native_write_rvas": []
+      },
+      {
+        "name": "soundProjectileImpact",
+        "offset": 864,
+        "size": 8,
+        "native_write_rvas": []
+      },
+      {
+        "name": "soundProjectileFiring",
+        "offset": 872,
+        "size": 8,
+        "native_write_rvas": []
+      },
+      {
+        "name": "Image",
+        "offset": 880,
+        "size": 40,
+        "native_write_rvas": [
+          "0x4aba46a",
+          "0x4aba53b",
+          "0x4aba53f",
+          "0x4aba548",
+          "0x4aba54f"
+        ]
+      },
+      {
+        "name": "imagePointer",
+        "offset": 920,
+        "size": 40,
+        "native_write_rvas": [
+          "0x4aba56a",
+          "0x4aba573",
+          "0x4aba576",
+          "0x4aba57c",
+          "0x4aba583"
+        ]
+      },
+      {
+        "name": "ImageAnchor",
+        "offset": 960,
+        "size": 1,
+        "native_write_rvas": []
+      },
+      {
+        "name": "Delay",
+        "offset": 964,
+        "size": 4,
+        "native_write_rvas": []
+      },
+      {
+        "name": "artist",
+        "offset": 968,
+        "size": 16,
+        "native_write_rvas": [
+          "0x4aba59e",
+          "0x4aba5b0"
+        ]
+      },
+      {
+        "name": "historyPhoto",
+        "offset": 984,
+        "size": 40,
+        "native_write_rvas": [
+          "0x4aba5a7",
+          "0x4aba5aa",
+          "0x4aba5b7",
+          "0x4aba5be",
+          "0x4aba5c5"
+        ]
+      },
+      {
+        "name": "historyPhotoSize",
+        "offset": 1024,
+        "size": 16,
+        "native_write_rvas": []
+      },
+      {
+        "name": "historyPhotoSource",
+        "offset": 1040,
+        "size": 16,
+        "native_write_rvas": [
+          "0x4aba5e0",
+          "0x4aba5e7"
+        ]
+      },
+      {
+        "name": "historyPhotoIdentificationCode",
+        "offset": 1056,
+        "size": 16,
+        "native_write_rvas": [
+          "0x4aba5ee",
+          "0x4aba5f5"
+        ]
+      },
+      {
+        "name": "historyPhotoAuthor",
+        "offset": 1072,
+        "size": 16,
+        "native_write_rvas": [
+          "0x4aba5fc",
+          "0x4aba603"
+        ]
+      },
+      {
+        "name": "historyPhotoDescription",
+        "offset": 1088,
+        "size": 16,
+        "native_write_rvas": []
+      },
+      {
+        "name": "historyTypeDescription",
+        "offset": 1104,
+        "size": 16,
+        "native_write_rvas": []
+      },
+      {
+        "name": "blowUpExplosion",
+        "offset": 1120,
+        "size": 8,
+        "native_write_rvas": []
+      },
+      {
+        "name": "blowUpExplosionNiagara",
+        "offset": 1128,
+        "size": 8,
+        "native_write_rvas": []
+      },
+      {
+        "name": "blowUpCameraShake",
+        "offset": 1136,
+        "size": 8,
+        "native_write_rvas": [
+          "0x4aba622"
+        ]
+      },
+      {
+        "name": "OnAttackVisualsSoft",
+        "offset": 1144,
+        "size": 40,
+        "native_write_rvas": [
+          "0x4aba62b",
+          "0x4aba62e",
+          "0x4aba634",
+          "0x4aba63b",
+          "0x4aba642"
+        ]
+      },
+      {
+        "name": "OnPlayedFromHandVisualsSoft",
+        "offset": 1184,
+        "size": 40,
+        "native_write_rvas": [
+          "0x4aba65d",
+          "0x4aba666",
+          "0x4aba669",
+          "0x4aba66f",
+          "0x4aba676"
+        ]
+      },
+      {
+        "name": "OnChooseOneCardVisualsSoft",
+        "offset": 1224,
+        "size": 40,
+        "native_write_rvas": [
+          "0x4aba68e",
+          "0x4aba697",
+          "0x4aba69a",
+          "0x4aba6a0",
+          "0x4aba6a7"
+        ]
+      },
+      {
+        "name": "OnPlayedFromHandVisualsNiagara",
+        "offset": 1264,
+        "size": 8,
+        "native_write_rvas": []
+      },
+      {
+        "name": "planeShadow",
+        "offset": 1272,
+        "size": 8,
+        "native_write_rvas": []
+      },
+      {
+        "name": "visualCardWeight",
+        "offset": 1280,
+        "size": 1,
+        "native_write_rvas": []
+      },
+      {
+        "name": "customName1",
+        "offset": 1284,
+        "size": 8,
+        "native_write_rvas": [
+          "0x4aba6bf"
+        ]
+      },
+      {
+        "name": "customName2",
+        "offset": 1292,
+        "size": 8,
+        "native_write_rvas": [
+          "0x4aba6cd"
+        ]
+      },
+      {
+        "name": "customJson",
+        "offset": 1304,
+        "size": 16,
+        "native_write_rvas": [
+          "0x4aba6c6",
+          "0x4aba6c9",
+          "0x4aba80e"
+        ]
+      },
+      {
+        "name": "Notes",
+        "offset": 1320,
+        "size": 16,
+        "native_write_rvas": [
+          "0x4aba6d4",
+          "0x4aba6db"
+        ]
+      },
+      {
+        "name": "isDraw",
+        "offset": 1336,
+        "size": 1,
+        "native_write_rvas": []
+      },
+      {
+        "name": "isDiscard",
+        "offset": 1337,
+        "size": 1,
+        "native_write_rvas": []
+      },
+      {
+        "name": "isRemoval",
+        "offset": 1338,
+        "size": 1,
+        "native_write_rvas": []
+      },
+      {
+        "name": "isDirectDamage",
+        "offset": 1339,
+        "size": 1,
+        "native_write_rvas": []
+      },
+      {
+        "name": "isHQDamage",
+        "offset": 1340,
+        "size": 1,
+        "native_write_rvas": []
+      },
+      {
+        "name": "isHQRepair",
+        "offset": 1341,
+        "size": 1,
+        "native_write_rvas": []
+      },
+      {
+        "name": "isRepair",
+        "offset": 1342,
+        "size": 1,
+        "native_write_rvas": []
+      },
+      {
+        "name": "isKreditsBuff",
+        "offset": 1343,
+        "size": 1,
+        "native_write_rvas": []
+      },
+      {
+        "name": "isAttackBuff",
+        "offset": 1344,
+        "size": 1,
+        "native_write_rvas": []
+      },
+      {
+        "name": "isDefenseBuff",
+        "offset": 1345,
+        "size": 1,
+        "native_write_rvas": []
+      },
+      {
+        "name": "threat_level",
+        "offset": 1348,
+        "size": 4,
+        "native_write_rvas": [
+          "0x4aba6e2"
+        ]
+      },
+      {
+        "name": "targetOverride",
+        "offset": 1352,
+        "size": 8,
+        "native_write_rvas": []
+      },
+      {
+        "name": "cardFunction",
+        "offset": 1360,
+        "size": 8,
+        "native_write_rvas": []
+      },
+      {
+        "name": "skipCardMarkers",
+        "offset": 1368,
+        "size": 1,
+        "native_write_rvas": []
+      },
+      {
+        "name": "NativeClass",
+        "offset": 40,
+        "size": 8,
+        "native_write_rvas": [
+          "0x3bae450",
+          "0x3bae475"
+        ]
+      },
+      {
+        "name": "UberGraphFrame",
+        "offset": 1656,
+        "size": 8,
+        "native_write_rvas": []
+      },
+      {
+        "name": "affected_CardID",
+        "offset": 1664,
+        "size": 4,
+        "native_write_rvas": []
+      },
+      {
+        "name": "UberGraphFrame",
+        "offset": 1656,
+        "size": 8,
+        "native_write_rvas": []
+      },
+      {
+        "name": "UberGraphFrame",
+        "offset": 1656,
+        "size": 8,
+        "native_write_rvas": []
+      },
+      {
+        "name": "UberGraphFrame",
+        "offset": 1656,
+        "size": 8,
+        "native_write_rvas": []
+      },
+      {
+        "name": "tmpAttackerCardID",
+        "offset": 1664,
+        "size": 4,
+        "native_write_rvas": []
+      },
+      {
+        "name": "tempCard",
+        "offset": 1672,
+        "size": 8,
+        "native_write_rvas": []
+      },
+      {
+        "name": "survivor",
+        "offset": 1680,
+        "size": 8,
+        "native_write_rvas": []
+      },
+      {
+        "name": "UberGraphFrame",
+        "offset": 1656,
+        "size": 8,
+        "native_write_rvas": []
+      },
+      {
+        "name": "affected_CardID",
+        "offset": 1664,
+        "size": 4,
+        "native_write_rvas": []
+      },
+      {
+        "name": "tempCard",
+        "offset": 1672,
+        "size": 8,
+        "native_write_rvas": []
+      },
+      {
+        "name": "UberGraphFrame",
+        "offset": 1656,
+        "size": 8,
+        "native_write_rvas": []
+      },
+      {
+        "name": "tempCard",
+        "offset": 1664,
+        "size": 8,
+        "native_write_rvas": []
+      },
+      {
+        "name": "UberGraphFrame",
+        "offset": 1656,
+        "size": 8,
+        "native_write_rvas": []
+      },
+      {
+        "name": "affected_CardID",
+        "offset": 1664,
+        "size": 4,
+        "native_write_rvas": []
+      },
+      {
+        "name": "UberGraphFrame",
+        "offset": 1656,
+        "size": 8,
+        "native_write_rvas": []
+      },
+      {
+        "name": "UberGraphFrame",
+        "offset": 1656,
+        "size": 8,
+        "native_write_rvas": []
+      },
+      {
+        "name": "UberGraphFrame",
+        "offset": 1656,
+        "size": 8,
+        "native_write_rvas": []
+      },
+      {
+        "name": "tempCard",
+        "offset": 1664,
+        "size": 8,
+        "native_write_rvas": []
+      },
+      {
+        "name": "UberGraphFrame",
+        "offset": 1656,
+        "size": 8,
+        "native_write_rvas": []
+      },
+      {
+        "name": "pincer_unit_CardID",
+        "offset": 1664,
+        "size": 4,
+        "native_write_rvas": []
+      },
+      {
+        "name": "UberGraphFrame",
+        "offset": 1656,
+        "size": 8,
+        "native_write_rvas": []
+      },
+      {
+        "name": "UberGraphFrame",
+        "offset": 1656,
+        "size": 8,
+        "native_write_rvas": []
+      },
+      {
+        "name": "UberGraphFrame",
+        "offset": 1656,
+        "size": 8,
+        "native_write_rvas": []
+      },
+      {
+        "name": "UberGraphFrame",
+        "offset": 1656,
+        "size": 8,
+        "native_write_rvas": []
+      },
+      {
+        "name": "affected_CardID",
+        "offset": 1664,
+        "size": 4,
+        "native_write_rvas": []
+      },
+      {
+        "name": "killer",
+        "offset": 1672,
+        "size": 8,
+        "native_write_rvas": []
+      },
+      {
+        "name": "Card Destroyed",
+        "offset": 1680,
+        "size": 8,
+        "native_write_rvas": []
+      }
+    ]
+  },
+  "composed_results": [
+    {
+      "class_name": "card_unit_2nd_para_c_C",
+      "fill": 0,
+      "initial_self": false,
+      "after_hook": {
+        "pincer": 1,
+        "current_target": "0000000000000000",
+        "used_triggers": [],
+        "events": [
+          "lock-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "unlock-supplied"
+        ]
+      }
+    },
+    {
+      "class_name": "card_unit_2nd_para_c_C",
+      "fill": 0,
+      "initial_self": true,
+      "after_hook": {
+        "pincer": 1,
+        "current_target": "0000000000000000",
+        "used_triggers": [],
+        "events": [
+          "lock-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "unlock-supplied"
+        ]
+      }
+    },
+    {
+      "class_name": "card_unit_2nd_para_c_C",
+      "fill": 165,
+      "initial_self": false,
+      "after_hook": {
+        "pincer": 1,
+        "current_target": "a5a5a5a5a5a5a5a5",
+        "used_triggers": [],
+        "events": [
+          "lock-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "unlock-supplied"
+        ]
+      }
+    },
+    {
+      "class_name": "card_unit_2nd_para_c_C",
+      "fill": 165,
+      "initial_self": true,
+      "after_hook": {
+        "pincer": 1,
+        "current_target": "a5a5a5a5a5a5a5a5",
+        "used_triggers": [],
+        "events": [
+          "lock-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "unlock-supplied"
+        ]
+      }
+    },
+    {
+      "class_name": "card_unit_57mm_m1943_C",
+      "fill": 0,
+      "initial_self": false,
+      "after_hook": {
+        "pincer": 1,
+        "current_target": "0000000000000000",
+        "used_triggers": [],
+        "events": [
+          "lock-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "unlock-supplied"
+        ]
+      }
+    },
+    {
+      "class_name": "card_unit_57mm_m1943_C",
+      "fill": 0,
+      "initial_self": true,
+      "after_hook": {
+        "pincer": 1,
+        "current_target": "0000000000000000",
+        "used_triggers": [],
+        "events": [
+          "lock-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "unlock-supplied"
+        ]
+      }
+    },
+    {
+      "class_name": "card_unit_57mm_m1943_C",
+      "fill": 165,
+      "initial_self": false,
+      "after_hook": {
+        "pincer": 1,
+        "current_target": "a5a5a5a5a5a5a5a5",
+        "used_triggers": [],
+        "events": [
+          "lock-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "unlock-supplied"
+        ]
+      }
+    },
+    {
+      "class_name": "card_unit_57mm_m1943_C",
+      "fill": 165,
+      "initial_self": true,
+      "after_hook": {
+        "pincer": 1,
+        "current_target": "a5a5a5a5a5a5a5a5",
+        "used_triggers": [],
+        "events": [
+          "lock-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "unlock-supplied"
+        ]
+      }
+    },
+    {
+      "class_name": "card_unit_54_jager_regiment_C",
+      "fill": 0,
+      "initial_self": false,
+      "after_hook": {
+        "pincer": 1,
+        "current_target": "0000000000000000",
+        "used_triggers": [],
+        "events": [
+          "lock-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "unlock-supplied"
+        ]
+      }
+    },
+    {
+      "class_name": "card_unit_54_jager_regiment_C",
+      "fill": 0,
+      "initial_self": true,
+      "after_hook": {
+        "pincer": 1,
+        "current_target": "0000000000000000",
+        "used_triggers": [],
+        "events": [
+          "lock-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "unlock-supplied"
+        ]
+      }
+    },
+    {
+      "class_name": "card_unit_54_jager_regiment_C",
+      "fill": 165,
+      "initial_self": false,
+      "after_hook": {
+        "pincer": 1,
+        "current_target": "a5a5a5a5a5a5a5a5",
+        "used_triggers": [],
+        "events": [
+          "lock-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "unlock-supplied"
+        ]
+      }
+    },
+    {
+      "class_name": "card_unit_54_jager_regiment_C",
+      "fill": 165,
+      "initial_self": true,
+      "after_hook": {
+        "pincer": 1,
+        "current_target": "a5a5a5a5a5a5a5a5",
+        "used_triggers": [],
+        "events": [
+          "lock-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "unlock-supplied"
+        ]
+      }
+    },
+    {
+      "class_name": "card_unit_5_panzergrenadier_C",
+      "fill": 0,
+      "initial_self": false,
+      "after_hook": {
+        "pincer": 1,
+        "current_target": "0000000000000000",
+        "used_triggers": [
+          59
+        ],
+        "events": [
+          "lock-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "actual-array-copy",
+          "alignment-supplied",
+          "alignment-supplied",
+          "quantization-identity-supplied",
+          "heap-supplied",
+          "memset-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "unlock-supplied"
+        ]
+      }
+    },
+    {
+      "class_name": "card_unit_5_panzergrenadier_C",
+      "fill": 0,
+      "initial_self": true,
+      "after_hook": {
+        "pincer": 1,
+        "current_target": "0000000000000000",
+        "used_triggers": [
+          59
+        ],
+        "events": [
+          "lock-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "actual-array-copy",
+          "alignment-supplied",
+          "alignment-supplied",
+          "quantization-identity-supplied",
+          "heap-supplied",
+          "memset-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "unlock-supplied"
+        ]
+      }
+    },
+    {
+      "class_name": "card_unit_5_panzergrenadier_C",
+      "fill": 165,
+      "initial_self": false,
+      "after_hook": {
+        "pincer": 1,
+        "current_target": "a5a5a5a5a5a5a5a5",
+        "used_triggers": [
+          59
+        ],
+        "events": [
+          "lock-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "actual-array-copy",
+          "alignment-supplied",
+          "alignment-supplied",
+          "quantization-identity-supplied",
+          "heap-supplied",
+          "memset-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "unlock-supplied"
+        ]
+      }
+    },
+    {
+      "class_name": "card_unit_5_panzergrenadier_C",
+      "fill": 165,
+      "initial_self": true,
+      "after_hook": {
+        "pincer": 1,
+        "current_target": "a5a5a5a5a5a5a5a5",
+        "used_triggers": [
+          59
+        ],
+        "events": [
+          "lock-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "actual-array-copy",
+          "alignment-supplied",
+          "alignment-supplied",
+          "quantization-identity-supplied",
+          "heap-supplied",
+          "memset-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "unlock-supplied"
+        ]
+      }
+    },
+    {
+      "class_name": "card_unit_101_infantry_regiment_C",
+      "fill": 0,
+      "initial_self": false,
+      "after_hook": {
+        "pincer": 1,
+        "current_target": "0000000000000000",
+        "used_triggers": [
+          31
+        ],
+        "events": [
+          "lock-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "actual-array-copy",
+          "alignment-supplied",
+          "alignment-supplied",
+          "quantization-identity-supplied",
+          "heap-supplied",
+          "memset-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "unlock-supplied"
+        ]
+      }
+    },
+    {
+      "class_name": "card_unit_101_infantry_regiment_C",
+      "fill": 0,
+      "initial_self": true,
+      "after_hook": {
+        "pincer": 1,
+        "current_target": "0000000000000000",
+        "used_triggers": [
+          31
+        ],
+        "events": [
+          "lock-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "actual-array-copy",
+          "alignment-supplied",
+          "alignment-supplied",
+          "quantization-identity-supplied",
+          "heap-supplied",
+          "memset-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "unlock-supplied"
+        ]
+      }
+    },
+    {
+      "class_name": "card_unit_101_infantry_regiment_C",
+      "fill": 165,
+      "initial_self": false,
+      "after_hook": {
+        "pincer": 1,
+        "current_target": "a5a5a5a5a5a5a5a5",
+        "used_triggers": [
+          31
+        ],
+        "events": [
+          "lock-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "actual-array-copy",
+          "alignment-supplied",
+          "alignment-supplied",
+          "quantization-identity-supplied",
+          "heap-supplied",
+          "memset-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "unlock-supplied"
+        ]
+      }
+    },
+    {
+      "class_name": "card_unit_101_infantry_regiment_C",
+      "fill": 165,
+      "initial_self": true,
+      "after_hook": {
+        "pincer": 1,
+        "current_target": "a5a5a5a5a5a5a5a5",
+        "used_triggers": [
+          31
+        ],
+        "events": [
+          "lock-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "actual-array-copy",
+          "alignment-supplied",
+          "alignment-supplied",
+          "quantization-identity-supplied",
+          "heap-supplied",
+          "memset-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "unlock-supplied"
+        ]
+      }
+    },
+    {
+      "class_name": "card_unit_irish_guards_C",
+      "fill": 0,
+      "initial_self": false,
+      "after_hook": {
+        "pincer": 1,
+        "current_target": "0000000000000000",
+        "used_triggers": [],
+        "events": [
+          "lock-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "unlock-supplied"
+        ]
+      }
+    },
+    {
+      "class_name": "card_unit_irish_guards_C",
+      "fill": 0,
+      "initial_self": true,
+      "after_hook": {
+        "pincer": 1,
+        "current_target": "0000000000000000",
+        "used_triggers": [],
+        "events": [
+          "lock-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "unlock-supplied"
+        ]
+      }
+    },
+    {
+      "class_name": "card_unit_irish_guards_C",
+      "fill": 165,
+      "initial_self": false,
+      "after_hook": {
+        "pincer": 1,
+        "current_target": "a5a5a5a5a5a5a5a5",
+        "used_triggers": [],
+        "events": [
+          "lock-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "unlock-supplied"
+        ]
+      }
+    },
+    {
+      "class_name": "card_unit_irish_guards_C",
+      "fill": 165,
+      "initial_self": true,
+      "after_hook": {
+        "pincer": 1,
+        "current_target": "a5a5a5a5a5a5a5a5",
+        "used_triggers": [],
+        "events": [
+          "lock-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "unlock-supplied"
+        ]
+      }
+    },
+    {
+      "class_name": "card_unit_kings_own_scottish_C",
+      "fill": 0,
+      "initial_self": false,
+      "after_hook": {
+        "pincer": 1,
+        "current_target": "0000000000000000",
+        "used_triggers": [
+          38,
+          8,
+          58
+        ],
+        "events": [
+          "lock-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "actual-array-copy",
+          "alignment-supplied",
+          "alignment-supplied",
+          "quantization-identity-supplied",
+          "heap-supplied",
+          "memset-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "unlock-supplied"
+        ]
+      }
+    },
+    {
+      "class_name": "card_unit_kings_own_scottish_C",
+      "fill": 0,
+      "initial_self": true,
+      "after_hook": {
+        "pincer": 1,
+        "current_target": "0000000000000000",
+        "used_triggers": [
+          38,
+          8,
+          58
+        ],
+        "events": [
+          "lock-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "actual-array-copy",
+          "alignment-supplied",
+          "alignment-supplied",
+          "quantization-identity-supplied",
+          "heap-supplied",
+          "memset-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "unlock-supplied"
+        ]
+      }
+    },
+    {
+      "class_name": "card_unit_kings_own_scottish_C",
+      "fill": 165,
+      "initial_self": false,
+      "after_hook": {
+        "pincer": 1,
+        "current_target": "a5a5a5a5a5a5a5a5",
+        "used_triggers": [
+          38,
+          8,
+          58
+        ],
+        "events": [
+          "lock-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "actual-array-copy",
+          "alignment-supplied",
+          "alignment-supplied",
+          "quantization-identity-supplied",
+          "heap-supplied",
+          "memset-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "unlock-supplied"
+        ]
+      }
+    },
+    {
+      "class_name": "card_unit_kings_own_scottish_C",
+      "fill": 165,
+      "initial_self": true,
+      "after_hook": {
+        "pincer": 1,
+        "current_target": "a5a5a5a5a5a5a5a5",
+        "used_triggers": [
+          38,
+          8,
+          58
+        ],
+        "events": [
+          "lock-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "actual-array-copy",
+          "alignment-supplied",
+          "alignment-supplied",
+          "quantization-identity-supplied",
+          "heap-supplied",
+          "memset-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "unlock-supplied"
+        ]
+      }
+    },
+    {
+      "class_name": "card_unit_128th_rifles_C",
+      "fill": 0,
+      "initial_self": false,
+      "after_hook": {
+        "pincer": 1,
+        "current_target": "0000000000000000",
+        "used_triggers": [],
+        "events": [
+          "lock-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "unlock-supplied"
+        ]
+      }
+    },
+    {
+      "class_name": "card_unit_128th_rifles_C",
+      "fill": 0,
+      "initial_self": true,
+      "after_hook": {
+        "pincer": 1,
+        "current_target": "0000000000000000",
+        "used_triggers": [],
+        "events": [
+          "lock-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "unlock-supplied"
+        ]
+      }
+    },
+    {
+      "class_name": "card_unit_128th_rifles_C",
+      "fill": 165,
+      "initial_self": false,
+      "after_hook": {
+        "pincer": 1,
+        "current_target": "a5a5a5a5a5a5a5a5",
+        "used_triggers": [],
+        "events": [
+          "lock-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "unlock-supplied"
+        ]
+      }
+    },
+    {
+      "class_name": "card_unit_128th_rifles_C",
+      "fill": 165,
+      "initial_self": true,
+      "after_hook": {
+        "pincer": 1,
+        "current_target": "a5a5a5a5a5a5a5a5",
+        "used_triggers": [],
+        "events": [
+          "lock-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "unlock-supplied"
+        ]
+      }
+    },
+    {
+      "class_name": "card_unit_222th_guard_rifles_C",
+      "fill": 0,
+      "initial_self": false,
+      "after_hook": {
+        "pincer": 1,
+        "current_target": "0000000000000000",
+        "used_triggers": [
+          25
+        ],
+        "events": [
+          "lock-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "actual-array-copy",
+          "alignment-supplied",
+          "alignment-supplied",
+          "quantization-identity-supplied",
+          "heap-supplied",
+          "memset-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "unlock-supplied"
+        ]
+      }
+    },
+    {
+      "class_name": "card_unit_222th_guard_rifles_C",
+      "fill": 0,
+      "initial_self": true,
+      "after_hook": {
+        "pincer": 1,
+        "current_target": "0000000000000000",
+        "used_triggers": [
+          25
+        ],
+        "events": [
+          "lock-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "actual-array-copy",
+          "alignment-supplied",
+          "alignment-supplied",
+          "quantization-identity-supplied",
+          "heap-supplied",
+          "memset-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "unlock-supplied"
+        ]
+      }
+    },
+    {
+      "class_name": "card_unit_222th_guard_rifles_C",
+      "fill": 165,
+      "initial_self": false,
+      "after_hook": {
+        "pincer": 1,
+        "current_target": "a5a5a5a5a5a5a5a5",
+        "used_triggers": [
+          25
+        ],
+        "events": [
+          "lock-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "actual-array-copy",
+          "alignment-supplied",
+          "alignment-supplied",
+          "quantization-identity-supplied",
+          "heap-supplied",
+          "memset-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "unlock-supplied"
+        ]
+      }
+    },
+    {
+      "class_name": "card_unit_222th_guard_rifles_C",
+      "fill": 165,
+      "initial_self": true,
+      "after_hook": {
+        "pincer": 1,
+        "current_target": "a5a5a5a5a5a5a5a5",
+        "used_triggers": [
+          25
+        ],
+        "events": [
+          "lock-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "actual-array-copy",
+          "alignment-supplied",
+          "alignment-supplied",
+          "quantization-identity-supplied",
+          "heap-supplied",
+          "memset-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "unlock-supplied"
+        ]
+      }
+    },
+    {
+      "class_name": "card_unit_cruiser_mk_iii_C",
+      "fill": 0,
+      "initial_self": false,
+      "after_hook": {
+        "pincer": 1,
+        "current_target": "0000000000000000",
+        "used_triggers": [],
+        "events": [
+          "lock-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "unlock-supplied"
+        ]
+      }
+    },
+    {
+      "class_name": "card_unit_cruiser_mk_iii_C",
+      "fill": 0,
+      "initial_self": true,
+      "after_hook": {
+        "pincer": 1,
+        "current_target": "0000000000000000",
+        "used_triggers": [],
+        "events": [
+          "lock-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "unlock-supplied"
+        ]
+      }
+    },
+    {
+      "class_name": "card_unit_cruiser_mk_iii_C",
+      "fill": 165,
+      "initial_self": false,
+      "after_hook": {
+        "pincer": 1,
+        "current_target": "a5a5a5a5a5a5a5a5",
+        "used_triggers": [],
+        "events": [
+          "lock-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "unlock-supplied"
+        ]
+      }
+    },
+    {
+      "class_name": "card_unit_cruiser_mk_iii_C",
+      "fill": 165,
+      "initial_self": true,
+      "after_hook": {
+        "pincer": 1,
+        "current_target": "a5a5a5a5a5a5a5a5",
+        "used_triggers": [],
+        "events": [
+          "lock-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "unlock-supplied"
+        ]
+      }
+    },
+    {
+      "class_name": "card_unit_t_28_pincer_C",
+      "fill": 0,
+      "initial_self": false,
+      "after_hook": {
+        "pincer": 1,
+        "current_target": "0000000000000000",
+        "used_triggers": [
+          8,
+          58,
+          15
+        ],
+        "events": [
+          "lock-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "actual-array-copy",
+          "alignment-supplied",
+          "alignment-supplied",
+          "quantization-identity-supplied",
+          "heap-supplied",
+          "memset-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "unlock-supplied"
+        ]
+      }
+    },
+    {
+      "class_name": "card_unit_t_28_pincer_C",
+      "fill": 0,
+      "initial_self": true,
+      "after_hook": {
+        "pincer": 1,
+        "current_target": "0000000000000000",
+        "used_triggers": [
+          8,
+          58,
+          15
+        ],
+        "events": [
+          "lock-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "actual-array-copy",
+          "alignment-supplied",
+          "alignment-supplied",
+          "quantization-identity-supplied",
+          "heap-supplied",
+          "memset-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "unlock-supplied"
+        ]
+      }
+    },
+    {
+      "class_name": "card_unit_t_28_pincer_C",
+      "fill": 165,
+      "initial_self": false,
+      "after_hook": {
+        "pincer": 1,
+        "current_target": "a5a5a5a5a5a5a5a5",
+        "used_triggers": [
+          8,
+          58,
+          15
+        ],
+        "events": [
+          "lock-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "actual-array-copy",
+          "alignment-supplied",
+          "alignment-supplied",
+          "quantization-identity-supplied",
+          "heap-supplied",
+          "memset-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "unlock-supplied"
+        ]
+      }
+    },
+    {
+      "class_name": "card_unit_t_28_pincer_C",
+      "fill": 165,
+      "initial_self": true,
+      "after_hook": {
+        "pincer": 1,
+        "current_target": "a5a5a5a5a5a5a5a5",
+        "used_triggers": [
+          8,
+          58,
+          15
+        ],
+        "events": [
+          "lock-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "actual-array-copy",
+          "alignment-supplied",
+          "alignment-supplied",
+          "quantization-identity-supplied",
+          "heap-supplied",
+          "memset-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "unlock-supplied"
+        ]
+      }
+    },
+    {
+      "class_name": "card_unit_stug_iii_g_schurzen_C",
+      "fill": 0,
+      "initial_self": false,
+      "after_hook": {
+        "pincer": 1,
+        "current_target": "0000000000000000",
+        "used_triggers": [],
+        "events": [
+          "lock-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "unlock-supplied"
+        ]
+      }
+    },
+    {
+      "class_name": "card_unit_stug_iii_g_schurzen_C",
+      "fill": 0,
+      "initial_self": true,
+      "after_hook": {
+        "pincer": 1,
+        "current_target": "0000000000000000",
+        "used_triggers": [],
+        "events": [
+          "lock-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "unlock-supplied"
+        ]
+      }
+    },
+    {
+      "class_name": "card_unit_stug_iii_g_schurzen_C",
+      "fill": 165,
+      "initial_self": false,
+      "after_hook": {
+        "pincer": 1,
+        "current_target": "a5a5a5a5a5a5a5a5",
+        "used_triggers": [],
+        "events": [
+          "lock-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "unlock-supplied"
+        ]
+      }
+    },
+    {
+      "class_name": "card_unit_stug_iii_g_schurzen_C",
+      "fill": 165,
+      "initial_self": true,
+      "after_hook": {
+        "pincer": 1,
+        "current_target": "a5a5a5a5a5a5a5a5",
+        "used_triggers": [],
+        "events": [
+          "lock-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "unlock-supplied"
+        ]
+      }
+    },
+    {
+      "class_name": "card_unit_panzer_iii_g_desert_C",
+      "fill": 0,
+      "initial_self": false,
+      "after_hook": {
+        "pincer": 1,
+        "current_target": "0000000000000000",
+        "used_triggers": [],
+        "events": [
+          "lock-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "unlock-supplied"
+        ]
+      }
+    },
+    {
+      "class_name": "card_unit_panzer_iii_g_desert_C",
+      "fill": 0,
+      "initial_self": true,
+      "after_hook": {
+        "pincer": 1,
+        "current_target": "0000000000000000",
+        "used_triggers": [],
+        "events": [
+          "lock-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "unlock-supplied"
+        ]
+      }
+    },
+    {
+      "class_name": "card_unit_panzer_iii_g_desert_C",
+      "fill": 165,
+      "initial_self": false,
+      "after_hook": {
+        "pincer": 1,
+        "current_target": "a5a5a5a5a5a5a5a5",
+        "used_triggers": [],
+        "events": [
+          "lock-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "unlock-supplied"
+        ]
+      }
+    },
+    {
+      "class_name": "card_unit_panzer_iii_g_desert_C",
+      "fill": 165,
+      "initial_self": true,
+      "after_hook": {
+        "pincer": 1,
+        "current_target": "a5a5a5a5a5a5a5a5",
+        "used_triggers": [],
+        "events": [
+          "lock-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "unlock-supplied"
+        ]
+      }
+    },
+    {
+      "class_name": "card_unit_tupolev_sb_2_C",
+      "fill": 0,
+      "initial_self": false,
+      "after_hook": {
+        "pincer": 1,
+        "current_target": "0000000000000000",
+        "used_triggers": [],
+        "events": [
+          "lock-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "unlock-supplied"
+        ]
+      }
+    },
+    {
+      "class_name": "card_unit_tupolev_sb_2_C",
+      "fill": 0,
+      "initial_self": true,
+      "after_hook": {
+        "pincer": 1,
+        "current_target": "0000000000000000",
+        "used_triggers": [],
+        "events": [
+          "lock-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "unlock-supplied"
+        ]
+      }
+    },
+    {
+      "class_name": "card_unit_tupolev_sb_2_C",
+      "fill": 165,
+      "initial_self": false,
+      "after_hook": {
+        "pincer": 1,
+        "current_target": "a5a5a5a5a5a5a5a5",
+        "used_triggers": [],
+        "events": [
+          "lock-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "unlock-supplied"
+        ]
+      }
+    },
+    {
+      "class_name": "card_unit_tupolev_sb_2_C",
+      "fill": 165,
+      "initial_self": true,
+      "after_hook": {
+        "pincer": 1,
+        "current_target": "a5a5a5a5a5a5a5a5",
+        "used_triggers": [],
+        "events": [
+          "lock-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "unlock-supplied"
+        ]
+      }
+    },
+    {
+      "class_name": "card_unit_typhoon_mk_ib_C",
+      "fill": 0,
+      "initial_self": false,
+      "after_hook": {
+        "pincer": 0,
+        "current_target": "0000000000000000",
+        "used_triggers": [
+          54
+        ],
+        "events": [
+          "lock-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "actual-array-copy",
+          "alignment-supplied",
+          "alignment-supplied",
+          "quantization-identity-supplied",
+          "heap-supplied",
+          "memset-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "unlock-supplied"
+        ]
+      }
+    },
+    {
+      "class_name": "card_unit_typhoon_mk_ib_C",
+      "fill": 0,
+      "initial_self": true,
+      "after_hook": {
+        "pincer": 0,
+        "current_target": "0000000000000000",
+        "used_triggers": [
+          54
+        ],
+        "events": [
+          "lock-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "actual-array-copy",
+          "alignment-supplied",
+          "alignment-supplied",
+          "quantization-identity-supplied",
+          "heap-supplied",
+          "memset-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "unlock-supplied"
+        ]
+      }
+    },
+    {
+      "class_name": "card_unit_typhoon_mk_ib_C",
+      "fill": 165,
+      "initial_self": false,
+      "after_hook": {
+        "pincer": 165,
+        "current_target": "a5a5a5a5a5a5a5a5",
+        "used_triggers": [
+          54
+        ],
+        "events": [
+          "lock-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "actual-array-copy",
+          "alignment-supplied",
+          "alignment-supplied",
+          "quantization-identity-supplied",
+          "heap-supplied",
+          "memset-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "unlock-supplied"
+        ]
+      }
+    },
+    {
+      "class_name": "card_unit_typhoon_mk_ib_C",
+      "fill": 165,
+      "initial_self": true,
+      "after_hook": {
+        "pincer": 165,
+        "current_target": "a5a5a5a5a5a5a5a5",
+        "used_triggers": [
+          54
+        ],
+        "events": [
+          "lock-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "actual-array-copy",
+          "alignment-supplied",
+          "alignment-supplied",
+          "quantization-identity-supplied",
+          "heap-supplied",
+          "memset-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "unlock-supplied"
+        ]
+      }
+    },
+    {
+      "class_name": "card_unit_me_bf_109_brothers_C",
+      "fill": 0,
+      "initial_self": false,
+      "after_hook": {
+        "pincer": 1,
+        "current_target": "0000000000000000",
+        "used_triggers": [
+          8,
+          15,
+          58
+        ],
+        "events": [
+          "lock-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "actual-array-copy",
+          "alignment-supplied",
+          "alignment-supplied",
+          "quantization-identity-supplied",
+          "heap-supplied",
+          "memset-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "unlock-supplied"
+        ]
+      }
+    },
+    {
+      "class_name": "card_unit_me_bf_109_brothers_C",
+      "fill": 0,
+      "initial_self": true,
+      "after_hook": {
+        "pincer": 1,
+        "current_target": "0000000000000000",
+        "used_triggers": [
+          8,
+          15,
+          58
+        ],
+        "events": [
+          "lock-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "actual-array-copy",
+          "alignment-supplied",
+          "alignment-supplied",
+          "quantization-identity-supplied",
+          "heap-supplied",
+          "memset-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "unlock-supplied"
+        ]
+      }
+    },
+    {
+      "class_name": "card_unit_me_bf_109_brothers_C",
+      "fill": 165,
+      "initial_self": false,
+      "after_hook": {
+        "pincer": 1,
+        "current_target": "a5a5a5a5a5a5a5a5",
+        "used_triggers": [
+          8,
+          15,
+          58
+        ],
+        "events": [
+          "lock-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "actual-array-copy",
+          "alignment-supplied",
+          "alignment-supplied",
+          "quantization-identity-supplied",
+          "heap-supplied",
+          "memset-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "unlock-supplied"
+        ]
+      }
+    },
+    {
+      "class_name": "card_unit_me_bf_109_brothers_C",
+      "fill": 165,
+      "initial_self": true,
+      "after_hook": {
+        "pincer": 1,
+        "current_target": "a5a5a5a5a5a5a5a5",
+        "used_triggers": [
+          8,
+          15,
+          58
+        ],
+        "events": [
+          "lock-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "memcpy-supplied",
+          "actual-array-copy",
+          "alignment-supplied",
+          "alignment-supplied",
+          "quantization-identity-supplied",
+          "heap-supplied",
+          "memset-supplied",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "memcpy-supplied",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "non-POD-property-copy-skipped",
+          "unlock-supplied"
+        ]
+      }
+    }
+  ],
+  "worker_job": "20261027-230124-rule493-constructor-fields-77ae9e99",
+  "evidence": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule493-card-construction.py",
+      "bytes": 12795,
+      "sha256": "e8ea54e89245394dc65ae0d9a61fd19fee83600ffe978a56735ef4c1d0abac1e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule493-card-construction-verification-20261027.json",
+      "bytes": 2917389,
+      "sha256": "56e41747ca1a91be47cdc742fe6a6be4cdbf1699c4a19cf052f607ddb578ae86"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule493-worker\\input.json",
+      "bytes": 29743,
+      "sha256": "c39499db96f35b1660f379a6acf132546938f70209f5add0a77a159f1d779bff"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule493-worker\\output.json",
+      "bytes": 17894,
+      "sha256": "275cb2ee35b56ca04b3d605400510eef4fdb0aacef6e2d457c30024e51d6ffea"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule493-worker\\task.txt",
+      "bytes": 742,
+      "sha256": "a2e70b9ddc73d21d798ad3ce8f08dabddd7dcee88679f4e54d1d0775f67b5912"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule487-construction-property-chains-20261027.json",
+      "bytes": 158433,
+      "sha256": "8accaedd6340c02acf2729e4dfe4f14b34d35c9730c5cce856f281fc25f4f068"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule489-custom-default-lists-20261027.json",
+      "bytes": 239953,
+      "sha256": "404be092c272bd063b10fff0205f557d1875b4a65f2beb244fcb1b4abbfcfe80"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule489-card-constructor-native-20261027.json",
+      "bytes": 35165,
+      "sha256": "86ed1b705e81d7a3a429fec18d895cf65225f65b047331d1976120277501c581"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule489-parent-and-initializer-native-20261027.json",
+      "bytes": 7867,
+      "sha256": "afc7c644cedbcab6e2149e2fcb831816e63c6b327606e9c38312279e347c8ce9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule489-object-constructor-native-20261027.json",
+      "bytes": 3817,
+      "sha256": "4b861db7fb2b40a70d176d6544e9bf5f7c29b3531dd981dbb09814bfa740b969"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule489-class-postcopy-hooks-20261027.json",
+      "bytes": 24714,
+      "sha256": "867cecd1fc0812dd728b3707da23ff180f7d32397bea7c9e68f5faa35d558038"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule489-custom-property-copy-native-20261027.json",
+      "bytes": 13510,
+      "sha256": "aaca45e7e76ef1d14fd1407aed9db972b08baeb4b00b8b26284bf02586bf71dd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule490-custom-array-copy-native-20261027.json",
+      "bytes": 45361,
+      "sha256": "78ab967874fb99ec24c2e0c8493336e69115ce8403929617b5a3307b8ad90d43"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule490-array-property-metadata-20261027.json",
+      "bytes": 6116,
+      "sha256": "0fe5f91d2482bcf19367826ff3337d2a372062a8bc824a6d1e07869df89a161e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule491-array-resize-native-20261027.json",
+      "bytes": 36179,
+      "sha256": "f69f0efea497052257b4baafb7b71e8baf8080cf34121d28ead41f34b0dfb6b0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule492-array-allocation-native-20261027.json",
+      "bytes": 22204,
+      "sha256": "2028d21c8725818af9314a1c296f437f3632146a883979cce7092e88bb1be389"
+    }
+  ],
+  "source_review": [
+    {
+      "path": "src/KLink.Bot/Effects/CardApi.cs",
+      "symbol": "CopyForStealSide"
+    },
+    {
+      "path": "src/KLink.Bot/Effects/Blueprint/KismetVm.cs",
+      "symbol": "instance hasPincer/currentTarget mappings"
+    }
+  ],
+  "remaining": [
+    "分配器预清零与合法对象基础字段初始化，finalizer/InitProperties/TLS/构造/class hook完整调度。",
+    "真实非POD属性虚复制、JSON/FText引用计数、异常/GC及所有权。",
+    "CopyData与默认字段的最终组合，Pincer原始标志合法变化的可达性。",
+    "与无头模拟器规则状态逐项对照；本轮不作全卡认证。"
+  ],
+  "game_writes": 0,
+  "real_game_function_calls": 0,
+  "fully_certified_cards": 0
+}
