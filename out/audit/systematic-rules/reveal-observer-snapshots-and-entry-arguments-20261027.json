@@ -1,0 +1,168 @@
+{
+  "rule_id": "RULE-467",
+  "date": "2026-10-27",
+  "base_commit": "4c686ace3640df8541ecd5ef6eed55e86ae190f9",
+  "status": "已修复揭示T55/T43快照、主体包含、直接自身回调及Method4参数",
+  "scope": "RevealCard内联事件派发，保留其它流程各自的ID排除规则；不推广为全局FireTrigger或ExecuteOnEnterPlayEvents同语义。",
+  "findings": [
+    "复读RevealCard1243字节、CardFunctions查询包装84字节及GameState_Battle查询1174字节，头/脚本和独立解码全等。",
+    "揭示254检查当前主体isSuppressed，普通主体先609自身OnCardRevealed再645跳回290查询T55；抑制主体只跳过自身揭示。T55循环结束458转650，直接调用自身OnEnterPlay(4)，随后688查询T43；两组直接循环均没有自身指针或ID排除，也不在回调之间重新查注册/位置/抑制。",
+    "旧通用FireTrigger广播排除主体，额外过滤NotAvailable，并在每个接收者轮到时重新检查注册与抑制；已不符合这两段内联循环。通用自身派发又依赖主体仍在全局表和物理位置。现RevealCard改用私有直接自身调用和专用已注册快照循环；T55/T43仍在各自正确时点重新查询。",
+    "自身OnEnterPlay现在只传单个Method4，并提供命名Method=4；旧参数数组含card、4，真实事件参数解析可把Method读成CardInstance，基线探针复现InvalidCastException。T55显式提供cardBeingRevealed，T43提供cardPlayed/Method，按当前SDK参数名绑定。",
+    "不复用ExecuteOtherCardEnterPlayEvents：该独立辅助函数的原生路径有主体ID排除，RevealCard内联T43没有。该辅助函数及全局FireTrigger本轮保持不动。",
+    "新增两项共376场景：注册/抑制/例外/自身/五位置/双方矩阵320；七类回调变化（移除或注销/抑制后来者、添加新订阅者、在自身事件中改下一次查询、移除主体、同ID别名）56。检查缓存主体、先后阶段、Method4、位置None仍调用和查询后不再重筛。",
+    "相同917项测试旧915通过2失败，修复917/917。旧矩阵的Method探针异常与快照漏派发均消失，原有915项保持通过。测试运行脚本临时恢复HEAD的CardApi做基线，finally恢复修复字节，再用相同最终测试跑修复版。",
+    "188组离线模型（矩阵160、变化28）执行完整RevealCard及两层查询AST；对象Map_Find保留引用，不误用账本结构体深拷贝。查询过滤只检查注册表、对象表、抑制及例外；不读Location。容器/回调/枚举/通知和移动边界受控。",
+    "同ID别名只认证成员包含：托管提供者按当前ID排序，原生模型使用显式供应的订阅顺序，两者在别名变化后可能不同。测试按声明的托管提供者顺序检查，本轮未据此认证UE物理TSet顺序或修改全局排序。",
+    "DeepSeek机械提取2个查询节点和2个比较节点，主agent独立递归全等核验；比较仅为循环Less_IntInt，未发现CardID相等/不等排除。语义仍以完整跳转/执行栈为准。"
+  ],
+  "verification": {
+    "rule": "RULE-467",
+    "pid": 24220,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "live_redecoded_functions": [
+      {
+        "owner": "BP_GameState_Battle_C",
+        "name": "FetchAllCardsWithEventTrigger",
+        "bytes": 1174,
+        "sha256": "cbc442f32842f229de18e86389bd54053582b3533c07518e22547cfed20a41e9"
+      },
+      {
+        "owner": "BP_CardFunctions_C",
+        "name": "FetchAllCardsWithEventTrigger",
+        "bytes": 84,
+        "sha256": "6d81cb2f7271ddfecaadf792cec7f08a1bf96b0239546214d6c20220257dd724"
+      },
+      {
+        "owner": "BP_CardFunctions_C",
+        "name": "RevealCard",
+        "bytes": 1243,
+        "sha256": "fda7bb663f3182b673b90fbe4199525cf963219903ef34c11becf942d96fdf87"
+      }
+    ],
+    "full_query_and_reveal": {
+      "cases": 160,
+      "sha256": "b25490472bbc5f34c0bc4da3db931af460ea4b08ffee6b67940835152cd402c2"
+    },
+    "mutation_cases": {
+      "cases": 28,
+      "sha256": "3b4944ea656fdfe7293a1986918191a8310f4c6f198e028b74a48e06473f9b50"
+    },
+    "worker_exact_queries": 2,
+    "worker_exact_loop_comparisons": 2,
+    "scope": "Complete RevealCard1243B, query wrapper84B and battle query1174B. Containers, supplied registry order, callbacks, guard refresh/notifier/movement boundary controlled. Object values retain reference identity. Alias validates inclusion, not equality of physical TSet and managed ID-sort ordering. No registration maintenance/lifetime certification.",
+    "game_writes": 0,
+    "real_game_function_calls": 0,
+    "fully_certified_cards": 0
+  },
+  "tests": {
+    "new_test_cases": 2,
+    "new_profiles": {
+      "query_contract": 320,
+      "snapshot_mutations": 56,
+      "total": 376
+    },
+    "baseline": {
+      "total": 917,
+      "passed": 915,
+      "failed": 2
+    },
+    "fixed": {
+      "total": 917,
+      "passed": 917,
+      "failed": 0
+    }
+  },
+  "implementation": {
+    "files": [
+      "src/KLink.Bot/Effects/CardApi.cs",
+      "tools/BotSim/SelfTest.cs"
+    ],
+    "production_change": "揭示专用直接自身事件、两次独立查询和持有引用循环；修正Method4及命名入参；不改全局广播。"
+  },
+  "unresolved": [
+    "真实TSet订阅顺序和注册维护/静态Definition映射、同ID别名排序不认证。",
+    "对象GC/pending-kill、真实移除/销毁生存期、事件中修改BP类/Name映射及全部递归重入尚未穷尽；测试字典移除后仍持有托管引用。",
+    "尾部有效缓存但重新查找已消失时的原生null上下文、通知及异常边界仍未完全还原。",
+    "正来源可见单位压制仍误清临时装甲，独立分量/累计/模式4/typed SetValue和通知、生命周期及老兵装甲仍开放。",
+    "非动作路由和单卡版本迁移维持前轮范围。"
+  ],
+  "fully_certified_cards": 0,
+  "authority_limits": [
+    "游戏本体、SDK/解包资产及只读内存字节码为权威，不用旧回放或names.txt。",
+    "无进程写入、注入或真实游戏函数调用。",
+    "本轮只认证声明的派发/出参及受控边界，非所有PvP规则1:1。"
+  ],
+  "artifacts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule467-veteran-query-headers-20261027.json",
+      "bytes": 4564524,
+      "sha256": "096ff709ff5ebf018bef3f128d4de4832b2d04486ca4933e0f20d431739606db"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule467-reveal-observers.py",
+      "bytes": 2378,
+      "sha256": "3e63aea48951886c227f91b89ae5753b1ec572d2ccf625f00830b1a66b821592"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule467.py",
+      "bytes": 8489,
+      "sha256": "f2f5aff73c0514da136b179c04c7a36ff6328264b58f622e8a0cca446c70b93a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule467-reveal-observer-verification-20261027.json",
+      "bytes": 1554,
+      "sha256": "b7206ff81d07b9e2a4038e2be6db2ad971e6571e964abf6da417fee45d6e09f9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\run-rule467-tests.py",
+      "bytes": 992,
+      "sha256": "6b367ba47c5cc5b53312a04cd85ad95681e403f6715f2ec131f530ec9d1a4c89"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule467-worker\\input.json",
+      "bytes": 15559,
+      "sha256": "261d5bdae25950c353ecb2a505081de3318334b514aa51c4dc6153a8752a1fbb"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule467-worker\\output.json",
+      "bytes": 1805,
+      "sha256": "644581c3fd4e8a9d129ef7e567cd57d6cefa934dba5e121f1955c5a2a0d23da1"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule467-worker\\task.txt",
+      "bytes": 572,
+      "sha256": "f892f30056ad4b564459fe9a234b178a9f492274dc39a24faadeb60a90dbaf0d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule306-defense-events.py",
+      "bytes": 6573,
+      "sha256": "688343b04c99f8714b9addbc57b2ece59a466fe7fad8079d2f907259f9505518"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-438.py",
+      "bytes": 829,
+      "sha256": "ad9bbaefe00d1cff3da3c488f796a2d8c8b8b5432034e1acf00a03fafcef17d3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule467-baseline-selftest.log",
+      "bytes": 80453,
+      "sha256": "bf6caf13ade0031e78c8cfb05fc0923a573c0f4ffe05e3a97cc5776dbd1b2ab2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule467-baseline-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule467-final-selftest.log",
+      "bytes": 80177,
+      "sha256": "2e9959897e9389211153bec0cb89a0b17b4e523a2eac8a9ca6f3770a328ff5c3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule467-final-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    }
+  ]
+}

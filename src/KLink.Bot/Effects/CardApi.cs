@@ -2527,24 +2527,50 @@ public sealed partial class CardApi
         // targets skip only their own OnCardRevealed hook.
         if (!card.IsSuppressed)
         {
-            FireTrigger("OnCardRevealed", card, card.Owner);
+            ExecuteRevealOwnEvent(card, "OnCardRevealed");
         }
 
-        FireTrigger("OnOtherCardRevealed", card, card.Owner,
-            eventArgs: new object?[] { card }, eventSubject: card,
-            broadcastName: true);
-
-        FireTrigger("OnEnterPlay", card, card.Owner,
-            eventArgs: new object?[] { card, 4 });
-        FireTrigger("OnOtherCardEnterPlay", card, card.Owner,
-            eventArgs: new object?[] { card, 4 }, eventSubject: card,
-            broadcastName: true);
+        ExecuteRevealObservers(card, "OnOtherCardRevealed");
+        ExecuteRevealOwnEvent(card, "OnEnterPlay", 4);
+        ExecuteRevealObservers(card, "OnOtherCardEnterPlay", 4);
 
         // RULE-466: native reveal1083 passes the literal CardID0 sentinel,
         // not the revealed object's ID. Observers receive the helper's lookup.
         _engine.ExecuteOnCardLocationMovedById(0, CardLocation.NotAvailable,
             card.Location, false, CardMoveReason.Uncategorized);
         return 0;
+    }
+
+    // RULE-467: direct reveal calls retain their held object even if a prior
+    // callback removed it from the map or changed its physical location.
+    private void ExecuteRevealOwnEvent(CardInstance card, string trigger, int? method = null)
+    {
+        var library = Blueprint.KismetLibrary.Default;
+        if (library?.FindProgram(card.Name, trigger) is null) return;
+        TriggerTrace?.Add($"{trigger} → {card.Name}#{card.CardId}（eventCard={card.Name}#{card.CardId}）");
+        var args = method.HasValue ? new object?[] { method.Value } : null;
+        IReadOnlyDictionary<string, object?>? named = method.HasValue
+            ? new Dictionary<string, object?> { ["Method"] = method.Value } : null;
+        RunTriggerProgram(library, card, card.Name, trigger, card, eventArgs: args, namedArgs: named);
+    }
+
+    // RevealCard's inline T55/T43 loops have no subject-ID/reference exclusion
+    // or late eligibility check. This differs from ExecuteOnEnterPlayEvents.
+    private void ExecuteRevealObservers(CardInstance card, string trigger, int? method = null)
+    {
+        var recipients = CaptureRegisteredTriggerSnapshot(trigger);
+        var library = Blueprint.KismetLibrary.Default;
+        if (library is null) return;
+        var args = method.HasValue ? new object?[] { card, method.Value } : new object?[] { card };
+        var named = method.HasValue
+            ? new Dictionary<string, object?> { ["cardPlayed"] = card, ["Method"] = method.Value }
+            : new Dictionary<string, object?> { ["cardBeingRevealed"] = card };
+        foreach (var observer in recipients)
+        {
+            if (library.FindProgram(observer.Name, trigger) is null) continue;
+            TriggerTrace?.Add($"{trigger} → {observer.Name}#{observer.CardId}（eventCard={card.Name}#{card.CardId}）");
+            RunTriggerProgram(library, observer, observer.Name, trigger, card, eventArgs: args, namedArgs: named);
+        }
     }
 
     /// <summary>

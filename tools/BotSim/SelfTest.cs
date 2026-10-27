@@ -859,6 +859,8 @@ internal static class SelfTest
         new("压制揭示重入：缓存判定后按当前ID查替代对象", db => SuppressionTailReplacement(db, false)),
         new("压制揭示重入：真实VM不重判替代对象的Covert", db => SuppressionTailReplacement(db, true)),
         new("RevealCard移动通知：原生ID0主体与观察者载荷", RevealMovementSentinel),
+        new("揭示观察者：自身注册、位置、抑制例外与Method4", RevealObserverQueryContract),
+        new("揭示观察者：查询快照及自身回调后的重新查询", RevealObserverSnapshotContract),
         new("批量压制输出：真实VM后续分支与单卡输出隔离", db => SuppressionOutputContract(db, true)),
         new("隐蔽压制：装甲子调用拒绝后保留原有装甲", db => SuppressionHiddenArmorGuard(db, false)),
         new("隐蔽压制：VM路径、已揭示对照及兼容恢复", db => SuppressionHiddenArmorGuard(db, true)),
@@ -32525,6 +32527,122 @@ internal static class SelfTest
         }
 
         return null;
+    }
+
+    private static IDisposable InstallRevealEventProbes()
+    {
+        const string name = "card_unit_typhoon_mk_ib";
+        var cleanups = new List<IDisposable>();
+        foreach (string trigger in new[] { "OnCardRevealed", "OnOtherCardRevealed", "OnEnterPlay", "OnOtherCardEnterPlay" })
+        {
+            cleanups.Add(InstallSelectionDrawProbe(name, trigger));
+            var locals = (IDictionary<string, IReadOnlyList<KismetStep>>)KismetLibrary.Default!.Find(name)!.Locals;
+            var phase = trigger switch { "OnCardRevealed" => "own", "OnOtherCardRevealed" => "T55", "OnEnterPlay" => "entry", _ => "T43" };
+            var subject = phase is "own" or "entry" ? new KismetExpr { Self = true } : new KismetExpr { Var = phase == "T55" ? "K2Node_Event_cardBeingRevealed" : "K2Node_Event_cardPlayed" };
+            locals[trigger] = new[] {
+                new KismetStep(0, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), new KismetExpr { Str = phase }, null, -1, "_r467Phase", null) { DestinationScope = "instance" },
+                new KismetStep(1, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), subject, null, -1, "_r467Subject", null) { DestinationScope = "instance" },
+                new KismetStep(2, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), new KismetExpr { Var = "K2Node_Event_Method" }, null, -1, "_r467Method", null) { DestinationScope = "instance" },
+                new KismetStep(3, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), new KismetExpr { Math = "Add_IntInt", Args = new[] { new KismetExpr { Var = "_r467Serial", Scope = "instance" }, new KismetExpr { Int = 1 } } }, null, -1, "_r467Serial", null) { DestinationScope = "instance" },
+                new KismetStep(4, "call", "SpawnCardInDeckBySide", new[] { new KismetExpr { Int = (int)Side.Right }, new KismetExpr { Str = "card_unit_routed_troops" }, new KismetExpr { Int = 30 }, new KismetExpr { Int = 1 } }, Array.Empty<int>(), null, null, -1, null, null),
+                new KismetStep(5, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null) };
+        }
+        return new AuditProbeCleanup(() => { foreach (var cleanup in cleanups.AsEnumerable().Reverse()) cleanup.Dispose(); });
+    }
+
+    private static void RegisterRevealObserver(CardInstance card, params string[] triggers)
+        => card.Definition = new CardDefinition { Name = card.Name, Type = "infantry", Attack = 2, Defense = 4, UsedTriggers = triggers };
+
+    private static string? RevealObserverQueryContract(CardDatabase db)
+    {
+        using var probes = InstallRevealEventProbes();
+        const string name = "card_unit_typhoon_mk_ib";
+        int cases = 0;
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (string trigger in new[] { "OnOtherCardRevealed", "OnOtherCardEnterPlay" })
+        foreach (CardLocation location in new[] { CardLocation.NotAvailable, side.HqOf(), side.HandOf(), side.DeckOf(), CardLocation.Discard })
+        foreach (bool registered in new[] { false, true })
+        foreach (bool suppressed in new[] { false, true })
+        foreach (bool exception in new[] { false, true })
+        foreach (bool self in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var target = state.CreateWithId(name, side, 60, side.HqOf(), 0); RegisterRevealObserver(target);
+            var observer = self ? target : state.CreateWithId(name, side.Opposite(), 80, location, 0);
+            observer.Location = location; observer.Keywords.Clear(); observer.SuppressionExceptionTriggers.Clear();
+            RegisterRevealObserver(observer, registered ? new[] { trigger } : Array.Empty<string>());
+            if (suppressed) observer.Keywords.Add(Keyword.Suppressed);
+            if (exception) observer.SuppressionExceptionTriggers.Add(CardDefinition.RegisteredTriggerName(trigger));
+            var trace = new List<string>(); engine.Api.TriggerTrace = trace;
+            bool ownSuppressed = target.IsSuppressed;
+            engine.Api.RevealCard(target, 20);
+            int expected = registered && (!suppressed || exception) ? 1 : 0;
+            int observed = trace.Count(x => x.StartsWith($"{trigger} → {name}#{observer.CardId}（", StringComparison.Ordinal));
+            if (observed != expected || trace.Count(x => x.StartsWith($"OnCardRevealed → {name}#60（", StringComparison.Ordinal)) != (ownSuppressed ? 0 : 1)
+                || trace.Count(x => x.StartsWith($"OnEnterPlay → {name}#60（", StringComparison.Ordinal)) != 1
+                || (expected == 1 && !ReferenceEquals(observer.BlueprintVariables.GetValueOrDefault("_r467Subject"), target))
+                || Convert.ToInt32(target.BlueprintVariables.GetValueOrDefault("_r467Method")) != 4)
+                return $"reveal query {side}/{trigger}/{location}/{registered}/{suppressed}/{exception}/{self}: {observed}, expected{expected}";
+            cases++;
+        }
+        return cases == 320 ? null : $"reveal query profiles={cases}";
+    }
+
+    private static string? RevealObserverSnapshotContract(CardDatabase db)
+    {
+        using var probes = InstallRevealEventProbes();
+        const string name = "card_unit_typhoon_mk_ib", t55 = "OnOtherCardRevealed", t43 = "OnOtherCardEnterPlay";
+        int cases = 0;
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (int mode in Enumerable.Range(0, 7))
+        foreach (bool self in new[] { false, true })
+        foreach (bool exception in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var target = state.CreateWithId(name, side, 60, side.HqOf(), 0); RegisterRevealObserver(target, self ? new[] { t55, t43 } : Array.Empty<string>());
+            var first = state.CreateWithId(name, side, 70, side.DeckOf(), 0); RegisterRevealObserver(first, t55, t43);
+            var later = state.CreateWithId(name, side, 80, side.HandOf(), 0); RegisterRevealObserver(later, t55, t43);
+            foreach (var card in new[] { target, first, later }) { card.Keywords.Clear(); card.SuppressionExceptionTriggers.Clear(); }
+            if (exception) { later.SuppressionExceptionTriggers.Add(CardDefinition.RegisteredTriggerName(t55)); later.SuppressionExceptionTriggers.Add(CardDefinition.RegisteredTriggerName(t43)); }
+            var labels = new Dictionary<CardInstance, string> { [target] = "target", [first] = "first", [later] = "later" };
+            var seen = new Dictionary<CardInstance, int>(); var events = new List<string>(); string? failure = null; bool changed = false;
+            var created = state.CardCreated;
+            state.CardCreated = made => {
+                created?.Invoke(made); if (made.Name != "card_unit_routed_troops" || made.Location != Side.Right.DeckOf()) return;
+                var who = labels.Keys.SingleOrDefault(c => Convert.ToInt32(c.BlueprintVariables.GetValueOrDefault("_r467Serial")) > seen.GetValueOrDefault(c));
+                if (who is null) { failure = "missing reveal callback marker"; return; }
+                seen[who] = Convert.ToInt32(who.BlueprintVariables["_r467Serial"]);
+                string phase = who.BlueprintVariables["_r467Phase"]?.ToString() ?? ""; events.Add(phase + ":" + labels[who]);
+                if (!ReferenceEquals(who.BlueprintVariables.GetValueOrDefault("_r467Subject"), target)) failure = "reveal callback lost cached subject";
+                if (phase is "entry" or "T43" && Convert.ToInt32(who.BlueprintVariables.GetValueOrDefault("_r467Method")) != 4) failure = "reveal entry method must be4";
+                bool point = mode switch { 2 or 5 => phase == "own", 3 => phase == "entry", 4 => phase == "T43" && ReferenceEquals(who, first), _ => phase == "T55" && ReferenceEquals(who, first) };
+                if (!point || changed) return; changed = true;
+                if (mode is 0 or 4) { later.Keywords.Add(Keyword.Suppressed); RegisterRevealObserver(later); later.Location = CardLocation.NotAvailable; state.Remove(later); }
+                if (mode is 1 or 3) {
+                    if (mode == 3) RegisterRevealObserver(later);
+                    var added = state.CreateWithId(name, side, 90, CardLocation.Discard, 0); RegisterRevealObserver(added, t55, t43); added.Keywords.Clear(); added.SuppressionExceptionTriggers.Clear(); labels[added] = "new";
+                }
+                if (mode == 2) later.Keywords.Add(Keyword.Suppressed);
+                if (mode == 5) state.Remove(target);
+                if (mode == 6) typeof(CardInstance).GetProperty(nameof(CardInstance.CardId))!.SetValue(later, target.CardId);
+            };
+            engine.Api.RevealCard(target, 20);
+            var expected = new List<string> { "own:target" };
+            if (self && mode != 5) expected.Add("T55:target");
+            expected.Add("T55:first"); if (mode != 2 || exception) expected.Add("T55:later");
+            expected.Add("entry:target");
+            if (self && mode != 5) expected.Add("T43:target");
+            // The headless provider sorts current IDs. This alias case tests
+            // inclusion, not equivalence to the client's physical TSet order.
+            if (mode == 6) expected.Add("T43:later");
+            expected.Add("T43:first");
+            if (mode is not (0 or 3 or 6) && (mode != 2 || exception)) expected.Add("T43:later");
+            if (mode is 1 or 3) expected.Add("T43:new");
+            if (failure is not null || !changed || !events.SequenceEqual(expected))
+                return $"reveal snapshot {side}/{mode}/{self}/{exception}: {failure}, got {string.Join(',',events)}, expected {string.Join(',',expected)}";
+            cases++;
+        }
+        return cases == 56 ? null : $"reveal snapshot profiles={cases}";
     }
 
     private static void RunSuppressionBatchProbe(MatchEngine engine, GameState state, int[] ids, int sourceId, Side side, bool vm)
