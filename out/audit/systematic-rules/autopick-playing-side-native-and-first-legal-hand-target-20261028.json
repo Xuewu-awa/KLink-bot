@@ -1,0 +1,2784 @@
+{
+  "rule_id": "RULE-508",
+  "date": "2026-10-28",
+  "base_commit": "1207ffd3e43a453a569669a3b66c4f89388f6e07",
+  "status": "自动选目标的侧别存储读取与候选/零答复控制流已验证；普通策略/跨方可达性未闭合",
+  "findings": [
+    "当前指定名称UFunction复读包括autoPickHandTargets2597B、HandLocationFromSide276B和4个原生GetPlayingSide声明等。无脚本原生声明明确标no-script，未计为完整蓝图。当前内存原生入口与所捕获指令均比对磁盘EXE字节，PE.pdata或首次终止边界分别保留；非完整原生调用图认证。",
+    "autoPick的998实际CallMath目标为CombatHelperFunctions.GetPlayingSide。原生包装最终调用RVA4af7460(31B)，从世界上下文取得子系统后尾跳4b2dc60(51B)；后者检查弱引用有效性并解引用GameState后读取byte+0x38e，失败路径返回0。另kardsGameState原生叶4b2dc50(10B)读取相同偏移到输出。这个已读实现没有按选择卡Owner取值，但实际世界上下文/子系统绑定和弱引用函数本体本轮仍为供给边界。",
+    "离线Unicorn执行当前4af7460与4b2dc60共12例：子系统不存在、弱引用无效、有效三组乘输入字节0/1/2/255。有效返回存储字节，另外两组返回0；未调用真实游戏。世界上下文lookup4af3280与弱引用15d5180/15d2780被显式供给，未认证完整引擎对象查找/GC。",
+    "实际HandLocationFromSide AST：side1映射Location3，side2映射4，其他值走ReportError/StackTrace后输出0；本轮只执行1/2有效侧别，非法侧别分支只是静态读取。autoPick1082以该位置FetchCardsByLocation，1541在选择卡对象上调用IsValidHandTarget；首个通过者1673排handTargetSelected，参数为目标ID和选择卡CardID。无合法候选时2414同样排答复但目标ID0。",
+    "80组实际autoPick控制流执行到2107重试阶段之前，覆盖侧别1/2、选择卡供给Owner1/2、endingTurnForOpponent真假、1/2待选项，以及空手牌/全不合法/首合法/次合法/双合法五种候选。供给顺序下只检查至首合法项，队列每项恰有一次答复，ID0保持。GetPlayingSide值、原生Fetch顺序、单卡谓词和移动队列是声明供给；Native与AST分别测试，未伪称整个侧别查找/候选原生链联调。",
+    "适配器DoSelectTargetFromHand目前按policyCard.Owner手牌过滤，再交策略/回复接口；客户端本轮确认的是autoPick自动选择路径，不能将它未经可达性和调用时机分析就替换普通策略选择来源。人工Owner不同只证明所测控制流不读该字段，不证明合法PvP对局会出现该跨方待选场景；候选来源差异继续保持开放，非已确认产品bug。",
+    "未执行重试2107之后、新请求追加/回调、null选择卡、真实移动答复处理或单卡谓词。DeepSeek提取6调用位置，主agent独立递归核对。未改产品/C#未重跑，历史929/929非本轮验证；完整认证卡数0，游戏写入/注入/真实调用0。"
+  ],
+  "verification": {
+    "rule": "RULE-508",
+    "candidate_loop_cases": 80,
+    "scope": "Actual autoPickHandTargets AST from entry0 stopping BEFORE retry stage2107; widget absent, valid selector object IDs, playing-side input and FetchCardsByLocation order/candidate predicates/move queue supplied. Actual HandLocationFromSide AST for side1/2. Selectors with different supplied Owner demonstrate source independence under model, not proof cross-owner live state is reachable or online protocol semantics. Native side chain separately emulated with supplied subsystem/weak helpers. Per-card predicates, move execution, reentrancy, retries, null selector and invalid side not certified.",
+    "game_writes": 0,
+    "real_game_function_calls": 0,
+    "fully_certified_cards": 0,
+    "case_sha256": "6a8991a404cd7ee3c4159b26d6a3a8082d3f3f5d0ead851a093330640fa76339",
+    "profile_summaries": [
+      {
+        "side": 1,
+        "selecting_owner": 1,
+        "opponent": false,
+        "pending_count": 1,
+        "profile": "empty",
+        "target": 0,
+        "moves": [
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            0,
+            0,
+            11
+          ]
+        ],
+        "predicate_checks": [],
+        "fetched_locations": [
+          3
+        ]
+      },
+      {
+        "side": 1,
+        "selecting_owner": 1,
+        "opponent": false,
+        "pending_count": 1,
+        "profile": "none-valid",
+        "target": 0,
+        "moves": [
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            0,
+            0,
+            11
+          ]
+        ],
+        "predicate_checks": [
+          101,
+          102
+        ],
+        "fetched_locations": [
+          3
+        ]
+      },
+      {
+        "side": 1,
+        "selecting_owner": 1,
+        "opponent": false,
+        "pending_count": 1,
+        "profile": "first-valid",
+        "target": 101,
+        "moves": [
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            101,
+            0,
+            11
+          ]
+        ],
+        "predicate_checks": [
+          101
+        ],
+        "fetched_locations": [
+          3
+        ]
+      },
+      {
+        "side": 1,
+        "selecting_owner": 1,
+        "opponent": false,
+        "pending_count": 1,
+        "profile": "second-valid",
+        "target": 102,
+        "moves": [
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            102,
+            0,
+            11
+          ]
+        ],
+        "predicate_checks": [
+          101,
+          102
+        ],
+        "fetched_locations": [
+          3
+        ]
+      },
+      {
+        "side": 1,
+        "selecting_owner": 1,
+        "opponent": false,
+        "pending_count": 1,
+        "profile": "both-valid",
+        "target": 101,
+        "moves": [
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            101,
+            0,
+            11
+          ]
+        ],
+        "predicate_checks": [
+          101
+        ],
+        "fetched_locations": [
+          3
+        ]
+      },
+      {
+        "side": 1,
+        "selecting_owner": 1,
+        "opponent": false,
+        "pending_count": 2,
+        "profile": "empty",
+        "target": 0,
+        "moves": [
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            0,
+            0,
+            11
+          ],
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            0,
+            0,
+            12
+          ]
+        ],
+        "predicate_checks": [],
+        "fetched_locations": [
+          3,
+          3
+        ]
+      },
+      {
+        "side": 1,
+        "selecting_owner": 1,
+        "opponent": false,
+        "pending_count": 2,
+        "profile": "none-valid",
+        "target": 0,
+        "moves": [
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            0,
+            0,
+            11
+          ],
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            0,
+            0,
+            12
+          ]
+        ],
+        "predicate_checks": [
+          101,
+          102,
+          101,
+          102
+        ],
+        "fetched_locations": [
+          3,
+          3
+        ]
+      },
+      {
+        "side": 1,
+        "selecting_owner": 1,
+        "opponent": false,
+        "pending_count": 2,
+        "profile": "first-valid",
+        "target": 101,
+        "moves": [
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            101,
+            0,
+            11
+          ],
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            101,
+            0,
+            12
+          ]
+        ],
+        "predicate_checks": [
+          101,
+          101
+        ],
+        "fetched_locations": [
+          3,
+          3
+        ]
+      },
+      {
+        "side": 1,
+        "selecting_owner": 1,
+        "opponent": false,
+        "pending_count": 2,
+        "profile": "second-valid",
+        "target": 102,
+        "moves": [
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            102,
+            0,
+            11
+          ],
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            102,
+            0,
+            12
+          ]
+        ],
+        "predicate_checks": [
+          101,
+          102,
+          101,
+          102
+        ],
+        "fetched_locations": [
+          3,
+          3
+        ]
+      },
+      {
+        "side": 1,
+        "selecting_owner": 1,
+        "opponent": false,
+        "pending_count": 2,
+        "profile": "both-valid",
+        "target": 101,
+        "moves": [
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            101,
+            0,
+            11
+          ],
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            101,
+            0,
+            12
+          ]
+        ],
+        "predicate_checks": [
+          101,
+          101
+        ],
+        "fetched_locations": [
+          3,
+          3
+        ]
+      },
+      {
+        "side": 1,
+        "selecting_owner": 1,
+        "opponent": true,
+        "pending_count": 1,
+        "profile": "empty",
+        "target": 0,
+        "moves": [
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            0,
+            0,
+            11
+          ]
+        ],
+        "predicate_checks": [],
+        "fetched_locations": [
+          3
+        ]
+      },
+      {
+        "side": 1,
+        "selecting_owner": 1,
+        "opponent": true,
+        "pending_count": 1,
+        "profile": "none-valid",
+        "target": 0,
+        "moves": [
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            0,
+            0,
+            11
+          ]
+        ],
+        "predicate_checks": [
+          101,
+          102
+        ],
+        "fetched_locations": [
+          3
+        ]
+      },
+      {
+        "side": 1,
+        "selecting_owner": 1,
+        "opponent": true,
+        "pending_count": 1,
+        "profile": "first-valid",
+        "target": 101,
+        "moves": [
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            101,
+            0,
+            11
+          ]
+        ],
+        "predicate_checks": [
+          101
+        ],
+        "fetched_locations": [
+          3
+        ]
+      },
+      {
+        "side": 1,
+        "selecting_owner": 1,
+        "opponent": true,
+        "pending_count": 1,
+        "profile": "second-valid",
+        "target": 102,
+        "moves": [
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            102,
+            0,
+            11
+          ]
+        ],
+        "predicate_checks": [
+          101,
+          102
+        ],
+        "fetched_locations": [
+          3
+        ]
+      },
+      {
+        "side": 1,
+        "selecting_owner": 1,
+        "opponent": true,
+        "pending_count": 1,
+        "profile": "both-valid",
+        "target": 101,
+        "moves": [
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            101,
+            0,
+            11
+          ]
+        ],
+        "predicate_checks": [
+          101
+        ],
+        "fetched_locations": [
+          3
+        ]
+      },
+      {
+        "side": 1,
+        "selecting_owner": 1,
+        "opponent": true,
+        "pending_count": 2,
+        "profile": "empty",
+        "target": 0,
+        "moves": [
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            0,
+            0,
+            11
+          ],
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            0,
+            0,
+            12
+          ]
+        ],
+        "predicate_checks": [],
+        "fetched_locations": [
+          3,
+          3
+        ]
+      },
+      {
+        "side": 1,
+        "selecting_owner": 1,
+        "opponent": true,
+        "pending_count": 2,
+        "profile": "none-valid",
+        "target": 0,
+        "moves": [
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            0,
+            0,
+            11
+          ],
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            0,
+            0,
+            12
+          ]
+        ],
+        "predicate_checks": [
+          101,
+          102,
+          101,
+          102
+        ],
+        "fetched_locations": [
+          3,
+          3
+        ]
+      },
+      {
+        "side": 1,
+        "selecting_owner": 1,
+        "opponent": true,
+        "pending_count": 2,
+        "profile": "first-valid",
+        "target": 101,
+        "moves": [
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            101,
+            0,
+            11
+          ],
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            101,
+            0,
+            12
+          ]
+        ],
+        "predicate_checks": [
+          101,
+          101
+        ],
+        "fetched_locations": [
+          3,
+          3
+        ]
+      },
+      {
+        "side": 1,
+        "selecting_owner": 1,
+        "opponent": true,
+        "pending_count": 2,
+        "profile": "second-valid",
+        "target": 102,
+        "moves": [
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            102,
+            0,
+            11
+          ],
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            102,
+            0,
+            12
+          ]
+        ],
+        "predicate_checks": [
+          101,
+          102,
+          101,
+          102
+        ],
+        "fetched_locations": [
+          3,
+          3
+        ]
+      },
+      {
+        "side": 1,
+        "selecting_owner": 1,
+        "opponent": true,
+        "pending_count": 2,
+        "profile": "both-valid",
+        "target": 101,
+        "moves": [
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            101,
+            0,
+            11
+          ],
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            101,
+            0,
+            12
+          ]
+        ],
+        "predicate_checks": [
+          101,
+          101
+        ],
+        "fetched_locations": [
+          3,
+          3
+        ]
+      },
+      {
+        "side": 1,
+        "selecting_owner": 2,
+        "opponent": false,
+        "pending_count": 1,
+        "profile": "empty",
+        "target": 0,
+        "moves": [
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            0,
+            0,
+            11
+          ]
+        ],
+        "predicate_checks": [],
+        "fetched_locations": [
+          3
+        ]
+      },
+      {
+        "side": 1,
+        "selecting_owner": 2,
+        "opponent": false,
+        "pending_count": 1,
+        "profile": "none-valid",
+        "target": 0,
+        "moves": [
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            0,
+            0,
+            11
+          ]
+        ],
+        "predicate_checks": [
+          101,
+          102
+        ],
+        "fetched_locations": [
+          3
+        ]
+      },
+      {
+        "side": 1,
+        "selecting_owner": 2,
+        "opponent": false,
+        "pending_count": 1,
+        "profile": "first-valid",
+        "target": 101,
+        "moves": [
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            101,
+            0,
+            11
+          ]
+        ],
+        "predicate_checks": [
+          101
+        ],
+        "fetched_locations": [
+          3
+        ]
+      },
+      {
+        "side": 1,
+        "selecting_owner": 2,
+        "opponent": false,
+        "pending_count": 1,
+        "profile": "second-valid",
+        "target": 102,
+        "moves": [
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            102,
+            0,
+            11
+          ]
+        ],
+        "predicate_checks": [
+          101,
+          102
+        ],
+        "fetched_locations": [
+          3
+        ]
+      },
+      {
+        "side": 1,
+        "selecting_owner": 2,
+        "opponent": false,
+        "pending_count": 1,
+        "profile": "both-valid",
+        "target": 101,
+        "moves": [
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            101,
+            0,
+            11
+          ]
+        ],
+        "predicate_checks": [
+          101
+        ],
+        "fetched_locations": [
+          3
+        ]
+      },
+      {
+        "side": 1,
+        "selecting_owner": 2,
+        "opponent": false,
+        "pending_count": 2,
+        "profile": "empty",
+        "target": 0,
+        "moves": [
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            0,
+            0,
+            11
+          ],
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            0,
+            0,
+            12
+          ]
+        ],
+        "predicate_checks": [],
+        "fetched_locations": [
+          3,
+          3
+        ]
+      },
+      {
+        "side": 1,
+        "selecting_owner": 2,
+        "opponent": false,
+        "pending_count": 2,
+        "profile": "none-valid",
+        "target": 0,
+        "moves": [
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            0,
+            0,
+            11
+          ],
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            0,
+            0,
+            12
+          ]
+        ],
+        "predicate_checks": [
+          101,
+          102,
+          101,
+          102
+        ],
+        "fetched_locations": [
+          3,
+          3
+        ]
+      },
+      {
+        "side": 1,
+        "selecting_owner": 2,
+        "opponent": false,
+        "pending_count": 2,
+        "profile": "first-valid",
+        "target": 101,
+        "moves": [
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            101,
+            0,
+            11
+          ],
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            101,
+            0,
+            12
+          ]
+        ],
+        "predicate_checks": [
+          101,
+          101
+        ],
+        "fetched_locations": [
+          3,
+          3
+        ]
+      },
+      {
+        "side": 1,
+        "selecting_owner": 2,
+        "opponent": false,
+        "pending_count": 2,
+        "profile": "second-valid",
+        "target": 102,
+        "moves": [
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            102,
+            0,
+            11
+          ],
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            102,
+            0,
+            12
+          ]
+        ],
+        "predicate_checks": [
+          101,
+          102,
+          101,
+          102
+        ],
+        "fetched_locations": [
+          3,
+          3
+        ]
+      },
+      {
+        "side": 1,
+        "selecting_owner": 2,
+        "opponent": false,
+        "pending_count": 2,
+        "profile": "both-valid",
+        "target": 101,
+        "moves": [
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            101,
+            0,
+            11
+          ],
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            101,
+            0,
+            12
+          ]
+        ],
+        "predicate_checks": [
+          101,
+          101
+        ],
+        "fetched_locations": [
+          3,
+          3
+        ]
+      },
+      {
+        "side": 1,
+        "selecting_owner": 2,
+        "opponent": true,
+        "pending_count": 1,
+        "profile": "empty",
+        "target": 0,
+        "moves": [
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            0,
+            0,
+            11
+          ]
+        ],
+        "predicate_checks": [],
+        "fetched_locations": [
+          3
+        ]
+      },
+      {
+        "side": 1,
+        "selecting_owner": 2,
+        "opponent": true,
+        "pending_count": 1,
+        "profile": "none-valid",
+        "target": 0,
+        "moves": [
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            0,
+            0,
+            11
+          ]
+        ],
+        "predicate_checks": [
+          101,
+          102
+        ],
+        "fetched_locations": [
+          3
+        ]
+      },
+      {
+        "side": 1,
+        "selecting_owner": 2,
+        "opponent": true,
+        "pending_count": 1,
+        "profile": "first-valid",
+        "target": 101,
+        "moves": [
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            101,
+            0,
+            11
+          ]
+        ],
+        "predicate_checks": [
+          101
+        ],
+        "fetched_locations": [
+          3
+        ]
+      },
+      {
+        "side": 1,
+        "selecting_owner": 2,
+        "opponent": true,
+        "pending_count": 1,
+        "profile": "second-valid",
+        "target": 102,
+        "moves": [
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            102,
+            0,
+            11
+          ]
+        ],
+        "predicate_checks": [
+          101,
+          102
+        ],
+        "fetched_locations": [
+          3
+        ]
+      },
+      {
+        "side": 1,
+        "selecting_owner": 2,
+        "opponent": true,
+        "pending_count": 1,
+        "profile": "both-valid",
+        "target": 101,
+        "moves": [
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            101,
+            0,
+            11
+          ]
+        ],
+        "predicate_checks": [
+          101
+        ],
+        "fetched_locations": [
+          3
+        ]
+      },
+      {
+        "side": 1,
+        "selecting_owner": 2,
+        "opponent": true,
+        "pending_count": 2,
+        "profile": "empty",
+        "target": 0,
+        "moves": [
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            0,
+            0,
+            11
+          ],
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            0,
+            0,
+            12
+          ]
+        ],
+        "predicate_checks": [],
+        "fetched_locations": [
+          3,
+          3
+        ]
+      },
+      {
+        "side": 1,
+        "selecting_owner": 2,
+        "opponent": true,
+        "pending_count": 2,
+        "profile": "none-valid",
+        "target": 0,
+        "moves": [
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            0,
+            0,
+            11
+          ],
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            0,
+            0,
+            12
+          ]
+        ],
+        "predicate_checks": [
+          101,
+          102,
+          101,
+          102
+        ],
+        "fetched_locations": [
+          3,
+          3
+        ]
+      },
+      {
+        "side": 1,
+        "selecting_owner": 2,
+        "opponent": true,
+        "pending_count": 2,
+        "profile": "first-valid",
+        "target": 101,
+        "moves": [
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            101,
+            0,
+            11
+          ],
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            101,
+            0,
+            12
+          ]
+        ],
+        "predicate_checks": [
+          101,
+          101
+        ],
+        "fetched_locations": [
+          3,
+          3
+        ]
+      },
+      {
+        "side": 1,
+        "selecting_owner": 2,
+        "opponent": true,
+        "pending_count": 2,
+        "profile": "second-valid",
+        "target": 102,
+        "moves": [
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            102,
+            0,
+            11
+          ],
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            102,
+            0,
+            12
+          ]
+        ],
+        "predicate_checks": [
+          101,
+          102,
+          101,
+          102
+        ],
+        "fetched_locations": [
+          3,
+          3
+        ]
+      },
+      {
+        "side": 1,
+        "selecting_owner": 2,
+        "opponent": true,
+        "pending_count": 2,
+        "profile": "both-valid",
+        "target": 101,
+        "moves": [
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            101,
+            0,
+            11
+          ],
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            101,
+            0,
+            12
+          ]
+        ],
+        "predicate_checks": [
+          101,
+          101
+        ],
+        "fetched_locations": [
+          3,
+          3
+        ]
+      },
+      {
+        "side": 2,
+        "selecting_owner": 1,
+        "opponent": false,
+        "pending_count": 1,
+        "profile": "empty",
+        "target": 0,
+        "moves": [
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            0,
+            0,
+            11
+          ]
+        ],
+        "predicate_checks": [],
+        "fetched_locations": [
+          4
+        ]
+      },
+      {
+        "side": 2,
+        "selecting_owner": 1,
+        "opponent": false,
+        "pending_count": 1,
+        "profile": "none-valid",
+        "target": 0,
+        "moves": [
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            0,
+            0,
+            11
+          ]
+        ],
+        "predicate_checks": [
+          201,
+          202
+        ],
+        "fetched_locations": [
+          4
+        ]
+      },
+      {
+        "side": 2,
+        "selecting_owner": 1,
+        "opponent": false,
+        "pending_count": 1,
+        "profile": "first-valid",
+        "target": 201,
+        "moves": [
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            201,
+            0,
+            11
+          ]
+        ],
+        "predicate_checks": [
+          201
+        ],
+        "fetched_locations": [
+          4
+        ]
+      },
+      {
+        "side": 2,
+        "selecting_owner": 1,
+        "opponent": false,
+        "pending_count": 1,
+        "profile": "second-valid",
+        "target": 202,
+        "moves": [
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            202,
+            0,
+            11
+          ]
+        ],
+        "predicate_checks": [
+          201,
+          202
+        ],
+        "fetched_locations": [
+          4
+        ]
+      },
+      {
+        "side": 2,
+        "selecting_owner": 1,
+        "opponent": false,
+        "pending_count": 1,
+        "profile": "both-valid",
+        "target": 201,
+        "moves": [
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            201,
+            0,
+            11
+          ]
+        ],
+        "predicate_checks": [
+          201
+        ],
+        "fetched_locations": [
+          4
+        ]
+      },
+      {
+        "side": 2,
+        "selecting_owner": 1,
+        "opponent": false,
+        "pending_count": 2,
+        "profile": "empty",
+        "target": 0,
+        "moves": [
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            0,
+            0,
+            11
+          ],
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            0,
+            0,
+            12
+          ]
+        ],
+        "predicate_checks": [],
+        "fetched_locations": [
+          4,
+          4
+        ]
+      },
+      {
+        "side": 2,
+        "selecting_owner": 1,
+        "opponent": false,
+        "pending_count": 2,
+        "profile": "none-valid",
+        "target": 0,
+        "moves": [
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            0,
+            0,
+            11
+          ],
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            0,
+            0,
+            12
+          ]
+        ],
+        "predicate_checks": [
+          201,
+          202,
+          201,
+          202
+        ],
+        "fetched_locations": [
+          4,
+          4
+        ]
+      },
+      {
+        "side": 2,
+        "selecting_owner": 1,
+        "opponent": false,
+        "pending_count": 2,
+        "profile": "first-valid",
+        "target": 201,
+        "moves": [
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            201,
+            0,
+            11
+          ],
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            201,
+            0,
+            12
+          ]
+        ],
+        "predicate_checks": [
+          201,
+          201
+        ],
+        "fetched_locations": [
+          4,
+          4
+        ]
+      },
+      {
+        "side": 2,
+        "selecting_owner": 1,
+        "opponent": false,
+        "pending_count": 2,
+        "profile": "second-valid",
+        "target": 202,
+        "moves": [
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            202,
+            0,
+            11
+          ],
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            202,
+            0,
+            12
+          ]
+        ],
+        "predicate_checks": [
+          201,
+          202,
+          201,
+          202
+        ],
+        "fetched_locations": [
+          4,
+          4
+        ]
+      },
+      {
+        "side": 2,
+        "selecting_owner": 1,
+        "opponent": false,
+        "pending_count": 2,
+        "profile": "both-valid",
+        "target": 201,
+        "moves": [
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            201,
+            0,
+            11
+          ],
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            201,
+            0,
+            12
+          ]
+        ],
+        "predicate_checks": [
+          201,
+          201
+        ],
+        "fetched_locations": [
+          4,
+          4
+        ]
+      },
+      {
+        "side": 2,
+        "selecting_owner": 1,
+        "opponent": true,
+        "pending_count": 1,
+        "profile": "empty",
+        "target": 0,
+        "moves": [
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            0,
+            0,
+            11
+          ]
+        ],
+        "predicate_checks": [],
+        "fetched_locations": [
+          4
+        ]
+      },
+      {
+        "side": 2,
+        "selecting_owner": 1,
+        "opponent": true,
+        "pending_count": 1,
+        "profile": "none-valid",
+        "target": 0,
+        "moves": [
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            0,
+            0,
+            11
+          ]
+        ],
+        "predicate_checks": [
+          201,
+          202
+        ],
+        "fetched_locations": [
+          4
+        ]
+      },
+      {
+        "side": 2,
+        "selecting_owner": 1,
+        "opponent": true,
+        "pending_count": 1,
+        "profile": "first-valid",
+        "target": 201,
+        "moves": [
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            201,
+            0,
+            11
+          ]
+        ],
+        "predicate_checks": [
+          201
+        ],
+        "fetched_locations": [
+          4
+        ]
+      },
+      {
+        "side": 2,
+        "selecting_owner": 1,
+        "opponent": true,
+        "pending_count": 1,
+        "profile": "second-valid",
+        "target": 202,
+        "moves": [
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            202,
+            0,
+            11
+          ]
+        ],
+        "predicate_checks": [
+          201,
+          202
+        ],
+        "fetched_locations": [
+          4
+        ]
+      },
+      {
+        "side": 2,
+        "selecting_owner": 1,
+        "opponent": true,
+        "pending_count": 1,
+        "profile": "both-valid",
+        "target": 201,
+        "moves": [
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            201,
+            0,
+            11
+          ]
+        ],
+        "predicate_checks": [
+          201
+        ],
+        "fetched_locations": [
+          4
+        ]
+      },
+      {
+        "side": 2,
+        "selecting_owner": 1,
+        "opponent": true,
+        "pending_count": 2,
+        "profile": "empty",
+        "target": 0,
+        "moves": [
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            0,
+            0,
+            11
+          ],
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            0,
+            0,
+            12
+          ]
+        ],
+        "predicate_checks": [],
+        "fetched_locations": [
+          4,
+          4
+        ]
+      },
+      {
+        "side": 2,
+        "selecting_owner": 1,
+        "opponent": true,
+        "pending_count": 2,
+        "profile": "none-valid",
+        "target": 0,
+        "moves": [
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            0,
+            0,
+            11
+          ],
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            0,
+            0,
+            12
+          ]
+        ],
+        "predicate_checks": [
+          201,
+          202,
+          201,
+          202
+        ],
+        "fetched_locations": [
+          4,
+          4
+        ]
+      },
+      {
+        "side": 2,
+        "selecting_owner": 1,
+        "opponent": true,
+        "pending_count": 2,
+        "profile": "first-valid",
+        "target": 201,
+        "moves": [
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            201,
+            0,
+            11
+          ],
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            201,
+            0,
+            12
+          ]
+        ],
+        "predicate_checks": [
+          201,
+          201
+        ],
+        "fetched_locations": [
+          4,
+          4
+        ]
+      },
+      {
+        "side": 2,
+        "selecting_owner": 1,
+        "opponent": true,
+        "pending_count": 2,
+        "profile": "second-valid",
+        "target": 202,
+        "moves": [
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            202,
+            0,
+            11
+          ],
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            202,
+            0,
+            12
+          ]
+        ],
+        "predicate_checks": [
+          201,
+          202,
+          201,
+          202
+        ],
+        "fetched_locations": [
+          4,
+          4
+        ]
+      },
+      {
+        "side": 2,
+        "selecting_owner": 1,
+        "opponent": true,
+        "pending_count": 2,
+        "profile": "both-valid",
+        "target": 201,
+        "moves": [
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            201,
+            0,
+            11
+          ],
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            201,
+            0,
+            12
+          ]
+        ],
+        "predicate_checks": [
+          201,
+          201
+        ],
+        "fetched_locations": [
+          4,
+          4
+        ]
+      },
+      {
+        "side": 2,
+        "selecting_owner": 2,
+        "opponent": false,
+        "pending_count": 1,
+        "profile": "empty",
+        "target": 0,
+        "moves": [
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            0,
+            0,
+            11
+          ]
+        ],
+        "predicate_checks": [],
+        "fetched_locations": [
+          4
+        ]
+      },
+      {
+        "side": 2,
+        "selecting_owner": 2,
+        "opponent": false,
+        "pending_count": 1,
+        "profile": "none-valid",
+        "target": 0,
+        "moves": [
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            0,
+            0,
+            11
+          ]
+        ],
+        "predicate_checks": [
+          201,
+          202
+        ],
+        "fetched_locations": [
+          4
+        ]
+      },
+      {
+        "side": 2,
+        "selecting_owner": 2,
+        "opponent": false,
+        "pending_count": 1,
+        "profile": "first-valid",
+        "target": 201,
+        "moves": [
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            201,
+            0,
+            11
+          ]
+        ],
+        "predicate_checks": [
+          201
+        ],
+        "fetched_locations": [
+          4
+        ]
+      },
+      {
+        "side": 2,
+        "selecting_owner": 2,
+        "opponent": false,
+        "pending_count": 1,
+        "profile": "second-valid",
+        "target": 202,
+        "moves": [
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            202,
+            0,
+            11
+          ]
+        ],
+        "predicate_checks": [
+          201,
+          202
+        ],
+        "fetched_locations": [
+          4
+        ]
+      },
+      {
+        "side": 2,
+        "selecting_owner": 2,
+        "opponent": false,
+        "pending_count": 1,
+        "profile": "both-valid",
+        "target": 201,
+        "moves": [
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            201,
+            0,
+            11
+          ]
+        ],
+        "predicate_checks": [
+          201
+        ],
+        "fetched_locations": [
+          4
+        ]
+      },
+      {
+        "side": 2,
+        "selecting_owner": 2,
+        "opponent": false,
+        "pending_count": 2,
+        "profile": "empty",
+        "target": 0,
+        "moves": [
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            0,
+            0,
+            11
+          ],
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            0,
+            0,
+            12
+          ]
+        ],
+        "predicate_checks": [],
+        "fetched_locations": [
+          4,
+          4
+        ]
+      },
+      {
+        "side": 2,
+        "selecting_owner": 2,
+        "opponent": false,
+        "pending_count": 2,
+        "profile": "none-valid",
+        "target": 0,
+        "moves": [
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            0,
+            0,
+            11
+          ],
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            0,
+            0,
+            12
+          ]
+        ],
+        "predicate_checks": [
+          201,
+          202,
+          201,
+          202
+        ],
+        "fetched_locations": [
+          4,
+          4
+        ]
+      },
+      {
+        "side": 2,
+        "selecting_owner": 2,
+        "opponent": false,
+        "pending_count": 2,
+        "profile": "first-valid",
+        "target": 201,
+        "moves": [
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            201,
+            0,
+            11
+          ],
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            201,
+            0,
+            12
+          ]
+        ],
+        "predicate_checks": [
+          201,
+          201
+        ],
+        "fetched_locations": [
+          4,
+          4
+        ]
+      },
+      {
+        "side": 2,
+        "selecting_owner": 2,
+        "opponent": false,
+        "pending_count": 2,
+        "profile": "second-valid",
+        "target": 202,
+        "moves": [
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            202,
+            0,
+            11
+          ],
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            202,
+            0,
+            12
+          ]
+        ],
+        "predicate_checks": [
+          201,
+          202,
+          201,
+          202
+        ],
+        "fetched_locations": [
+          4,
+          4
+        ]
+      },
+      {
+        "side": 2,
+        "selecting_owner": 2,
+        "opponent": false,
+        "pending_count": 2,
+        "profile": "both-valid",
+        "target": 201,
+        "moves": [
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            201,
+            0,
+            11
+          ],
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            201,
+            0,
+            12
+          ]
+        ],
+        "predicate_checks": [
+          201,
+          201
+        ],
+        "fetched_locations": [
+          4,
+          4
+        ]
+      },
+      {
+        "side": 2,
+        "selecting_owner": 2,
+        "opponent": true,
+        "pending_count": 1,
+        "profile": "empty",
+        "target": 0,
+        "moves": [
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            0,
+            0,
+            11
+          ]
+        ],
+        "predicate_checks": [],
+        "fetched_locations": [
+          4
+        ]
+      },
+      {
+        "side": 2,
+        "selecting_owner": 2,
+        "opponent": true,
+        "pending_count": 1,
+        "profile": "none-valid",
+        "target": 0,
+        "moves": [
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            0,
+            0,
+            11
+          ]
+        ],
+        "predicate_checks": [
+          201,
+          202
+        ],
+        "fetched_locations": [
+          4
+        ]
+      },
+      {
+        "side": 2,
+        "selecting_owner": 2,
+        "opponent": true,
+        "pending_count": 1,
+        "profile": "first-valid",
+        "target": 201,
+        "moves": [
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            201,
+            0,
+            11
+          ]
+        ],
+        "predicate_checks": [
+          201
+        ],
+        "fetched_locations": [
+          4
+        ]
+      },
+      {
+        "side": 2,
+        "selecting_owner": 2,
+        "opponent": true,
+        "pending_count": 1,
+        "profile": "second-valid",
+        "target": 202,
+        "moves": [
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            202,
+            0,
+            11
+          ]
+        ],
+        "predicate_checks": [
+          201,
+          202
+        ],
+        "fetched_locations": [
+          4
+        ]
+      },
+      {
+        "side": 2,
+        "selecting_owner": 2,
+        "opponent": true,
+        "pending_count": 1,
+        "profile": "both-valid",
+        "target": 201,
+        "moves": [
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            201,
+            0,
+            11
+          ]
+        ],
+        "predicate_checks": [
+          201
+        ],
+        "fetched_locations": [
+          4
+        ]
+      },
+      {
+        "side": 2,
+        "selecting_owner": 2,
+        "opponent": true,
+        "pending_count": 2,
+        "profile": "empty",
+        "target": 0,
+        "moves": [
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            0,
+            0,
+            11
+          ],
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            0,
+            0,
+            12
+          ]
+        ],
+        "predicate_checks": [],
+        "fetched_locations": [
+          4,
+          4
+        ]
+      },
+      {
+        "side": 2,
+        "selecting_owner": 2,
+        "opponent": true,
+        "pending_count": 2,
+        "profile": "none-valid",
+        "target": 0,
+        "moves": [
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            0,
+            0,
+            11
+          ],
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            0,
+            0,
+            12
+          ]
+        ],
+        "predicate_checks": [
+          201,
+          202,
+          201,
+          202
+        ],
+        "fetched_locations": [
+          4,
+          4
+        ]
+      },
+      {
+        "side": 2,
+        "selecting_owner": 2,
+        "opponent": true,
+        "pending_count": 2,
+        "profile": "first-valid",
+        "target": 201,
+        "moves": [
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            201,
+            0,
+            11
+          ],
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            201,
+            0,
+            12
+          ]
+        ],
+        "predicate_checks": [
+          201,
+          201
+        ],
+        "fetched_locations": [
+          4,
+          4
+        ]
+      },
+      {
+        "side": 2,
+        "selecting_owner": 2,
+        "opponent": true,
+        "pending_count": 2,
+        "profile": "second-valid",
+        "target": 202,
+        "moves": [
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            202,
+            0,
+            11
+          ],
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            202,
+            0,
+            12
+          ]
+        ],
+        "predicate_checks": [
+          201,
+          202,
+          201,
+          202
+        ],
+        "fetched_locations": [
+          4,
+          4
+        ]
+      },
+      {
+        "side": 2,
+        "selecting_owner": 2,
+        "opponent": true,
+        "pending_count": 2,
+        "profile": "both-valid",
+        "target": 201,
+        "moves": [
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            201,
+            0,
+            11
+          ],
+          [
+            null,
+            "handTargetSelected",
+            0,
+            0,
+            201,
+            0,
+            12
+          ]
+        ],
+        "predicate_checks": [
+          201,
+          201
+        ],
+        "fetched_locations": [
+          4,
+          4
+        ]
+      }
+    ]
+  },
+  "native_verification": {
+    "rule": "RULE-508",
+    "native_cases": 12,
+    "profiles": [
+      {
+        "profile": "no-subsystem",
+        "side": 0,
+        "result": 0
+      },
+      {
+        "profile": "no-subsystem",
+        "side": 1,
+        "result": 0
+      },
+      {
+        "profile": "no-subsystem",
+        "side": 2,
+        "result": 0
+      },
+      {
+        "profile": "no-subsystem",
+        "side": 255,
+        "result": 0
+      },
+      {
+        "profile": "weak-invalid",
+        "side": 0,
+        "result": 0
+      },
+      {
+        "profile": "weak-invalid",
+        "side": 1,
+        "result": 0
+      },
+      {
+        "profile": "weak-invalid",
+        "side": 2,
+        "result": 0
+      },
+      {
+        "profile": "weak-invalid",
+        "side": 255,
+        "result": 0
+      },
+      {
+        "profile": "valid",
+        "side": 0,
+        "result": 0
+      },
+      {
+        "profile": "valid",
+        "side": 1,
+        "result": 1
+      },
+      {
+        "profile": "valid",
+        "side": 2,
+        "result": 2
+      },
+      {
+        "profile": "valid",
+        "side": 255,
+        "result": 255
+      }
+    ],
+    "scope": "Offline Unicorn of captured native4af7460 and4b2dc60; world-context subsystem lookup4af3280, weak validity15d5180 and weak pointer15d2780 supplied; no actual UObject/subsystem lookup or client call."
+  },
+  "worker_index": {
+    "GetPlayingSide": [
+      998
+    ],
+    "HandLocationFromSide": [
+      1027
+    ],
+    "FetchCardsByLocation": [
+      1082
+    ],
+    "IsValidHandTarget": [
+      1541
+    ],
+    "AddMoveToPlayerMoveQueue": [
+      1673,
+      2414
+    ]
+  },
+  "native_bodies": [
+    {
+      "label": "CombatHelperFunctions:GetPlayingSide wrapper",
+      "rva": "0x4a5d880",
+      "bytes": 132,
+      "pdata": {
+        "begin_rva": 77977728,
+        "end_rva": 77977860,
+        "unwind_rva": 144783232
+      },
+      "sha256": "be338d09be37ada1a516107c6bbcc035d3ccfe86f9bb362964def17aa4d25283"
+    },
+    {
+      "label": "CombatHelperFunctions:direct call target",
+      "rva": "0x156d770",
+      "bytes": 164,
+      "pdata": {
+        "begin_rva": 22468464,
+        "end_rva": 22468628,
+        "unwind_rva": 144759796
+      },
+      "sha256": "2130fb43d416dc73236fdb900dcb7d11375d5949a8dc2a4e33a59596bf10ff46"
+    },
+    {
+      "label": "CombatHelperFunctions:direct call target",
+      "rva": "0x15a0ee0",
+      "bytes": 38,
+      "pdata": null,
+      "sha256": "7fcfeb30a8b5397e4ded4b8752bb119da59dd7c838aab6ea6c2ed2764921ce69"
+    },
+    {
+      "label": "CombatHelperFunctions:direct call target",
+      "rva": "0x15a0f10",
+      "bytes": 58,
+      "pdata": null,
+      "sha256": "3ee69b2f8f2b288b5ff5fbcb0a99240ece385996211c104bc9431028b98dae79"
+    },
+    {
+      "label": "CombatHelperFunctions:direct call target",
+      "rva": "0x4af7460",
+      "bytes": 31,
+      "pdata": {
+        "begin_rva": 78607456,
+        "end_rva": 78607487,
+        "unwind_rva": 144758344
+      },
+      "sha256": "1dfc6488205504916fd2bfcc05e40894595329f729e6a9745a1754914d032775"
+    },
+    {
+      "label": "GameStateAccessSubsystem:GetPlayingSide wrapper",
+      "rva": "0x4a644c0",
+      "bytes": 43,
+      "pdata": {
+        "begin_rva": 78005440,
+        "end_rva": 78005483,
+        "unwind_rva": 144758328
+      },
+      "sha256": "de4d037f2d3e8193939a80988459e69a5892a3e12740f5218069be22f6633865"
+    },
+    {
+      "label": "GameStateAccessSubsystem:direct call target",
+      "rva": "0x4b2dc60",
+      "bytes": 51,
+      "pdata": {
+        "begin_rva": 78830688,
+        "end_rva": 78830739,
+        "unwind_rva": 144758328
+      },
+      "sha256": "30b2bfc111ac3aae71455e48fcaf3162f6aff66189b954a9a4426a2f30a32741"
+    },
+    {
+      "label": "kardsGameState:GetPlayingSide wrapper",
+      "rva": "0x4a64420",
+      "bytes": 147,
+      "pdata": {
+        "begin_rva": 78005280,
+        "end_rva": 78005427,
+        "unwind_rva": 144783232
+      },
+      "sha256": "b4b96668f0ef3a4142897ed8f501a9cd1ec32e23acc0b6a1bb3a876a05342a8f"
+    },
+    {
+      "label": "kardsGameState:direct call target",
+      "rva": "0x15a0ee0",
+      "bytes": 38,
+      "pdata": null,
+      "sha256": "7fcfeb30a8b5397e4ded4b8752bb119da59dd7c838aab6ea6c2ed2764921ce69"
+    },
+    {
+      "label": "kardsGameState:direct call target",
+      "rva": "0x15a0f10",
+      "bytes": 58,
+      "pdata": null,
+      "sha256": "3ee69b2f8f2b288b5ff5fbcb0a99240ece385996211c104bc9431028b98dae79"
+    },
+    {
+      "label": "kardsGameState:direct call target",
+      "rva": "0x4b2dc50",
+      "bytes": 10,
+      "pdata": null,
+      "sha256": "7daa530e70d9d79649d8037d9d2d8a18ae2903638896543d6bc1139323ec2722"
+    }
+  ],
+  "captured_functions": [
+    {
+      "owner": "CombatHelperFunctions",
+      "name": "GetPlayingSide",
+      "script_size": 0,
+      "decode_complete": false,
+      "decode_status": "no-script; native/declaration not decoded"
+    },
+    {
+      "owner": "GameStateAccessSubsystem",
+      "name": "GetPlayingSide",
+      "script_size": 0,
+      "decode_complete": false,
+      "decode_status": "no-script; native/declaration not decoded"
+    },
+    {
+      "owner": "kardsGameState",
+      "name": "GetPlayingSide",
+      "script_size": 0,
+      "decode_complete": false,
+      "decode_status": "no-script; native/declaration not decoded"
+    },
+    {
+      "owner": "CardFunctionsStub",
+      "name": "GetPlayingSide",
+      "script_size": 0,
+      "decode_complete": false,
+      "decode_status": "no-script; native/declaration not decoded"
+    },
+    {
+      "owner": "UtilityFunctions_C",
+      "name": "HandLocationFromSide",
+      "script_size": 276,
+      "decode_complete": true,
+      "decode_status": null
+    },
+    {
+      "owner": "BP_CardFunctions_C",
+      "name": "GetPlayingSide",
+      "script_size": 71,
+      "decode_complete": true,
+      "decode_status": null
+    },
+    {
+      "owner": "BP_Logic_C",
+      "name": "autoPickHandTargets",
+      "script_size": 2597,
+      "decode_complete": true,
+      "decode_status": null
+    }
+  ],
+  "worker_job": "20261028-031456-rule508-candidate-index-864943b6",
+  "evidence": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule508-candidates.py",
+      "bytes": 537,
+      "sha256": "74ad930fac960e2b87aabed35ec8c4327a6befe625500b0dd21150d8ea624588"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule508-hand-candidate-side-functions-20261028.json",
+      "bytes": 4624162,
+      "sha256": "19443ec9d1d951745a4cc0f5f5db3a91b48655f0aa79fd5ba9d5af92cffc5d24"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule508-native.py",
+      "bytes": 2798,
+      "sha256": "c96645a7a33f58e16309370c14466968f8e5406c057a73aa8b8d656412055d82"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule508-side-native-20261028.json",
+      "bytes": 30637,
+      "sha256": "1da6c480f13b5b8c00d3c13ecd1022d247070433da528bacc55b62ce0fb9a0b7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule508-native.py",
+      "bytes": 2250,
+      "sha256": "fcc73892aa3da1ff5f0a90f3e9f2aea46ccbd6c24d40043af0382665aa02c4ca"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule508-native-verification-20261028.json",
+      "bytes": 1299,
+      "sha256": "641a5764d001b30eda2d88ed76069fd6e1be85a188e5f492d198ff103a4a3b00"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule508-candidates.py",
+      "bytes": 11849,
+      "sha256": "5377aed9cc59462197f647c02d2f916314b1951f7430c9a4bf2ab9a9ffe1538d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule508-candidate-verification-20261028.json",
+      "bytes": 202888,
+      "sha256": "ff2a3454005dfdb3c85a566fb807d529df43a42ac37920798c5fde9c45b28f21"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule508-worker\\input.json",
+      "bytes": 23751,
+      "sha256": "29f350745ca7a167b1055cc9a7fc8ecfc23ce92a2fac5446c4b83286df02112d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule508-worker\\task.txt",
+      "bytes": 446,
+      "sha256": "0195e68181b41276685ce7cfcfd9d0ce4a9109e9c148de8ed8d0d319ea753da1"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule508-worker\\output.json",
+      "bytes": 173,
+      "sha256": "1278dda70f84f9283309663b9f6362ac672a40543b657159145c573bb4b58a0c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs",
+      "bytes": 402458,
+      "sha256": "97e5d5efac6a97b575c4f74267ea13d898178fb250edcaf9fe0e756e9db67c9f"
+    }
+  ],
+  "remaining": [
+    "autoPick实际调用时机和GetPlayingSide存储写入，与跨方待选卡Owner的可达关系。",
+    "FetchCardsByLocation实际排序、单卡IsValidHandTarget谓词与普通策略/自动策略差异。",
+    "2107重试阶段及新增请求/实际答复回调；完整PvP和卡池语义仍未认证。"
+  ],
+  "game_writes": 0,
+  "real_game_function_calls": 0,
+  "fully_certified_cards": 0
+}
