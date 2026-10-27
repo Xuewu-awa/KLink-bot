@@ -1,0 +1,2396 @@
+{
+  "rule_id": "RULE-499",
+  "date": "2026-10-28",
+  "base_commit": "0c8eda38a4b76714397f52f84ddbe72f284775fe",
+  "status": "增益显示名的直接读写链和来源ID键已核对；未扩大为全局文本无规则影响保证",
+  "findings": [
+    "从当前ChangeBuffsFromCards的1973操作数定位CardBuffData.cardName实际FProperty，再核对字段owner为CardBuffData、offset0/size16，并按这一地址扫描当前所有已加载脚本。避免把同名cardName局部变量、Widget成员或卡牌canonical Name当成同一字段。原生、反射、未加载及整结构传递不属于本指针扫描的穷尽范围。",
+    "当前30583个UFunction、18111脚本/7922413B中仅2个直接候选，均完整语法解码：BP_CardFunctions.ChangeBuffsFromCards(6267B)和W_BuffTexts_CardName.SetupCardName(136B)。前者1972写结构字段；后者0处TextIsEmpty检查结构字段，68处将其交给文本控件SetText，52/122设置EmptyName输出。只读脚本/符号缓存复核稳定。",
+    "64个当前AST元数据窗口案例通过（1843起，返回1101前停止）：来源ID -2/0/11/42、空/相同/中文/富文本标签、旧空/非空标签、空/带攻击防御数值的BuffMap。非正ID分支写空标签，正ID读取供给的有效来源title；除cardName外记录数字/其他布景数据保持，来源ID保持。正ID不存在/Context空处理、后续Map_Add、完整增益函数、FText/结构复制均未执行。",
+    "完整函数三处外层buffsFromCards Map_Add键分别为1761的instigatorID、5351的localInstigatorInLoop、5620的instigatorID；没有用显示cardName作为该外层关系键。其它4处Map_Add写内部BuffMap，仍需按增益类型语义理解，未凭本次窗口宣称整个账本认证。",
+    "模拟器的BuffsBySource按来源ID/临时标志记录，SynchronizeBuffTarget使用sourceId；当前证据不要求为无头规则新增本地化标签字段。仅支持该直接标签链与数值/来源键分离，仍不证明title/Text所有消费者均可忽略，也不证明本函数其它规则分支全部正确。",
+    "DeepSeek只提取两个AST的StructMemberContext字段访问和Map_Add键/目标表达式，主agent独立重算逐字段精确一致；分类/规则判断由主agent保留。",
+    "本轮未修改产品规则、未重跑C#；929/929仅历史结果，完整认证卡数仍0。"
+  ],
+  "verification": {
+    "rule": "RULE-499",
+    "cases": 64,
+    "window_start": 1843,
+    "window_stop": 1101,
+    "case_sha256": "d43b57de109d58c905f813587ae13e13a87db40c35868d47d325f83508013d15",
+    "profiles": [
+      {
+        "source_id": -2,
+        "title": "",
+        "prior_label": "",
+        "numeric": {},
+        "result": {
+          "cardName": "",
+          "BuffMap": {},
+          "sentinel": {
+            "retained": [
+              1,
+              2,
+              3
+            ]
+          }
+        },
+        "steps": [
+          1843,
+          1877,
+          2040,
+          2060,
+          1972,
+          2008,
+          2035
+        ]
+      },
+      {
+        "source_id": -2,
+        "title": "",
+        "prior_label": "",
+        "numeric": {
+          "attack": 3,
+          "defense": -2
+        },
+        "result": {
+          "cardName": "",
+          "BuffMap": {
+            "attack": 3,
+            "defense": -2
+          },
+          "sentinel": {
+            "retained": [
+              1,
+              2,
+              3
+            ]
+          }
+        },
+        "steps": [
+          1843,
+          1877,
+          2040,
+          2060,
+          1972,
+          2008,
+          2035
+        ]
+      },
+      {
+        "source_id": -2,
+        "title": "",
+        "prior_label": "previous",
+        "numeric": {},
+        "result": {
+          "cardName": "",
+          "BuffMap": {},
+          "sentinel": {
+            "retained": [
+              1,
+              2,
+              3
+            ]
+          }
+        },
+        "steps": [
+          1843,
+          1877,
+          2040,
+          2060,
+          1972,
+          2008,
+          2035
+        ]
+      },
+      {
+        "source_id": -2,
+        "title": "",
+        "prior_label": "previous",
+        "numeric": {
+          "attack": 3,
+          "defense": -2
+        },
+        "result": {
+          "cardName": "",
+          "BuffMap": {
+            "attack": 3,
+            "defense": -2
+          },
+          "sentinel": {
+            "retained": [
+              1,
+              2,
+              3
+            ]
+          }
+        },
+        "steps": [
+          1843,
+          1877,
+          2040,
+          2060,
+          1972,
+          2008,
+          2035
+        ]
+      },
+      {
+        "source_id": -2,
+        "title": "same",
+        "prior_label": "",
+        "numeric": {},
+        "result": {
+          "cardName": "",
+          "BuffMap": {},
+          "sentinel": {
+            "retained": [
+              1,
+              2,
+              3
+            ]
+          }
+        },
+        "steps": [
+          1843,
+          1877,
+          2040,
+          2060,
+          1972,
+          2008,
+          2035
+        ]
+      },
+      {
+        "source_id": -2,
+        "title": "same",
+        "prior_label": "",
+        "numeric": {
+          "attack": 3,
+          "defense": -2
+        },
+        "result": {
+          "cardName": "",
+          "BuffMap": {
+            "attack": 3,
+            "defense": -2
+          },
+          "sentinel": {
+            "retained": [
+              1,
+              2,
+              3
+            ]
+          }
+        },
+        "steps": [
+          1843,
+          1877,
+          2040,
+          2060,
+          1972,
+          2008,
+          2035
+        ]
+      },
+      {
+        "source_id": -2,
+        "title": "same",
+        "prior_label": "previous",
+        "numeric": {},
+        "result": {
+          "cardName": "",
+          "BuffMap": {},
+          "sentinel": {
+            "retained": [
+              1,
+              2,
+              3
+            ]
+          }
+        },
+        "steps": [
+          1843,
+          1877,
+          2040,
+          2060,
+          1972,
+          2008,
+          2035
+        ]
+      },
+      {
+        "source_id": -2,
+        "title": "same",
+        "prior_label": "previous",
+        "numeric": {
+          "attack": 3,
+          "defense": -2
+        },
+        "result": {
+          "cardName": "",
+          "BuffMap": {
+            "attack": 3,
+            "defense": -2
+          },
+          "sentinel": {
+            "retained": [
+              1,
+              2,
+              3
+            ]
+          }
+        },
+        "steps": [
+          1843,
+          1877,
+          2040,
+          2060,
+          1972,
+          2008,
+          2035
+        ]
+      },
+      {
+        "source_id": -2,
+        "title": "第2西非旅",
+        "prior_label": "",
+        "numeric": {},
+        "result": {
+          "cardName": "",
+          "BuffMap": {},
+          "sentinel": {
+            "retained": [
+              1,
+              2,
+              3
+            ]
+          }
+        },
+        "steps": [
+          1843,
+          1877,
+          2040,
+          2060,
+          1972,
+          2008,
+          2035
+        ]
+      },
+      {
+        "source_id": -2,
+        "title": "第2西非旅",
+        "prior_label": "",
+        "numeric": {
+          "attack": 3,
+          "defense": -2
+        },
+        "result": {
+          "cardName": "",
+          "BuffMap": {
+            "attack": 3,
+            "defense": -2
+          },
+          "sentinel": {
+            "retained": [
+              1,
+              2,
+              3
+            ]
+          }
+        },
+        "steps": [
+          1843,
+          1877,
+          2040,
+          2060,
+          1972,
+          2008,
+          2035
+        ]
+      },
+      {
+        "source_id": -2,
+        "title": "第2西非旅",
+        "prior_label": "previous",
+        "numeric": {},
+        "result": {
+          "cardName": "",
+          "BuffMap": {},
+          "sentinel": {
+            "retained": [
+              1,
+              2,
+              3
+            ]
+          }
+        },
+        "steps": [
+          1843,
+          1877,
+          2040,
+          2060,
+          1972,
+          2008,
+          2035
+        ]
+      },
+      {
+        "source_id": -2,
+        "title": "第2西非旅",
+        "prior_label": "previous",
+        "numeric": {
+          "attack": 3,
+          "defense": -2
+        },
+        "result": {
+          "cardName": "",
+          "BuffMap": {
+            "attack": 3,
+            "defense": -2
+          },
+          "sentinel": {
+            "retained": [
+              1,
+              2,
+              3
+            ]
+          }
+        },
+        "steps": [
+          1843,
+          1877,
+          2040,
+          2060,
+          1972,
+          2008,
+          2035
+        ]
+      },
+      {
+        "source_id": -2,
+        "title": "<b>自定义</>",
+        "prior_label": "",
+        "numeric": {},
+        "result": {
+          "cardName": "",
+          "BuffMap": {},
+          "sentinel": {
+            "retained": [
+              1,
+              2,
+              3
+            ]
+          }
+        },
+        "steps": [
+          1843,
+          1877,
+          2040,
+          2060,
+          1972,
+          2008,
+          2035
+        ]
+      },
+      {
+        "source_id": -2,
+        "title": "<b>自定义</>",
+        "prior_label": "",
+        "numeric": {
+          "attack": 3,
+          "defense": -2
+        },
+        "result": {
+          "cardName": "",
+          "BuffMap": {
+            "attack": 3,
+            "defense": -2
+          },
+          "sentinel": {
+            "retained": [
+              1,
+              2,
+              3
+            ]
+          }
+        },
+        "steps": [
+          1843,
+          1877,
+          2040,
+          2060,
+          1972,
+          2008,
+          2035
+        ]
+      },
+      {
+        "source_id": -2,
+        "title": "<b>自定义</>",
+        "prior_label": "previous",
+        "numeric": {},
+        "result": {
+          "cardName": "",
+          "BuffMap": {},
+          "sentinel": {
+            "retained": [
+              1,
+              2,
+              3
+            ]
+          }
+        },
+        "steps": [
+          1843,
+          1877,
+          2040,
+          2060,
+          1972,
+          2008,
+          2035
+        ]
+      },
+      {
+        "source_id": -2,
+        "title": "<b>自定义</>",
+        "prior_label": "previous",
+        "numeric": {
+          "attack": 3,
+          "defense": -2
+        },
+        "result": {
+          "cardName": "",
+          "BuffMap": {
+            "attack": 3,
+            "defense": -2
+          },
+          "sentinel": {
+            "retained": [
+              1,
+              2,
+              3
+            ]
+          }
+        },
+        "steps": [
+          1843,
+          1877,
+          2040,
+          2060,
+          1972,
+          2008,
+          2035
+        ]
+      },
+      {
+        "source_id": 0,
+        "title": "",
+        "prior_label": "",
+        "numeric": {},
+        "result": {
+          "cardName": "",
+          "BuffMap": {},
+          "sentinel": {
+            "retained": [
+              1,
+              2,
+              3
+            ]
+          }
+        },
+        "steps": [
+          1843,
+          1877,
+          2040,
+          2060,
+          1972,
+          2008,
+          2035
+        ]
+      },
+      {
+        "source_id": 0,
+        "title": "",
+        "prior_label": "",
+        "numeric": {
+          "attack": 3,
+          "defense": -2
+        },
+        "result": {
+          "cardName": "",
+          "BuffMap": {
+            "attack": 3,
+            "defense": -2
+          },
+          "sentinel": {
+            "retained": [
+              1,
+              2,
+              3
+            ]
+          }
+        },
+        "steps": [
+          1843,
+          1877,
+          2040,
+          2060,
+          1972,
+          2008,
+          2035
+        ]
+      },
+      {
+        "source_id": 0,
+        "title": "",
+        "prior_label": "previous",
+        "numeric": {},
+        "result": {
+          "cardName": "",
+          "BuffMap": {},
+          "sentinel": {
+            "retained": [
+              1,
+              2,
+              3
+            ]
+          }
+        },
+        "steps": [
+          1843,
+          1877,
+          2040,
+          2060,
+          1972,
+          2008,
+          2035
+        ]
+      },
+      {
+        "source_id": 0,
+        "title": "",
+        "prior_label": "previous",
+        "numeric": {
+          "attack": 3,
+          "defense": -2
+        },
+        "result": {
+          "cardName": "",
+          "BuffMap": {
+            "attack": 3,
+            "defense": -2
+          },
+          "sentinel": {
+            "retained": [
+              1,
+              2,
+              3
+            ]
+          }
+        },
+        "steps": [
+          1843,
+          1877,
+          2040,
+          2060,
+          1972,
+          2008,
+          2035
+        ]
+      },
+      {
+        "source_id": 0,
+        "title": "same",
+        "prior_label": "",
+        "numeric": {},
+        "result": {
+          "cardName": "",
+          "BuffMap": {},
+          "sentinel": {
+            "retained": [
+              1,
+              2,
+              3
+            ]
+          }
+        },
+        "steps": [
+          1843,
+          1877,
+          2040,
+          2060,
+          1972,
+          2008,
+          2035
+        ]
+      },
+      {
+        "source_id": 0,
+        "title": "same",
+        "prior_label": "",
+        "numeric": {
+          "attack": 3,
+          "defense": -2
+        },
+        "result": {
+          "cardName": "",
+          "BuffMap": {
+            "attack": 3,
+            "defense": -2
+          },
+          "sentinel": {
+            "retained": [
+              1,
+              2,
+              3
+            ]
+          }
+        },
+        "steps": [
+          1843,
+          1877,
+          2040,
+          2060,
+          1972,
+          2008,
+          2035
+        ]
+      },
+      {
+        "source_id": 0,
+        "title": "same",
+        "prior_label": "previous",
+        "numeric": {},
+        "result": {
+          "cardName": "",
+          "BuffMap": {},
+          "sentinel": {
+            "retained": [
+              1,
+              2,
+              3
+            ]
+          }
+        },
+        "steps": [
+          1843,
+          1877,
+          2040,
+          2060,
+          1972,
+          2008,
+          2035
+        ]
+      },
+      {
+        "source_id": 0,
+        "title": "same",
+        "prior_label": "previous",
+        "numeric": {
+          "attack": 3,
+          "defense": -2
+        },
+        "result": {
+          "cardName": "",
+          "BuffMap": {
+            "attack": 3,
+            "defense": -2
+          },
+          "sentinel": {
+            "retained": [
+              1,
+              2,
+              3
+            ]
+          }
+        },
+        "steps": [
+          1843,
+          1877,
+          2040,
+          2060,
+          1972,
+          2008,
+          2035
+        ]
+      },
+      {
+        "source_id": 0,
+        "title": "第2西非旅",
+        "prior_label": "",
+        "numeric": {},
+        "result": {
+          "cardName": "",
+          "BuffMap": {},
+          "sentinel": {
+            "retained": [
+              1,
+              2,
+              3
+            ]
+          }
+        },
+        "steps": [
+          1843,
+          1877,
+          2040,
+          2060,
+          1972,
+          2008,
+          2035
+        ]
+      },
+      {
+        "source_id": 0,
+        "title": "第2西非旅",
+        "prior_label": "",
+        "numeric": {
+          "attack": 3,
+          "defense": -2
+        },
+        "result": {
+          "cardName": "",
+          "BuffMap": {
+            "attack": 3,
+            "defense": -2
+          },
+          "sentinel": {
+            "retained": [
+              1,
+              2,
+              3
+            ]
+          }
+        },
+        "steps": [
+          1843,
+          1877,
+          2040,
+          2060,
+          1972,
+          2008,
+          2035
+        ]
+      },
+      {
+        "source_id": 0,
+        "title": "第2西非旅",
+        "prior_label": "previous",
+        "numeric": {},
+        "result": {
+          "cardName": "",
+          "BuffMap": {},
+          "sentinel": {
+            "retained": [
+              1,
+              2,
+              3
+            ]
+          }
+        },
+        "steps": [
+          1843,
+          1877,
+          2040,
+          2060,
+          1972,
+          2008,
+          2035
+        ]
+      },
+      {
+        "source_id": 0,
+        "title": "第2西非旅",
+        "prior_label": "previous",
+        "numeric": {
+          "attack": 3,
+          "defense": -2
+        },
+        "result": {
+          "cardName": "",
+          "BuffMap": {
+            "attack": 3,
+            "defense": -2
+          },
+          "sentinel": {
+            "retained": [
+              1,
+              2,
+              3
+            ]
+          }
+        },
+        "steps": [
+          1843,
+          1877,
+          2040,
+          2060,
+          1972,
+          2008,
+          2035
+        ]
+      },
+      {
+        "source_id": 0,
+        "title": "<b>自定义</>",
+        "prior_label": "",
+        "numeric": {},
+        "result": {
+          "cardName": "",
+          "BuffMap": {},
+          "sentinel": {
+            "retained": [
+              1,
+              2,
+              3
+            ]
+          }
+        },
+        "steps": [
+          1843,
+          1877,
+          2040,
+          2060,
+          1972,
+          2008,
+          2035
+        ]
+      },
+      {
+        "source_id": 0,
+        "title": "<b>自定义</>",
+        "prior_label": "",
+        "numeric": {
+          "attack": 3,
+          "defense": -2
+        },
+        "result": {
+          "cardName": "",
+          "BuffMap": {
+            "attack": 3,
+            "defense": -2
+          },
+          "sentinel": {
+            "retained": [
+              1,
+              2,
+              3
+            ]
+          }
+        },
+        "steps": [
+          1843,
+          1877,
+          2040,
+          2060,
+          1972,
+          2008,
+          2035
+        ]
+      },
+      {
+        "source_id": 0,
+        "title": "<b>自定义</>",
+        "prior_label": "previous",
+        "numeric": {},
+        "result": {
+          "cardName": "",
+          "BuffMap": {},
+          "sentinel": {
+            "retained": [
+              1,
+              2,
+              3
+            ]
+          }
+        },
+        "steps": [
+          1843,
+          1877,
+          2040,
+          2060,
+          1972,
+          2008,
+          2035
+        ]
+      },
+      {
+        "source_id": 0,
+        "title": "<b>自定义</>",
+        "prior_label": "previous",
+        "numeric": {
+          "attack": 3,
+          "defense": -2
+        },
+        "result": {
+          "cardName": "",
+          "BuffMap": {
+            "attack": 3,
+            "defense": -2
+          },
+          "sentinel": {
+            "retained": [
+              1,
+              2,
+              3
+            ]
+          }
+        },
+        "steps": [
+          1843,
+          1877,
+          2040,
+          2060,
+          1972,
+          2008,
+          2035
+        ]
+      },
+      {
+        "source_id": 11,
+        "title": "",
+        "prior_label": "",
+        "numeric": {},
+        "result": {
+          "cardName": "",
+          "BuffMap": {},
+          "sentinel": {
+            "retained": [
+              1,
+              2,
+              3
+            ]
+          }
+        },
+        "steps": [
+          1843,
+          1877,
+          1891,
+          1923,
+          1972,
+          2008,
+          2035
+        ]
+      },
+      {
+        "source_id": 11,
+        "title": "",
+        "prior_label": "",
+        "numeric": {
+          "attack": 3,
+          "defense": -2
+        },
+        "result": {
+          "cardName": "",
+          "BuffMap": {
+            "attack": 3,
+            "defense": -2
+          },
+          "sentinel": {
+            "retained": [
+              1,
+              2,
+              3
+            ]
+          }
+        },
+        "steps": [
+          1843,
+          1877,
+          1891,
+          1923,
+          1972,
+          2008,
+          2035
+        ]
+      },
+      {
+        "source_id": 11,
+        "title": "",
+        "prior_label": "previous",
+        "numeric": {},
+        "result": {
+          "cardName": "",
+          "BuffMap": {},
+          "sentinel": {
+            "retained": [
+              1,
+              2,
+              3
+            ]
+          }
+        },
+        "steps": [
+          1843,
+          1877,
+          1891,
+          1923,
+          1972,
+          2008,
+          2035
+        ]
+      },
+      {
+        "source_id": 11,
+        "title": "",
+        "prior_label": "previous",
+        "numeric": {
+          "attack": 3,
+          "defense": -2
+        },
+        "result": {
+          "cardName": "",
+          "BuffMap": {
+            "attack": 3,
+            "defense": -2
+          },
+          "sentinel": {
+            "retained": [
+              1,
+              2,
+              3
+            ]
+          }
+        },
+        "steps": [
+          1843,
+          1877,
+          1891,
+          1923,
+          1972,
+          2008,
+          2035
+        ]
+      },
+      {
+        "source_id": 11,
+        "title": "same",
+        "prior_label": "",
+        "numeric": {},
+        "result": {
+          "cardName": "same",
+          "BuffMap": {},
+          "sentinel": {
+            "retained": [
+              1,
+              2,
+              3
+            ]
+          }
+        },
+        "steps": [
+          1843,
+          1877,
+          1891,
+          1923,
+          1972,
+          2008,
+          2035
+        ]
+      },
+      {
+        "source_id": 11,
+        "title": "same",
+        "prior_label": "",
+        "numeric": {
+          "attack": 3,
+          "defense": -2
+        },
+        "result": {
+          "cardName": "same",
+          "BuffMap": {
+            "attack": 3,
+            "defense": -2
+          },
+          "sentinel": {
+            "retained": [
+              1,
+              2,
+              3
+            ]
+          }
+        },
+        "steps": [
+          1843,
+          1877,
+          1891,
+          1923,
+          1972,
+          2008,
+          2035
+        ]
+      },
+      {
+        "source_id": 11,
+        "title": "same",
+        "prior_label": "previous",
+        "numeric": {},
+        "result": {
+          "cardName": "same",
+          "BuffMap": {},
+          "sentinel": {
+            "retained": [
+              1,
+              2,
+              3
+            ]
+          }
+        },
+        "steps": [
+          1843,
+          1877,
+          1891,
+          1923,
+          1972,
+          2008,
+          2035
+        ]
+      },
+      {
+        "source_id": 11,
+        "title": "same",
+        "prior_label": "previous",
+        "numeric": {
+          "attack": 3,
+          "defense": -2
+        },
+        "result": {
+          "cardName": "same",
+          "BuffMap": {
+            "attack": 3,
+            "defense": -2
+          },
+          "sentinel": {
+            "retained": [
+              1,
+              2,
+              3
+            ]
+          }
+        },
+        "steps": [
+          1843,
+          1877,
+          1891,
+          1923,
+          1972,
+          2008,
+          2035
+        ]
+      },
+      {
+        "source_id": 11,
+        "title": "第2西非旅",
+        "prior_label": "",
+        "numeric": {},
+        "result": {
+          "cardName": "第2西非旅",
+          "BuffMap": {},
+          "sentinel": {
+            "retained": [
+              1,
+              2,
+              3
+            ]
+          }
+        },
+        "steps": [
+          1843,
+          1877,
+          1891,
+          1923,
+          1972,
+          2008,
+          2035
+        ]
+      },
+      {
+        "source_id": 11,
+        "title": "第2西非旅",
+        "prior_label": "",
+        "numeric": {
+          "attack": 3,
+          "defense": -2
+        },
+        "result": {
+          "cardName": "第2西非旅",
+          "BuffMap": {
+            "attack": 3,
+            "defense": -2
+          },
+          "sentinel": {
+            "retained": [
+              1,
+              2,
+              3
+            ]
+          }
+        },
+        "steps": [
+          1843,
+          1877,
+          1891,
+          1923,
+          1972,
+          2008,
+          2035
+        ]
+      },
+      {
+        "source_id": 11,
+        "title": "第2西非旅",
+        "prior_label": "previous",
+        "numeric": {},
+        "result": {
+          "cardName": "第2西非旅",
+          "BuffMap": {},
+          "sentinel": {
+            "retained": [
+              1,
+              2,
+              3
+            ]
+          }
+        },
+        "steps": [
+          1843,
+          1877,
+          1891,
+          1923,
+          1972,
+          2008,
+          2035
+        ]
+      },
+      {
+        "source_id": 11,
+        "title": "第2西非旅",
+        "prior_label": "previous",
+        "numeric": {
+          "attack": 3,
+          "defense": -2
+        },
+        "result": {
+          "cardName": "第2西非旅",
+          "BuffMap": {
+            "attack": 3,
+            "defense": -2
+          },
+          "sentinel": {
+            "retained": [
+              1,
+              2,
+              3
+            ]
+          }
+        },
+        "steps": [
+          1843,
+          1877,
+          1891,
+          1923,
+          1972,
+          2008,
+          2035
+        ]
+      },
+      {
+        "source_id": 11,
+        "title": "<b>自定义</>",
+        "prior_label": "",
+        "numeric": {},
+        "result": {
+          "cardName": "<b>自定义</>",
+          "BuffMap": {},
+          "sentinel": {
+            "retained": [
+              1,
+              2,
+              3
+            ]
+          }
+        },
+        "steps": [
+          1843,
+          1877,
+          1891,
+          1923,
+          1972,
+          2008,
+          2035
+        ]
+      },
+      {
+        "source_id": 11,
+        "title": "<b>自定义</>",
+        "prior_label": "",
+        "numeric": {
+          "attack": 3,
+          "defense": -2
+        },
+        "result": {
+          "cardName": "<b>自定义</>",
+          "BuffMap": {
+            "attack": 3,
+            "defense": -2
+          },
+          "sentinel": {
+            "retained": [
+              1,
+              2,
+              3
+            ]
+          }
+        },
+        "steps": [
+          1843,
+          1877,
+          1891,
+          1923,
+          1972,
+          2008,
+          2035
+        ]
+      },
+      {
+        "source_id": 11,
+        "title": "<b>自定义</>",
+        "prior_label": "previous",
+        "numeric": {},
+        "result": {
+          "cardName": "<b>自定义</>",
+          "BuffMap": {},
+          "sentinel": {
+            "retained": [
+              1,
+              2,
+              3
+            ]
+          }
+        },
+        "steps": [
+          1843,
+          1877,
+          1891,
+          1923,
+          1972,
+          2008,
+          2035
+        ]
+      },
+      {
+        "source_id": 11,
+        "title": "<b>自定义</>",
+        "prior_label": "previous",
+        "numeric": {
+          "attack": 3,
+          "defense": -2
+        },
+        "result": {
+          "cardName": "<b>自定义</>",
+          "BuffMap": {
+            "attack": 3,
+            "defense": -2
+          },
+          "sentinel": {
+            "retained": [
+              1,
+              2,
+              3
+            ]
+          }
+        },
+        "steps": [
+          1843,
+          1877,
+          1891,
+          1923,
+          1972,
+          2008,
+          2035
+        ]
+      },
+      {
+        "source_id": 42,
+        "title": "",
+        "prior_label": "",
+        "numeric": {},
+        "result": {
+          "cardName": "",
+          "BuffMap": {},
+          "sentinel": {
+            "retained": [
+              1,
+              2,
+              3
+            ]
+          }
+        },
+        "steps": [
+          1843,
+          1877,
+          1891,
+          1923,
+          1972,
+          2008,
+          2035
+        ]
+      },
+      {
+        "source_id": 42,
+        "title": "",
+        "prior_label": "",
+        "numeric": {
+          "attack": 3,
+          "defense": -2
+        },
+        "result": {
+          "cardName": "",
+          "BuffMap": {
+            "attack": 3,
+            "defense": -2
+          },
+          "sentinel": {
+            "retained": [
+              1,
+              2,
+              3
+            ]
+          }
+        },
+        "steps": [
+          1843,
+          1877,
+          1891,
+          1923,
+          1972,
+          2008,
+          2035
+        ]
+      },
+      {
+        "source_id": 42,
+        "title": "",
+        "prior_label": "previous",
+        "numeric": {},
+        "result": {
+          "cardName": "",
+          "BuffMap": {},
+          "sentinel": {
+            "retained": [
+              1,
+              2,
+              3
+            ]
+          }
+        },
+        "steps": [
+          1843,
+          1877,
+          1891,
+          1923,
+          1972,
+          2008,
+          2035
+        ]
+      },
+      {
+        "source_id": 42,
+        "title": "",
+        "prior_label": "previous",
+        "numeric": {
+          "attack": 3,
+          "defense": -2
+        },
+        "result": {
+          "cardName": "",
+          "BuffMap": {
+            "attack": 3,
+            "defense": -2
+          },
+          "sentinel": {
+            "retained": [
+              1,
+              2,
+              3
+            ]
+          }
+        },
+        "steps": [
+          1843,
+          1877,
+          1891,
+          1923,
+          1972,
+          2008,
+          2035
+        ]
+      },
+      {
+        "source_id": 42,
+        "title": "same",
+        "prior_label": "",
+        "numeric": {},
+        "result": {
+          "cardName": "same",
+          "BuffMap": {},
+          "sentinel": {
+            "retained": [
+              1,
+              2,
+              3
+            ]
+          }
+        },
+        "steps": [
+          1843,
+          1877,
+          1891,
+          1923,
+          1972,
+          2008,
+          2035
+        ]
+      },
+      {
+        "source_id": 42,
+        "title": "same",
+        "prior_label": "",
+        "numeric": {
+          "attack": 3,
+          "defense": -2
+        },
+        "result": {
+          "cardName": "same",
+          "BuffMap": {
+            "attack": 3,
+            "defense": -2
+          },
+          "sentinel": {
+            "retained": [
+              1,
+              2,
+              3
+            ]
+          }
+        },
+        "steps": [
+          1843,
+          1877,
+          1891,
+          1923,
+          1972,
+          2008,
+          2035
+        ]
+      },
+      {
+        "source_id": 42,
+        "title": "same",
+        "prior_label": "previous",
+        "numeric": {},
+        "result": {
+          "cardName": "same",
+          "BuffMap": {},
+          "sentinel": {
+            "retained": [
+              1,
+              2,
+              3
+            ]
+          }
+        },
+        "steps": [
+          1843,
+          1877,
+          1891,
+          1923,
+          1972,
+          2008,
+          2035
+        ]
+      },
+      {
+        "source_id": 42,
+        "title": "same",
+        "prior_label": "previous",
+        "numeric": {
+          "attack": 3,
+          "defense": -2
+        },
+        "result": {
+          "cardName": "same",
+          "BuffMap": {
+            "attack": 3,
+            "defense": -2
+          },
+          "sentinel": {
+            "retained": [
+              1,
+              2,
+              3
+            ]
+          }
+        },
+        "steps": [
+          1843,
+          1877,
+          1891,
+          1923,
+          1972,
+          2008,
+          2035
+        ]
+      },
+      {
+        "source_id": 42,
+        "title": "第2西非旅",
+        "prior_label": "",
+        "numeric": {},
+        "result": {
+          "cardName": "第2西非旅",
+          "BuffMap": {},
+          "sentinel": {
+            "retained": [
+              1,
+              2,
+              3
+            ]
+          }
+        },
+        "steps": [
+          1843,
+          1877,
+          1891,
+          1923,
+          1972,
+          2008,
+          2035
+        ]
+      },
+      {
+        "source_id": 42,
+        "title": "第2西非旅",
+        "prior_label": "",
+        "numeric": {
+          "attack": 3,
+          "defense": -2
+        },
+        "result": {
+          "cardName": "第2西非旅",
+          "BuffMap": {
+            "attack": 3,
+            "defense": -2
+          },
+          "sentinel": {
+            "retained": [
+              1,
+              2,
+              3
+            ]
+          }
+        },
+        "steps": [
+          1843,
+          1877,
+          1891,
+          1923,
+          1972,
+          2008,
+          2035
+        ]
+      },
+      {
+        "source_id": 42,
+        "title": "第2西非旅",
+        "prior_label": "previous",
+        "numeric": {},
+        "result": {
+          "cardName": "第2西非旅",
+          "BuffMap": {},
+          "sentinel": {
+            "retained": [
+              1,
+              2,
+              3
+            ]
+          }
+        },
+        "steps": [
+          1843,
+          1877,
+          1891,
+          1923,
+          1972,
+          2008,
+          2035
+        ]
+      },
+      {
+        "source_id": 42,
+        "title": "第2西非旅",
+        "prior_label": "previous",
+        "numeric": {
+          "attack": 3,
+          "defense": -2
+        },
+        "result": {
+          "cardName": "第2西非旅",
+          "BuffMap": {
+            "attack": 3,
+            "defense": -2
+          },
+          "sentinel": {
+            "retained": [
+              1,
+              2,
+              3
+            ]
+          }
+        },
+        "steps": [
+          1843,
+          1877,
+          1891,
+          1923,
+          1972,
+          2008,
+          2035
+        ]
+      },
+      {
+        "source_id": 42,
+        "title": "<b>自定义</>",
+        "prior_label": "",
+        "numeric": {},
+        "result": {
+          "cardName": "<b>自定义</>",
+          "BuffMap": {},
+          "sentinel": {
+            "retained": [
+              1,
+              2,
+              3
+            ]
+          }
+        },
+        "steps": [
+          1843,
+          1877,
+          1891,
+          1923,
+          1972,
+          2008,
+          2035
+        ]
+      },
+      {
+        "source_id": 42,
+        "title": "<b>自定义</>",
+        "prior_label": "",
+        "numeric": {
+          "attack": 3,
+          "defense": -2
+        },
+        "result": {
+          "cardName": "<b>自定义</>",
+          "BuffMap": {
+            "attack": 3,
+            "defense": -2
+          },
+          "sentinel": {
+            "retained": [
+              1,
+              2,
+              3
+            ]
+          }
+        },
+        "steps": [
+          1843,
+          1877,
+          1891,
+          1923,
+          1972,
+          2008,
+          2035
+        ]
+      },
+      {
+        "source_id": 42,
+        "title": "<b>自定义</>",
+        "prior_label": "previous",
+        "numeric": {},
+        "result": {
+          "cardName": "<b>自定义</>",
+          "BuffMap": {},
+          "sentinel": {
+            "retained": [
+              1,
+              2,
+              3
+            ]
+          }
+        },
+        "steps": [
+          1843,
+          1877,
+          1891,
+          1923,
+          1972,
+          2008,
+          2035
+        ]
+      },
+      {
+        "source_id": 42,
+        "title": "<b>自定义</>",
+        "prior_label": "previous",
+        "numeric": {
+          "attack": 3,
+          "defense": -2
+        },
+        "result": {
+          "cardName": "<b>自定义</>",
+          "BuffMap": {
+            "attack": 3,
+            "defense": -2
+          },
+          "sentinel": {
+            "retained": [
+              1,
+              2,
+              3
+            ]
+          }
+        },
+        "steps": [
+          1843,
+          1877,
+          1891,
+          1923,
+          1972,
+          2008,
+          2035
+        ]
+      }
+    ],
+    "outer_map_add_keys": [
+      {
+        "statement_index": 1761,
+        "map": {
+          "Inst": "Context",
+          "Context": {
+            "Inst": "LocalVariable",
+            "Variable Name": "cardToChange"
+          },
+          "SkipOffsetForNull": 9,
+          "RValuePropertyName": "buffsFromCards",
+          "Expression": {
+            "Inst": "InstanceVariable",
+            "Variable Name": "buffsFromCards"
+          }
+        },
+        "key": {
+          "Inst": "LocalVariable",
+          "Variable Name": "instigatorID"
+        }
+      },
+      {
+        "statement_index": 5351,
+        "map": {
+          "Inst": "Context",
+          "Context": {
+            "Inst": "LocalVariable",
+            "Variable Name": "cardToChange"
+          },
+          "SkipOffsetForNull": 9,
+          "RValuePropertyName": "buffsFromCards",
+          "Expression": {
+            "Inst": "InstanceVariable",
+            "Variable Name": "buffsFromCards"
+          }
+        },
+        "key": {
+          "Inst": "LocalVariable",
+          "Variable Name": "localInstigatorInLoop"
+        }
+      },
+      {
+        "statement_index": 5620,
+        "map": {
+          "Inst": "Context",
+          "Context": {
+            "Inst": "LocalVariable",
+            "Variable Name": "cardToChange"
+          },
+          "SkipOffsetForNull": 9,
+          "RValuePropertyName": "buffsFromCards",
+          "Expression": {
+            "Inst": "InstanceVariable",
+            "Variable Name": "buffsFromCards"
+          }
+        },
+        "key": {
+          "Inst": "LocalVariable",
+          "Variable Name": "instigatorID"
+        }
+      }
+    ],
+    "all_map_add": [
+      {
+        "statement_index": 1761,
+        "map": {
+          "Inst": "Context",
+          "Context": {
+            "Inst": "LocalVariable",
+            "Variable Name": "cardToChange"
+          },
+          "SkipOffsetForNull": 9,
+          "RValuePropertyName": "buffsFromCards",
+          "Expression": {
+            "Inst": "InstanceVariable",
+            "Variable Name": "buffsFromCards"
+          }
+        },
+        "key": {
+          "Inst": "LocalVariable",
+          "Variable Name": "instigatorID"
+        }
+      },
+      {
+        "statement_index": 3432,
+        "map": {
+          "Inst": "StructMemberContext",
+          "Property Name": "BuffMap",
+          "StructExpression": {
+            "Inst": "LocalVariable",
+            "Variable Name": "localCardBuffData"
+          }
+        },
+        "key": {
+          "Inst": "LocalVariable",
+          "Variable Name": "localBuffTypeString"
+        }
+      },
+      {
+        "statement_index": 5351,
+        "map": {
+          "Inst": "Context",
+          "Context": {
+            "Inst": "LocalVariable",
+            "Variable Name": "cardToChange"
+          },
+          "SkipOffsetForNull": 9,
+          "RValuePropertyName": "buffsFromCards",
+          "Expression": {
+            "Inst": "InstanceVariable",
+            "Variable Name": "buffsFromCards"
+          }
+        },
+        "key": {
+          "Inst": "LocalVariable",
+          "Variable Name": "localInstigatorInLoop"
+        }
+      },
+      {
+        "statement_index": 5552,
+        "map": {
+          "Inst": "StructMemberContext",
+          "Property Name": "BuffMap",
+          "StructExpression": {
+            "Inst": "LocalVariable",
+            "Variable Name": "localCardBuffData"
+          }
+        },
+        "key": {
+          "Inst": "LocalVariable",
+          "Variable Name": "localBuffTypeString"
+        }
+      },
+      {
+        "statement_index": 5620,
+        "map": {
+          "Inst": "Context",
+          "Context": {
+            "Inst": "LocalVariable",
+            "Variable Name": "cardToChange"
+          },
+          "SkipOffsetForNull": 9,
+          "RValuePropertyName": "buffsFromCards",
+          "Expression": {
+            "Inst": "InstanceVariable",
+            "Variable Name": "buffsFromCards"
+          }
+        },
+        "key": {
+          "Inst": "LocalVariable",
+          "Variable Name": "instigatorID"
+        }
+      },
+      {
+        "statement_index": 5789,
+        "map": {
+          "Inst": "StructMemberContext",
+          "Property Name": "BuffMap",
+          "StructExpression": {
+            "Inst": "LocalVariable",
+            "Variable Name": "localCardBuffData"
+          }
+        },
+        "key": {
+          "Inst": "LocalVariable",
+          "Variable Name": "CallFunc_GetEnumeratorUserFriendlyName_ReturnValue_1"
+        }
+      },
+      {
+        "statement_index": 6195,
+        "map": {
+          "Inst": "StructMemberContext",
+          "Property Name": "BuffMap",
+          "StructExpression": {
+            "Inst": "LocalVariable",
+            "Variable Name": "localCardBuffData"
+          }
+        },
+        "key": {
+          "Inst": "LocalVariable",
+          "Variable Name": "localBuffTypeString"
+        }
+      }
+    ],
+    "scope": "Current decoded AST window only. Valid positive source lookup/title supplied, nonpositive ID path actual branch; does not execute later Map_Add, full ChangeBuffsFromCards, invalid positive lookup/Context null handling or native struct copying. Checks only metadata label changes while record numeric map and other fixture fields remain.",
+    "game_writes": 0,
+    "real_game_function_calls": 0,
+    "fully_certified_cards": 0
+  },
+  "field_identity": {
+    "property": "0x1cb0152f9e0",
+    "owner": "CardBuffData",
+    "offset": 0,
+    "element_size": 16,
+    "header_hex": "181e3011f77f0000708e4113f77f0000011a7895f47f000020c27286ca010000e324130000000000450000000000000001000000100000000500000000001000000000000000000020c27286ca010000000000000000000020c27286ca0100000000000000000000"
+  },
+  "loaded_script_census": {
+    "function_objects": 30583,
+    "scripted_functions": 18111,
+    "script_bytes": 7922413
+  },
+  "direct_access_index": [
+    {
+      "owner": "W_BuffTexts_CardName_C",
+      "name": "SetupCardName",
+      "struct_card_name_statement_indexes": [
+        0,
+        68
+      ],
+      "map_add_calls": []
+    },
+    {
+      "owner": "BP_CardFunctions_C",
+      "name": "ChangeBuffsFromCards",
+      "struct_card_name_statement_indexes": [
+        1972
+      ],
+      "map_add_calls": [
+        {
+          "statement_index": 1761,
+          "map": {
+            "Inst": "Context",
+            "Context": {
+              "Inst": "LocalVariable",
+              "Variable Name": "cardToChange"
+            },
+            "SkipOffsetForNull": 9,
+            "RValuePropertyName": "buffsFromCards",
+            "Expression": {
+              "Inst": "InstanceVariable",
+              "Variable Name": "buffsFromCards"
+            }
+          },
+          "key": {
+            "Inst": "LocalVariable",
+            "Variable Name": "instigatorID"
+          }
+        },
+        {
+          "statement_index": 3432,
+          "map": {
+            "Inst": "StructMemberContext",
+            "Property Name": "BuffMap",
+            "StructExpression": {
+              "Inst": "LocalVariable",
+              "Variable Name": "localCardBuffData"
+            }
+          },
+          "key": {
+            "Inst": "LocalVariable",
+            "Variable Name": "localBuffTypeString"
+          }
+        },
+        {
+          "statement_index": 5351,
+          "map": {
+            "Inst": "Context",
+            "Context": {
+              "Inst": "LocalVariable",
+              "Variable Name": "cardToChange"
+            },
+            "SkipOffsetForNull": 9,
+            "RValuePropertyName": "buffsFromCards",
+            "Expression": {
+              "Inst": "InstanceVariable",
+              "Variable Name": "buffsFromCards"
+            }
+          },
+          "key": {
+            "Inst": "LocalVariable",
+            "Variable Name": "localInstigatorInLoop"
+          }
+        },
+        {
+          "statement_index": 5552,
+          "map": {
+            "Inst": "StructMemberContext",
+            "Property Name": "BuffMap",
+            "StructExpression": {
+              "Inst": "LocalVariable",
+              "Variable Name": "localCardBuffData"
+            }
+          },
+          "key": {
+            "Inst": "LocalVariable",
+            "Variable Name": "localBuffTypeString"
+          }
+        },
+        {
+          "statement_index": 5620,
+          "map": {
+            "Inst": "Context",
+            "Context": {
+              "Inst": "LocalVariable",
+              "Variable Name": "cardToChange"
+            },
+            "SkipOffsetForNull": 9,
+            "RValuePropertyName": "buffsFromCards",
+            "Expression": {
+              "Inst": "InstanceVariable",
+              "Variable Name": "buffsFromCards"
+            }
+          },
+          "key": {
+            "Inst": "LocalVariable",
+            "Variable Name": "instigatorID"
+          }
+        },
+        {
+          "statement_index": 5789,
+          "map": {
+            "Inst": "StructMemberContext",
+            "Property Name": "BuffMap",
+            "StructExpression": {
+              "Inst": "LocalVariable",
+              "Variable Name": "localCardBuffData"
+            }
+          },
+          "key": {
+            "Inst": "LocalVariable",
+            "Variable Name": "CallFunc_GetEnumeratorUserFriendlyName_ReturnValue_1"
+          }
+        },
+        {
+          "statement_index": 6195,
+          "map": {
+            "Inst": "StructMemberContext",
+            "Property Name": "BuffMap",
+            "StructExpression": {
+              "Inst": "LocalVariable",
+              "Variable Name": "localCardBuffData"
+            }
+          },
+          "key": {
+            "Inst": "LocalVariable",
+            "Variable Name": "localBuffTypeString"
+          }
+        }
+      ]
+    }
+  ],
+  "widget_statements": [
+    {
+      "Inst": "LetBool",
+      "Variable": {
+        "Inst": "LocalVariable",
+        "Variable Name": "CallFunc_TextIsEmpty_ReturnValue"
+      },
+      "Expression": {
+        "Inst": "CallMath",
+        "Function": "TextIsEmpty",
+        "Parameters": [
+          {
+            "Inst": "StructMemberContext",
+            "Property Name": "cardName",
+            "StructExpression": {
+              "Inst": "InstanceVariable",
+              "Variable Name": "CardBuffData"
+            }
+          }
+        ]
+      },
+      "StatementIndex": 0
+    },
+    {
+      "Inst": "JumpIfNot",
+      "Offset": 68,
+      "Condition": {
+        "Inst": "LocalVariable",
+        "Variable Name": "CallFunc_TextIsEmpty_ReturnValue"
+      },
+      "StatementIndex": 38
+    },
+    {
+      "Inst": "LetBool",
+      "Variable": {
+        "Inst": "LocalOutVariable",
+        "Variable Name": "EmptyName"
+      },
+      "Expression": {
+        "Inst": "True"
+      },
+      "StatementIndex": 52
+    },
+    {
+      "Inst": "Jump",
+      "Offset": 133,
+      "StatementIndex": 63
+    },
+    {
+      "Inst": "Context",
+      "Context": {
+        "Inst": "InstanceVariable",
+        "Variable Name": "cardName"
+      },
+      "SkipOffsetForNull": 32,
+      "RValuePropertyName": null,
+      "Expression": {
+        "Inst": "VirtualFunction",
+        "Function": "SetText",
+        "Parameters": [
+          {
+            "Inst": "StructMemberContext",
+            "Property Name": "cardName",
+            "StructExpression": {
+              "Inst": "InstanceVariable",
+              "Variable Name": "CardBuffData"
+            }
+          }
+        ]
+      },
+      "StatementIndex": 68
+    },
+    {
+      "Inst": "LetBool",
+      "Variable": {
+        "Inst": "LocalOutVariable",
+        "Variable Name": "EmptyName"
+      },
+      "Expression": {
+        "Inst": "False"
+      },
+      "StatementIndex": 122
+    },
+    {
+      "Inst": "Return",
+      "Expression": {
+        "Inst": "Nothing"
+      },
+      "StatementIndex": 133
+    },
+    {
+      "Inst": "EndOfScript",
+      "StatementIndex": 135
+    }
+  ],
+  "worker_job": "20261028-012434-rule499-buff-label-ast-index-ca112183",
+  "evidence": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule499-buff-name-references.py",
+      "bytes": 1551,
+      "sha256": "92716f4bf70f28750181dbf13f4d40a286852a800711009187b7e94b11a2b0c7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule499-buff-name-references-20261028.json",
+      "bytes": 4772545,
+      "sha256": "3227aae2654acb5d609ee97b5a13eed1e3559b522fb9dfbe245079025fc75a0f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule499-buff-label-window.py",
+      "bytes": 4399,
+      "sha256": "81f5d24a4b6be7507da3ddef14d1e3e5149300b3aadeb01fb292ce6f977e0158"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule499-buff-label-window-verification-20261028.json",
+      "bytes": 37807,
+      "sha256": "97209485538b16f84a2948639cd3f63d34550b1fcaeea8c6df9b530f45e9e59b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule499-worker\\input.json",
+      "bytes": 99273,
+      "sha256": "6e49ce0d370c75235950e514a7d6bccbe9420efcdd81aa50e13f4e0ff4a2e289"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule499-worker\\output.json",
+      "bytes": 3585,
+      "sha256": "24167ed98c0aceb52f6a06b5849e9dade38e30f8f1ddf3db746d498afcd00d69"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule499-worker\\task.txt",
+      "bytes": 847,
+      "sha256": "70365d7da56706a41c74b495d653c2025795992fb2b955e57a688eecfe719d5e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule497-field-references.py",
+      "bytes": 1618,
+      "sha256": "f6c6f62cac5ca4f5e6e38d8838b58b4a1def577be183416122bf1925def38788"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule477-effecttype-references.py",
+      "bytes": 2743,
+      "sha256": "c505e46454ed6677d9f53242ab838d60f10017e493339badac98b5e3e061b37f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule285-controller-blueprint.py",
+      "bytes": 3642,
+      "sha256": "213e54bca57f013491749fa18ed709dcf095f28b930fa7f5b4cd733d1158d5c6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-498.py",
+      "bytes": 752,
+      "sha256": "254664d0aa1146756993fda4ac54e58891709c0ec5bcdd2cfa852f874c4e67ef"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule498-default-field-references-20261028.json",
+      "bytes": 19120618,
+      "sha256": "7b809f03b947287074b02852ebaa77eb7bba007e94c19311990af88902c4d1a5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\CardInstance.cs",
+      "bytes": 78893,
+      "sha256": "39a103eb5edaf8a09f538c387225e00b3fb2e38122df655342c53b7056deaa6a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApi.cs",
+      "bytes": 339056,
+      "sha256": "a0174f757f45c2b86ed43fe3c5f2ad9ddec8985d6faa27e83e6c48e00b015f50"
+    }
+  ],
+  "remaining": [
+    "Text追加、SetNewCardText及战斗快照文字的下游是否影响PvP选择/状态。",
+    "CardBuffData整结构传递、原生/反射及未加载代码的间接消费。",
+    "完整finalizer/TLS/CopyData与全量规则/卡池的逐项语义认证。"
+  ],
+  "game_writes": 0,
+  "real_game_function_calls": 0,
+  "fully_certified_cards": 0
+}

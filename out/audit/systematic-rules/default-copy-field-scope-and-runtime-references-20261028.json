@@ -1378,5 +1378,6 @@
   "game_writes": 0,
   "real_game_function_calls": 0,
   "fully_certified_cards": 0,
-  "later_decoder_clarification_RULE498": "RULE498扫描改用继承RULE483正确NameConst布局的新版解码器，并补充已按当前333B VM处理器验证读取边界的opcode67单子表达式语法。原67个函数脚本逐个字节相同，完整解码61→65；GetEquipmentNameAndType已完整，其2424处title用于描述Format参数，外观/物品Type、DescriptiveName、Thumbnail输出，无直接卡牌实例写。仅缩小本函数直接数据流边界，不证明全部原生/调用者或title整体无PvP作用。"
+  "later_decoder_clarification_RULE498": "RULE498扫描改用继承RULE483正确NameConst布局的新版解码器，并补充已按当前333B VM处理器验证读取边界的opcode67单子表达式语法。原67个函数脚本逐个字节相同，完整解码61→65；GetEquipmentNameAndType已完整，其2424处title用于描述Format参数，外观/物品Type、DescriptiveName、Thumbnail输出，无直接卡牌实例写。仅缩小本函数直接数据流边界，不证明全部原生/调用者或title整体无PvP作用。",
+  "later_buff_label_clarification_RULE499": "RULE499对title流入的CardBuffData.cardName(结构字段FProperty身份，非同名局部/卡牌标识)单独扫描：当前已加载脚本仅ChangeBuffsFromCards写入和W_BuffTexts_CardName.SetupCardName显示/空名判断两处直接消费，均完整语法解码。64元数据写入片段案例及三处外层Map_Add键核对支持此标签与来源ID/增益数字分离；仅为当前直接访问边界，未穷尽原生/反射/整结构间接消费或title全局用途。"
 }
