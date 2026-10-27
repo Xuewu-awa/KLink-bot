@@ -1,0 +1,159 @@
+{
+  "rule_id": "RULE-485",
+  "date": "2026-10-27",
+  "base_commit": "55401ce214c1648e191af20e21bc00e74ed03787",
+  "status": "已修复夺取摧毁效果副本漏复制isBeingGuarded缓存；非完整CopyData认证",
+  "findings": [
+    "当前isBeingGuarded的FProperty头复读一致，Offset_Internal(+0x44)=0x288，与SDK一致。原生CopyData 4adc60f..4adc61c两指令读取源+0x288并原样写目标+0x288；未从Guard关键词或邻居状态重新计算。",
+    "CopyForStealSide此前遗漏IsBeingGuarded，源缓存true会在新对象变成默认false。现按原始缓存值复制，不改变来源、关键词、位置或守护刷新时机。",
+    "当前TriggerDestruction3622B在989调用ConstructAndCopyCard；后者为293B蓝图，0/72取源class、101生成新对象、131调用源.CopyData(new)、172输出副本。此路径与上一轮BaseCardObject.CreateCopy原生174B是不同入口，不能互相替代。",
+    "最初尝试按原生函数模板查ConstructAndCopyCard的直接后端，遇通用脚本分派器而停止；已改为读取并执行真实293B蓝图，未将引擎分派器当作卡牌复制实现。",
+    "新增48组托管回归：双方、缓存真假、Guard关键词真假、HQ/手牌/弃牌、是否stealSide。反射直接检验复制和标量存储独立性；真实TriggerDestruction经过临时Kismet OnDestroyed探针，按isBeingGuarded决定是否生成标记，验证副本事件可见值与夺取后的Owner、源缓存/Owner保持。布景是受控边界，不宣称所有状态均来自合法实战。",
+    "同一新增测试在修复前完整运行，原928项通过、新项唯一失败（源true副本false）；补一字段后全套929/929通过。不是仅靠实现镜像测试，客户端当前原始复制指令、属性元数据和真实事件执行路径提供独立依据。",
+    "原生13字节无helper片段Unicorn执行768组（全部256原始字节×3目标旧值），源4KB不变、目标仅+0x288字节改变。托管bool投影仅声明规范0/1等价，不声称可表达任意非规范bool位模式。",
+    "完整ConstructAndCopyCard AST受控执行4例：class有效性×源缓存，验证SpawnObject/CopyData方向、有效输出与无效null/诊断分支；构造与CopyData回调显式供给，不等于真实UObject生命周期。",
+    "DeepSeek机械提取CopyData476条指令中89组相邻源加载/目标写入配对，主agent独立精确核验。本轮只对守护缓存作语义修复，其余配对不自动视作全部字段已审计或认证。"
+  ],
+  "verification": {
+    "rule": "RULE-485",
+    "pid": 24220,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "current_property": {
+      "name": "isBeingGuarded",
+      "address": "0x1cb01c54980",
+      "offset": 648
+    },
+    "live_blueprint_functions": [
+      {
+        "name": "TriggerDestruction",
+        "bytes": 3622,
+        "sha256": "2beb436970faaf3e094e341e0fcc4375509069a33c3cd10bf1f6f75ca71ac2d7"
+      },
+      {
+        "name": "ConstructAndCopyCard",
+        "bytes": 293,
+        "sha256": "0b2a130c57c48dc992be5cd33f11334163388e33b5bf85859015d9314ad13a42"
+      }
+    ],
+    "native_slice": {
+      "start": "0x4adc60f",
+      "end": "0x4adc61c",
+      "raw_hex": "0fb68388020000888788020000"
+    },
+    "native_raw_byte_cases": 768,
+    "case_sha256": "71b4fa61d320ffad52032935a95a0059782d75647dd24e4aac29b601c090030d",
+    "construct_copy_ast_cases": 4,
+    "worker_exact_pairs": 89,
+    "scope": "Native13-byte CopyData guard-cache slice executes unmodified with supplied registers/buffers; source4KB and all target bytes except+288 unchanged. All256 raw values tested; managed bool projection only claims canonical0/1. Full ConstructAndCopyCard AST executed with construction/CopyData callbacks supplied; not full UObject lifecycle or all copied fields. Managed regression separately covers48 side/cache/keyword/location/steal profiles.",
+    "game_writes": 0,
+    "real_game_function_calls": 0,
+    "fully_certified_cards": 0
+  },
+  "tests": {
+    "command": "dotnet run --project tools/BotSim -- selftest",
+    "baseline": {
+      "passed": 928,
+      "failed": 1,
+      "total": 929,
+      "only_failure": "新增守护缓存复制测试，源true被复制为false"
+    },
+    "after": {
+      "passed": 929,
+      "failed": 0
+    },
+    "new_managed_cases": 48,
+    "native_byte_cases": 768,
+    "construct_copy_ast_cases": 4
+  },
+  "implementation": [
+    "src/KLink.Bot/Effects/CardApi.cs",
+    "tools/BotSim/SelfTest.cs"
+  ],
+  "worker": {
+    "job_id": "20261027-174304-rule485-copydata-field-pairs-f21d8413",
+    "exact_pairs": 89,
+    "role": "mechanical inventory only"
+  },
+  "remaining": [
+    "其余复制字段/非空容器所有权、动态类身份、JSON/FText引用计数与完整UObject生命周期仍待核查。",
+    "未证明所有复制callback、别名、分配失败与非动作异步行为；整体CopyData与全部PvP仍未完全认证。",
+    "源缓存合法可达性和TSet/登记历史不由本轮受控布景穷尽，完整认证卡数仍0。"
+  ],
+  "artifacts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule485-destruction-copy.py",
+      "bytes": 2354,
+      "sha256": "473d162fef6093dee228f411c92c3188dec26c8c8296eb78cc922c2a66c0f319"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule485-destruction-copy-path-20261027.json",
+      "bytes": 4598604,
+      "sha256": "73c3107a63cf8a8a0fed6fb7ddde762870bcfd246cbefa8f6113d79d49a6f79b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule485-construct-copy-headers.py",
+      "bytes": 2358,
+      "sha256": "e27f6f56e18fe27b70e05a845423f23f2ebe1febe92a2db570ac56f99e22fe0b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule485-construct-copy-headers-20261027.json",
+      "bytes": 4498662,
+      "sha256": "0a1dc39d24472937dee329132a53da805217e5ee6a83c306a9ccf391e5e37cf0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule485-guard-copy.py",
+      "bytes": 5892,
+      "sha256": "162b7152cfba8d3391e5dba9c82a350bee1b4f766c01eae2d76dae09a3a9dbc1"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule485-guard-copy-verification-20261027.json",
+      "bytes": 1447,
+      "sha256": "71c9867bfe0a6d135c7cb6719863333203626f25f6f2fb39a0d09ac81010c197"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule485-worker\\input.json",
+      "bytes": 47347,
+      "sha256": "3210b0bbc0e543e5688f59cd6486666b11bcda7383e4027b89157b6b93b8e969"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule485-worker\\output.json",
+      "bytes": 23032,
+      "sha256": "cfd7e52d7ea57b89048318d8a5a9fff4817048944140ebf9744cfdc1edfdba75"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule485-worker\\task.txt",
+      "bytes": 457,
+      "sha256": "d4bf7ca9e3f0262825bb4b459afdb3adac75aad0405889e190db9eac8b164e7b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule485-baseline-selftest.log",
+      "bytes": 81001,
+      "sha256": "af6f91d77c96e282c3f18fec1ba5c10c25856a8e182651dc2dddf9a5090cb53d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule485-baseline-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule485-final-selftest.log",
+      "bytes": 80920,
+      "sha256": "86cb2b198e09d54a2b969ffde4c7249bff6df2f9390c8c01ddf15bf2055906ca"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule485-final-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule479-copydata-native-20261027.json",
+      "bytes": 67882,
+      "sha256": "69fa7833b16dfce3e3895d83c7db73c20b9418df2b05967fb3b16cb8aee91756"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule483-static-template-callers-corrected-20261027.json",
+      "bytes": 12851484,
+      "sha256": "732c8bbcb50bce625b117e3347382dee1ee69f6d367bd5998521feaf67b173d1"
+    }
+  ]
+}

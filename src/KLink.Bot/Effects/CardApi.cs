@@ -1348,6 +1348,8 @@ public sealed partial class CardApi
             IsGold = source.IsGold,
             Location = source.Location,
             LocationNumber = source.LocationNumber,
+            // RULE-485: CopyData preserves the cached guard byte (+0x288).
+            IsBeingGuarded = source.IsBeingGuarded,
             BaseHeavyArmor = source.BaseHeavyArmor,
             TemporaryHeavyArmor = source.TemporaryHeavyArmor,
             SuppressStrippedArmorPair = source.SuppressStrippedArmorPair,

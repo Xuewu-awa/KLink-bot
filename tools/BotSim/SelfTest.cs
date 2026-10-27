@@ -863,6 +863,7 @@ internal static class SelfTest
         new("装甲生命周期：模板双值/复制/重置/VM/快照", HeavyArmorIndependentLifecycle),
         new("老兵装甲回调：额度捕获与持有对象后续结算", VeteranArmorCallbackContinuation),
         new("老兵攻击回调：缓存模板与后续原语独立检查", VeteranAttackCallbackContinuation),
+        new("复制守护缓存：原值保持及夺取摧毁效果可见性", CopyGuardCacheAndStolenDestruction),
         new("老兵烟幕/守护/毁灭：原始覆盖与来源门", VeteranGuardSmokeWrites),
         new("老兵守护：烟幕回调后按当前位置刷新", VeteranGuardSmokeCallbackOrder),
         new("生成老兵：先升级/T35再授予闪击", SpawnVeteranBeforeCreationObservers),
@@ -33786,6 +33787,48 @@ internal static class SelfTest
 
     // RULE-482: controlled mutation after the first numeric writer. Renaming
     // does not replace the already-cached veteran template or held target.
+    // RULE-485: native CopyData copies the raw byte at+0x288. A cached
+    // value must not be derived from Guard or recomputed from board neighbors.
+    private static string? CopyGuardCacheAndStolenDestruction(CardDatabase db)
+    {
+        const string name = "card_unit_typhoon_mk_ib", marker = "card_unit_routed_troops", trigger = "OnDestroyed";
+        using var probe = InstallSelectionDrawProbe(name, trigger);
+        var locals = (IDictionary<string, IReadOnlyList<KismetStep>>)KismetLibrary.Default!.Find(name)!.Locals;
+        locals[trigger] = new[] {
+            new KismetStep(0, "jumpIfNot", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, new KismetExpr { Var = "isBeingGuarded", Scope = "instance" }, 2, null, null),
+            new KismetStep(1, "call", "SpawnCardInDeckBySide", new[] { new KismetExpr { Var = "side", Scope = "instance" }, new KismetExpr { Str = marker }, new KismetExpr { Int = 30 }, new KismetExpr { Int = 1 } }, Array.Empty<int>(), null, null, -1, null, null),
+            new KismetStep(2, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null) };
+        var copyMethod = typeof(CardApi).GetMethod("CopyForStealSide", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic)!;
+        int cases = 0;
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (bool guarded in new[] { false, true })
+        foreach (bool guardKeyword in new[] { false, true })
+        foreach (CardLocation location in new[] { side.HqOf(), side.HandOf(), CardLocation.Discard })
+        foreach (bool steal in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId(name, side, 60, location, 0);
+            source.Keywords.Clear(); source.Keywords.Add(Keyword.Destruction);
+            if (guardKeyword) source.Keywords.Add(Keyword.Guard);
+            source.IsBeingGuarded = guarded;
+            var copy = (CardInstance)copyMethod.Invoke(null, new object[] { source })!;
+            if (ReferenceEquals(copy, source) || copy.IsBeingGuarded != guarded || copy.Owner != side.Opposite())
+                return $"raw guard cache missing in side-copy {side}/{guarded}/{guardKeyword}/{location}/{steal}: {copy.IsBeingGuarded}";
+            copy.IsBeingGuarded = !guarded;
+            if (source.IsBeingGuarded != guarded) return "copy guard-cache write changed source";
+            int before = state.AllCards.Count(c => c.Name == marker);
+            engine.Api.TriggerDestruction(source, null, steal, false);
+            var spawned = state.AllCards.Where(c => c.Name == marker).ToArray();
+            Side expectedSide = steal ? side.Opposite() : side;
+            if (spawned.Length != before + (guarded ? 1 : 0)
+                || guarded && spawned[^1].Owner != expectedSide
+                || source.IsBeingGuarded != guarded || source.Owner != side)
+                return $"destruction callback lost raw guarded state {side}/{guarded}/{guardKeyword}/{location}/{steal}: markers={spawned.Length-before}, owner={source.Owner}";
+            cases++;
+        }
+        return cases == 48 ? null : $"guard-cache copy profiles={cases}";
+    }
+
     private static string? VeteranAttackCallbackContinuation(CardDatabase db)
     {
         const string name = "card_unit_arado_ar_196", changedName = "card_unit_rule482_renamed";
