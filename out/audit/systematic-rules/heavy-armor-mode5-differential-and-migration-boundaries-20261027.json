@@ -1,0 +1,235 @@
+{
+  "rule_id": "RULE-478",
+  "date": "2026-10-27",
+  "base_commit": "412562fa070b8e774e0d5cfbfd6df953942b335a",
+  "status": "确认老兵装甲不可孤立接入旧mode5；48组C#对照明确差异并建立迁移边界，未修复数值层",
+  "findings": [
+    "当前只读采集ChangeHeavyArmor1846和MakeVeteran2924，另扫描两装甲FProperty指针。30583函数对象、18111非空脚本7922413字节中命中6个字段引用函数。完整候选解码含导入/导出/战役统计/教程；只用于分类，不实现UI/战役/教程。",
+    "已加载脚本5个直接字段赋值：LimitedCardText3040永久装甲；ChangeHeavyArmor1183/1566永久、1372/1782临时。AddCardStats290只是把永久量读入CampaignCardStats，不是卡牌raw写入。扫描不覆盖原生构造/Reset/CopyData、间接/未加载访问，不能称全部写入清单。",
+    "复读/独立重解码8个去重函数71057字节一致。DeepSeek对19条字段候选机械筛选5个直接写入，主agent按原始完整AST独立全等核验。",
+    "永久heavyArmor与临时heavyArmorBuff是独立数值分量；当前C# HeavyArmor仍把模板（可被抑制遮蔽）和所有CardBuff.HeavyArmor相加。DoChangeHeavyArmor mode5又把目标amount写作新的普通来源账本；原始字段与typed账本在客户端互不替代。",
+    "私有.NET10项目引用当前生产项目重新编译，通过真实InvokeByName调用mode5；48组synthetic布景为永久模板0..3×目标amount0..3×三种永久账本（空/自身/自身加他人），源60为自身、临时数值0。未修改生产源码或测试。",
+    "参考端完整执行与当前字节一致的ChangeHeavyArmor AST，调用完整type4 ChangeBuffsFromCards AST；只供应容器/来源查找和通知边界。mode5清理永久键后，按原永久值是否等于raw amount决定数值/通知，临时值保持，不重新写一条老兵装甲账本。",
+    "48组对照30组总装甲不一致，48组适配器仍留非空账本而参考为空。例永久模板1、无账本、amount1：参考永久1/临时0/总1，无数值变化通知；旧适配器写入额外1，得到总2。这是受控离线布景的差异，不宣称全部输入在实际PvP可达。",
+    "因此未把MakeVeteran1189直接接入旧mode5，也未引入孤立覆盖值掩盖其他模式。需按下列清单一致迁移数值、账本及生命周期；现有装甲缺口仍开放。"
+  ],
+  "verification": {
+    "rule": "RULE-478",
+    "pid": 24220,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "loaded_script_census": {
+      "function_objects": 30583,
+      "scripted_functions": 18111,
+      "script_bytes": 7922413
+    },
+    "verified_functions": {
+      "BP_CardFunctions_C.ChangeHeavyArmor": {
+        "bytes": 1846,
+        "sha256": "3a1986a221f10d1fcf58b15063e6c554211318d831559a8e947b60850770b0cf"
+      },
+      "BP_CardFunctions_C.MakeVeteran": {
+        "bytes": 2924,
+        "sha256": "3caec2d19e5f9297b711564f5ec2655d8352314ab5626fcd1b43afac455d2d06"
+      },
+      "UtilityFunctions_C.CreateCardFromLimitedCardText": {
+        "bytes": 4528,
+        "sha256": "75db5585a01937c5006fbb7c05f9e9cbb27f589d9be0bc2cb959b89ab4a6cc33"
+      },
+      "UtilityFunctions_C.GetLimitedCardDataAsText": {
+        "bytes": 2706,
+        "sha256": "8a6d5062c8048615481ebab51a16e39028564891af1d8dab07d4b0dc69082ec4"
+      },
+      "BP_Logic_C.AddCardStats": {
+        "bytes": 791,
+        "sha256": "a6d2268282f3f54cd7ac51e1d7258f97413692cf3101b9cbe727418f76e63b09"
+      },
+      "BP_OnlineMatch_C.GetMatchCardsAsJsonString": {
+        "bytes": 31038,
+        "sha256": "73f6af1a5b3cde6ad391fe48c3f0e8322ea379067ce0c057d2c93eddd4b9ce3c"
+      },
+      "advancedTutorial_Widget_C.DisplayTutorialsForCard": {
+        "bytes": 20957,
+        "sha256": "5b46e0278f2740467bd2237d2804ba3cdf95f793fe8d6ebc2b79aca4dba23244"
+      },
+      "BP_CardFunctions_C.ChangeBuffsFromCards": {
+        "bytes": 6267,
+        "sha256": "42c741b35f80b2e5628572fdddae30d23de07a540e813e4a233ca7a97c8644b8"
+      }
+    },
+    "verified_unique_bytes": 71057,
+    "direct_script_field_writes": [
+      {
+        "owner": "UtilityFunctions_C",
+        "function": "CreateCardFromLimitedCardText",
+        "statement": 3040,
+        "field": "heavyArmor"
+      },
+      {
+        "owner": "BP_CardFunctions_C",
+        "function": "ChangeHeavyArmor",
+        "statement": 1183,
+        "field": "heavyArmor"
+      },
+      {
+        "owner": "BP_CardFunctions_C",
+        "function": "ChangeHeavyArmor",
+        "statement": 1372,
+        "field": "heavyArmorBuff"
+      },
+      {
+        "owner": "BP_CardFunctions_C",
+        "function": "ChangeHeavyArmor",
+        "statement": 1566,
+        "field": "heavyArmor"
+      },
+      {
+        "owner": "BP_CardFunctions_C",
+        "function": "ChangeHeavyArmor",
+        "statement": 1782,
+        "field": "heavyArmorBuff"
+      }
+    ],
+    "mode5_differential": {
+      "cases": 48,
+      "total_mismatches": 30,
+      "nonempty_legacy_ledger_after_clear_expected": 48,
+      "scope": "Current compiled C# adapter via InvokeByName vs full current-equal ChangeHeavyArmor AST calling full type4 ledger AST, controlled containers/notifiers. Raw initial base supplied separately, temporary0. Only permanent armor keys in source/foreign ledgers. Not all mode5/callback/native runtime states."
+    },
+    "conclusion": "Do not route MakeVeteran1189 into legacy mode5 adapter as isolated fix; independent numeric components and typed permanent/temp ledger plus creation/reset/copy/aura/snapshot/VM/suppression lifecycle must migrate coherently.",
+    "game_writes": 0,
+    "real_game_function_calls": 0,
+    "fully_certified_cards": 0
+  },
+  "migration_requirements": [
+    {
+      "area": "数值存储",
+      "path": "src/KLink.Bot/Engine/CardInstance.cs",
+      "requirement": "永久heavyArmor和临时heavyArmorBuff独立int32；总值只在读取时unchecked相加再限幅0..3，不能由账本反算。"
+    },
+    {
+      "area": "静态模板/创建/重置",
+      "path": "src/KLink.Bot/Cards/CardDatabase.cs",
+      "requirement": "验证模板两个原始值的来源、初始化和重置；不能凭缺少导出字段断言全体临时值恒0。CardInstance初始化与GameState建卡一并检查。"
+    },
+    {
+      "area": "模式/账本/通知",
+      "path": "src/KLink.Bot/Effects/CardApiDispatch.cs",
+      "requirement": "0..5按原数值写入与typed key生命周期，6..8既有空detail语义保持；mode5清理永久账本后比较raw值，不能写入临时值或把amount另加模板。保留skip/deck/action及qqq边界。"
+    },
+    {
+      "area": "老兵/抑制/光环/恢复",
+      "path": "src/KLink.Bot/Effects/CardApi.cs",
+      "requirement": "在新数值层后接1189并保持其位置及通知重入；抑制正来源可见门、临时量、光环ApplyAuraHeavyArmor和遗留恢复避免双计。"
+    },
+    {
+      "area": "复制/快照/校正",
+      "path": "src/KLink.Bot/Engine/CardInstance.cs",
+      "requirement": "原始两值显式进入快照/复制；CopyForStealSide与Reidentify兼容路径单独检查，不能把回放校正当PvP转换权威。"
+    },
+    {
+      "area": "VM字段",
+      "path": "src/KLink.Bot/Effects/Blueprint/KismetVm.cs",
+      "requirement": "heavyArmor/heavyArmorBuff直接读取和写入映射到独立分量；getTotalHeavyArmor读取限幅合计，typed账本不隐式改值。"
+    }
+  ],
+  "production_changes": false,
+  "tests": {
+    "managed_differential_profiles": 48,
+    "numeric_mismatches": 30,
+    "ledger_mismatches": 48,
+    "full_csharp_suite_rerun": false,
+    "previous_full_suite_passed": 924,
+    "reason": "本轮执行私有定向.NET对照；未改生产行为，924为RULE-476历史全套结果。"
+  },
+  "unresolved": [
+    "独立永久/临时装甲数值层尚未迁移，老兵1189调用仍缺。",
+    "现有模式0..5、typed账本、光环/抑制/恢复与快照/VM/复制必须一致迁移。",
+    "候选扫描不穷尽原生/反射/未加载资产；真实运行时卡牌可达性和全部通知重入未证明。",
+    "登记历史/TSet/重置所有权等既有边界。"
+  ],
+  "game_writes": 0,
+  "real_game_function_calls": 0,
+  "fully_certified_cards": 0,
+  "artifacts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule478-heavyarmor-entry-lifecycle-20261027.json",
+      "bytes": 4633285,
+      "sha256": "b396b1f29a038dac152a2a9bb9ce6e3d1b49c04272203277c1166445a8f0d34d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule478-heavyarmor-field-references-20261027.json",
+      "bytes": 5886088,
+      "sha256": "5c190577b0b05635bab5f6a7f27faae708fb42b4891da8fb30de3d8a49296ec4"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule457-salvage-creation-native-20261027.json",
+      "bytes": 4664342,
+      "sha256": "f12ca334d6a12db58190294ce4471fa0d982b1f4c79e5e0200c4dcc4a287b168"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule478-heavyarmor-entry.py",
+      "bytes": 2376,
+      "sha256": "65ebac50a790681f1bf80f21a9d27993ec4b4aed2b580cb96d1ad78e44325ffe"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule478-heavyarmor-field-users.py",
+      "bytes": 2809,
+      "sha256": "86655f440b5f48aca6e38ca93a1ddb2d241bdb168e026bbd0226227043c28727"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule478-armor-migration.py",
+      "bytes": 4866,
+      "sha256": "130af424cc8934ade6961b209d4d2e1c273ca1ca1cf6a1b333b0843e7494096b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule478-armor-migration-verification-20261027.json",
+      "bytes": 3216,
+      "sha256": "428eff9031142cc40257bce7861e46d0bec7222077d7b50da1d2b0bc25cb5ee6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule478-mode5-differential-cases-20261027.json",
+      "bytes": 23959,
+      "sha256": "7cfce8f7d53f26a0f7781dc2e4ae641f691bc3acb5900c3b59b4c4c3385cebb5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule478-managed-probe.log",
+      "bytes": 12549,
+      "sha256": "0830bf01572820d2c3ae13ab01453f73b9529b6e508eab6f2d7174e297b10c14"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule478-managed-probe\\Probe.csproj",
+      "bytes": 322,
+      "sha256": "eeb09ad713d1ac5f6eb04630d2ff8c0b70638b404471b68a43c35c9b2b28ec8e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule478-managed-probe\\Program.cs",
+      "bytes": 1636,
+      "sha256": "7bdef415f4a2302750b29c5141284bf366ea95ddd34c92ade76f00ca5decaffa"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule457-integrated-writer.py",
+      "bytes": 5475,
+      "sha256": "3294bf89c7baba98ab438f65436d34d12a169b82ed0ca905f758be185b80f968"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule457-ledger-model.py",
+      "bytes": 5457,
+      "sha256": "7626378ffc2dd4f0c46897ee23c3207636f1983d02db70a29a7a5cd4a4c4a8a5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule478-worker\\input.json",
+      "bytes": 16032,
+      "sha256": "e903f6ff877607d20d1c5796ea969e48ba4ecf998df36938b20622c57abbcde1"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule478-worker\\output.json",
+      "bytes": 3164,
+      "sha256": "a2ec392d8b0bfd58806dd3224a6adfeb590f74ca97a84e467c2e714c08340159"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule478-worker\\task.txt",
+      "bytes": 372,
+      "sha256": "b9306016adf0355980c8380009993dcb8ac2ddfd8b9d482e420c9be33de74987"
+    }
+  ]
+}
