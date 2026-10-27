@@ -1,0 +1,142 @@
+{
+  "rule_id": "RULE-479",
+  "date": "2026-10-27",
+  "base_commit": "d6a40e5283ebae6a1a0b64eba44885aad807a3d4",
+  "status": "装甲模板默认值与原生reset/copy字段复制依据已补齐，独立数值迁移尚未实施",
+  "findings": [
+    "当前只读枚举得到2019个card_类CDO和1个BaseCardObject CDO，均验证CDO标志、BaseCardObject继承链、类身份、对象头、Name原始字节和两装甲int32值，采集结束复读稳定。独立复核2019个卡类名去_C后与Name相同且无重复。此为当前已加载集合，不称未加载或未来版本的全卡全集。",
+    "永久装甲分布0:1967、1:40、2:11、3:1，共52张非零；2019个当前卡模板heavyArmorBuff均0。这个观察可以支持当前模板缺省值，不支持将运行时临时分量或任意重置源强制为0。",
+    "重新采集CopyData包装133/主体2397和ResetCardAttributes包装26/主体1566字节，运行时与安装PE一致，主agent重读函数头/原始字节并独立反汇编全等。只取得完整本地体，不将传递调用语义自动认证。",
+    "CopyData4adc53a..4adc552和Reset4b07b26..4b07b3e分别以四条mov逐项复制+1dc/+1e0两个int32，不是重算总值或只复制永久值。两片段各24字节，源/目标寄存器方向不同，按真实指令设置。",
+    "每片段441组，共882组Unicorn验证，覆盖两个源分量各7值（int最小、负值、0、1、3、5、int最大）及目标原两值各3种。目标最终两值与源逐位相同，源4KB不变，目标写入仅限8字节字段对，未限幅或把临时值清0。模板查找指针在模型中由调用者供给，不执行整个CopyData/Reset。",
+    "DeepSeek汇总CDO数值结果匹配。worker为确定直方图统计范围参考了包外现成校验脚本，因此不将其作为完全盲算的交叉证据；主agent从原快照独立重算并复读当前全部对象后确认。未因worker文字结论扩大权威范围。",
+    "后续迁移必须把模板永久/临时两个值都显式传给初始化/重置，并在复制和快照保持两个原始分量；不能以当前模板全0删掉临时字段。仍需统一修改模式0..5、typed账本、光环/抑制恢复、VM和老兵调用，未引入孤立数值覆盖或声称已修复。"
+  ],
+  "verification": {
+    "rule": "RULE-479",
+    "pid": 24220,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "cdo_aggregate": {
+      "card_count": 2019,
+      "base_count": 1,
+      "temporary_nonzero": 0,
+      "permanent_histogram": {
+        "0": 1967,
+        "1": 40,
+        "2": 11,
+        "3": 1
+      },
+      "duplicate_card_names": [],
+      "raw_mismatches": 0
+    },
+    "class_name_mismatches": 0,
+    "native_functions": [
+      {
+        "name": "CopyData",
+        "body_bytes": 2397,
+        "wrapper_bytes": 133
+      },
+      {
+        "name": "ResetCardAttributes",
+        "body_bytes": 1566,
+        "wrapper_bytes": 26
+      }
+    ],
+    "slices": [
+      {
+        "name": "CopyData",
+        "start": "0x4adc53a",
+        "end": "0x4adc552"
+      },
+      {
+        "name": "ResetCardAttributes",
+        "start": "0x4b07b26",
+        "end": "0x4b07b3e"
+      }
+    ],
+    "offline_profiles": {
+      "CopyData": 441,
+      "ResetCardAttributes": 441
+    },
+    "total": 882,
+    "case_sha256": "8af62f4ab8638c27969a3ff46efc1d61c1ae262f0b5695bfdd0340c89f4a11ed",
+    "scope": "Current loaded CDO raw pair census; isolated24-byte native copy/reset pair-write slices with supplied source/destination. Source4096B unchanged and target writes confined to8-byte pair. Full construction, CopyData/Reset transitive semantics/alias/lifetime not certified. Current templates temporary0 is observed, not forced for arbitrary runtime/reset source.",
+    "worker_exact_match": true,
+    "game_writes": 0,
+    "real_game_function_calls": 0,
+    "fully_certified_cards": 0
+  },
+  "production_changes": false,
+  "tests": {
+    "native_pair_copy_profiles": 882,
+    "full_csharp_suite_rerun": false,
+    "previous_full_suite_passed": 924,
+    "reason": "本轮只读采集及离线原始字节片段验证，未改C#生产源码/测试；924为RULE-476历史结果。"
+  },
+  "unresolved": [
+    "完整创建/属性复制/原生helper与实际运行时实例初值/重入仍未穷尽；CDO不是最终对局对象快照。",
+    "CopyData/Reset所有传递调用、对象别名、GC/销毁、完整帧及源模板查找。",
+    "独立装甲数值/typed账本及整个生命周期迁移尚未实施，老兵装甲仍缺。",
+    "全局登记/TSet/重置所有权等既有边界。"
+  ],
+  "game_writes": 0,
+  "real_game_function_calls": 0,
+  "fully_certified_cards": 0,
+  "artifacts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule479-card-cdo-armor-pairs-20261027.json",
+      "bytes": 5917845,
+      "sha256": "e30f0298c7408fcffd08df6a242d732e7fd294279f43f2a86a36880dc8fada65"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule479-copydata-native-20261027.json",
+      "bytes": 67882,
+      "sha256": "69fa7833b16dfce3e3895d83c7db73c20b9418df2b05967fb3b16cb8aee91756"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule479-reset-native-20261027.json",
+      "bytes": 46931,
+      "sha256": "a5bb3a5a0fb4d2afa9900a85b587a569ae634378738048afe0d62c66bb778cd5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule479-card-armor-cdos.py",
+      "bytes": 2577,
+      "sha256": "ed0684b9f0446e64397da6c26a7587dd8a55f7010cae895a6bc93dfe9df8eb4d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule479-native-copydata.py",
+      "bytes": 3778,
+      "sha256": "d2537a0a93e7acbb72be0bf8930c63979f58fe03ad58cca251ff72b76cc18fe1"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule479-native-reset.py",
+      "bytes": 4026,
+      "sha256": "217924fbacc71d31bbe963d571f29d30b5fadaa4a425e778659273c7b9961ba0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule479-armor-lifecycle.py",
+      "bytes": 5208,
+      "sha256": "5727fff186fe25697e7f4d8aad227fcab02d7a4b2ba46600f86a787d8b46795c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule479-armor-lifecycle-verification-20261027.json",
+      "bytes": 1564,
+      "sha256": "9159cce5639ab053934b3d0a02512c14d0ae8f32ad417b6ed7674758ded3ef81"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule479-worker\\input.json",
+      "bytes": 399831,
+      "sha256": "6392b298d08321d8311f1028e397b7e40edeefd94009933332df99e0368431f6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule479-worker\\output.json",
+      "bytes": 220,
+      "sha256": "5c35b28c657df146982ad5e8e9e275d8250f8ea208073289b08977b11e3bc519"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule479-worker\\task.txt",
+      "bytes": 739,
+      "sha256": "1eb0877ce0d6b1ffe4eaaa0ada9686cb6b672e635f0634a073e6e3c3c97a2d0a"
+    }
+  ]
+}
