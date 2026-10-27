@@ -1,0 +1,381 @@
+{
+  "rule_id": "RULE-490",
+  "date": "2026-10-27",
+  "base_commit": "0602c409d8c3749f7de3570c4b3412a6a34a55f3",
+  "status": "定制默认数组复制普通数组分支已作受控验证；分配/元素所有权仍开放",
+  "findings": [
+    "当前39cee30定制数组复制helper完整局部CFG880B重新只读采集，与安装PE/内存一致。先比较源/目标Num并调用增减元素helper，再处理定制节点索引，最后按末节点索引复制剩余后缀。不是无条件整数组memcpy。",
+    "对RULE489选定定制图中新鲜提取的数组内层属性，实际出现usedTriggers：普通数组memory-image=false，inner dim1、size1、POD位成立。16类默认数组只读双检，7类非空，9类为空；非空列表保持客户端原顺序。原定制节点中7个usedTriggers入口均为null-property/index0的后缀标记。",
+    "512矩阵案例：56组使用7当前非空usedTriggers真实源值及已观测字节布局，456组合成案例覆盖0/1/3/5源长、0/1/3/6旧目标长、普通全部/哨兵/不复制/单元素/尾部/非法选定索引清单、POD/虚标量路径、1/4字节元素及精确自身别名。目标Num、选择区间、旧前缀保持/增长供给零值及源缓冲/描述符保持全部通过。",
+    "分配扩缩、销毁范围、MinAlignment、nested-probe(false)、memcpy及virtual scalar-copy均为显式供给。独立目标存储是布景前提，不是证明真实分配器/非POD复制所有权；未涵盖memory-image编码指针、引用计数或所有嵌套结构。",
+    "另1个调度证人执行实际caller：长度3，清单只指定索引1且无终止哨兵，虚标量复制索引序列为1,1,2。尾部起点使用末节点索引本身，不是索引+1；结果数值相同不表示复制回调次数可随意去重。供给虚标量副作用不代表真实FText/结构体生命周期已执行。总计513案例通过。",
+    "本轮在隔离数组helper层验证，未声称完整class hook/构造调用链已端到端执行。尤其9个空默认且未出现在相应定制清单中的字段，不能强行调用本helper并据此推导真实类hook会清空它们。",
+    "DeepSeek机械提取11调用、46分支、5个指定源操作数字面读取，经主agent重新过滤精确核验；机械键名不作为数据流或源/目标语义证明。",
+    "未修改产品规则，未重跑C#全套；929/929仅RULE485历史结果。完整认证卡数仍0。"
+  ],
+  "verification": {
+    "rule": "RULE-490",
+    "pid": 24220,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "native_bytes": 880,
+    "matrix_cases": 512,
+    "tail_dispatch_witness": {
+      "source": [
+        10,
+        11,
+        12
+      ],
+      "old": [
+        100,
+        101,
+        102
+      ],
+      "shape": "tail",
+      "pod": false,
+      "element_size": 1,
+      "alias": false,
+      "result": [
+        100,
+        11,
+        12
+      ],
+      "events": [
+        "nested-probe",
+        "virtual-scalar",
+        "virtual-scalar",
+        "virtual-scalar"
+      ],
+      "virtual_indices": [
+        1,
+        1,
+        2
+      ]
+    },
+    "total_cases": 513,
+    "observed_nonempty_default_profiles": 56,
+    "synthetic_profiles": 456,
+    "case_sha256": "60f036678da950ec0d4f9d45107d1323c5380e9fad2c1158523f56a8411f777d",
+    "observed_array_types": [
+      {
+        "name": "usedTriggers",
+        "address": "0x1cb01c55980",
+        "header_hex": "e00b3011f77f0000006c4013f77f000041ce3d95f47f0000d08d5101cb010000c5f41700000000004500000000000000010000001000000005020000000010000000000048010000d08d5101cb010000000000000000000000000000000000000000000000000000000000000000000000000000000000000059c501cb010000",
+        "memory_image": false,
+        "inner_address": "0x1cb01c55900",
+        "inner_name": "usedTriggers",
+        "inner_hex": "c0163011f77f000080564013f77f00008059c501cb0100000000000000000000c5f41700000000004500000000000000010000000100000000020040100008000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000008058c501cb01000088d26e95f47f0000",
+        "inner_size": 1,
+        "inner_dim": 1,
+        "inner_flags": "0x8001040000200"
+      }
+    ],
+    "observed_nonempty_sources": [
+      {
+        "class_name": "card_unit_5_panzergrenadier_C",
+        "values": [
+          59
+        ]
+      },
+      {
+        "class_name": "card_unit_101_infantry_regiment_C",
+        "values": [
+          31
+        ]
+      },
+      {
+        "class_name": "card_unit_kings_own_scottish_C",
+        "values": [
+          38,
+          8,
+          58
+        ]
+      },
+      {
+        "class_name": "card_unit_222th_guard_rifles_C",
+        "values": [
+          25
+        ]
+      },
+      {
+        "class_name": "card_unit_t_28_pincer_C",
+        "values": [
+          8,
+          58,
+          15
+        ]
+      },
+      {
+        "class_name": "card_unit_typhoon_mk_ib_C",
+        "values": [
+          54
+        ]
+      },
+      {
+        "class_name": "card_unit_me_bf_109_brothers_C",
+        "values": [
+          8,
+          15,
+          58
+        ]
+      }
+    ],
+    "worker_calls": 11,
+    "worker_branches": 46,
+    "scope": "Full880B custom array-copy caller/loops on ordinary arrays (memory-image flag false). MinAlignment, grow/shrink/destruct, nested-probe(false), memcpy and virtual scalar-copy supplied. Independent destination storage and growth-zeroing are supplied, not real allocator or non-POD ownership proof. Actual56 profiles use7 current nonempty byte usedTriggers sources;456 synthetic profiles cover resizing, partial lists/sentinels, invalid selected indices and exact self-alias. No memory-image packed pointer coverage or full hook/constructor/GC certification.",
+    "game_writes": 0,
+    "real_game_function_calls": 0,
+    "fully_certified_cards": 0
+  },
+  "default_arrays": [
+    {
+      "class_name": "card_unit_2nd_para_c_C",
+      "cdo": "0x1cb1d279700",
+      "name": "usedTriggers",
+      "offset": 328,
+      "header_hex": "00000000000000000000000000000000",
+      "data_address": "0x0",
+      "bytes_hex": "",
+      "values": []
+    },
+    {
+      "class_name": "card_unit_57mm_m1943_C",
+      "cdo": "0x1cb1dc13490",
+      "name": "usedTriggers",
+      "offset": 328,
+      "header_hex": "00000000000000000000000000000000",
+      "data_address": "0x0",
+      "bytes_hex": "",
+      "values": []
+    },
+    {
+      "class_name": "card_unit_54_jager_regiment_C",
+      "cdo": "0x1cb10364840",
+      "name": "usedTriggers",
+      "offset": 328,
+      "header_hex": "00000000000000000000000000000000",
+      "data_address": "0x0",
+      "bytes_hex": "",
+      "values": []
+    },
+    {
+      "class_name": "card_unit_5_panzergrenadier_C",
+      "cdo": "0x1cb14fdaf90",
+      "name": "usedTriggers",
+      "offset": 328,
+      "header_hex": "4042d61dcb0100000100000010000000",
+      "data_address": "0x1cb1dd64240",
+      "bytes_hex": "3b",
+      "values": [
+        59
+      ]
+    },
+    {
+      "class_name": "card_unit_101_infantry_regiment_C",
+      "cdo": "0x1cb1e2d5bf0",
+      "name": "usedTriggers",
+      "offset": 328,
+      "header_hex": "2053d61dcb0100000100000010000000",
+      "data_address": "0x1cb1dd65320",
+      "bytes_hex": "1f",
+      "values": [
+        31
+      ]
+    },
+    {
+      "class_name": "card_unit_irish_guards_C",
+      "cdo": "0x1cb1683cb80",
+      "name": "usedTriggers",
+      "offset": 328,
+      "header_hex": "00000000000000000000000000000000",
+      "data_address": "0x0",
+      "bytes_hex": "",
+      "values": []
+    },
+    {
+      "class_name": "card_unit_kings_own_scottish_C",
+      "cdo": "0x1cb1683b7d0",
+      "name": "usedTriggers",
+      "offset": 328,
+      "header_hex": "d078d61dcb0100000300000010000000",
+      "data_address": "0x1cb1dd678d0",
+      "bytes_hex": "26083a",
+      "values": [
+        38,
+        8,
+        58
+      ]
+    },
+    {
+      "class_name": "card_unit_128th_rifles_C",
+      "cdo": "0x1cb16839d90",
+      "name": "usedTriggers",
+      "offset": 328,
+      "header_hex": "00000000000000000000000000000000",
+      "data_address": "0x0",
+      "bytes_hex": "",
+      "values": []
+    },
+    {
+      "class_name": "card_unit_222th_guard_rifles_C",
+      "cdo": "0x1cb168306a0",
+      "name": "usedTriggers",
+      "offset": 328,
+      "header_hex": "407fd61dcb0100000100000010000000",
+      "data_address": "0x1cb1dd67f40",
+      "bytes_hex": "19",
+      "values": [
+        25
+      ]
+    },
+    {
+      "class_name": "card_unit_cruiser_mk_iii_C",
+      "cdo": "0x1cb1683f2e0",
+      "name": "usedTriggers",
+      "offset": 328,
+      "header_hex": "00000000000000000000000000000000",
+      "data_address": "0x0",
+      "bytes_hex": "",
+      "values": []
+    },
+    {
+      "class_name": "card_unit_t_28_pincer_C",
+      "cdo": "0x1cb13bf0010",
+      "name": "usedTriggers",
+      "offset": 328,
+      "header_hex": "10a1d61dcb0100000300000010000000",
+      "data_address": "0x1cb1dd6a110",
+      "bytes_hex": "083a0f",
+      "values": [
+        8,
+        58,
+        15
+      ]
+    },
+    {
+      "class_name": "card_unit_stug_iii_g_schurzen_C",
+      "cdo": "0x1cb14badf30",
+      "name": "usedTriggers",
+      "offset": 328,
+      "header_hex": "00000000000000000000000000000000",
+      "data_address": "0x0",
+      "bytes_hex": "",
+      "values": []
+    },
+    {
+      "class_name": "card_unit_panzer_iii_g_desert_C",
+      "cdo": "0x1cb14bad8a0",
+      "name": "usedTriggers",
+      "offset": 328,
+      "header_hex": "00000000000000000000000000000000",
+      "data_address": "0x0",
+      "bytes_hex": "",
+      "values": []
+    },
+    {
+      "class_name": "card_unit_tupolev_sb_2_C",
+      "cdo": "0x1cb1b94cb80",
+      "name": "usedTriggers",
+      "offset": 328,
+      "header_hex": "00000000000000000000000000000000",
+      "data_address": "0x0",
+      "bytes_hex": "",
+      "values": []
+    },
+    {
+      "class_name": "card_unit_typhoon_mk_ib_C",
+      "cdo": "0x1cb12c8f970",
+      "name": "usedTriggers",
+      "offset": 328,
+      "header_hex": "e0557711cb0100000100000010000000",
+      "data_address": "0x1cb117755e0",
+      "bytes_hex": "36",
+      "values": [
+        54
+      ]
+    },
+    {
+      "class_name": "card_unit_me_bf_109_brothers_C",
+      "cdo": "0x1cb1425ccd0",
+      "name": "usedTriggers",
+      "offset": 328,
+      "header_hex": "80597711cb0100000300000010000000",
+      "data_address": "0x1cb11775980",
+      "bytes_hex": "080f3a",
+      "values": [
+        8,
+        15,
+        58
+      ]
+    }
+  ],
+  "worker": {
+    "job_id": "20261027-220418-rule490-array-copy-call-inventory-8dbefd1b",
+    "exact_calls": 11,
+    "exact_branches": 46,
+    "exact_operand_filter_rows": 5
+  },
+  "tests": {
+    "this_round_cases": 513,
+    "matrix_cases": 512,
+    "current_source_profiles": 56,
+    "synthetic_profiles": 456,
+    "tail_dispatch_witness": 1,
+    "this_round_simulator_selftest_rerun": false,
+    "previous_selftest_passed": 929,
+    "previous_result_is_historical": true
+  },
+  "implementation": [],
+  "remaining": [
+    "真实扩缩容/元素初始化与销毁、虚属性复制、nested-probe和完整引用计数/别名所有权仍待。",
+    "memory-image紧凑指针、全部非POD/结构体、异常/GC及真实class hook链组合未认证。",
+    "完整卡牌/父构造、initializer准备/TLS、底层零填充和CurrentTarget最终来源仍开放。",
+    "完整CopyData/全PvP/全部单卡尚未完成认证。"
+  ],
+  "artifacts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule490-custom-array-copy.py",
+      "bytes": 3441,
+      "sha256": "993845efd5f027667f4cc03b5e38d620577e498c7bb7688f8a0027a97c763b54"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule490-custom-array-copy-native-20261027.json",
+      "bytes": 45361,
+      "sha256": "78ab967874fb99ec24c2e0c8493336e69115ce8403929617b5a3307b8ad90d43"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule490-array-property-metadata.py",
+      "bytes": 2232,
+      "sha256": "5543fee6e31f1519904b3dfde223eab0cbb10d2a674bd86547dc8dd8858d7142"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule490-array-property-metadata-20261027.json",
+      "bytes": 6116,
+      "sha256": "0fe5f91d2482bcf19367826ff3337d2a372062a8bc824a6d1e07869df89a161e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule490-array-copy.py",
+      "bytes": 8590,
+      "sha256": "c65aea00c4c28603efabeb396c03e70d15dbdc10b7fc6ee24e70d8e4e128cafa"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule490-array-copy-verification-20261027.json",
+      "bytes": 3291,
+      "sha256": "42898373708239002e83d3292a81c6b64a3d9d92b07aca270c9c8813540ea3ab"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule490-worker\\input.json",
+      "bytes": 31437,
+      "sha256": "ff97eb6232b0b2f1a6ecd32024600eb60cc60ab18c74691829e60f4833cd5e38"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule490-worker\\output.json",
+      "bytes": 7938,
+      "sha256": "72d2d23c2e08fcccde316bbc95aa3bfd5f5142f11357ce15335a6e8f7a55a726"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule490-worker\\task.txt",
+      "bytes": 475,
+      "sha256": "3e93bf1f764e249fee884c1e72db13a7682d52baf91b55d02100d6c0414de6ee"
+    }
+  ]
+}
