@@ -1,0 +1,238 @@
+{
+  "rule_id": "RULE-491",
+  "date": "2026-10-27",
+  "base_commit": "834ab50d110075d10dcba1e63e98386b63bb4aff",
+  "status": "普通数组扩容初始化、析构、移除及复制串联已受控验证；底层分配和所有权仍开放",
+  "findings": [
+    "重新核对当前PID24220、EXE哈希和三个完整局部CFG原生体：1515920(279B)、1535a00(191B)、1530400(243B)，合计713B。逐字节与当前只读内存一致，采集记录显示与安装PE一致且无未决局部分支。所有执行均在隔离Unicorn中。",
+    "扩容先写新Num，超Max时调用底层重分配；初始化追加元素后返回旧Num。属性flags位9(0x200)成立则整段memset0，否则逐元素调用虚槽+150。当前usedTriggers inner flags为0x8001040000200，含该零构造位；不能将此归纳为任意类型新增元素必为零。",
+    "1535a00按属性mask0x1040000000(POD/no-destructor)决定是否跳过；非平凡元素调用虚析构+138，函数不改数组描述符Num。1530400独立移动尾部、减Num及调底层缩容，不负责元素析构；两阶段顺序不能交换。",
+    "RULE491已执行三个真实helper：1515920为扩容/初始化，1535a00只销毁元素且不改Num，1530400才负责移除/移动、减Num及调用缩容。RULE490供给模型在39ceee7处提前减Num、39cef03处跳过；其最终数组结果是显式供给边界下的结果，不可作为真实helper职责或生命周期证明。RULE491替换该边界后513案例仍通过。",
+    "556独立原机器码案例全部通过：144扩容场景覆盖0/1/4旧长、0/1/3增量、1/4字节、零构造/POD/真实usedTriggers flags及容量充足/不足；328析构场景覆盖空范围、头中尾子范围、POD及no-destructor跳过，检查描述符保持；84移除场景覆盖0/1/3/6旧长及全部合法范围，检查重叠memmove、Num及缩容回调。普通非零构造虚初始化供给0x5a，证明不能假定通用零值。",
+    "将三段真实机器码接入上一轮完整880B数组复制caller，替换原扩容/销毁/移除供给：513案例再次通过，含56组7当前非空CDO usedTriggers源值、456合成案例及1个尾部回调顺序证人。POD回放采用实际inner flags。分配器供给仍预置独立目标存储，虚初始化/析构/复制仍供给，不是所有权或完整构造证明。",
+    "DeepSeek在私有目录机械提取3体10调用/30分支/3条指定Num写指令，主agent独立重新过滤精确一致。279B体指令列表跳过4B对齐NOP，raw_hex保留；不是缺失可达逻辑或完整线性反汇编。",
+    "本轮只修正审计证据边界，未发现足以修改模拟器规则的新差异；未改规则源码、未重跑C#。929/929仅RULE485历史结果。完整认证卡数仍0。"
+  ],
+  "verification": {
+    "rule": "RULE-491",
+    "pid": 24220,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "native_bytes": 713,
+    "standalone_cases": 556,
+    "standalone_counts": {
+      "grow": 144,
+      "destroy": 328,
+      "remove": 84
+    },
+    "standalone_sha256": "b270acccd10754e43b50627c49775f5ebb556578abde73efc3874e303b7fc556",
+    "composed": {
+      "rule": "RULE-491",
+      "pid": 24220,
+      "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+      "native_bytes": 880,
+      "matrix_cases": 512,
+      "tail_dispatch_witness": {
+        "source": [
+          10,
+          11,
+          12
+        ],
+        "old": [
+          100,
+          101,
+          102
+        ],
+        "shape": "tail",
+        "pod": false,
+        "element_size": 1,
+        "alias": false,
+        "result": [
+          100,
+          11,
+          12
+        ],
+        "events": [
+          "nested-probe",
+          "virtual-scalar",
+          "virtual-scalar",
+          "virtual-scalar"
+        ],
+        "virtual_indices": [
+          1,
+          1,
+          2
+        ]
+      },
+      "total_cases": 513,
+      "observed_nonempty_default_profiles": 56,
+      "synthetic_profiles": 456,
+      "case_sha256": "5a575030c1bb3796838606e2d28501a23528f5a46b40d13056379752fcb136c0",
+      "observed_array_types": [
+        {
+          "name": "usedTriggers",
+          "address": "0x1cb01c55980",
+          "header_hex": "e00b3011f77f0000006c4013f77f000041ce3d95f47f0000d08d5101cb010000c5f41700000000004500000000000000010000001000000005020000000010000000000048010000d08d5101cb010000000000000000000000000000000000000000000000000000000000000000000000000000000000000059c501cb010000",
+          "memory_image": false,
+          "inner_address": "0x1cb01c55900",
+          "inner_name": "usedTriggers",
+          "inner_hex": "c0163011f77f000080564013f77f00008059c501cb0100000000000000000000c5f41700000000004500000000000000010000000100000000020040100008000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000008058c501cb01000088d26e95f47f0000",
+          "inner_size": 1,
+          "inner_dim": 1,
+          "inner_flags": "0x8001040000200"
+        }
+      ],
+      "observed_nonempty_sources": [
+        {
+          "class_name": "card_unit_5_panzergrenadier_C",
+          "values": [
+            59
+          ]
+        },
+        {
+          "class_name": "card_unit_101_infantry_regiment_C",
+          "values": [
+            31
+          ]
+        },
+        {
+          "class_name": "card_unit_kings_own_scottish_C",
+          "values": [
+            38,
+            8,
+            58
+          ]
+        },
+        {
+          "class_name": "card_unit_222th_guard_rifles_C",
+          "values": [
+            25
+          ]
+        },
+        {
+          "class_name": "card_unit_t_28_pincer_C",
+          "values": [
+            8,
+            58,
+            15
+          ]
+        },
+        {
+          "class_name": "card_unit_typhoon_mk_ib_C",
+          "values": [
+            54
+          ]
+        },
+        {
+          "class_name": "card_unit_me_bf_109_brothers_C",
+          "values": [
+            8,
+            15,
+            58
+          ]
+        }
+      ],
+      "worker_calls": 11,
+      "worker_branches": 46,
+      "scope": "Full880B caller plus three actual lifecycle bodies. Ordinary arrays only. MinAlignment, lower allocation/shrink, memory operations, virtual element init/destruct/copy and nested-probe(false) supplied. No ownership/GC/full constructor certification.",
+      "game_writes": 0,
+      "real_game_function_calls": 0,
+      "fully_certified_cards": 0
+    },
+    "worker_inventory": [
+      {
+        "rva": "0x1515920",
+        "calls": 5,
+        "branches": 14,
+        "num_write_instructions": 1
+      },
+      {
+        "rva": "0x1535a00",
+        "calls": 1,
+        "branches": 8,
+        "num_write_instructions": 0
+      },
+      {
+        "rva": "0x1530400",
+        "calls": 4,
+        "branches": 8,
+        "num_write_instructions": 2
+      }
+    ],
+    "scope": "Ordinary arrays only. Actual grow/init, destroy-loop and remove bodies executed offline. Deeper allocation/shrink, memset/memmove and element virtual callbacks explicitly supplied. Generic init callback writes0x5a in standalone tests and zero in composed replay. No allocator ownership, memory-image, GC, exception or complete card-constructor certification.",
+    "game_writes": 0,
+    "real_game_function_calls": 0,
+    "fully_certified_cards": 0
+  },
+  "evidence": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule491-array-resize.py",
+      "bytes": 3562,
+      "sha256": "c71829177c5cceae042327dcc23e785853ff511ba58d09d4ccb2b2d7ede89398"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule491-array-resize-native-20261027.json",
+      "bytes": 36179,
+      "sha256": "f69f0efea497052257b4baafb7b71e8baf8080cf34121d28ead41f34b0dfb6b0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule491-array-lifecycle.py",
+      "bytes": 9940,
+      "sha256": "ff467f445fa5cceef8ccd8203ecb5caff940066fb88910fc95e86f6670139c07"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule491-array-lifecycle-verification-20261027.json",
+      "bytes": 4431,
+      "sha256": "f4e5a7280b5e3a076f26bea87043adc374456e99918c183ffe11e4a528c3c373"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule491-composed-array-verification-20261027.json",
+      "bytes": 2984,
+      "sha256": "6cef918c79071b9ff88aa104c18458a5dd1fafd1585ac7d4224971940a7b1668"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule491-final-verification.log",
+      "bytes": 2447,
+      "sha256": "22b470c25a7b33ab5ebc872c862545d2d638a4b4882013cd429ce63d431705d2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule491-worker\\input.json",
+      "bytes": 33199,
+      "sha256": "5c7b0e55ff96356c466211591f491a2973d7129ea4fbf575efb7c8e3247eb42b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule491-worker\\output.json",
+      "bytes": 6022,
+      "sha256": "2516a3e763d83de04749440b98743d2fe640ee9bcbb7dd859ea86c013486b1ef"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule491-worker\\task.txt",
+      "bytes": 473,
+      "sha256": "819287df6380f70a0808ae155b4242de6677209b205d17f6bc79ded01337def7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule490-array-copy.py",
+      "bytes": 8590,
+      "sha256": "c65aea00c4c28603efabeb396c03e70d15dbdc10b7fc6ee24e70d8e4e128cafa"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule490-custom-array-copy-native-20261027.json",
+      "bytes": 45361,
+      "sha256": "78ab967874fb99ec24c2e0c8493336e69115ce8403929617b5a3307b8ad90d43"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule490-array-property-metadata-20261027.json",
+      "bytes": 6116,
+      "sha256": "0fe5f91d2482bcf19367826ff3337d2a372062a8bc824a6d1e07869df89a161e"
+    }
+  ],
+  "worker_job": "20261027-222322-rule491-array-lifecycle-instructions-94f1612d",
+  "remaining": [
+    "底层普通数组分配1477240与缩容153f580及其实际分配/所有权。",
+    "memory-image/编码指针分支只采集未执行，不据合成普通数组证明。",
+    "真实非平凡属性虚初始化、析构、复制及引用计数/GC/异常。",
+    "完整卡牌构造、TLS准备和class hook串联；与模拟器及卡池逐项映射。"
+  ],
+  "game_writes": 0,
+  "real_game_function_calls": 0,
+  "fully_certified_cards": 0
+}

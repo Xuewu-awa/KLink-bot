@@ -377,5 +377,6 @@
       "bytes": 475,
       "sha256": "3e93bf1f764e249fee884c1e72db13a7682d52baf91b55d02100d6c0414de6ee"
     }
-  ]
+  ],
+  "later_lifecycle_clarification_RULE491": "RULE491已执行三个真实helper：1515920为扩容/初始化，1535a00只销毁元素且不改Num，1530400才负责移除/移动、减Num及调用缩容。RULE490供给模型在39ceee7处提前减Num、39cef03处跳过；其最终数组结果是显式供给边界下的结果，不可作为真实helper职责或生命周期证明。RULE491替换该边界后513案例仍通过。"
 }
