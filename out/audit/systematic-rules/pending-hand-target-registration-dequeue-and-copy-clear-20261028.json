@@ -1,0 +1,917 @@
+{
+  "rule_id": "RULE-507",
+  "date": "2026-10-28",
+  "base_commit": "98ce8182001ac9cd89874290387a960abe1cbb38",
+  "status": "待选手牌目标登记/出队/自动选择清理前缀已验证；跨方候选来源仍开放",
+  "findings": [
+    "当前pendingCardsSelectingHandTargets实际FProperty指针加载脚本候选扫描得到6个函数，均完整语法解码：autoPickHandTargets2597B、OpponentActionsHandTargetSelected2286B、ReceiveActionXActionHandTargetSelected1811B、ReceiveActionSelectHandTargetPending671B、AddActionToVisualQueue1222B及ExecuteSubactionSelectTargetFromHand875B。只证明当前已加载直接字节引用候选，不是原生/反射/未加载/动态引用穷尽。",
+    "ReceiveActionSelectHandTargetPending遍历ActionData，253不区分大小写匹配cardBeingPlayed、631取Value；随后323取本地回合状态，360追加己方待选队列或429追加敌方。使用Array_Add而非AddUnique，原队列重复项不删除。16例覆盖本地真假、重复旧项、空/普通/混合大小写/重复键载荷；缺字段时0是显式供给的局部变量初值，未据此声称恢复UE默认值语义。",
+    "ReceiveActionXActionHandTargetSelected前缀5/28本地回合分流：本地且reconnect真才136移除己方队首，非本地1646移除敌方队首并1692跳182。4例在两条非空队列供给下通过，停止182之前；本地非重连未在此前缀出队不等于整条链从不消费，875B视觉选择处理还存在361移除己方队首。后者当前只保留静态定义，不执行UI。",
+    "autoPickHandTargets首先检查选择控件；存在且pendingKill=false时162转1805，本轮在该入口前停止，不执行UI/结束回合调用。否则220按endingTurnForOpponent选择己方或敌方队列，239复制到局部；405发现所选副本为空直接返回，415/478仅在副本非空时清空两条原队列，587/666关闭两个选择显示标志。24例验证不同队列非空组合、选哪一方和控件缺失/待销毁/活动，停止候选循环745之前。",
+    "静态后段998调用GetPlayingSide，1027转手牌位置，1082 FetchCardsByLocation；该处没有直接读取选择卡Owner。模拟器CardApiDispatch.DoSelectTargetFromHand使用policyCard.Owner的手牌，并调用导出IsValidHandTarget。现有注释已标RULE427/428跨方来源未决；没有把名称差异直接判为已发生PvP错误：GetPlayingSide/结束对方回合/真实调用方和可达卡牌上下文尚需连通验证。",
+    "MatchEngine.ResolveHandSelection保留队列并在无答复时不消费，供给ID0与取消有区别；这是待审实现而非权威。本轮只读对照，不用旧回放/旧注释确认规则，也没有认证它与客户端自动选目标、回调重入及1964追加新待选项全流程等价。",
+    "DeepSeek机械提取3函数待选队列Add/Remove/Clear位置，主agent独立递归重算并逐字段核对。尚无足够证据要求规则修复，本轮未改产品/C#未重跑；历史929/929非本轮测试。认证卡数0，游戏写入/注入/真实函数调用0。"
+  ],
+  "verification": {
+    "rule": "RULE-507",
+    "pending_registration_cases": 16,
+    "reply_dequeue_prefix_cases": 4,
+    "autopick_copy_clear_prefix_cases": 24,
+    "registration_profiles": [
+      {
+        "local": false,
+        "prior": [],
+        "payload": [],
+        "queued": 0,
+        "trace": {
+          "steps": 11,
+          "sha256": "4320d0d254875ef9aec42a76817f7bc6e47f5478b8e687eb62b4cbb52c2f7fbd"
+        }
+      },
+      {
+        "local": false,
+        "prior": [],
+        "payload": [
+          {
+            "Name": "cardBeingPlayed",
+            "Value": 11
+          }
+        ],
+        "queued": 11,
+        "trace": {
+          "steps": 25,
+          "sha256": "37eb46aa175c49942de77fa5bb6a2236093ba13eda8740799e754135df9f20bc"
+        }
+      },
+      {
+        "local": false,
+        "prior": [],
+        "payload": [
+          {
+            "Name": "unknown",
+            "Value": 99
+          },
+          {
+            "Name": "CARDBEINGPLAYED",
+            "Value": 12
+          }
+        ],
+        "queued": 12,
+        "trace": {
+          "steps": 37,
+          "sha256": "642ba36711bf77fd22658936ffb27b6fdae30c35166215c5a19beb551b80d583"
+        }
+      },
+      {
+        "local": false,
+        "prior": [],
+        "payload": [
+          {
+            "Name": "cardBeingPlayed",
+            "Value": 11
+          },
+          {
+            "Name": "cardBeingPlayed",
+            "Value": 13
+          }
+        ],
+        "queued": 13,
+        "trace": {
+          "steps": 39,
+          "sha256": "36d5401f97c2c8e4fa58404bae55a841de68fdfc904e294198a18f8475c50cbc"
+        }
+      },
+      {
+        "local": false,
+        "prior": [
+          7,
+          7
+        ],
+        "payload": [],
+        "queued": 0,
+        "trace": {
+          "steps": 11,
+          "sha256": "4320d0d254875ef9aec42a76817f7bc6e47f5478b8e687eb62b4cbb52c2f7fbd"
+        }
+      },
+      {
+        "local": false,
+        "prior": [
+          7,
+          7
+        ],
+        "payload": [
+          {
+            "Name": "cardBeingPlayed",
+            "Value": 11
+          }
+        ],
+        "queued": 11,
+        "trace": {
+          "steps": 25,
+          "sha256": "37eb46aa175c49942de77fa5bb6a2236093ba13eda8740799e754135df9f20bc"
+        }
+      },
+      {
+        "local": false,
+        "prior": [
+          7,
+          7
+        ],
+        "payload": [
+          {
+            "Name": "unknown",
+            "Value": 99
+          },
+          {
+            "Name": "CARDBEINGPLAYED",
+            "Value": 12
+          }
+        ],
+        "queued": 12,
+        "trace": {
+          "steps": 37,
+          "sha256": "642ba36711bf77fd22658936ffb27b6fdae30c35166215c5a19beb551b80d583"
+        }
+      },
+      {
+        "local": false,
+        "prior": [
+          7,
+          7
+        ],
+        "payload": [
+          {
+            "Name": "cardBeingPlayed",
+            "Value": 11
+          },
+          {
+            "Name": "cardBeingPlayed",
+            "Value": 13
+          }
+        ],
+        "queued": 13,
+        "trace": {
+          "steps": 39,
+          "sha256": "36d5401f97c2c8e4fa58404bae55a841de68fdfc904e294198a18f8475c50cbc"
+        }
+      },
+      {
+        "local": true,
+        "prior": [],
+        "payload": [],
+        "queued": 0,
+        "trace": {
+          "steps": 11,
+          "sha256": "5f7da000709f133b3d3696ac8c54d2f74f504c813cd5b876b56c4cfe6ffc5f4e"
+        }
+      },
+      {
+        "local": true,
+        "prior": [],
+        "payload": [
+          {
+            "Name": "cardBeingPlayed",
+            "Value": 11
+          }
+        ],
+        "queued": 11,
+        "trace": {
+          "steps": 25,
+          "sha256": "ea688bb1b33d9855b03e2a4f3d9239e0f645b0de33b31511764e2ca23ccd7aa4"
+        }
+      },
+      {
+        "local": true,
+        "prior": [],
+        "payload": [
+          {
+            "Name": "unknown",
+            "Value": 99
+          },
+          {
+            "Name": "CARDBEINGPLAYED",
+            "Value": 12
+          }
+        ],
+        "queued": 12,
+        "trace": {
+          "steps": 37,
+          "sha256": "550e09c3fbbfba595d4d7b20a0ce3b52380aaa29a015fa21747f0f6bde010f67"
+        }
+      },
+      {
+        "local": true,
+        "prior": [],
+        "payload": [
+          {
+            "Name": "cardBeingPlayed",
+            "Value": 11
+          },
+          {
+            "Name": "cardBeingPlayed",
+            "Value": 13
+          }
+        ],
+        "queued": 13,
+        "trace": {
+          "steps": 39,
+          "sha256": "8aa979b2614565a69ed46ac68879188e57f97551b582f61c0ae2428abaa83c23"
+        }
+      },
+      {
+        "local": true,
+        "prior": [
+          7,
+          7
+        ],
+        "payload": [],
+        "queued": 0,
+        "trace": {
+          "steps": 11,
+          "sha256": "5f7da000709f133b3d3696ac8c54d2f74f504c813cd5b876b56c4cfe6ffc5f4e"
+        }
+      },
+      {
+        "local": true,
+        "prior": [
+          7,
+          7
+        ],
+        "payload": [
+          {
+            "Name": "cardBeingPlayed",
+            "Value": 11
+          }
+        ],
+        "queued": 11,
+        "trace": {
+          "steps": 25,
+          "sha256": "ea688bb1b33d9855b03e2a4f3d9239e0f645b0de33b31511764e2ca23ccd7aa4"
+        }
+      },
+      {
+        "local": true,
+        "prior": [
+          7,
+          7
+        ],
+        "payload": [
+          {
+            "Name": "unknown",
+            "Value": 99
+          },
+          {
+            "Name": "CARDBEINGPLAYED",
+            "Value": 12
+          }
+        ],
+        "queued": 12,
+        "trace": {
+          "steps": 37,
+          "sha256": "550e09c3fbbfba595d4d7b20a0ce3b52380aaa29a015fa21747f0f6bde010f67"
+        }
+      },
+      {
+        "local": true,
+        "prior": [
+          7,
+          7
+        ],
+        "payload": [
+          {
+            "Name": "cardBeingPlayed",
+            "Value": 11
+          },
+          {
+            "Name": "cardBeingPlayed",
+            "Value": 13
+          }
+        ],
+        "queued": 13,
+        "trace": {
+          "steps": 39,
+          "sha256": "8aa979b2614565a69ed46ac68879188e57f97551b582f61c0ae2428abaa83c23"
+        }
+      }
+    ],
+    "reply_profiles": [
+      {
+        "local": false,
+        "reconnect": false,
+        "pending": [
+          11,
+          12
+        ],
+        "enemy": [
+          22
+        ],
+        "trace": {
+          "steps": 5,
+          "sha256": "731ce8196401e73815763e33185ffe89890cf99df93b862e90536b751078db77"
+        }
+      },
+      {
+        "local": false,
+        "reconnect": true,
+        "pending": [
+          11,
+          12
+        ],
+        "enemy": [
+          22
+        ],
+        "trace": {
+          "steps": 5,
+          "sha256": "731ce8196401e73815763e33185ffe89890cf99df93b862e90536b751078db77"
+        }
+      },
+      {
+        "local": true,
+        "reconnect": false,
+        "pending": [
+          11,
+          12
+        ],
+        "enemy": [
+          21,
+          22
+        ],
+        "trace": {
+          "steps": 6,
+          "sha256": "8e2851dd35937ae61500c52a1e0aefe7ecd258e8b6442edf48440b6b178259ce"
+        }
+      },
+      {
+        "local": true,
+        "reconnect": true,
+        "pending": [
+          12
+        ],
+        "enemy": [
+          21,
+          22
+        ],
+        "trace": {
+          "steps": 7,
+          "sha256": "7a8886bd2be052a70e33ff3359897a83bb130af8984d841e253c22f96076dc99"
+        }
+      }
+    ],
+    "auto_profiles": [
+      {
+        "opponent": false,
+        "local_nonempty": false,
+        "enemy_nonempty": false,
+        "widget": "absent",
+        "blocked": false,
+        "selected": [],
+        "pending_after": [],
+        "enemy_after": [],
+        "trace": {
+          "steps": 9,
+          "sha256": "f53a922215c3bf369ea0d26578c689e47dfa4eecc90415bad999e199da5e0cf8"
+        }
+      },
+      {
+        "opponent": false,
+        "local_nonempty": false,
+        "enemy_nonempty": false,
+        "widget": "pending-kill",
+        "blocked": false,
+        "selected": [],
+        "pending_after": [],
+        "enemy_after": [],
+        "trace": {
+          "steps": 11,
+          "sha256": "ba6af3eb54fbd9302914ac879d603c896ceb96b6b38088971472abf767f21a40"
+        }
+      },
+      {
+        "opponent": false,
+        "local_nonempty": false,
+        "enemy_nonempty": false,
+        "widget": "active",
+        "blocked": true,
+        "selected": null,
+        "pending_after": [],
+        "enemy_after": [],
+        "trace": {
+          "steps": 6,
+          "sha256": "e887326f669b1e5837f71787d62f84cd9bb48706e4a84e56d06a94a1e180b2d4"
+        }
+      },
+      {
+        "opponent": false,
+        "local_nonempty": false,
+        "enemy_nonempty": true,
+        "widget": "absent",
+        "blocked": false,
+        "selected": [],
+        "pending_after": [],
+        "enemy_after": [
+          21
+        ],
+        "trace": {
+          "steps": 9,
+          "sha256": "f53a922215c3bf369ea0d26578c689e47dfa4eecc90415bad999e199da5e0cf8"
+        }
+      },
+      {
+        "opponent": false,
+        "local_nonempty": false,
+        "enemy_nonempty": true,
+        "widget": "pending-kill",
+        "blocked": false,
+        "selected": [],
+        "pending_after": [],
+        "enemy_after": [
+          21
+        ],
+        "trace": {
+          "steps": 11,
+          "sha256": "ba6af3eb54fbd9302914ac879d603c896ceb96b6b38088971472abf767f21a40"
+        }
+      },
+      {
+        "opponent": false,
+        "local_nonempty": false,
+        "enemy_nonempty": true,
+        "widget": "active",
+        "blocked": true,
+        "selected": null,
+        "pending_after": [],
+        "enemy_after": [
+          21
+        ],
+        "trace": {
+          "steps": 6,
+          "sha256": "e887326f669b1e5837f71787d62f84cd9bb48706e4a84e56d06a94a1e180b2d4"
+        }
+      },
+      {
+        "opponent": false,
+        "local_nonempty": true,
+        "enemy_nonempty": false,
+        "widget": "absent",
+        "blocked": false,
+        "selected": [
+          11,
+          12
+        ],
+        "pending_after": [],
+        "enemy_after": [],
+        "trace": {
+          "steps": 16,
+          "sha256": "6a19dc1d082acdb1727928d06b71df1124075d811679ca3f61e63bb0cd990197"
+        }
+      },
+      {
+        "opponent": false,
+        "local_nonempty": true,
+        "enemy_nonempty": false,
+        "widget": "pending-kill",
+        "blocked": false,
+        "selected": [
+          11,
+          12
+        ],
+        "pending_after": [],
+        "enemy_after": [],
+        "trace": {
+          "steps": 18,
+          "sha256": "1abfaf70b6ec4c8c2525f5b478b7809e335c536b8e28ed9b975347b6c772abfb"
+        }
+      },
+      {
+        "opponent": false,
+        "local_nonempty": true,
+        "enemy_nonempty": false,
+        "widget": "active",
+        "blocked": true,
+        "selected": null,
+        "pending_after": [
+          11,
+          12
+        ],
+        "enemy_after": [],
+        "trace": {
+          "steps": 6,
+          "sha256": "e887326f669b1e5837f71787d62f84cd9bb48706e4a84e56d06a94a1e180b2d4"
+        }
+      },
+      {
+        "opponent": false,
+        "local_nonempty": true,
+        "enemy_nonempty": true,
+        "widget": "absent",
+        "blocked": false,
+        "selected": [
+          11,
+          12
+        ],
+        "pending_after": [],
+        "enemy_after": [],
+        "trace": {
+          "steps": 16,
+          "sha256": "6a19dc1d082acdb1727928d06b71df1124075d811679ca3f61e63bb0cd990197"
+        }
+      },
+      {
+        "opponent": false,
+        "local_nonempty": true,
+        "enemy_nonempty": true,
+        "widget": "pending-kill",
+        "blocked": false,
+        "selected": [
+          11,
+          12
+        ],
+        "pending_after": [],
+        "enemy_after": [],
+        "trace": {
+          "steps": 18,
+          "sha256": "1abfaf70b6ec4c8c2525f5b478b7809e335c536b8e28ed9b975347b6c772abfb"
+        }
+      },
+      {
+        "opponent": false,
+        "local_nonempty": true,
+        "enemy_nonempty": true,
+        "widget": "active",
+        "blocked": true,
+        "selected": null,
+        "pending_after": [
+          11,
+          12
+        ],
+        "enemy_after": [
+          21
+        ],
+        "trace": {
+          "steps": 6,
+          "sha256": "e887326f669b1e5837f71787d62f84cd9bb48706e4a84e56d06a94a1e180b2d4"
+        }
+      },
+      {
+        "opponent": true,
+        "local_nonempty": false,
+        "enemy_nonempty": false,
+        "widget": "absent",
+        "blocked": false,
+        "selected": [],
+        "pending_after": [],
+        "enemy_after": [],
+        "trace": {
+          "steps": 9,
+          "sha256": "f53a922215c3bf369ea0d26578c689e47dfa4eecc90415bad999e199da5e0cf8"
+        }
+      },
+      {
+        "opponent": true,
+        "local_nonempty": false,
+        "enemy_nonempty": false,
+        "widget": "pending-kill",
+        "blocked": false,
+        "selected": [],
+        "pending_after": [],
+        "enemy_after": [],
+        "trace": {
+          "steps": 11,
+          "sha256": "ba6af3eb54fbd9302914ac879d603c896ceb96b6b38088971472abf767f21a40"
+        }
+      },
+      {
+        "opponent": true,
+        "local_nonempty": false,
+        "enemy_nonempty": false,
+        "widget": "active",
+        "blocked": true,
+        "selected": null,
+        "pending_after": [],
+        "enemy_after": [],
+        "trace": {
+          "steps": 6,
+          "sha256": "e887326f669b1e5837f71787d62f84cd9bb48706e4a84e56d06a94a1e180b2d4"
+        }
+      },
+      {
+        "opponent": true,
+        "local_nonempty": false,
+        "enemy_nonempty": true,
+        "widget": "absent",
+        "blocked": false,
+        "selected": [
+          21
+        ],
+        "pending_after": [],
+        "enemy_after": [],
+        "trace": {
+          "steps": 16,
+          "sha256": "6a19dc1d082acdb1727928d06b71df1124075d811679ca3f61e63bb0cd990197"
+        }
+      },
+      {
+        "opponent": true,
+        "local_nonempty": false,
+        "enemy_nonempty": true,
+        "widget": "pending-kill",
+        "blocked": false,
+        "selected": [
+          21
+        ],
+        "pending_after": [],
+        "enemy_after": [],
+        "trace": {
+          "steps": 18,
+          "sha256": "1abfaf70b6ec4c8c2525f5b478b7809e335c536b8e28ed9b975347b6c772abfb"
+        }
+      },
+      {
+        "opponent": true,
+        "local_nonempty": false,
+        "enemy_nonempty": true,
+        "widget": "active",
+        "blocked": true,
+        "selected": null,
+        "pending_after": [],
+        "enemy_after": [
+          21
+        ],
+        "trace": {
+          "steps": 6,
+          "sha256": "e887326f669b1e5837f71787d62f84cd9bb48706e4a84e56d06a94a1e180b2d4"
+        }
+      },
+      {
+        "opponent": true,
+        "local_nonempty": true,
+        "enemy_nonempty": false,
+        "widget": "absent",
+        "blocked": false,
+        "selected": [],
+        "pending_after": [
+          11,
+          12
+        ],
+        "enemy_after": [],
+        "trace": {
+          "steps": 9,
+          "sha256": "f53a922215c3bf369ea0d26578c689e47dfa4eecc90415bad999e199da5e0cf8"
+        }
+      },
+      {
+        "opponent": true,
+        "local_nonempty": true,
+        "enemy_nonempty": false,
+        "widget": "pending-kill",
+        "blocked": false,
+        "selected": [],
+        "pending_after": [
+          11,
+          12
+        ],
+        "enemy_after": [],
+        "trace": {
+          "steps": 11,
+          "sha256": "ba6af3eb54fbd9302914ac879d603c896ceb96b6b38088971472abf767f21a40"
+        }
+      },
+      {
+        "opponent": true,
+        "local_nonempty": true,
+        "enemy_nonempty": false,
+        "widget": "active",
+        "blocked": true,
+        "selected": null,
+        "pending_after": [
+          11,
+          12
+        ],
+        "enemy_after": [],
+        "trace": {
+          "steps": 6,
+          "sha256": "e887326f669b1e5837f71787d62f84cd9bb48706e4a84e56d06a94a1e180b2d4"
+        }
+      },
+      {
+        "opponent": true,
+        "local_nonempty": true,
+        "enemy_nonempty": true,
+        "widget": "absent",
+        "blocked": false,
+        "selected": [
+          21
+        ],
+        "pending_after": [],
+        "enemy_after": [],
+        "trace": {
+          "steps": 16,
+          "sha256": "6a19dc1d082acdb1727928d06b71df1124075d811679ca3f61e63bb0cd990197"
+        }
+      },
+      {
+        "opponent": true,
+        "local_nonempty": true,
+        "enemy_nonempty": true,
+        "widget": "pending-kill",
+        "blocked": false,
+        "selected": [
+          21
+        ],
+        "pending_after": [],
+        "enemy_after": [],
+        "trace": {
+          "steps": 18,
+          "sha256": "1abfaf70b6ec4c8c2525f5b478b7809e335c536b8e28ed9b975347b6c772abfb"
+        }
+      },
+      {
+        "opponent": true,
+        "local_nonempty": true,
+        "enemy_nonempty": true,
+        "widget": "active",
+        "blocked": true,
+        "selected": null,
+        "pending_after": [
+          11,
+          12
+        ],
+        "enemy_after": [
+          21
+        ],
+        "trace": {
+          "steps": 6,
+          "sha256": "e887326f669b1e5837f71787d62f84cd9bb48706e4a84e56d06a94a1e180b2d4"
+        }
+      }
+    ],
+    "scope": "Actual ReceiveActionSelectHandTargetPending671B AST; reply1811B prefix stops BEFORE182; autoPick2597B prefix stops BEFORE745 candidate loop or BEFORE1805 active-widget exit. Services/local/reconnect/widget validity/object references/containers supplied; missing-field cardBeingPlayed0 is explicit fixture initialization, not recovered engine default semantics. Nonempty reply queues only. Later callbacks/candidate sourcing/reentrant additions/UI/empty remove native behavior not certified. No replay authority used.",
+    "game_writes": 0,
+    "real_game_function_calls": 0,
+    "fully_certified_cards": 0,
+    "case_sha256": "0b0bf07409a572525d23974b919e49f0453f1c376e9d83547ca58af5616adca0"
+  },
+  "worker_index": [
+    {
+      "name": "autoPickHandTargets",
+      "pending_mutations": [
+        {
+          "index": 415,
+          "call": "Array_Clear",
+          "queue": "pendingCardsSelectingHandTargets"
+        },
+        {
+          "index": 478,
+          "call": "Array_Clear",
+          "queue": "enemyPendingCardsSelectingHandTargets"
+        }
+      ]
+    },
+    {
+      "name": "ReceiveActionXActionHandTargetSelected",
+      "pending_mutations": [
+        {
+          "index": 136,
+          "call": "Array_Remove",
+          "queue": "pendingCardsSelectingHandTargets"
+        },
+        {
+          "index": 1646,
+          "call": "Array_Remove",
+          "queue": "enemyPendingCardsSelectingHandTargets"
+        }
+      ]
+    },
+    {
+      "name": "ReceiveActionSelectHandTargetPending",
+      "pending_mutations": [
+        {
+          "index": 360,
+          "call": "Array_Add",
+          "queue": "pendingCardsSelectingHandTargets"
+        },
+        {
+          "index": 429,
+          "call": "Array_Add",
+          "queue": "enemyPendingCardsSelectingHandTargets"
+        }
+      ]
+    }
+  ],
+  "property_targets": {
+    "pendingCardsSelectingHandTargets": [
+      "0x1cb0ba5a780"
+    ]
+  },
+  "loaded_script_census": {
+    "function_objects": 30583,
+    "scripted_functions": 18111,
+    "script_bytes": 7922413
+  },
+  "captured_functions": [
+    {
+      "owner": "BP_Logic_C",
+      "name": "autoPickHandTargets",
+      "script_size": 2597,
+      "script_sha256": "6371646d6ada4faef065522f28290a79da1977ebdafc22a8670a6615e4455caf",
+      "decode_complete": true
+    },
+    {
+      "owner": "BP_OnlineMatch_C",
+      "name": "OpponentActionsHandTargetSelected",
+      "script_size": 2286,
+      "script_sha256": "ad372e67334b8f96d4c3fc96fe9a453b33edfa69ad2933049283ced5a697f6e2",
+      "decode_complete": true
+    },
+    {
+      "owner": "BP_OnlineMatch_C",
+      "name": "ReceiveActionXActionHandTargetSelected",
+      "script_size": 1811,
+      "script_sha256": "392ba680085fd88a6e2c1d31d79ecbd4a72c0d69d8c470ed3513bfb475cc2b7b",
+      "decode_complete": true
+    },
+    {
+      "owner": "BP_OnlineMatch_C",
+      "name": "ReceiveActionSelectHandTargetPending",
+      "script_size": 671,
+      "script_sha256": "e2e04171c3cbd3745f70ed8fb39428e25dd6ba1e4df5f2fdb6a1543e359fbd72",
+      "decode_complete": true
+    },
+    {
+      "owner": "BP_OnlineMatch_C",
+      "name": "AddActionToVisualQueue",
+      "script_size": 1222,
+      "script_sha256": "1a28eb18f0e994ce9597f0de0cdffc81b3709145bd144479ed95d0975fb94907",
+      "decode_complete": true
+    },
+    {
+      "owner": "BP_VisualController_C",
+      "name": "ExecuteSubactionSelectTargetFromHand",
+      "script_size": 875,
+      "script_sha256": "7cc35d8bee0345f7748d9242c97053eeb3859a9ae56025bfa58a380b39569546",
+      "decode_complete": true
+    }
+  ],
+  "worker_job": "20261028-031026-rule507-pending-index-c2171922",
+  "evidence": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule507-targets.py",
+      "bytes": 566,
+      "sha256": "3cf887d436eab912c777c29f633cbf8986b86928d3c0e3311897bacb57a430dd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule507-pending-hand-target-references-20261028.json",
+      "bytes": 4887888,
+      "sha256": "82092ef020e03270de2fdd8ccbd65e6476d07f8d15f82ab9262a6a995b6b4da7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule507-pending.py",
+      "bytes": 12123,
+      "sha256": "a6f1b13a83dd1faca9ff1554ba75b9aa2268cb0e5e7ae0f5ba85609e1b2c10e2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule507-pending-verification-20261028.json",
+      "bytes": 22523,
+      "sha256": "fa64501e033861d0d9cec9f0c52ff8fa51a6457f06c2fb47d0f7b6933287cbd2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule507-worker\\input.json",
+      "bytes": 45667,
+      "sha256": "12008d324e91639b55567d1db2b7312376b523d0dbd753f837a001b58eeb9f3b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule507-worker\\task.txt",
+      "bytes": 546,
+      "sha256": "ea8fe92de7b15da5f7cf00b64be75e1104cae9062a0263228c1f89e1592c6bf0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule507-worker\\output.json",
+      "bytes": 1058,
+      "sha256": "1cc3d7646a1a81d9c1b8ad402f7760b025b17f9ed7ed8411b76d41f2a3c3788c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-498.py",
+      "bytes": 752,
+      "sha256": "254664d0aa1146756993fda4ac54e58891709c0ec5bcdd2cfa852f874c4e67ef"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs",
+      "bytes": 402458,
+      "sha256": "97e5d5efac6a97b575c4f74267ea13d898178fb250edcaf9fe0e756e9db67c9f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\MatchEngine.cs",
+      "bytes": 199427,
+      "sha256": "d2cafdcf3f4de9481e13f4b4423f91a33c3868bc1562d55b615ea972688e199f"
+    }
+  ],
+  "remaining": [
+    "GetPlayingSide与选择卡Owner在跨方/结束对方回合场景的关系及完整候选/答复流程。",
+    "回调中新待选项追加1964、OpponentActions清理和真实选择接收链；不恢复UI本身。",
+    "待选请求生成源、单卡IsValidHandTarget语义、全部PvP规则/全卡池认证。"
+  ],
+  "game_writes": 0,
+  "real_game_function_calls": 0,
+  "fully_certified_cards": 0
+}
