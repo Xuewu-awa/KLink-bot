@@ -1,0 +1,156 @@
+{
+  "rule_id": "RULE-468",
+  "date": "2026-10-27",
+  "base_commit": "6d7b2f18f5bb137e9e7dbdce38d5feac2e8019dd",
+  "status": "登记创建与查询证据已验证；登记生命周期仍未完全还原，未改生产实现",
+  "findings": [
+    "客户端登记函数460字节：无键时建立单元素集合；有键时取集合副本、Set_Add并Map_Add回写。重复ID去重；函数本身不检查ID正值、对象存在、位置或抑制。负数/零模型仅证明此函数局部行为，不证明其为合法PvP输入。",
+    "CreateCardObject在929进入循环，980及1141读StaticCardRef.usedTriggers，1222调用UpdateCardFunctionTriggerMap(当前触发号,输入CardID)，经2720回边逐项登记；发生在1318写新对象CardID及后续OnCreateCard之前。完整对象构造及这些外部回调不在本轮执行模型内。",
+    "查询1174字节读取独立CardFunctionTriggers表，经AllCardsInBattle解析ID；不读取当前对象usedTriggers或当前定义。缺失ID跳过，抑制且无相应实例例外才排除，无位置门。",
+    "本次已加载UFunction脚本的字段指针字节候选扫描仅命中登记、查询和ClearGameStateVariables；后者840为Map_Clear。函数指针字节候选无调用者，FName字节候选命中CreateCardObject一处，解码确认LocalVirtualFunction。此范围不覆盖原生、反射、未加载资产或间接访问，不能宣布登记表只增不减。",
+    "模拟器CaptureRegisteredTriggerSnapshot仍从当前Definition.IsRegisteredFor推导登记，未持有客户端独立历史表。本轮确认抽象边界，尚未证明具体合法转换路径的最终差异；需核对转换/重建/重复ID及原生链后再确定修复策略。",
+    "复读并独立重解码96个函数共28701字节一致；64登记布景各重复登记两次、2560查询布景、20创建登记循环布景通过，共2644个受控模型布景。创建使用完整循环的原跳转，查询及登记使用完整函数；容器为受控模型而非UE原生容器。",
+    "DeepSeek提取1个登记调用及2个usedTriggers变量节点，主agent递归独立全等验证。首次任务误限定Function键，已取消并改为Function或FunctionName，新结果通过。"
+  ],
+  "verification": {
+    "rule": "RULE-468",
+    "pid": 24220,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "live_redecoded_function_count": 96,
+    "live_redecoded_bytes": 28701,
+    "selected_functions": {
+      "BP_GameState_Battle_C.UpdateCardFunctionTriggerMap": {
+        "bytes": 460,
+        "sha256": "1fefe3a5319c3ef850f665fa12c747cfa9fd01cfe2b285b8f598b08c20ddcc82"
+      },
+      "BP_GameState_Battle_C.FetchAllCardsWithEventTrigger": {
+        "bytes": 1174,
+        "sha256": "cbc442f32842f229de18e86389bd54053582b3533c07518e22547cfed20a41e9"
+      },
+      "BP_GameState_Battle_C.ClearGameStateVariables": {
+        "bytes": 1363,
+        "sha256": "728fee7494450ff1927a3405781910e9c1f2463b3ff0c830b9506acab073dc8d"
+      },
+      "BP_CardFunctions_C.CreateCardObject": {
+        "bytes": 2929,
+        "sha256": "e3eeb2cbfadc5f129a3f2eee711dcf3319126105da5a219ac0996f29ec8bf565"
+      }
+    },
+    "loaded_script_field_users": [
+      "UpdateCardFunctionTriggerMap",
+      "FetchAllCardsWithEventTrigger",
+      "ClearGameStateVariables"
+    ],
+    "loaded_named_callers": [
+      "BP_CardFunctions_C.CreateCardObject"
+    ],
+    "models": {
+      "update_profiles": 64,
+      "query_profiles": 2560,
+      "creation_loop_profiles": 20,
+      "sha256": "394447c9e0b511d583202e64618cbc52e5f1218075f200d34fbed7791a202f6d"
+    },
+    "worker": {
+      "registration_calls": 1,
+      "used_trigger_nodes": 2,
+      "exact_match": true
+    },
+    "limits": [
+      "Loaded script pointer/name-byte candidate scan only; not native accesses, unloaded assets or reflective/dynamic access exhaustion.",
+      "Controlled ordered set/map primitives; no certification of physical TSet order or allocation.",
+      "Creation registration loop929..1276 including backedge2720, not complete object construction or callbacks.",
+      "Current-definition registration remains an approximation; no production change before conversion/reidentification lifecycle and native paths are reconciled."
+    ],
+    "game_writes": 0,
+    "real_game_function_calls": 0,
+    "fully_certified_cards": 0
+  },
+  "production_changes": false,
+  "tests": {
+    "offline_model_profiles": 2644,
+    "csharp_tests_rerun": false,
+    "previous_round_csharp_passed": 917,
+    "reason": "本轮仅新增审计证据，未修改C#生产代码或测试；917为上一轮结果。"
+  },
+  "unresolved": [
+    "转换、老兵、重建及重复ID情况下独立登记表维护与当前定义差异的合法可达性。",
+    "原生/反射访问、未加载资产和真实UObject生存期；不能以本次已加载脚本扫描作为全程序穷尽证明。",
+    "UE物理TSet顺序、插槽重用及复制/重哈希。",
+    "独立装甲分量、正来源可见压制的临时装甲清理、通知和老兵链仍开放。"
+  ],
+  "game_writes": 0,
+  "real_game_function_calls": 0,
+  "fully_certified_cards": 0,
+  "artifacts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule468-trigger-registration-20261027.json",
+      "bytes": 5306265,
+      "sha256": "b17b2d4fcad6769b858be5cb7d88657521e79d0e0c806b2d12a7553ef47c44be"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule468-trigger-registration-named-callers-20261027.json",
+      "bytes": 4584130,
+      "sha256": "9745801329740ec5f1eade19540aa6890d1b4196accc590f2d6b0131a3dfe123"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule468-trigger-registry-field-users-20261027.json",
+      "bytes": 4591383,
+      "sha256": "700ca4f2f462fbd4a5bfb1d809f7ed6dc152f3b966204c1f92118e093e344a16"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule468-trigger-registration.py",
+      "bytes": 2417,
+      "sha256": "31fbbb6dc33c2c8f08f11ae2ff5f08faf6fcdcc24c721ce124bb65b3117052fe"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule468-registration-callers.py",
+      "bytes": 2494,
+      "sha256": "0f61bec50a829fff50dc79a239eae42a961af96f9e31fb2b5850a140abe364e5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule468-registration-named-callers.py",
+      "bytes": 2508,
+      "sha256": "085e0780615255872b72bd0709d39c54b0523a8d07d3a8147eb9d697f4749ebb"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule468-registry-field-users.py",
+      "bytes": 2494,
+      "sha256": "f548cc91ab0e7cfcf5f59995a1d1d62698047af98a7d3f2d7c4099cad8bb816e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule468.py",
+      "bytes": 7385,
+      "sha256": "d2f493d378891fcba5cac434005dd76d1ee2b236be1efec27e432bee3f82d383"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule468-registration-verification-20261027.json",
+      "bytes": 2068,
+      "sha256": "10a36b2b539445ea0dbd930f84c49b2923342ea67c71d04f877abe6e1d648d33"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule306-defense-events.py",
+      "bytes": 6573,
+      "sha256": "688343b04c99f8714b9addbc57b2ece59a466fe7fad8079d2f907259f9505518"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-438.py",
+      "bytes": 829,
+      "sha256": "ad9bbaefe00d1cff3da3c488f796a2d8c8b8b5432034e1acf00a03fafcef17d3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule468-worker\\input.json",
+      "bytes": 35729,
+      "sha256": "000995049f3ace4bae616108325383025140cc3b3e39b60f2aaabb335442bd99"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule468-worker\\task.txt",
+      "bytes": 569,
+      "sha256": "8e66ae55859c810bfe87f1a648a7b29eeba5c87f24ea4ff14e0817357db3ea57"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule468-worker\\output.json",
+      "bytes": 741,
+      "sha256": "101eb6510b2c0817cb7aaa380454516c65ec7c23349fe8db102c8a524796abca"
+    }
+  ]
+}
