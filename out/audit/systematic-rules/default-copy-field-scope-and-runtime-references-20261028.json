@@ -1377,5 +1377,6 @@
   ],
   "game_writes": 0,
   "real_game_function_calls": 0,
-  "fully_certified_cards": 0
+  "fully_certified_cards": 0,
+  "later_decoder_clarification_RULE498": "RULE498扫描改用继承RULE483正确NameConst布局的新版解码器，并补充已按当前333B VM处理器验证读取边界的opcode67单子表达式语法。原67个函数脚本逐个字节相同，完整解码61→65；GetEquipmentNameAndType已完整，其2424处title用于描述Format参数，外观/物品Type、DescriptiveName、Thumbnail输出，无直接卡牌实例写。仅缩小本函数直接数据流边界，不证明全部原生/调用者或title整体无PvP作用。"
 }

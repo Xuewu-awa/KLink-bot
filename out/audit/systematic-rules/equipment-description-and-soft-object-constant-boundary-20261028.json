@@ -1,0 +1,386 @@
+{
+  "rule_id": "RULE-498",
+  "date": "2026-10-28",
+  "base_commit": "656d2a940e778373b8cebaec00c908c2120d310d",
+  "status": "装备描述辅助函数已完整语法解码；opcode67读取边界已验证，未把语法完成当全规则认证",
+  "findings": [
+    "当前GNatives的opcode67槽指向15a6760，完整局部CFG333B与安装PE/当前只读内存一致。处理器只从FFrame取一个子表达式并派发一次，随后用其字符串结果构造软资源引用。新增syntax-only解码节点SoftObjectConstantSyntax；不实现或认证资源路径解析、加载、拥有关系及游戏规则语义。",
+    "10隔离原机器码读取边界案例通过，覆盖字符串长0/1/4/17、空字符串null/分配缓冲及输出00/A5预填。检查单次子求值、精确FFrame.Code游标、构造输入字数、输出保护区及清理次数。子表达式求值、资源路径构造(empty result)、输出字符串存储/释放明确供给；非空字符串结果被供给为空路径，不作为真实资源解析验证。",
+    "RULE497仍使用438旧扫描解码器，未继承RULE483已经修正的NameConst支持。本轮498解码器继承483并补67。当前67候选函数与上一轮逐个地址/脚本字节相同，完整解码从61到65，新增完整为Board主图、GetEquipmentNameAndType、两个卡组widget；不是客户端版本差异或新资产数量变化。",
+    "GetEquipmentNameAndType完整2981B语法包含emote/cardback/item/alt/medkit等物品/外观分支。实际2424处读取静态卡的title到Format.ArgumentValue，局部输出仅Type、DescriptiveName、Thumbnail。全函数直接Let目标无InstanceVariable写入；调用表含字符串/格式化、数据表、卡背资源/贴图、GetLogic与Map_Find。该title读取是描述输出的直接数据流，不应仅凭名称把它当PvP装备规则缺口。",
+    "没有执行该辅助函数的完整语义或证明所有调用者/原生函数纯净，仍不把title/Text全局排除。ChangeBuffsFromCards标签、Text追加/快照等混合用途继续开放。剩余2个部分解码位于Mobile收藏详情图(opcode11)和奖励外观创建(TextConst subtype4)，其余已完整解码也不等于无PvP依赖。",
+    "DeepSeek仅提取装备函数AST调用名、输出写与title读索引，主agent独立重算逐项一致；结论基于实际字段指针、语法和数据流，而非worker分类判断。",
+    "本轮修改外部审计解码工具及证据，未修改产品规则源码、未重跑C#。929/929仅历史结果，完整认证卡数仍0。"
+  ],
+  "verification": {
+    "rule": "RULE-498",
+    "pid": 24220,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "native_handler_bytes": 333,
+    "isolated_cursor_cases": 10,
+    "cursor_profiles": [
+      {
+        "text_length": 0,
+        "heap_empty": false,
+        "fill": 0,
+        "decoder_end": 3,
+        "native_cursor": 3,
+        "events": [
+          "step-one-child-supplied",
+          "asset-path-parser-supplied-empty"
+        ]
+      },
+      {
+        "text_length": 0,
+        "heap_empty": false,
+        "fill": 165,
+        "decoder_end": 3,
+        "native_cursor": 3,
+        "events": [
+          "step-one-child-supplied",
+          "asset-path-parser-supplied-empty",
+          "output-string-storage-supplied"
+        ]
+      },
+      {
+        "text_length": 0,
+        "heap_empty": true,
+        "fill": 0,
+        "decoder_end": 3,
+        "native_cursor": 3,
+        "events": [
+          "step-one-child-supplied",
+          "asset-path-parser-supplied-empty",
+          "free-input-supplied"
+        ]
+      },
+      {
+        "text_length": 0,
+        "heap_empty": true,
+        "fill": 165,
+        "decoder_end": 3,
+        "native_cursor": 3,
+        "events": [
+          "step-one-child-supplied",
+          "asset-path-parser-supplied-empty",
+          "output-string-storage-supplied",
+          "free-input-supplied"
+        ]
+      },
+      {
+        "text_length": 1,
+        "heap_empty": true,
+        "fill": 0,
+        "decoder_end": 4,
+        "native_cursor": 4,
+        "events": [
+          "step-one-child-supplied",
+          "asset-path-parser-supplied-empty",
+          "free-input-supplied"
+        ]
+      },
+      {
+        "text_length": 1,
+        "heap_empty": true,
+        "fill": 165,
+        "decoder_end": 4,
+        "native_cursor": 4,
+        "events": [
+          "step-one-child-supplied",
+          "asset-path-parser-supplied-empty",
+          "output-string-storage-supplied",
+          "free-input-supplied"
+        ]
+      },
+      {
+        "text_length": 4,
+        "heap_empty": true,
+        "fill": 0,
+        "decoder_end": 7,
+        "native_cursor": 7,
+        "events": [
+          "step-one-child-supplied",
+          "asset-path-parser-supplied-empty",
+          "free-input-supplied"
+        ]
+      },
+      {
+        "text_length": 4,
+        "heap_empty": true,
+        "fill": 165,
+        "decoder_end": 7,
+        "native_cursor": 7,
+        "events": [
+          "step-one-child-supplied",
+          "asset-path-parser-supplied-empty",
+          "output-string-storage-supplied",
+          "free-input-supplied"
+        ]
+      },
+      {
+        "text_length": 17,
+        "heap_empty": true,
+        "fill": 0,
+        "decoder_end": 20,
+        "native_cursor": 20,
+        "events": [
+          "step-one-child-supplied",
+          "asset-path-parser-supplied-empty",
+          "free-input-supplied"
+        ]
+      },
+      {
+        "text_length": 17,
+        "heap_empty": true,
+        "fill": 165,
+        "decoder_end": 20,
+        "native_cursor": 20,
+        "events": [
+          "step-one-child-supplied",
+          "asset-path-parser-supplied-empty",
+          "output-string-storage-supplied",
+          "free-input-supplied"
+        ]
+      }
+    ],
+    "loaded_candidates": 67,
+    "old_complete": 61,
+    "new_complete": 65,
+    "newly_complete": [
+      {
+        "owner": "BP_Board_C",
+        "name": "ExecuteUbergraph_BP_Board"
+      },
+      {
+        "owner": "UtilityFunctions_C",
+        "name": "GetEquipmentNameAndType"
+      },
+      {
+        "owner": "W_ShopDeckCard_C",
+        "name": "WidgetSetup"
+      },
+      {
+        "owner": "W_CollectionCardDeckWidget_C",
+        "name": "WidgetSetup"
+      }
+    ],
+    "remaining_partial": [
+      {
+        "owner": "W_CollectionCardDetail_Mobile_C",
+        "name": "ExecuteUbergraph_W_CollectionCardDetail_Mobile",
+        "error": "unsupported opcode 11 at 2803"
+      },
+      {
+        "owner": "W_RewardScreen_C",
+        "name": "CreateAlternativeArtItem",
+        "error": "('unsupported TextConst subtype', 4)"
+      }
+    ],
+    "scope": "Opcode67 syntax consumes exactly one expression; native333B cursor stepping run offline with child evaluation, asset-path parsing(empty result), output string storage and frees supplied. Resource semantics/loading not certified. Complete equipment function syntax is not a transitive pure-function or PvP semantic proof.",
+    "game_writes": 0,
+    "real_game_function_calls": 0,
+    "fully_certified_cards": 0
+  },
+  "equipment_summary": {
+    "script_size": 2981,
+    "ast_index": {
+      "top_level_count": 91,
+      "call_names": [
+        "Split",
+        "EqualEqual_StrStr",
+        "NotEqual_StriStri",
+        "Conv_StringToText",
+        "Conv_StringToName",
+        "GetDataTableRowFromName",
+        "Format",
+        "GetCardbackAsset",
+        "IsValid",
+        "GetMainTexture",
+        "Conv_ObjectToSoftObjectReference",
+        "GetLogic",
+        "Map_Find"
+      ],
+      "local_out_writes": [
+        {
+          "statement_index": 590,
+          "name": "Type"
+        },
+        {
+          "statement_index": 617,
+          "name": "DescriptiveName"
+        },
+        {
+          "statement_index": 644,
+          "name": "Thumbnail"
+        },
+        {
+          "statement_index": 1357,
+          "name": "Type"
+        },
+        {
+          "statement_index": 1384,
+          "name": "DescriptiveName"
+        },
+        {
+          "statement_index": 1411,
+          "name": "Thumbnail"
+        },
+        {
+          "statement_index": 1758,
+          "name": "Type"
+        },
+        {
+          "statement_index": 1785,
+          "name": "DescriptiveName"
+        },
+        {
+          "statement_index": 1834,
+          "name": "Thumbnail"
+        },
+        {
+          "statement_index": 1986,
+          "name": "Type"
+        },
+        {
+          "statement_index": 2013,
+          "name": "DescriptiveName"
+        },
+        {
+          "statement_index": 2049,
+          "name": "Thumbnail"
+        },
+        {
+          "statement_index": 2726,
+          "name": "Type"
+        },
+        {
+          "statement_index": 2753,
+          "name": "DescriptiveName"
+        },
+        {
+          "statement_index": 2780,
+          "name": "Thumbnail"
+        },
+        {
+          "statement_index": 2806,
+          "name": "Type"
+        },
+        {
+          "statement_index": 2826,
+          "name": "DescriptiveName"
+        },
+        {
+          "statement_index": 2890,
+          "name": "Thumbnail"
+        }
+      ],
+      "title_read_statement_indexes": [
+        2424
+      ],
+      "instance_write_statement_indexes": []
+    },
+    "title_statements": [
+      {
+        "Inst": "Let",
+        "Variable": {
+          "Inst": "StructMemberContext",
+          "Property Name": "ArgumentValue",
+          "StructExpression": {
+            "Inst": "LocalVariable",
+            "Variable Name": "K2Node_MakeStruct_FormatArgumentData"
+          }
+        },
+        "Expression": {
+          "Inst": "Context",
+          "Context": {
+            "Inst": "LocalVariable",
+            "Variable Name": "CallFunc_Map_Find_Value"
+          },
+          "SkipOffsetForNull": 9,
+          "RValuePropertyName": "title",
+          "Expression": {
+            "Inst": "InstanceVariable",
+            "Variable Name": "title"
+          }
+        },
+        "StatementIndex": 2424
+      }
+    ]
+  },
+  "worker_job": "20261028-011811-rule498-equipment-ast-index-e40e7cdd",
+  "evidence": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule498-opcode67.py",
+      "bytes": 926,
+      "sha256": "18c6533c7514331020aec0bd8ca436e4769c1c10425da663cdf29e1a35bb9082"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule498-opcode67-native-20261028.json",
+      "bytes": 14189,
+      "sha256": "d4de247a69a6726b2a1eeb88cf753e7ad7a134ab2993f4a00ba5069ad94afebf"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-498.py",
+      "bytes": 752,
+      "sha256": "254664d0aa1146756993fda4ac54e58891709c0ec5bcdd2cfa852f874c4e67ef"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-483.py",
+      "bytes": 824,
+      "sha256": "cb5db92ddaf6b3915fef6bc7c55ec89778d887e285577b6557829ff3554fbcac"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule498-field-references.py",
+      "bytes": 551,
+      "sha256": "107122cf3e780752c2db238819821b6389be7c647352f020d26ff26fac10c926"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule498-default-field-references-20261028.json",
+      "bytes": 19120618,
+      "sha256": "7b809f03b947287074b02852ebaa77eb7bba007e94c19311990af88902c4d1a5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule497-default-field-references-20261028.json",
+      "bytes": 15472686,
+      "sha256": "e128f9ba3a17dd8a65f181d32ab33f7639ac4754abcc3f8bb6ddcee9bb9f786a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule498-softobject-and-equipment.py",
+      "bytes": 6695,
+      "sha256": "ab290f9a77d61ec5dd2f3227823668a125ef08373e99a241086bb20595cabfee"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule498-softobject-and-equipment-verification-20261028.json",
+      "bytes": 48393,
+      "sha256": "241f552233f371bdb98847079ef8f7f65484b494ca92543ada3bf0e61fdd683b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule498-worker\\input.json",
+      "bytes": 36569,
+      "sha256": "f6e83fabe870493af37c2965e3cc1f8cb47ea02795c518ee79637c275fb8416a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule498-worker\\output.json",
+      "bytes": 1457,
+      "sha256": "3eff8e1bca25dce40ec5b085312950155f3d78e138663e17449020218d207964"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule498-worker\\task.txt",
+      "bytes": 1087,
+      "sha256": "d6a36377b83d4bdfe2323afa7692583a0b34f1c9cb357e5a176c77ab136d6d8b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\audit_script_nameconst.py",
+      "bytes": 942,
+      "sha256": "7d5ea8dfed1e428e5ae73e3b65a7ef77a60343ca3218a8a34cbf12a053a867f3"
+    }
+  ],
+  "remaining": [
+    "title/Text在增益元数据、文本通知、战斗快照中的下游规则影响。",
+    "两个部分语法解码及原生/反射/未加载消费者，按PvP范围决定优先级。",
+    "完整finalizer/TLS/CopyData与无头模拟器状态映射及全量卡池逐项语义验证。"
+  ],
+  "game_writes": 0,
+  "real_game_function_calls": 0,
+  "fully_certified_cards": 0
+}
