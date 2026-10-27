@@ -1,0 +1,1348 @@
+{
+  "rule_id": "RULE-509",
+  "date": "2026-10-28",
+  "base_commit": "1e5339ccdf75c232c11241960b245d4bbf21abdc",
+  "status": "自动选择调用候选及首轮+4重试/请求残留已受控验证；真实同步时序与普通策略映射开放",
+  "findings": [
+    "当前autoPick函数指针/FName字节候选扫描命中两个完整语法解码ubergraph：BP_Logic45675B和MatchController23746B，递归核对3处调用43361/44593/2686。只作已加载直接引用候选，不代表全部原生/反射/委托或未加载调用穷尽。当前2597B autoPick和276B HandLocationFromSide另复读。",
+    "局部调用上下文：Logic43329受board.chooseOneActive控制后43361调用；Logic44557比较PlayState==4，44571置bIgnoreKreditValidation、44582置endingTurnForOpponent，再44593调用；Controller2626按IsMyTurn分流后2640 GetLogic、2686调用。只说明这些已读分支，不把相邻节点当成所有事件入口可达性证明，也不把普通手动/策略答复和自动选择无条件等同。",
+    "autoPick初轮完成后2107进入重试门：Temp_bool_Has_Been_Initd与IsClosed只在首次设置，2183置Temp_int=0；2207检查<4，2251/2293递增后2320回220。后续进入保留计数，达到4不再跳回。因此在所测有新请求时可处理首轮加4次重试，共5轮，而不是仅4轮。局部bool的初始false为显式供给，未认证原生帧默认初始化。",
+    "64组实际完整控制流测试覆盖侧别1/2、选择己/敌队列、1/2初始请求、请求链深度0/1/4/7和有/无合法候选。供给AddMoveToPlayerMoveQueue每处理一项可追加下一代请求，并供给卡对象/候选/谓词；按轮次和原顺序处理，最多5轮。深度7时第5轮新产生的请求仍在所选原队列，未再清掉；无合法候选的ID0答复同样走所测重试。",
+    "这不是已确认真实移动队列会同步执行回调：追加行为是受控重入模型。真正的AddMove队列执行时机和事件循环仍需连接验证，不能把测试中的回调新任务当成已观察到的对局事实。",
+    "1805至354局部窗口8组供给Do on Turn Ended返回列表，1918写局部列表，1964在其后追加当前所选原队列，2102回354；保留重复、控件返回项在新排队项之前。未执行控件函数体，也未把UI功能纳入恢复目标。",
+    "模拟器MatchEngine.EndEffectResolution在925起用FIFO处理到空或缺答复阻塞，回调新请求排到队尾；本轮只是只读对照。客户端这里是有界自动选目标阶段，未证明它应限制普通策略队列，故没有加5轮上限或判定现有实现错误。跨方Owner、具体单卡谓词、实际调用/强制结束回合状态仍开放。",
+    "DeepSeek机械提取3处调用索引，主agent独立递归核对。未改产品/C#未重跑，历史929/929非本轮测试。完整认证卡数0，游戏写入/注入/真实调用0。"
+  ],
+  "verification": {
+    "rule": "RULE-509",
+    "retry_chain_cases": 64,
+    "widget_append_window_cases": 8,
+    "scope": "Actual full2597B autoPickHandTargets control flow with widget absent. Every supplied AddMoveToPlayerMoveQueue callback optionally registers a next-generation pending selector on selected side; this is a bounded synthetic reentrancy model, not certified actual move queue timing. Side/location fetch order, candidate predicate, card lookup, native containers and local bool default false supplied. Observed initial batch plus up to4 retries, source order and pending leftovers. Additional1805->354 window supplies widget return and verifies1964 append order, no actual widget execution. No normal strategy FIFO equivalence or product bug inferred; actual UI/scheduler/forced-end-turn behavior remains open.",
+    "game_writes": 0,
+    "real_game_function_calls": 0,
+    "fully_certified_cards": 0,
+    "case_sha256": "9c9f3e6eb5d4b5fe792881720ceb66d9ec31668ab7e8f2b9e73457f1c33ce859",
+    "profile_summaries": [
+      {
+        "side": 1,
+        "opponent": false,
+        "pending_count": 1,
+        "chain_depth": 0,
+        "has_valid": false,
+        "rounds": 1,
+        "sources": [
+          11
+        ],
+        "remaining": [],
+        "retry_counter": 1
+      },
+      {
+        "side": 1,
+        "opponent": false,
+        "pending_count": 1,
+        "chain_depth": 0,
+        "has_valid": true,
+        "rounds": 1,
+        "sources": [
+          11
+        ],
+        "remaining": [],
+        "retry_counter": 1
+      },
+      {
+        "side": 1,
+        "opponent": false,
+        "pending_count": 1,
+        "chain_depth": 1,
+        "has_valid": false,
+        "rounds": 2,
+        "sources": [
+          11,
+          111
+        ],
+        "remaining": [],
+        "retry_counter": 2
+      },
+      {
+        "side": 1,
+        "opponent": false,
+        "pending_count": 1,
+        "chain_depth": 1,
+        "has_valid": true,
+        "rounds": 2,
+        "sources": [
+          11,
+          111
+        ],
+        "remaining": [],
+        "retry_counter": 2
+      },
+      {
+        "side": 1,
+        "opponent": false,
+        "pending_count": 1,
+        "chain_depth": 4,
+        "has_valid": false,
+        "rounds": 5,
+        "sources": [
+          11,
+          111,
+          211,
+          311,
+          411
+        ],
+        "remaining": [],
+        "retry_counter": 4
+      },
+      {
+        "side": 1,
+        "opponent": false,
+        "pending_count": 1,
+        "chain_depth": 4,
+        "has_valid": true,
+        "rounds": 5,
+        "sources": [
+          11,
+          111,
+          211,
+          311,
+          411
+        ],
+        "remaining": [],
+        "retry_counter": 4
+      },
+      {
+        "side": 1,
+        "opponent": false,
+        "pending_count": 1,
+        "chain_depth": 7,
+        "has_valid": false,
+        "rounds": 5,
+        "sources": [
+          11,
+          111,
+          211,
+          311,
+          411
+        ],
+        "remaining": [
+          511
+        ],
+        "retry_counter": 4
+      },
+      {
+        "side": 1,
+        "opponent": false,
+        "pending_count": 1,
+        "chain_depth": 7,
+        "has_valid": true,
+        "rounds": 5,
+        "sources": [
+          11,
+          111,
+          211,
+          311,
+          411
+        ],
+        "remaining": [
+          511
+        ],
+        "retry_counter": 4
+      },
+      {
+        "side": 1,
+        "opponent": false,
+        "pending_count": 2,
+        "chain_depth": 0,
+        "has_valid": false,
+        "rounds": 1,
+        "sources": [
+          11,
+          12
+        ],
+        "remaining": [],
+        "retry_counter": 1
+      },
+      {
+        "side": 1,
+        "opponent": false,
+        "pending_count": 2,
+        "chain_depth": 0,
+        "has_valid": true,
+        "rounds": 1,
+        "sources": [
+          11,
+          12
+        ],
+        "remaining": [],
+        "retry_counter": 1
+      },
+      {
+        "side": 1,
+        "opponent": false,
+        "pending_count": 2,
+        "chain_depth": 1,
+        "has_valid": false,
+        "rounds": 2,
+        "sources": [
+          11,
+          12,
+          111,
+          112
+        ],
+        "remaining": [],
+        "retry_counter": 2
+      },
+      {
+        "side": 1,
+        "opponent": false,
+        "pending_count": 2,
+        "chain_depth": 1,
+        "has_valid": true,
+        "rounds": 2,
+        "sources": [
+          11,
+          12,
+          111,
+          112
+        ],
+        "remaining": [],
+        "retry_counter": 2
+      },
+      {
+        "side": 1,
+        "opponent": false,
+        "pending_count": 2,
+        "chain_depth": 4,
+        "has_valid": false,
+        "rounds": 5,
+        "sources": [
+          11,
+          12,
+          111,
+          112,
+          211,
+          212,
+          311,
+          312,
+          411,
+          412
+        ],
+        "remaining": [],
+        "retry_counter": 4
+      },
+      {
+        "side": 1,
+        "opponent": false,
+        "pending_count": 2,
+        "chain_depth": 4,
+        "has_valid": true,
+        "rounds": 5,
+        "sources": [
+          11,
+          12,
+          111,
+          112,
+          211,
+          212,
+          311,
+          312,
+          411,
+          412
+        ],
+        "remaining": [],
+        "retry_counter": 4
+      },
+      {
+        "side": 1,
+        "opponent": false,
+        "pending_count": 2,
+        "chain_depth": 7,
+        "has_valid": false,
+        "rounds": 5,
+        "sources": [
+          11,
+          12,
+          111,
+          112,
+          211,
+          212,
+          311,
+          312,
+          411,
+          412
+        ],
+        "remaining": [
+          511,
+          512
+        ],
+        "retry_counter": 4
+      },
+      {
+        "side": 1,
+        "opponent": false,
+        "pending_count": 2,
+        "chain_depth": 7,
+        "has_valid": true,
+        "rounds": 5,
+        "sources": [
+          11,
+          12,
+          111,
+          112,
+          211,
+          212,
+          311,
+          312,
+          411,
+          412
+        ],
+        "remaining": [
+          511,
+          512
+        ],
+        "retry_counter": 4
+      },
+      {
+        "side": 1,
+        "opponent": true,
+        "pending_count": 1,
+        "chain_depth": 0,
+        "has_valid": false,
+        "rounds": 1,
+        "sources": [
+          11
+        ],
+        "remaining": [],
+        "retry_counter": 1
+      },
+      {
+        "side": 1,
+        "opponent": true,
+        "pending_count": 1,
+        "chain_depth": 0,
+        "has_valid": true,
+        "rounds": 1,
+        "sources": [
+          11
+        ],
+        "remaining": [],
+        "retry_counter": 1
+      },
+      {
+        "side": 1,
+        "opponent": true,
+        "pending_count": 1,
+        "chain_depth": 1,
+        "has_valid": false,
+        "rounds": 2,
+        "sources": [
+          11,
+          111
+        ],
+        "remaining": [],
+        "retry_counter": 2
+      },
+      {
+        "side": 1,
+        "opponent": true,
+        "pending_count": 1,
+        "chain_depth": 1,
+        "has_valid": true,
+        "rounds": 2,
+        "sources": [
+          11,
+          111
+        ],
+        "remaining": [],
+        "retry_counter": 2
+      },
+      {
+        "side": 1,
+        "opponent": true,
+        "pending_count": 1,
+        "chain_depth": 4,
+        "has_valid": false,
+        "rounds": 5,
+        "sources": [
+          11,
+          111,
+          211,
+          311,
+          411
+        ],
+        "remaining": [],
+        "retry_counter": 4
+      },
+      {
+        "side": 1,
+        "opponent": true,
+        "pending_count": 1,
+        "chain_depth": 4,
+        "has_valid": true,
+        "rounds": 5,
+        "sources": [
+          11,
+          111,
+          211,
+          311,
+          411
+        ],
+        "remaining": [],
+        "retry_counter": 4
+      },
+      {
+        "side": 1,
+        "opponent": true,
+        "pending_count": 1,
+        "chain_depth": 7,
+        "has_valid": false,
+        "rounds": 5,
+        "sources": [
+          11,
+          111,
+          211,
+          311,
+          411
+        ],
+        "remaining": [
+          511
+        ],
+        "retry_counter": 4
+      },
+      {
+        "side": 1,
+        "opponent": true,
+        "pending_count": 1,
+        "chain_depth": 7,
+        "has_valid": true,
+        "rounds": 5,
+        "sources": [
+          11,
+          111,
+          211,
+          311,
+          411
+        ],
+        "remaining": [
+          511
+        ],
+        "retry_counter": 4
+      },
+      {
+        "side": 1,
+        "opponent": true,
+        "pending_count": 2,
+        "chain_depth": 0,
+        "has_valid": false,
+        "rounds": 1,
+        "sources": [
+          11,
+          12
+        ],
+        "remaining": [],
+        "retry_counter": 1
+      },
+      {
+        "side": 1,
+        "opponent": true,
+        "pending_count": 2,
+        "chain_depth": 0,
+        "has_valid": true,
+        "rounds": 1,
+        "sources": [
+          11,
+          12
+        ],
+        "remaining": [],
+        "retry_counter": 1
+      },
+      {
+        "side": 1,
+        "opponent": true,
+        "pending_count": 2,
+        "chain_depth": 1,
+        "has_valid": false,
+        "rounds": 2,
+        "sources": [
+          11,
+          12,
+          111,
+          112
+        ],
+        "remaining": [],
+        "retry_counter": 2
+      },
+      {
+        "side": 1,
+        "opponent": true,
+        "pending_count": 2,
+        "chain_depth": 1,
+        "has_valid": true,
+        "rounds": 2,
+        "sources": [
+          11,
+          12,
+          111,
+          112
+        ],
+        "remaining": [],
+        "retry_counter": 2
+      },
+      {
+        "side": 1,
+        "opponent": true,
+        "pending_count": 2,
+        "chain_depth": 4,
+        "has_valid": false,
+        "rounds": 5,
+        "sources": [
+          11,
+          12,
+          111,
+          112,
+          211,
+          212,
+          311,
+          312,
+          411,
+          412
+        ],
+        "remaining": [],
+        "retry_counter": 4
+      },
+      {
+        "side": 1,
+        "opponent": true,
+        "pending_count": 2,
+        "chain_depth": 4,
+        "has_valid": true,
+        "rounds": 5,
+        "sources": [
+          11,
+          12,
+          111,
+          112,
+          211,
+          212,
+          311,
+          312,
+          411,
+          412
+        ],
+        "remaining": [],
+        "retry_counter": 4
+      },
+      {
+        "side": 1,
+        "opponent": true,
+        "pending_count": 2,
+        "chain_depth": 7,
+        "has_valid": false,
+        "rounds": 5,
+        "sources": [
+          11,
+          12,
+          111,
+          112,
+          211,
+          212,
+          311,
+          312,
+          411,
+          412
+        ],
+        "remaining": [
+          511,
+          512
+        ],
+        "retry_counter": 4
+      },
+      {
+        "side": 1,
+        "opponent": true,
+        "pending_count": 2,
+        "chain_depth": 7,
+        "has_valid": true,
+        "rounds": 5,
+        "sources": [
+          11,
+          12,
+          111,
+          112,
+          211,
+          212,
+          311,
+          312,
+          411,
+          412
+        ],
+        "remaining": [
+          511,
+          512
+        ],
+        "retry_counter": 4
+      },
+      {
+        "side": 2,
+        "opponent": false,
+        "pending_count": 1,
+        "chain_depth": 0,
+        "has_valid": false,
+        "rounds": 1,
+        "sources": [
+          11
+        ],
+        "remaining": [],
+        "retry_counter": 1
+      },
+      {
+        "side": 2,
+        "opponent": false,
+        "pending_count": 1,
+        "chain_depth": 0,
+        "has_valid": true,
+        "rounds": 1,
+        "sources": [
+          11
+        ],
+        "remaining": [],
+        "retry_counter": 1
+      },
+      {
+        "side": 2,
+        "opponent": false,
+        "pending_count": 1,
+        "chain_depth": 1,
+        "has_valid": false,
+        "rounds": 2,
+        "sources": [
+          11,
+          111
+        ],
+        "remaining": [],
+        "retry_counter": 2
+      },
+      {
+        "side": 2,
+        "opponent": false,
+        "pending_count": 1,
+        "chain_depth": 1,
+        "has_valid": true,
+        "rounds": 2,
+        "sources": [
+          11,
+          111
+        ],
+        "remaining": [],
+        "retry_counter": 2
+      },
+      {
+        "side": 2,
+        "opponent": false,
+        "pending_count": 1,
+        "chain_depth": 4,
+        "has_valid": false,
+        "rounds": 5,
+        "sources": [
+          11,
+          111,
+          211,
+          311,
+          411
+        ],
+        "remaining": [],
+        "retry_counter": 4
+      },
+      {
+        "side": 2,
+        "opponent": false,
+        "pending_count": 1,
+        "chain_depth": 4,
+        "has_valid": true,
+        "rounds": 5,
+        "sources": [
+          11,
+          111,
+          211,
+          311,
+          411
+        ],
+        "remaining": [],
+        "retry_counter": 4
+      },
+      {
+        "side": 2,
+        "opponent": false,
+        "pending_count": 1,
+        "chain_depth": 7,
+        "has_valid": false,
+        "rounds": 5,
+        "sources": [
+          11,
+          111,
+          211,
+          311,
+          411
+        ],
+        "remaining": [
+          511
+        ],
+        "retry_counter": 4
+      },
+      {
+        "side": 2,
+        "opponent": false,
+        "pending_count": 1,
+        "chain_depth": 7,
+        "has_valid": true,
+        "rounds": 5,
+        "sources": [
+          11,
+          111,
+          211,
+          311,
+          411
+        ],
+        "remaining": [
+          511
+        ],
+        "retry_counter": 4
+      },
+      {
+        "side": 2,
+        "opponent": false,
+        "pending_count": 2,
+        "chain_depth": 0,
+        "has_valid": false,
+        "rounds": 1,
+        "sources": [
+          11,
+          12
+        ],
+        "remaining": [],
+        "retry_counter": 1
+      },
+      {
+        "side": 2,
+        "opponent": false,
+        "pending_count": 2,
+        "chain_depth": 0,
+        "has_valid": true,
+        "rounds": 1,
+        "sources": [
+          11,
+          12
+        ],
+        "remaining": [],
+        "retry_counter": 1
+      },
+      {
+        "side": 2,
+        "opponent": false,
+        "pending_count": 2,
+        "chain_depth": 1,
+        "has_valid": false,
+        "rounds": 2,
+        "sources": [
+          11,
+          12,
+          111,
+          112
+        ],
+        "remaining": [],
+        "retry_counter": 2
+      },
+      {
+        "side": 2,
+        "opponent": false,
+        "pending_count": 2,
+        "chain_depth": 1,
+        "has_valid": true,
+        "rounds": 2,
+        "sources": [
+          11,
+          12,
+          111,
+          112
+        ],
+        "remaining": [],
+        "retry_counter": 2
+      },
+      {
+        "side": 2,
+        "opponent": false,
+        "pending_count": 2,
+        "chain_depth": 4,
+        "has_valid": false,
+        "rounds": 5,
+        "sources": [
+          11,
+          12,
+          111,
+          112,
+          211,
+          212,
+          311,
+          312,
+          411,
+          412
+        ],
+        "remaining": [],
+        "retry_counter": 4
+      },
+      {
+        "side": 2,
+        "opponent": false,
+        "pending_count": 2,
+        "chain_depth": 4,
+        "has_valid": true,
+        "rounds": 5,
+        "sources": [
+          11,
+          12,
+          111,
+          112,
+          211,
+          212,
+          311,
+          312,
+          411,
+          412
+        ],
+        "remaining": [],
+        "retry_counter": 4
+      },
+      {
+        "side": 2,
+        "opponent": false,
+        "pending_count": 2,
+        "chain_depth": 7,
+        "has_valid": false,
+        "rounds": 5,
+        "sources": [
+          11,
+          12,
+          111,
+          112,
+          211,
+          212,
+          311,
+          312,
+          411,
+          412
+        ],
+        "remaining": [
+          511,
+          512
+        ],
+        "retry_counter": 4
+      },
+      {
+        "side": 2,
+        "opponent": false,
+        "pending_count": 2,
+        "chain_depth": 7,
+        "has_valid": true,
+        "rounds": 5,
+        "sources": [
+          11,
+          12,
+          111,
+          112,
+          211,
+          212,
+          311,
+          312,
+          411,
+          412
+        ],
+        "remaining": [
+          511,
+          512
+        ],
+        "retry_counter": 4
+      },
+      {
+        "side": 2,
+        "opponent": true,
+        "pending_count": 1,
+        "chain_depth": 0,
+        "has_valid": false,
+        "rounds": 1,
+        "sources": [
+          11
+        ],
+        "remaining": [],
+        "retry_counter": 1
+      },
+      {
+        "side": 2,
+        "opponent": true,
+        "pending_count": 1,
+        "chain_depth": 0,
+        "has_valid": true,
+        "rounds": 1,
+        "sources": [
+          11
+        ],
+        "remaining": [],
+        "retry_counter": 1
+      },
+      {
+        "side": 2,
+        "opponent": true,
+        "pending_count": 1,
+        "chain_depth": 1,
+        "has_valid": false,
+        "rounds": 2,
+        "sources": [
+          11,
+          111
+        ],
+        "remaining": [],
+        "retry_counter": 2
+      },
+      {
+        "side": 2,
+        "opponent": true,
+        "pending_count": 1,
+        "chain_depth": 1,
+        "has_valid": true,
+        "rounds": 2,
+        "sources": [
+          11,
+          111
+        ],
+        "remaining": [],
+        "retry_counter": 2
+      },
+      {
+        "side": 2,
+        "opponent": true,
+        "pending_count": 1,
+        "chain_depth": 4,
+        "has_valid": false,
+        "rounds": 5,
+        "sources": [
+          11,
+          111,
+          211,
+          311,
+          411
+        ],
+        "remaining": [],
+        "retry_counter": 4
+      },
+      {
+        "side": 2,
+        "opponent": true,
+        "pending_count": 1,
+        "chain_depth": 4,
+        "has_valid": true,
+        "rounds": 5,
+        "sources": [
+          11,
+          111,
+          211,
+          311,
+          411
+        ],
+        "remaining": [],
+        "retry_counter": 4
+      },
+      {
+        "side": 2,
+        "opponent": true,
+        "pending_count": 1,
+        "chain_depth": 7,
+        "has_valid": false,
+        "rounds": 5,
+        "sources": [
+          11,
+          111,
+          211,
+          311,
+          411
+        ],
+        "remaining": [
+          511
+        ],
+        "retry_counter": 4
+      },
+      {
+        "side": 2,
+        "opponent": true,
+        "pending_count": 1,
+        "chain_depth": 7,
+        "has_valid": true,
+        "rounds": 5,
+        "sources": [
+          11,
+          111,
+          211,
+          311,
+          411
+        ],
+        "remaining": [
+          511
+        ],
+        "retry_counter": 4
+      },
+      {
+        "side": 2,
+        "opponent": true,
+        "pending_count": 2,
+        "chain_depth": 0,
+        "has_valid": false,
+        "rounds": 1,
+        "sources": [
+          11,
+          12
+        ],
+        "remaining": [],
+        "retry_counter": 1
+      },
+      {
+        "side": 2,
+        "opponent": true,
+        "pending_count": 2,
+        "chain_depth": 0,
+        "has_valid": true,
+        "rounds": 1,
+        "sources": [
+          11,
+          12
+        ],
+        "remaining": [],
+        "retry_counter": 1
+      },
+      {
+        "side": 2,
+        "opponent": true,
+        "pending_count": 2,
+        "chain_depth": 1,
+        "has_valid": false,
+        "rounds": 2,
+        "sources": [
+          11,
+          12,
+          111,
+          112
+        ],
+        "remaining": [],
+        "retry_counter": 2
+      },
+      {
+        "side": 2,
+        "opponent": true,
+        "pending_count": 2,
+        "chain_depth": 1,
+        "has_valid": true,
+        "rounds": 2,
+        "sources": [
+          11,
+          12,
+          111,
+          112
+        ],
+        "remaining": [],
+        "retry_counter": 2
+      },
+      {
+        "side": 2,
+        "opponent": true,
+        "pending_count": 2,
+        "chain_depth": 4,
+        "has_valid": false,
+        "rounds": 5,
+        "sources": [
+          11,
+          12,
+          111,
+          112,
+          211,
+          212,
+          311,
+          312,
+          411,
+          412
+        ],
+        "remaining": [],
+        "retry_counter": 4
+      },
+      {
+        "side": 2,
+        "opponent": true,
+        "pending_count": 2,
+        "chain_depth": 4,
+        "has_valid": true,
+        "rounds": 5,
+        "sources": [
+          11,
+          12,
+          111,
+          112,
+          211,
+          212,
+          311,
+          312,
+          411,
+          412
+        ],
+        "remaining": [],
+        "retry_counter": 4
+      },
+      {
+        "side": 2,
+        "opponent": true,
+        "pending_count": 2,
+        "chain_depth": 7,
+        "has_valid": false,
+        "rounds": 5,
+        "sources": [
+          11,
+          12,
+          111,
+          112,
+          211,
+          212,
+          311,
+          312,
+          411,
+          412
+        ],
+        "remaining": [
+          511,
+          512
+        ],
+        "retry_counter": 4
+      },
+      {
+        "side": 2,
+        "opponent": true,
+        "pending_count": 2,
+        "chain_depth": 7,
+        "has_valid": true,
+        "rounds": 5,
+        "sources": [
+          11,
+          12,
+          111,
+          112,
+          211,
+          212,
+          311,
+          312,
+          411,
+          412
+        ],
+        "remaining": [
+          511,
+          512
+        ],
+        "retry_counter": 4
+      }
+    ],
+    "widget_append_summaries": [
+      {
+        "opponent": false,
+        "returned": [],
+        "queued": [],
+        "combined": []
+      },
+      {
+        "opponent": false,
+        "returned": [],
+        "queued": [
+          12,
+          13
+        ],
+        "combined": [
+          12,
+          13
+        ]
+      },
+      {
+        "opponent": false,
+        "returned": [
+          11,
+          11
+        ],
+        "queued": [],
+        "combined": [
+          11,
+          11
+        ]
+      },
+      {
+        "opponent": false,
+        "returned": [
+          11,
+          11
+        ],
+        "queued": [
+          12,
+          13
+        ],
+        "combined": [
+          11,
+          11,
+          12,
+          13
+        ]
+      },
+      {
+        "opponent": true,
+        "returned": [],
+        "queued": [],
+        "combined": []
+      },
+      {
+        "opponent": true,
+        "returned": [],
+        "queued": [
+          12,
+          13
+        ],
+        "combined": [
+          12,
+          13
+        ]
+      },
+      {
+        "opponent": true,
+        "returned": [
+          11,
+          11
+        ],
+        "queued": [],
+        "combined": [
+          11,
+          11
+        ]
+      },
+      {
+        "opponent": true,
+        "returned": [
+          11,
+          11
+        ],
+        "queued": [
+          12,
+          13
+        ],
+        "combined": [
+          11,
+          11,
+          12,
+          13
+        ]
+      }
+    ]
+  },
+  "worker_index": [
+    {
+      "owner": "BP_Logic_C",
+      "name": "ExecuteUbergraph_BP_Logic",
+      "auto_pick_call_indexes": [
+        43361,
+        44593
+      ]
+    },
+    {
+      "owner": "MatchController_C",
+      "name": "ExecuteUbergraph_MatchController",
+      "auto_pick_call_indexes": [
+        2686
+      ]
+    }
+  ],
+  "loaded_script_census": {
+    "function_objects": 30583,
+    "scripted_functions": 18111,
+    "script_bytes": 7922413
+  },
+  "captured_callers": [
+    {
+      "owner": "BP_Logic_C",
+      "name": "ExecuteUbergraph_BP_Logic",
+      "script_size": 45675,
+      "decode_complete": true,
+      "script_sha256": "db3abe03514557d2b054663be2b3bc1b60b11e6bccc2072901c22f3b61510bbd"
+    },
+    {
+      "owner": "MatchController_C",
+      "name": "ExecuteUbergraph_MatchController",
+      "script_size": 23746,
+      "decode_complete": true,
+      "script_sha256": "3d4d774b498f5c116b798a0b632f246d4cebf824b9025e008c2ea6f6e312c736"
+    }
+  ],
+  "worker_job": "20261028-031855-rule509-retry-callers-a1787454",
+  "evidence": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule509-callers.py",
+      "bytes": 553,
+      "sha256": "8abbf9cb612c59ade9f936a970bc8bd993b449f031cfd5f481367fef9a25f016"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule509-autopick-callsite-candidates-20261028.json",
+      "bytes": 7254868,
+      "sha256": "74983d58142df626b6ae2a9ba0a49d9f9e6b661fac1a60c164d2f413bfbd171c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule509-retry.py",
+      "bytes": 347,
+      "sha256": "361e9e446a2e07d0cc22402965cc08b4018dc6e4a4a062ad93ea5cbfa27082f8"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule509-autopick-retry-functions-20261028.json",
+      "bytes": 4624162,
+      "sha256": "3970ac4137b1fc44d7ab3fc4ecd0fab2fd064747582a3b1a447e4011a360421c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule509-retry.py",
+      "bytes": 13484,
+      "sha256": "792be299370fc7a7c5044114684a573e57a4b202060f97d50cc5f46dc70fa00b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule509-retry-verification-20261028.json",
+      "bytes": 461638,
+      "sha256": "0fad3e90373838a5703c90a987968106e6025fb4c1281370123dc617485a6988"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule509-worker\\input.json",
+      "bytes": 627672,
+      "sha256": "affd17c5baa4dfd3989901abac008b1c570494220dfca7f6757222230cc06d75"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule509-worker\\task.txt",
+      "bytes": 377,
+      "sha256": "f8d5cc47d1bd93a2f532434b043837da46f9852b6f7e12d2d5e38ed06e3de133"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule509-worker\\output.json",
+      "bytes": 298,
+      "sha256": "9e0d9ea0646e29136042a2e29e3a741ecb2341dba064f0acce68436dcb414767"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\MatchEngine.cs",
+      "bytes": 199427,
+      "sha256": "d2cafdcf3f4de9481e13f4b4423f91a33c3868bc1562d55b615ea972688e199f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs",
+      "bytes": 402458,
+      "sha256": "97e5d5efac6a97b575c4f74267ea13d898178fb250edcaf9fe0e756e9db67c9f"
+    }
+  ],
+  "remaining": [
+    "AddMoveToPlayerMoveQueue实际执行/同步性，自动选择触发与结束回合/恢复的完整事件入口。",
+    "普通策略FIFO与有界自动策略映射，跨方Owner及真实GameState侧别变更。",
+    "单卡目标谓词和全PvP语义认证；不以UI或受控重入替代实际规则证据。"
+  ],
+  "game_writes": 0,
+  "real_game_function_calls": 0,
+  "fully_certified_cards": 0
+}
