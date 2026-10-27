@@ -1,0 +1,290 @@
+{
+  "rule_id": "RULE-472",
+  "date": "2026-10-27",
+  "base_commit": "232ebd7b13db42915a48cdf13507b8022d579e3d",
+  "status": "四个重置容器辅助本地体已联通；内部复制/分配器等仍受控，无生产代码修改",
+  "findings": [
+    "四个直接辅助入口4abaf80/4abaee0/4abae50/36abdc0的首个.pdata片段仅21/21/22/176字节，不能当完整函数。沿本地跳转补齐后，最终有效范围156/156/143/338字节，内存与安装PE全等，本地跳转前沿为空。",
+    "首次线性扩展未将int3当终止，36abdc0范围误扩成624字节且进入后一个函数。人工复核发现后将ret/int3/ud2作为本地终止，得到338字节；保留初始片段/过度扩展快照为诊断，不用其作为完整函数证据。旧worker任务已取消，新私有包仅使用修正输入。",
+    "两个map辅助由重置分别接收+0x208 receivedAbilitiesFromCards与+0xb8 buffsFromCards子对象，先复制哈希头/内联桶，再调用各自内部元素复制；4abae50和36abdc0操作其他内部列表子对象。仅凭传入子对象不能断言所有传递调用无副作用。",
+    "在原重置1566字节、刷新740字节基础上，联通四个辅助共793字节。每场景实际执行六次已联通调用（数值刷新一次、四个容器辅助共五次），五次CRC用实际栈块计算；必要的4字节内联桶memcpy按输入复制。",
+    "256组模型覆盖两个当前登记数组、两个当前例外数组、两个模板例外数组、两种打捞、两种salt、三容器独立hash0/1的八组合。每组合验证三容器哈希大小/单桶内容复制，以及五组数值/CRC和两触发数组头/载荷保持。稀疏元素与标签列表为空，不把单桶状态称作非空元素复制。",
+    "内部map元素复制、容器分配器、引用计数、JSON、诊断和安全cookie仍受控跳过/RAX0；没有执行无效负长度的int3诊断路径。完整重置、有效非空元素与全局登记生命周期尚未认证。",
+    "DeepSeek修正包机械提取16个call及21个jump，主agent解析并按原指令完整对象/顺序全等核验；模型语义和整合由主agent独立完成。"
+  ],
+  "verification": {
+    "rule": "RULE-472",
+    "pid": 24220,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "native_reset_body_bytes": 1566,
+    "native_refresh_bytes": 740,
+    "helper_sizes": [
+      {
+        "rva": "0x4abaf80",
+        "bytes": 156,
+        "frontier": []
+      },
+      {
+        "rva": "0x4abaee0",
+        "bytes": 156,
+        "frontier": []
+      },
+      {
+        "rva": "0x4abae50",
+        "bytes": 143,
+        "frontier": []
+      },
+      {
+        "rva": "0x36abdc0",
+        "bytes": 338,
+        "frontier": []
+      }
+    ],
+    "offline_profiles": 256,
+    "case_sha256": "d869c4ec53170fa31e89153ac4120f26f65172522def3c25e24300a4c2eb8357",
+    "worker_exact_calls": 16,
+    "worker_exact_jumps": 21,
+    "crc_calls_per_profile": 5,
+    "linked_calls_per_profile": 6,
+    "executed_callsite_profiles": 8,
+    "last_profile_calls": [
+      {
+        "rva": "0x4b079be",
+        "target": "0x144b2e080",
+        "rcx": "0x0"
+      },
+      {
+        "rva": "0x4b07a18",
+        "target": "0x144abaf80",
+        "rcx": "0x300208"
+      },
+      {
+        "rva": "0x4abaff6",
+        "target": "0x146eabd9b",
+        "rcx": "0x300240"
+      },
+      {
+        "rva": "0x4abb004",
+        "target": "0x144abb3e0",
+        "rcx": "0x300208"
+      },
+      {
+        "rva": "0x4b07ad0",
+        "target": "0x144abaee0",
+        "rcx": "0x3000b8"
+      },
+      {
+        "rva": "0x4abaf56",
+        "target": "0x146eabd9b",
+        "rcx": "0x3000f0"
+      },
+      {
+        "rva": "0x4abaf64",
+        "target": "0x144abb1d0",
+        "rcx": "0x3000b8"
+      },
+      {
+        "rva": "0x4b07bf3",
+        "target": "0x1413c1eb0",
+        "rcx": "0x0"
+      },
+      {
+        "rva": "0x4b07c33",
+        "target": "0x1413c1eb0",
+        "rcx": "0x0"
+      },
+      {
+        "rva": "0x4b07c73",
+        "target": "0x1413c1eb0",
+        "rcx": "0x0"
+      },
+      {
+        "rva": "0x4b07cb3",
+        "target": "0x1413c1eb0",
+        "rcx": "0x0"
+      },
+      {
+        "rva": "0x4b07cf3",
+        "target": "0x1413c1eb0",
+        "rcx": "0x0"
+      },
+      {
+        "rva": "0x4b07d70",
+        "target": "0x146eabd9b",
+        "rcx": "0x300190"
+      },
+      {
+        "rva": "0x4b07d83",
+        "target": "0x141555f20",
+        "rcx": "0x300158"
+      },
+      {
+        "rva": "0x4b07da8",
+        "target": "0x1411afc70",
+        "rcx": "0xc"
+      },
+      {
+        "rva": "0x4b07dc8",
+        "target": "0x1411ee250",
+        "rcx": "0x300168"
+      },
+      {
+        "rva": "0x4b07e55",
+        "target": "0x1436abdc0",
+        "rcx": "0x300030"
+      },
+      {
+        "rva": "0x4b07e84",
+        "target": "0x144abae50",
+        "rcx": "0x3005d0"
+      },
+      {
+        "rva": "0x4b07e9a",
+        "target": "0x1436abdc0",
+        "rcx": "0x3005e0"
+      },
+      {
+        "rva": "0x4b07ea2",
+        "target": "0x144af9a30",
+        "rcx": "0x300000"
+      },
+      {
+        "rva": "0x4af9ab9",
+        "target": "rax",
+        "rcx": "0x500728"
+      },
+      {
+        "rva": "0x4af9b1f",
+        "target": "rax",
+        "rcx": "0x500728"
+      },
+      {
+        "rva": "0x4af9b85",
+        "target": "rax",
+        "rcx": "0x500728"
+      },
+      {
+        "rva": "0x4af9bee",
+        "target": "rax",
+        "rcx": "0x500728"
+      },
+      {
+        "rva": "0x4af9c57",
+        "target": "rax",
+        "rcx": "0x500728"
+      },
+      {
+        "rva": "0x4af9c74",
+        "target": "0x144521710",
+        "rcx": "0x500728"
+      },
+      {
+        "rva": "0x4af9c83",
+        "target": "0x1414a26b0",
+        "rcx": "0x0"
+      },
+      {
+        "rva": "0x4af9c90",
+        "target": "0x14138b470",
+        "rcx": "0x500728"
+      },
+      {
+        "rva": "0x4af9ca4",
+        "target": "0x1411d4010",
+        "rcx": "0x500708"
+      },
+      {
+        "rva": "0x4af9cc5",
+        "target": "0x1411cd340",
+        "rcx": "0x0"
+      },
+      {
+        "rva": "0x4af9cfd",
+        "target": "0x146e9f680",
+        "rcx": "0x2b992ddfa232"
+      }
+    ],
+    "scope": "Whole reset and numeric-refresh locals plus four direct container-helper locals execute actual call/ret. Five CRC32 stack blocks and controlled4-byte memcpy. Empty sparse elements/tag arrays, independent inline-hash0/1 controls for buffs/abilities/help bubbles. Inner map element copies, allocator/ownership/refcount/JSON/diagnostic/security helpers remain controlled/skipped with RAX0; nonempty element semantics unexecuted. No global registration/lifetime certification.",
+    "game_writes": 0,
+    "real_game_function_calls": 0,
+    "fully_certified_cards": 0
+  },
+  "production_changes": false,
+  "tests": {
+    "offline_profiles": 256,
+    "csharp_tests_rerun": false,
+    "previous_round_csharp_passed": 919,
+    "reason": "本轮仅新增审计证据；919为RULE-469历史验证，未作本轮全套测试声明。"
+  },
+  "unresolved": [
+    "两个map的内部元素复制4abb3e0与4abb1d0及非空成员/分配器所有权。",
+    "其他JSON/引用计数/诊断调用、任意别名/GC和异常流程。",
+    "抑制例外模板补入的候选差异及合法PvP可达性。",
+    "全局登记历史、原生复制、TSet顺序和老兵装甲等。"
+  ],
+  "game_writes": 0,
+  "real_game_function_calls": 0,
+  "fully_certified_cards": 0,
+  "artifacts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule472-reset-container-helpers-native-20261027.json",
+      "bytes": 10066,
+      "sha256": "2a3f81d76c7544081a249e0c00a7b59602473613f4fc28b1507df85baf847faa"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule472-reset-container-helpers-complete-20261027.json",
+      "bytes": 45418,
+      "sha256": "e9f7ab045884234f919ee898397fb400dbbb6ecdcad2fcb4789da619f041d255"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule472-reset-container-helpers-bounded-20261027.json",
+      "bytes": 32779,
+      "sha256": "32d9b47e69e4c89fc5444a8311bf96cdc5520f5956479b6b9919f6e0b484e954"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule470-reset-trigger-arrays-native-20261027.json",
+      "bytes": 46931,
+      "sha256": "a8600f78fd297b8c881641d4efe238b3598407240ba01957d533923f7d374e2e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule471-reset-numeric-refresh-live-20261027.json",
+      "bytes": 18597,
+      "sha256": "4f314eab960a4086589b9acb83a5d5f0ed064be41d5399afc57ac3429205f5bd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule472-container-helpers.py",
+      "bytes": 2643,
+      "sha256": "08dc3dabfe6fa2137cb7afc93f8370971830f589d193a209cd9c22d9ac32b167"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule472-container-helpers-bounded.py",
+      "bytes": 2659,
+      "sha256": "4c0957cf71534c8cb00978f028c26da262ab5d182766f1a73ae60a40785d8c2b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule472-linked-container-helpers.py",
+      "bytes": 9223,
+      "sha256": "88830648d27da4b8ccd3e63129bdb9fb848089e4db2a43495d8399b219560668"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule472-reset-linked-container-verification-20261027.json",
+      "bytes": 4433,
+      "sha256": "8968cb4fee4c84e166d41a4e427073a1d8398649c047e9049a1641bf0c42b13b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule472-worker-bounded\\input.json",
+      "bytes": 29708,
+      "sha256": "86184eba8354b346c62d7eda250cd215ecbf10e7594f2b6435c4b46b05ab69c9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule472-worker-bounded\\output.json",
+      "bytes": 4361,
+      "sha256": "d37ed1ccace2ed7f8fbdbf6ad482fb73c1adb607f7a3036d3b4229254f903bd4"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule472-worker-bounded\\task.txt",
+      "bytes": 381,
+      "sha256": "fdbe1360ad27da3ea81fd71f39d7c06d8abaf7c71e18eb0091a1e15f6bff31b1"
+    }
+  ]
+}
