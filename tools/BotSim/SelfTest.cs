@@ -859,6 +859,8 @@ internal static class SelfTest
         new("压制揭示重入：缓存判定后按当前ID查替代对象", db => SuppressionTailReplacement(db, false)),
         new("压制揭示重入：真实VM不重判替代对象的Covert", db => SuppressionTailReplacement(db, true)),
         new("RevealCard移动通知：原生ID0主体与观察者载荷", RevealMovementSentinel),
+        new("老兵烟幕/守护/毁灭：原始覆盖与来源门", VeteranGuardSmokeWrites),
+        new("老兵守护：烟幕回调后按当前位置刷新", VeteranGuardSmokeCallbackOrder),
         new("生成老兵：先升级/T35再授予闪击", SpawnVeteranBeforeCreationObservers),
         new("老兵原始能力：覆盖五字段且保留来源/身份", VeteranRawAbilityWrites),
         new("老兵奋战：预捕获资格与独立剩余攻击额度", VeteranFuryQuotaWrites),
@@ -32534,6 +32536,95 @@ internal static class SelfTest
         return null;
     }
 
+    private static CardDatabase VeteranGuardFixture(CardDatabase db, int mask)
+    {
+        const string name = "card_unit_rule476_fixture";
+        string[] flags = { Keyword.Destruction, Keyword.Smokescreen, Keyword.Guard };
+        var defs = db.All.ToDictionary(x => x.Name, StringComparer.Ordinal);
+        defs[name] = new CardDefinition { Name = name, Type = "infantry", Attack = 7, Defense = 9 };
+        defs[name + "_vet"] = new CardDefinition { Name = name + "_vet", Type = "infantry", Attack = 7, Defense = 9,
+            Keywords = flags.Where((_, i) => (mask & (1 << i)) != 0).ToArray() };
+        var ctor = typeof(CardDatabase).GetConstructors(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).Single();
+        return (CardDatabase)ctor.Invoke(new object[] { defs, db.DeckCodeIds.ToDictionary(x => x.Key, x => x.Value, StringComparer.Ordinal) });
+    }
+
+    private static string? VeteranGuardSmokeWrites(CardDatabase db)
+    {
+        const string name = "card_unit_rule476_fixture";
+        string[] flags = { Keyword.Destruction, Keyword.Smokescreen, Keyword.Guard }; int cases = 0;
+        for (int mask = 0; mask < 8; mask++)
+        {
+            var fixture = VeteranGuardFixture(db, mask);
+            foreach (Side side in new[] { Side.Left, Side.Right })
+            for (int old = 0; old < 8; old++)
+            foreach (int guardSources in new[] { 0, 1, 2 })
+            foreach (int smokeSources in new[] { 0, 1, 2 })
+            foreach (bool suppressed in new[] { false, true })
+            {
+                var (engine, state) = EmptyBoard(fixture);
+                var card = state.CreateWithId(name, side, 60, side.HqOf(), 0);
+                var neighbor = state.CreateWithId(name, side, 61, side.HqOf(), 1);
+                for (int i = 0; i < flags.Length; i++) if ((old & (1 << i)) != 0) card.Keywords.Add(flags[i]);
+                if (guardSources > 0) card.ReceivedAbilitiesFromCards["guard"] = guardSources == 1 ? new List<int>() : new List<int> { 20 };
+                if (smokeSources > 0) card.ReceivedAbilitiesFromCards["smokescreen"] = smokeSources == 1 ? new List<int>() : new List<int> { 20 };
+                if (suppressed) card.Keywords.Add(Keyword.Suppressed);
+                bool rawGuard = (old & 4) != 0, vetGuard = (mask & 4) != 0;
+                bool changed = guardSources != 2 && rawGuard != vetGuard;
+                bool expectedGuard = guardSources == 2 ? rawGuard : vetGuard;
+                bool removeSmoke = changed && vetGuard;
+                bool expectedSmoke = (mask & 2) != 0 && !removeSmoke;
+                bool clearedSmokeKey = removeSmoke && ((mask & 2) != 0 || smokeSources == 2);
+                neighbor.IsBeingGuarded = !expectedGuard;
+                engine.Api.MakeVeteran(card);
+                if (card.Keywords.Contains(Keyword.Destruction) != ((mask & 1) != 0) || card.Keywords.Contains(Keyword.Smokescreen) != expectedSmoke
+                    || card.Keywords.Contains(Keyword.Guard) != expectedGuard || neighbor.IsBeingGuarded != (changed ? expectedGuard : !expectedGuard)
+                    || card.ReceivedAbilitiesFromCards.ContainsKey("guard") != (guardSources > 0)
+                    || card.ReceivedAbilitiesFromCards.ContainsKey("smokescreen") != (smokeSources > 0 && !clearedSmokeKey))
+                    return $"veteran guard/smoke {side}/{old}/{mask}/{guardSources}/{smokeSources}/{suppressed}: raw={string.Join(',',card.Keywords)}, neighbor={neighbor.IsBeingGuarded}";
+                if (guardSources > 0 && card.ReceivedAbilitiesFromCards["guard"].Count != (guardSources == 2 ? 1 : 0)) return "veteran changed guard source list";
+                if (card.ReceivedAbilitiesFromCards.TryGetValue("smokescreen", out var smoke) && smoke.Count != (smokeSources == 2 ? 1 : 0)) return "veteran changed preserved smoke source list";
+                if (state.ActionLog.SelectMany(x => x.SubActions).Any(x => x.Name == "ZActionRemoveSmokescreen")) return "veteran smoke removal ignored skipAction";
+                cases++;
+            }
+        }
+        return cases == 2304 ? null : $"veteran guard profiles={cases}";
+    }
+
+    private static string? VeteranGuardSmokeCallbackOrder(CardDatabase db)
+    {
+        const string probe = "card_unit_typhoon_mk_ib", name = "card_unit_rule476_fixture", hook = "OnOtherCardLoseSmokescreen";
+        using var cleanup = InstallSelectionDrawProbe(probe, hook);
+        var locals = (IDictionary<string, IReadOnlyList<KismetStep>>)KismetLibrary.Default!.Find(probe)!.Locals;
+        locals[hook] = new[] { new KismetStep(0, "call", "SpawnCardInDeckBySide", new[] { new KismetExpr { Int = (int)Side.Right }, new KismetExpr { Str = "card_unit_routed_troops" }, new KismetExpr { Int = 30 }, new KismetExpr { Int = 1 } }, Array.Empty<int>(), null, null, -1, null, null),
+            new KismetStep(1, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null) };
+        var fixture = VeteranGuardFixture(db, 6); int cases = 0;
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (bool suppressed in new[] { false, true })
+        foreach (int mode in Enumerable.Range(0, 5))
+        {
+            var (engine, state) = EmptyBoard(fixture);
+            var target = state.CreateWithId(name, side, 60, side.HqOf(), 0);
+            if (suppressed) target.Keywords.Add(Keyword.Suppressed);
+            var oldNeighbor = state.CreateWithId(name, side, 61, side.HqOf(), 1);
+            var newNeighbor = state.CreateWithId(name, side, 62, side.Opposite().HqOf(), 1);
+            var observer = state.CreateWithId(probe, side, 70, side.HandOf(), 0); RegisterRevealObserver(observer, hook); observer.Keywords.Clear();
+            bool changed = false; var prior = state.CardCreated;
+            state.CardCreated = made => {
+                prior?.Invoke(made); if (made.Name != "card_unit_routed_troops" || made.Location != Side.Right.DeckOf()) return;
+                changed = true;
+                if (mode == 0) target.Location = CardLocation.NotAvailable;
+                if (mode == 1) target.Location = side.Opposite().HqOf();
+                if (mode == 2) target.Keywords.Remove(Keyword.Guard);
+                if (mode is 3 or 4) { state.Remove(target); if (mode == 4) state.CreateWithId(name, side, 60, side.HqOf(), 0); }
+            };
+            engine.Api.MakeVeteran(target);
+            if (!changed || oldNeighbor.IsBeingGuarded || newNeighbor.IsBeingGuarded != (mode == 1) || target.Keywords.Contains(Keyword.Smokescreen))
+                return $"veteran guard callback {side}/{suppressed}/{mode}: changed={changed}, old={oldNeighbor.IsBeingGuarded}, new={newNeighbor.IsBeingGuarded}";
+            cases++;
+        }
+        return cases == 20 ? null : $"veteran guard callback profiles={cases}";
+    }
+
     private static string? SpawnVeteranBeforeCreationObservers(CardDatabase db)
     {
         var fixture = VeteranRawFixture(db, 0); int cases = 0;
@@ -32591,7 +32682,7 @@ internal static class SelfTest
                 for (int i = 0; i < flags.Length; i++) if (card.Keywords.Contains(flags[i]) != ((veteranMask & (1 << i)) != 0))
                     return $"veteran raw {side}/{oldMask}/{veteranMask}: {flags[i]} mismatch";
                 if (card.Name != name || !ReferenceEquals(card.Definition, definition) || card.RemainingAttacks != 3 || card.AttacksThisTurn != attacked
-                    || !card.Keywords.Contains(Keyword.Alpine) || !card.Keywords.Contains(Keyword.Smokescreen)
+                    || !card.Keywords.Contains(Keyword.Alpine) || card.Keywords.Contains(Keyword.Smokescreen)
                     || card.ReceivedAbilitiesFromCards.Any(x => !x.Value.SequenceEqual(new[] { 20, 0 })))
                     return $"veteran raw disturbed independent state {side}/{oldMask}/{veteranMask}";
                 cases++;

@@ -4780,7 +4780,7 @@ public sealed partial class CardApi
     /// The own hook at2806 is only on the unsuppressed branch, then2842
     /// continues to the T32 query at2463. Both branches reach abilities2782;
     /// the execution-flow stack returns after that observer loop.
-    /// Armor, remaining raw fields/guard handling and the enclosing action boundary remain open.
+    /// Armor, EffectType and the enclosing action boundary remain open.
     /// </summary>
     public void MakeVeteran(CardInstance target)
     {
@@ -4815,8 +4815,26 @@ public sealed partial class CardApi
                 if (veteran.Keywords.Contains(keyword)) target.Keywords.Add(keyword);
                 else target.Keywords.Remove(keyword);
             }
+            // RULE-476: raw destruction and smoke are assigned before quota/guard.
+            foreach (string keyword in new[] { Keyword.Destruction, Keyword.Smokescreen })
+            {
+                if (veteran.Keywords.Contains(keyword)) target.Keywords.Add(keyword);
+                else target.Keywords.Remove(keyword);
+            }
             target.SetRemainingAttacks(veteran.Keywords.Contains(Keyword.Fury) && giveAttackIfGainingFury
                 ? unchecked(attackLeft + 1) : attackLeft);
+            // HasCustomAbility tests a nonempty source array, not key presence.
+            if (!HasCustomAbility(target, "guard")
+                && target.Keywords.Contains(Keyword.Guard) != veteran.Keywords.Contains(Keyword.Guard))
+            {
+                bool guard = veteran.Keywords.Contains(Keyword.Guard);
+                if (guard) target.Keywords.Add(Keyword.Guard);
+                else target.Keywords.Remove(Keyword.Guard);
+                if (guard)
+                    DoRemoveKeyword(context, null, new object?[] { target.CardId, 0, true, true }, Keyword.Smokescreen);
+                // Smoke-loss callbacks may move/remove the held target.
+                UpdateGuarded(target.Location);
+            }
             _engine.FireSubAction("ZActionMakeVeteran", new[]
             {
                 ActionValue2.Int("cardID", target.CardId),

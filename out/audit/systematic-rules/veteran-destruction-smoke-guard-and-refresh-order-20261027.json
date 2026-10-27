@@ -1,0 +1,143 @@
+{
+  "rule_id": "RULE-476",
+  "date": "2026-10-27",
+  "base_commit": "4d06edd6ab11a1197d94eaed6cbe5dffa153294f",
+  "status": "修复老兵hasDestruction/烟幕直接覆盖、守护来源门及烟幕回调后刷新",
+  "findings": [
+    "重新只读捕获并独立重解码MakeVeteran2924、RemoveSmokescreen2879、UpdateGuarded1624，共7427字节，内存字节/函数头匹配；完整函数解码不等于所有分支语义认证。",
+    "MakeVeteran1650/1713从缓存老兵模板直接覆盖hasDestruction与hasSmokescreen，早于Fury额度和guard分支；不是Give/Remove动作，也不是保留旧raw标志。现补入这两处覆盖，原有来源数组在此阶段保持。",
+    "1997 HasCustomAbility(\"guard\")只有非空来源列表才为真；缺键/空列表均进入raw比较。2060比较当前raw hasGuard与模板raw hasGuard，不同才2152赋值。新guard真时2251按当前CardID调用RemoveSmokescreen(id,0,true,true)，之后2303按持有目标当时Location调用UpdateGuarded；raw未变或有自定义guard来源均不刷新缓存。",
+    "现用现有RemoveSmokescreen派发包装按ID重新解析接收者，removeAll/skipAction真；保留烟幕移除的既有丢失/能力回调，不把skipAction误作skipTriggers。回调后读取目标Location刷新，不能提前缓存旧区或直接调用GiveGuard产生额外动作。",
+    "新增两测试2324场景：2304矩阵覆盖双方、old/new三标志全部组合、guard/smoke来源缺失/空/非空、抑制；检查原始标志、来源表保持或清除、空烟幕键在getter false时保持、guard变化门及邻居缓存、无ZActionRemoveSmokescreen。另20场景在真实托管烟幕丢失探针回调中改位置到NA/另一半场、移除raw guard、移除对象/同ID替换，验证缓存后续按实际对象表和当前区域处理。",
+    "前轮VeteranRawAbilityWrites有一条要求保留旧Smokescreen的断言，超出了当时五字段范围；本轮权威1713证明其错误，改为当前模板无烟幕则raw false。相同最终924项旧921通过3失败（两新测试及该修正断言），修复924全部通过；没有弱化原生成/其它规则测试。",
+    "581个原AST模型执行1650..2348的实际条件跳转/flow stack：576矩阵与5回调变化。HasCustomAbility、RemoveSmokescreen/UpdateGuarded函数体为供应边界；托管测试另执行当前真实辅助/回调。不得据此称已完整执行三个客户端函数或全部对象生命周期。",
+    "DeepSeek机械提取12条原始语句，主agent按完整对象/顺序独立全等核验。"
+  ],
+  "verification": {
+    "rule": "RULE-476",
+    "pid": 24220,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "live_functions": [
+      {
+        "name": "UpdateGuarded",
+        "bytes": 1624,
+        "sha256": "755d1e039df01cd2693f058023df47b7a4fe1c8c12b6de1307f725e9fa74365c"
+      },
+      {
+        "name": "MakeVeteran",
+        "bytes": 2924,
+        "sha256": "3caec2d19e5f9297b711564f5ec2655d8352314ab5626fcd1b43afac455d2d06"
+      },
+      {
+        "name": "RemoveSmokescreen",
+        "bytes": 2879,
+        "sha256": "881294b541e9df8ffc625605814f620e8bf5c06d9c1b32d9363d61320eb124c5"
+      }
+    ],
+    "models": {
+      "matrix": 576,
+      "mutations": 5,
+      "total": 581,
+      "sha256": "cd30d8665ba3c0690572b52ee767acc27efc7bf9f3f672d7d2cbfabbe8ef4963"
+    },
+    "worker_exact_rows": 12,
+    "scope": "Original MakeVeteran1650..2348 slice, original flow stack and conditional jumps. HasCustomAbility and RemoveSmokescreen/UpdateGuarded supplied boundaries; no complete armor/EffectType/guard helper or native lifetime certification. C# tests separately exercise current real managed smoke-loss callbacks/cache helper.",
+    "game_writes": 0,
+    "real_game_function_calls": 0,
+    "fully_certified_cards": 0
+  },
+  "tests": {
+    "new_tests": 2,
+    "new_profiles": {
+      "matrix": 2304,
+      "callback_order": 20,
+      "total": 2324
+    },
+    "adjusted_prior_assertion": "RULE-475 raw test must expect raw smoke overwritten from veteran template",
+    "baseline": {
+      "total": 924,
+      "passed": 921,
+      "failed": 3
+    },
+    "fixed": {
+      "total": 924,
+      "passed": 924,
+      "failed": 0
+    }
+  },
+  "implementation": [
+    "src/KLink.Bot/Effects/CardApi.cs",
+    "tools/BotSim/SelfTest.cs"
+  ],
+  "unresolved": [
+    "MakeVeteran1189装甲mode5及1579 EffectType仍缺；装甲可能引入回调，完整升级链未关闭。",
+    "所有RemoveSmokescreen/UpdateGuarded异常、原生生存期、非动作及全部重入/类变化。",
+    "源卡定义与事件真实类映射、全局触发登记及物理TSet顺序。",
+    "完整重置/复制所有权等已有边界。"
+  ],
+  "game_writes": 0,
+  "real_game_function_calls": 0,
+  "fully_certified_cards": 0,
+  "artifacts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule476-veteran-guard-smoke-20261027.json",
+      "bytes": 4709626,
+      "sha256": "2c0e7bb9baa43ac91679d2e71671faadfef794dc277922a3207b6034b98b2bc8"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule476-veteran-guard.py",
+      "bytes": 2379,
+      "sha256": "b6157c578f02013d0e26ce4c9412ba99e0b23f3798d82c146f3ed83765d4defe"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule476-veteran-guard.py",
+      "bytes": 6255,
+      "sha256": "461fb08240b5fef25f2da30d8f97c566b4086a54e6a84db137576d566687b043"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule476-veteran-guard-verification-20261027.json",
+      "bytes": 1227,
+      "sha256": "628bb042bae5fdb4849813ae7a4a3949dafa1def389c697d71fecdae8c26b39a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\run-rule476-tests.py",
+      "bytes": 992,
+      "sha256": "3edfcbad340df63b20473b9b7eb3d738134af6973bf847ab18481ab48bec6134"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule476-worker\\input.json",
+      "bytes": 36626,
+      "sha256": "1fb795702936cb49c7efe929b6b4418fa867040aa7a83aff56c46adca9fdb0fe"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule476-worker\\output.json",
+      "bytes": 5921,
+      "sha256": "91cfa8f5948cd839a9375cc8022be3fd03b85565c2d6f4972ad82ffe673af1d6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule476-worker\\task.txt",
+      "bytes": 299,
+      "sha256": "ed48f286349caa206e503db0a6897bbfa1ffd1e83d701001218a301c5ff0306b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule476-baseline-selftest.log",
+      "bytes": 80805,
+      "sha256": "e83bd3c09cc8b6990eff6191d8dbf4c366309c57f858f924df78b3eaef793c1b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule476-final-selftest.log",
+      "bytes": 80585,
+      "sha256": "e04c713472113fe24828ca92fdbd6d8daa8109b28b86472cbcd2fe34196cb706"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule476-baseline-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule476-final-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    }
+  ]
+}
