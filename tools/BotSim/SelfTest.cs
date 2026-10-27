@@ -862,6 +862,7 @@ internal static class SelfTest
         new("装甲独立数值：六模式、typed账本与通知门", HeavyArmorIndependentModes),
         new("装甲生命周期：模板双值/复制/重置/VM/快照", HeavyArmorIndependentLifecycle),
         new("老兵装甲回调：额度捕获与持有对象后续结算", VeteranArmorCallbackContinuation),
+        new("老兵攻击回调：缓存模板与后续原语独立检查", VeteranAttackCallbackContinuation),
         new("老兵烟幕/守护/毁灭：原始覆盖与来源门", VeteranGuardSmokeWrites),
         new("老兵守护：烟幕回调后按当前位置刷新", VeteranGuardSmokeCallbackOrder),
         new("生成老兵：先升级/T35再授予闪击", SpawnVeteranBeforeCreationObservers),
@@ -33781,6 +33782,74 @@ internal static class SelfTest
             }
         }
         return cases == 288 ? null : $"numeric veteran profiles={cases}";
+    }
+
+    // RULE-482: controlled mutation after the first numeric writer. Renaming
+    // does not replace the already-cached veteran template or held target.
+    private static string? VeteranAttackCallbackContinuation(CardDatabase db)
+    {
+        const string name = "card_unit_arado_ar_196", changedName = "card_unit_rule482_renamed";
+        var ctor = typeof(CardDatabase).GetConstructors(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).Single();
+        using var attackProbe = InstallSelectionDrawProbe(name, "OnAfterChangeAttack");
+        int cases = 0;
+        foreach (bool fury in new[] { false, true })
+        {
+            var defs = db.All.ToDictionary(x => x.Name, StringComparer.Ordinal);
+            defs[name] = new CardDefinition { Name = name, Type = "infantry", Attack = 7, Defense = 9, OperationCost = 4 };
+            defs[name + "_vet"] = new CardDefinition { Name = name + "_vet", Type = "infantry", Attack = 13, Defense = 17, OperationCost = 1, HeavyArmor = 1,
+                Keywords = fury ? new[] { Keyword.Fury, Keyword.Shock } : new[] { Keyword.Shock } };
+            defs[changedName] = new CardDefinition { Name = changedName, Type = "infantry", Attack = 2, Defense = 3, OperationCost = 8 };
+            defs[changedName + "_vet"] = new CardDefinition { Name = changedName + "_vet", Type = "infantry", Attack = 99, Defense = 99, OperationCost = 99, HeavyArmor = 3, Keywords = new[] { Keyword.Guard } };
+            var fixture = (CardDatabase)ctor.Invoke(new object[] { defs, db.DeckCodeIds.ToDictionary(x => x.Key, x => x.Value, StringComparer.Ordinal) });
+            foreach (Side side in new[] { Side.Left, Side.Right })
+            foreach (int mode in Enumerable.Range(0, 10))
+            foreach (int tempArmor in new[] { -1, 2 })
+            {
+                var (engine, state) = EmptyBoard(fixture);
+                state.CreateWithId("card_unit_51e_regiment", side, 20, CardLocation.Discard, 0);
+                state.CreateWithId("card_unit_51e_regiment", side, 120, side.DeckOf(), 0);
+                var target = state.CreateWithId(name, side, 60, side.HqOf(), 1);
+                target.BaseAttack = 2; target.TemporaryAttack = 3; target.Defense = 8; target.MaxDefense = 21;
+                target.BaseHeavyArmor = 2; target.TemporaryHeavyArmor = tempArmor;
+                target.TemporaryOperationCost = -2; target.AttacksThisTurn = 0; target.SetRemainingAttacks(1);
+                int callbacks = 0; string? failure = null; CardInstance? replacement = null;
+                using var reentry = InstallDrawReentryProbe(state, () => {
+                    callbacks++;
+                    if (target.BaseAttack != 13 || target.Defense != 8 || target.BaseOperationCost != 4 || target.BaseHeavyArmor != 2
+                        || !engine.Api.JsonGetBool(target, "veteran")) failure = "incorrect first callback phase";
+                    target.Name = changedName;
+                    target.Keywords.Add(Keyword.Fury); target.AttacksThisTurn = 2; target.SetRemainingAttacks(0);
+                    if (mode == 1) target.Defense = 0;
+                    if (mode is 2 or 3 or 9) target.Keywords.Add(Keyword.Covert);
+                    if (mode == 3) target.Location = side.HandOf();
+                    if (mode is 4 or 5) { state.Remove(target); target.Location = CardLocation.NotAvailable; }
+                    if (mode == 5) replacement = state.CreateWithId(name, side, 60, side.HqOf(), 1);
+                    if (mode == 6) typeof(CardInstance).GetProperty(nameof(CardInstance.CardId))!.SetValue(target, 0);
+                    if (mode == 7) typeof(CardInstance).GetProperty(nameof(CardInstance.CardId))!.SetValue(target, -3);
+                    if (mode == 8) target.Keywords.Add(Keyword.Suppressed);
+                    if (mode == 9) target.Location = side.DeckOf();
+                });
+                engine.Api.MakeVeteran(target);
+                bool rejectedId = mode is 6 or 7, covert = mode is 2 or 3 or 9;
+                int expectedDefense = mode == 1 ? 0 : rejectedId || mode == 2 ? 8 : 17;
+                int expectedMaxDefense = mode == 1 || rejectedId || mode == 2 ? 21 : 17;
+                int expectedOp = rejectedId || covert ? 4 : 1;
+                int expectedArmor = rejectedId || covert ? 2 : 1;
+                var actions = state.ActionLog.SelectMany(a => a.SubActions).ToList();
+                if (failure is not null || callbacks != 1 || target.Name != changedName || !ReferenceEquals(target.Definition, defs[name])
+                    || target.BaseAttack != 13 || target.TemporaryAttack != 3 || target.Defense != expectedDefense || target.MaxDefense != expectedMaxDefense
+                    || target.BaseOperationCost != expectedOp || target.TemporaryOperationCost != -2
+                    || target.BaseHeavyArmor != expectedArmor || target.TemporaryHeavyArmor != tempArmor
+                    || target.Keywords.Contains(Keyword.Fury) != fury || !target.Keywords.Contains(Keyword.Shock) || target.Keywords.Contains(Keyword.Guard)
+                    || target.RemainingAttacks != (fury ? 1 : 0) || target.AttacksThisTurn != 2
+                    || replacement is not null && (replacement.BaseAttack != 7 || replacement.CustomJson.ContainsKey("veteran"))
+                    || actions.Count(a => a.Name == "ZActionMakeVeteran") != 1
+                    || actions.Count(a => a.Name == "ZActionAddHeavyArmor") != (expectedArmor == 1 ? 1 : 0))
+                    return $"attack callback continuation {side}/{mode}/{tempArmor}/{fury}: {failure}, callbacks={callbacks}, defense={target.Defense}/{expectedDefense}, max={target.MaxDefense}/{expectedMaxDefense}, op={target.BaseOperationCost}/{expectedOp}, armor={target.BaseHeavyArmor}/{expectedArmor}, quota={target.RemainingAttacks}";
+                cases++;
+            }
+        }
+        return cases == 80 ? null : $"early callback profiles={cases}";
     }
 
     private static string? VeteranNumericReentry(CardDatabase db)

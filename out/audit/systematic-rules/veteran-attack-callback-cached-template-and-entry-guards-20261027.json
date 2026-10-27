@@ -1,0 +1,173 @@
+{
+  "rule_id": "RULE-482",
+  "date": "2026-10-27",
+  "base_commit": "aff2768025c9ebd4fc5e557b9d083dbf0b4b908b",
+  "status": "攻击力回调后缓存模板与各数值原语独立入口检查已作受控组合验证；未发现新规则差异",
+  "findings": [
+    "重新只读采集并解码MakeVeteran、ChangeAttack、ChangeDefense、ChangeOperationCost、ChangeHeavyArmor、CanCardBeBuffed、能力变化广播及查询，另重读完整type4账本；共10个非空函数25128字节，当前头部和脚本均与采集一致。",
+    "MakeVeteran在攻击修改前已经缓存老兵模板；本轮在攻击自身回调中把目标Name换为另一个存在且具有不同老兵模板的名字，后续防御/费用/装甲/raw能力仍取之前缓存的原模板。Definition未替换，目标名称和模板选择的读取时点独立。",
+    "后续每次调用都读取目标当前CardID。受控反射将init-only ID置0或负数时，防御/行动费/装甲各自拒绝，但后续raw能力、已缓存额外攻击资格和老兵通知仍结算。该变更仅测试边界，不证明真实卡牌可合法修改ID。",
+    "攻击回调将当前防御归0时，防御入口因getTotalDefense为0拒绝，maxDefense保持；行动费用和装甲仍执行。移除旧对象、位置置None或同ID新对象替换后，显式持有的旧对象仍继续，替换对象不被升级。",
+    "未揭示Covert在战场时，CanCardBeBuffed拒绝防御；在手牌或牌库时允许防御。行动费用与装甲不使用这一位置放行表，而是直接拒绝未揭示Covert，因此三者可以产生不同的部分升级结果。",
+    "攻击回调后压制、改当前Fury、攻击次数及额度，仍继续原模板raw能力复制，并按回调前捕获资格决定是否在当前额度上加一。只覆盖本轮设定的80组合，不等于任意重入证明。",
+    "双方×10回调变更×2临时装甲×2老兵Fury，共80组真实托管路径回归和80组原字节码离线组合分别通过。全套928/928。首轮测试直接给init-only CardId赋值导致编译失败，改为显式受控反射布景后通过，保留诊断日志；产品规则代码未修改。",
+    "DeepSeek私有包机械抽取4函数31行入口证据，主agent从原输入独立递归生成并精确比对；未让worker改仓库或判断规则。"
+  ],
+  "verification": {
+    "rule": "RULE-482",
+    "pid": 24220,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "live_functions": [
+      {
+        "name": "FetchAllCardsWithEventTrigger",
+        "bytes": 1174,
+        "sha256": "cbc442f32842f229de18e86389bd54053582b3533c07518e22547cfed20a41e9"
+      },
+      {
+        "name": "CanCardBeBuffed",
+        "bytes": 776,
+        "sha256": "1a2b520c2b2e56e2d6d61b91ed7e7d36e6f88172db4db49e967c5a80d43a20d8"
+      },
+      {
+        "name": "ExecuteOnOtherCardsAbilitiesChanged",
+        "bytes": 430,
+        "sha256": "89d2ffd236eb85097ea4e11cb05bc088eb482e9b36263eb285c8e6bd14e9f66d"
+      },
+      {
+        "name": "FetchAllCardsWithEventTrigger",
+        "bytes": 84,
+        "sha256": "6d81cb2f7271ddfecaadf792cec7f08a1bf96b0239546214d6c20220257dd724"
+      },
+      {
+        "name": "ChangeDefense",
+        "bytes": 5743,
+        "sha256": "67861225bae1ae7bc490f6aa87b65b821f275aa347c5327b6720cad5b9aaefd5"
+      },
+      {
+        "name": "ChangeAttack",
+        "bytes": 2713,
+        "sha256": "4c18ce95ebdec0a1483aaa2f45c155fa37a05c58c7ab1ecf4ca4796c36bc3d54"
+      },
+      {
+        "name": "ChangeHeavyArmor",
+        "bytes": 1846,
+        "sha256": "3a1986a221f10d1fcf58b15063e6c554211318d831559a8e947b60850770b0cf"
+      },
+      {
+        "name": "ChangeOperationCost",
+        "bytes": 3171,
+        "sha256": "dfa5c31c302ba6c77019a4c1136c0e201547d2ed999dc5348a25e41465716d4d"
+      },
+      {
+        "name": "MakeVeteran",
+        "bytes": 2924,
+        "sha256": "3caec2d19e5f9297b711564f5ec2655d8352314ab5626fcd1b43afac455d2d06"
+      },
+      {
+        "name": "ChangeBuffsFromCards",
+        "bytes": 6267,
+        "sha256": "42c741b35f80b2e5628572fdddae30d23de07a540e813e4a233ca7a97c8644b8"
+      }
+    ],
+    "offline_chain_cases": 80,
+    "case_sha256": "3765651600d6881577831f355cce7cb2fef5236e4c0dc54b397da4bb37f507a6",
+    "worker_exact_guard_rows": 31,
+    "scope": "MakeVeteran368..return, full CanCardBeBuffed, original ChangeDefense entry until ledger487 and ChangeOperationCost until263, full armor/type4 ledger and abilities/query. First attack writer and its own callback supplied; defense/op accepted-body numeric writes supplied after actual entry guard execution. Renamed target has differing alternative veteran definition in managed fixture. No full native runtime or template mutation/lifetime/GC certification.",
+    "game_writes": 0,
+    "real_game_function_calls": 0,
+    "fully_certified_cards": 0
+  },
+  "tests": {
+    "command": "dotnet run --project tools/BotSim -- selftest",
+    "passed": 928,
+    "failed": 0,
+    "new_managed_cases": 80,
+    "new_offline_ast_cases": 80
+  },
+  "worker": {
+    "job_id": "20261027-172249-rule482-numeric-entry-guards-9d83fa4e",
+    "functions": 4,
+    "exact_rows": 31
+  },
+  "implementation": [
+    "tools/BotSim/SelfTest.cs"
+  ],
+  "remaining": [
+    "参考端攻击writer与首次自身回调受控供给；防御/行动费执行原入口至账本边界后，数值写入作为供给边界，未执行其完整内部所有回调。",
+    "运行时模板对象自身突变、静态对象别名/身份、类型/Definition替换、原生UObject生命周期/GC与任意回调重入仍待验证。",
+    "反射修改ID及直接位置/状态修改为受控非产品布景，不证明其全部可由合法卡牌在对局到达。",
+    "TSet物理顺序/注册历史、非动作与异步路由、复制所有权仍开放，完整认证卡数仍为0。"
+  ],
+  "artifacts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule482-veteran-early-chain.py",
+      "bytes": 2521,
+      "sha256": "9dca7380eaf734f0cd35d58309b0c8e8dd4aec25acd9ef8f14ff06f8f5905711"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule482-veteran-early-callback-chain-20261027.json",
+      "bytes": 5000042,
+      "sha256": "3fd6d1d66ad88b5255c658027d9f907c9add460169b2a42236ada8a107588263"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule482-veteran-early-chain.py",
+      "bytes": 11450,
+      "sha256": "ad20370904234c696a46b79c89c5c2d72c2eb914a27f7f2e420eba9f94ac1cfe"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule482-veteran-early-verification-20261027.json",
+      "bytes": 2461,
+      "sha256": "9362de977576a207cf8531e55bc3ecb3a37738eef7fe7e67b73afc86cabcc162"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule482-worker\\input.json",
+      "bytes": 31652,
+      "sha256": "6037537a558673a6b46e6a317c8f8849e5d87697cb1dcb055d0c1ee3dce079ea"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule482-worker\\output.json",
+      "bytes": 10083,
+      "sha256": "f298b34bb8ff949a21d583bca0c747e5a051d1ff69392e37058d7fb662ebe753"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule482-worker\\task.txt",
+      "bytes": 585,
+      "sha256": "36887a8f224e462b2600f5fd207be58bf459c614e9082ec5bd2ef328f82196d1"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule482-initial-selftest.log",
+      "bytes": 668,
+      "sha256": "4c5591aa304eb59d8321fcca978fa8a574af398e7ec3f858e8fd025eced7b82f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule482-initial-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule482-final-selftest.log",
+      "bytes": 80849,
+      "sha256": "114181e6b95a3db8a82dcc2fc7d9d45d60f3120dd109b12178e0a47fb531ce53"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule482-final-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule457-ledger-model.py",
+      "bytes": 5457,
+      "sha256": "7626378ffc2dd4f0c46897ee23c3207636f1983d02db70a29a7a5cd4a4c4a8a5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule306-defense-events.py",
+      "bytes": 6573,
+      "sha256": "688343b04c99f8714b9addbc57b2ece59a466fe7fad8079d2f907259f9505518"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule457-salvage-creation-native-20261027.json",
+      "bytes": 4664342,
+      "sha256": "f12ca334d6a12db58190294ce4471fa0d982b1f4c79e5e0200c4dcc4a287b168"
+    }
+  ]
+}
