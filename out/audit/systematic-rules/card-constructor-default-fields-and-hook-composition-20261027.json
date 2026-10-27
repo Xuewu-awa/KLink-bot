@@ -4296,5 +4296,6 @@
   ],
   "game_writes": 0,
   "real_game_function_calls": 0,
-  "fully_certified_cards": 0
+  "fully_certified_cards": 0,
+  "later_storage_clarification_RULE494": "RULE494找到并验证低层新存储路径的对象大小memset0调用，之后才填对象头。将该实际片段接入RULE493受控构造/class hook后，00/A5预填均得到CurrentTarget null；此前A5保持是省略该阶段的诊断布景，不能认定客户端新对象残留脏字段。复用路径不执行本次清零，其实际后续处理仍未验证。"
 }
