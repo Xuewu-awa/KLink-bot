@@ -1,0 +1,271 @@
+{
+  "rule_id": "RULE-480",
+  "date": "2026-10-27",
+  "base_commit": "c84b73a3e8808cab2783cf83b3c4ad5c540a95e2",
+  "status": "装甲永久/临时独立数值层、模式0..5及生命周期投影已迁移，老兵1189已接入；非全PvP/原生生命周期认证",
+  "findings": [
+    "新增CardInstance.BaseHeavyArmor/TemporaryHeavyArmor，getTotal只作unchecked int32相加后限幅0..3，不再从Definition+CardBuff账本推导。HeavyArmorZeroedBySuppress保留为手动恢复兼容标记，不再参与数值读取。",
+    "新增模板HeavyArmorBuff可选输入并在初始化/重置复制双分量；当前2019已加载模板临时0由RULE-479证明，合成非零模板仍必须保留。复制CopyForStealSide、快照及原始VM heavyArmor/heavyArmorBuff读写同步两值；Reidentify为遗留校正兼容，按模板永久值差额迁移，非原生PvP转换认证。",
+    "CardBuff.HeavyArmor明确作为heavyArmor_permBuff，另存TemporaryHeavyArmorGive和nullable HeavyArmorSetValue。IsEmpty/Clone/快照覆盖新字段，零SetValue保持存在；既有heavyArmor_空detail及Suppress共享键边界保留。",
+    "ChangeHeavyArmor 0累加临时、1累加永久并限幅；2/3/5先按typed永久键全局清理/当前源旧结构回写规则处理，再用原永久值与raw请求比较，改变时永久限幅赋值；4取负的当前源tempBuffGive并清键后加到临时数值。永久与临时账本互不替代数值，删账本不隐式改数值。mode5清理不额外存一条老兵增益。",
+    "通知遵守changed且非deck且!skipAction，mode4通知amount为amountRemoved，其余为raw请求。该函数skip/deck门同时跳过NotifyAddHeavyArmor和能力变化事件，不能套用其他关键词的skipAction语义。",
+    "接入MakeVeteran1189：在攻击/防御/行动费后，以缓存老兵模板getTotalHeavyArmor作mode5请求，随后仍执行raw能力/guard及事件链。正来源可见抑制改为实际mode3，仅归零永久值，保留临时值；取消旧的整账本装甲清零循环。旧手动恢复非产品路径保存/恢复原始双值，避免账本双计。",
+    "旧光环兼容桥改为临时装甲的差额mode0/撤销mode4，不再通过账本重算装甲。未将这些兼容适配器或Reidentify当成整张卡/native UObject生命周期完全认证。",
+    "新两测试9246场景：9216六模式/数值/typed键/来源存在与缺失/skip/deck/双方矩阵；30模板双值、复制/快照、VM、重置、抑制保留临时及手动兼容恢复场景。最终926项全通过。原924测试首轮9失败，修正经权威证据支持的旧布景/预期后仅剩手动恢复初值；中途拼错变量编译失败、场景数量误写18432（实际9216）均保留诊断日志；未当作最终成功结果。",
+    "调整旧预期：mode4不能撤永久装甲；总装甲测试/拒绝抑制测试显式设置独立raw初值而非靠账本；老兵数值测试现在必须验证永久装甲按模板设置、临时量保持和永久账本清理。旧全面抑制布景此前只加派生重甲关键词，补入真实raw数值并同步初值记录。",
+    "私有.NET实际InvokeByName与完整当前ChangeHeavyArmor AST调用完整type4账本AST的1944组逐项对照，原始数值、总值、typed键和值、通知次数全部一致；参考端容器/查找/通知受控。RULE-478同一48组探针重跑，旧30数值/48账本差异现均0。未作新数据字段跨编译不兼容的伪HEAD全套基线声明。",
+    "DeepSeek提供28项旧测试赋值线索，主agent逐行核对原包文本并独立完成规则判断、修改和原AST对照；未让worker改仓库。"
+  ],
+  "verification": {
+    "rule": "RULE-480",
+    "pid": 24220,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "current_live_functions": {
+      "BP_CardFunctions_C.ChangeHeavyArmor": {
+        "bytes": 1846,
+        "sha256": "3a1986a221f10d1fcf58b15063e6c554211318d831559a8e947b60850770b0cf"
+      },
+      "BP_CardFunctions_C.MakeVeteran": {
+        "bytes": 2924,
+        "sha256": "3caec2d19e5f9297b711564f5ec2655d8352314ab5626fcd1b43afac455d2d06"
+      },
+      "UtilityFunctions_C.CreateCardFromLimitedCardText": {
+        "bytes": 4528,
+        "sha256": "75db5585a01937c5006fbb7c05f9e9cbb27f589d9be0bc2cb959b89ab4a6cc33"
+      },
+      "UtilityFunctions_C.GetLimitedCardDataAsText": {
+        "bytes": 2706,
+        "sha256": "8a6d5062c8048615481ebab51a16e39028564891af1d8dab07d4b0dc69082ec4"
+      },
+      "BP_Logic_C.AddCardStats": {
+        "bytes": 791,
+        "sha256": "a6d2268282f3f54cd7ac51e1d7258f97413692cf3101b9cbe727418f76e63b09"
+      },
+      "BP_OnlineMatch_C.GetMatchCardsAsJsonString": {
+        "bytes": 31038,
+        "sha256": "73f6af1a5b3cde6ad391fe48c3f0e8322ea379067ce0c057d2c93eddd4b9ce3c"
+      },
+      "advancedTutorial_Widget_C.DisplayTutorialsForCard": {
+        "bytes": 20957,
+        "sha256": "5b46e0278f2740467bd2237d2804ba3cdf95f793fe8d6ebc2b79aca4dba23244"
+      },
+      "BP_CardFunctions_C.ChangeBuffsFromCards": {
+        "bytes": 6267,
+        "sha256": "42c741b35f80b2e5628572fdddae30d23de07a540e813e4a233ca7a97c8644b8"
+      }
+    },
+    "managed_ast_differential_cases": 1944,
+    "case_sha256": "f918fae859461bf01bf9e5a38318b4d2ad999333e8782f9f7c7452929f18200a",
+    "mismatches": 0,
+    "worker_inventory_rows": 28,
+    "prior_mode5_cases": 48,
+    "prior_mode5_current_numeric_mismatches": 0,
+    "prior_mode5_current_ledger_mismatches": 0,
+    "scope": "New C# actual InvokeByName mode0..5 vs full current-equal ChangeHeavyArmor AST calling full type4 ledger AST.1944vectors raw base/temp, raw requests including intmax, three typed-ledger profiles, skip/deck combinations. Containers/lookup/notify controlled on reference side; no full native runtime or arbitrary lifetime certification.",
+    "game_writes": 0,
+    "real_game_function_calls": 0,
+    "fully_certified_cards": 0
+  },
+  "tests": {
+    "new_tests": 2,
+    "new_profiles": {
+      "modes": 9216,
+      "lifecycle": 30,
+      "total": 9246
+    },
+    "final_full_suite": {
+      "passed": 926,
+      "total": 926
+    },
+    "managed_native_ast_differential": {
+      "cases": 1944,
+      "mismatches": 0
+    },
+    "same_prior_mode5_probe": {
+      "cases": 48,
+      "numeric_mismatches_before": 30,
+      "ledger_mismatches_before": 48,
+      "numeric_mismatches_after": 0,
+      "ledger_mismatches_after": 0
+    }
+  },
+  "implementation": [
+    "src/KLink.Bot/Cards/CardDatabase.cs",
+    "src/KLink.Bot/Engine/CardInstance.cs",
+    "src/KLink.Bot/Effects/Blueprint/KismetVm.cs",
+    "src/KLink.Bot/Effects/CardApi.cs",
+    "src/KLink.Bot/Effects/CardApiDispatch.cs",
+    "tools/BotSim/SelfTest.cs"
+  ],
+  "unresolved": [
+    "不等于所有PvP规则或任意原生UObject/GC/别名/异常帧生命周期已还原；当前模板采集仅已加载2019卡。",
+    "独立ChangeBuffsFromCards入口/任意自定义detail、字节参数域外值、全部原生帧初值及notify具体接收者/异步路由不在本轮穷尽。",
+    "所有光环/直接字段写入/旧校正与手动恢复适配器不称整卡认证，后续发现新写入需按独立分量接入；旧手动恢复仍无产品调用方。",
+    "完整非动作流程、全重入、动态模板/类映射与触发登记历史、TSet物理顺序及重置复制所有权仍开放。"
+  ],
+  "game_writes": 0,
+  "real_game_function_calls": 0,
+  "fully_certified_cards": 0,
+  "artifacts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule480-armor-migration.py",
+      "bytes": 5573,
+      "sha256": "acefb0154104088c15a8ac4d996028bc7e1f7825ffbb0418ec49e1ae05c74590"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule480-armor-migration-verification-20261027.json",
+      "bytes": 2216,
+      "sha256": "446bf8086069f8791844bd03a9d91ae02dbb6038eda0ccd9f498985625810e87"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule480-managed-probe\\Probe.csproj",
+      "bytes": 322,
+      "sha256": "eeb09ad713d1ac5f6eb04630d2ff8c0b70638b404471b68a43c35c9b2b28ec8e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule480-managed-probe\\Program.cs",
+      "bytes": 2720,
+      "sha256": "bf583005fc2f93db0b834ff00c73deec330da1a03683516d116c8753680d8382"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule480-managed-probe.log",
+      "bytes": 1485545,
+      "sha256": "8d463e0c30d24f9afee513c791948dc00dcb558e59281b9652bedd2d5223b4ed"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule480-managed-probe.exit.txt",
+      "bytes": 3,
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule480-legacy48-rerun.log",
+      "bytes": 6485,
+      "sha256": "f3fba7197990349e66efbfe4c214114bcf9ba19296dce7ffa51594da8a3a80a1"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule480-legacy48-rerun.exit.txt",
+      "bytes": 3,
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule480-final-selftest.log",
+      "bytes": 80717,
+      "sha256": "cb89c62908f7ecb41a27c6070b926c73123a22c5f08a4128aa3b25eb11046531"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule480-final-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule480-build.log",
+      "bytes": 261,
+      "sha256": "4057cba10e037c16ef8f7b09e4faa92848c336630ce24d9c4b5aa86e787a7516"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule480-initial-selftest.log",
+      "bytes": 81399,
+      "sha256": "4d8c4badbfbfe0934dae070e2829bdd61171f948308938055eeb5f7977a66bad"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule480-initial-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule480-second-selftest.log",
+      "bytes": 80669,
+      "sha256": "a8955f93438075c7579b9918b7a32986580063c3fc098ddbbef13ed18e132dde"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule480-second-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule480-third-selftest.log",
+      "bytes": 247,
+      "sha256": "f7fb6fea85efcb1782f6083464c718a56d4429c535430ee677933ca8433539b1"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule480-third-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule480-fourth-selftest.log",
+      "bytes": 80752,
+      "sha256": "25421d68d0f6492612a7636640b69fd72db7f35b30004e319b9a45d0668d2c47"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule480-fourth-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule480-worker\\input.txt",
+      "bytes": 64071,
+      "sha256": "b0795a8676bed7fa67d08d8ba9b4b2aecf14197413c24dc74be72b54105cd1f6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule480-worker\\output.json",
+      "bytes": 5549,
+      "sha256": "7d3613c2637a573b49a5be1d554c38e61a81a872281970902cdfd40c600fdee1"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule480-worker\\task.txt",
+      "bytes": 665,
+      "sha256": "ba56397cfa30b6bcdcc2a0f085844004468beb009a539b105ab2a3845ffde0b2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule457-integrated-writer.py",
+      "bytes": 5475,
+      "sha256": "3294bf89c7baba98ab438f65436d34d12a169b82ed0ca905f758be185b80f968"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule457-ledger-model.py",
+      "bytes": 5457,
+      "sha256": "7626378ffc2dd4f0c46897ee23c3207636f1983d02db70a29a7a5cd4a4c4a8a5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule478-managed-probe\\Program.cs",
+      "bytes": 1636,
+      "sha256": "7bdef415f4a2302750b29c5141284bf366ea95ddd34c92ade76f00ca5decaffa"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule478-managed-probe.log",
+      "bytes": 12549,
+      "sha256": "0830bf01572820d2c3ae13ab01453f73b9529b6e508eab6f2d7174e297b10c14"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule478-heavyarmor-entry-lifecycle-20261027.json",
+      "bytes": 4633285,
+      "sha256": "b396b1f29a038dac152a2a9bb9ce6e3d1b49c04272203277c1166445a8f0d34d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule478-heavyarmor-field-references-20261027.json",
+      "bytes": 5886088,
+      "sha256": "5c190577b0b05635bab5f6a7f27faae708fb42b4891da8fb30de3d8a49296ec4"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule457-salvage-creation-native-20261027.json",
+      "bytes": 4664342,
+      "sha256": "f12ca334d6a12db58190294ce4471fa0d982b1f4c79e5e0200c4dcc4a287b168"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule479-card-cdo-armor-pairs-20261027.json",
+      "bytes": 5917845,
+      "sha256": "e30f0298c7408fcffd08df6a242d732e7fd294279f43f2a86a36880dc8fada65"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule479-copydata-native-20261027.json",
+      "bytes": 67882,
+      "sha256": "69fa7833b16dfce3e3895d83c7db73c20b9418df2b05967fb3b16cb8aee91756"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule479-reset-native-20261027.json",
+      "bytes": 46931,
+      "sha256": "a5bb3a5a0fb4d2afa9900a85b587a569ae634378738048afe0d62c66bb778cd5"
+    }
+  ]
+}

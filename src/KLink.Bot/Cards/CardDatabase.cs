@@ -68,6 +68,7 @@ public sealed class CardDefinition
     /// 而是从 `CardInnateTable`（pak CDO）填。见 <see cref="Keywords"/> 的注释。
     /// </summary>
     public int HeavyArmor { get; init; }
+    public int HeavyArmorBuff { get; init; }
 
     /// <summary>
     /// **卡面自带**的关键字（Blitz / Guard / Ambush / Fury / Smokescreen / Alpine /
@@ -352,6 +353,7 @@ public sealed class CardDatabase
                 TargetTax = c.TargetTax ?? 0,
                 WaitForHandTarget = c.WaitForHandTarget,
                 InnateAbilities = c.InnateAbilities ?? new Dictionary<string, int[]>(StringComparer.Ordinal),
+                HeavyArmorBuff = c.HeavyArmorBuff,
                 SuppressionExceptionTriggers = c.SuppressionExceptionTriggers ?? [],
                 UsedTriggers = c.UsedTriggers ?? [],
                 // 优先用 CDO 表的值；表里没有才退回 cards 文件（后者目前恒 0）
@@ -416,6 +418,7 @@ public sealed class CardDatabase
         [JsonPropertyName("targetTax")] public int? TargetTax { get; set; }
         [JsonPropertyName("waitForHandTarget")] public bool WaitForHandTarget { get; set; }
         [JsonPropertyName("innateAbilities")] public Dictionary<string, int[]>? InnateAbilities { get; set; }
+        [JsonPropertyName("heavyArmorBuff")] public int HeavyArmorBuff { get; set; }
         [JsonPropertyName("suppressionExceptionTriggers")] public string[]? SuppressionExceptionTriggers { get; set; }
         [JsonPropertyName("usedTriggers")] public string[]? UsedTriggers { get; set; }
     }

@@ -859,6 +859,8 @@ internal static class SelfTest
         new("压制揭示重入：缓存判定后按当前ID查替代对象", db => SuppressionTailReplacement(db, false)),
         new("压制揭示重入：真实VM不重判替代对象的Covert", db => SuppressionTailReplacement(db, true)),
         new("RevealCard移动通知：原生ID0主体与观察者载荷", RevealMovementSentinel),
+        new("装甲独立数值：六模式、typed账本与通知门", HeavyArmorIndependentModes),
+        new("装甲生命周期：模板双值/复制/重置/VM/快照", HeavyArmorIndependentLifecycle),
         new("老兵烟幕/守护/毁灭：原始覆盖与来源门", VeteranGuardSmokeWrites),
         new("老兵守护：烟幕回调后按当前位置刷新", VeteranGuardSmokeCallbackOrder),
         new("生成老兵：先升级/T35再授予闪击", SpawnVeteranBeforeCreationObservers),
@@ -30181,7 +30183,8 @@ internal static class SelfTest
                 || !first.BuffsBySource.TryGetValue((60, false), out var retainedKredit)
                 || retainedKredit.KreditCost != -2))
                 return $"mode4必须保留永久指挥点费用关系：{side}/{kind}";
-            if (kind is not (1 or 2 or 3) && !Query(source).SequenceEqual(new[] { 10 }))
+            if (kind == 4 && (!Query(source).SequenceEqual(new[] { 90, 10 }) || first.BaseHeavyArmor != 2)) return "armor mode4 must preserve permanent contribution";
+            if (kind is not (1 or 2 or 3 or 4) && !Query(source).SequenceEqual(new[] { 10 }))
                 return $"撤销后未移除目标：{side}/{kind}";
             first.Location = location;
             engine.Api.ResetCardInBattle(first);
@@ -32536,6 +32539,100 @@ internal static class SelfTest
         return null;
     }
 
+    private static string? HeavyArmorIndependentModes(CardDatabase db)
+    {
+        const string name = "card_unit_rule480_fixture";
+        var defs = db.All.ToDictionary(x => x.Name, StringComparer.Ordinal);
+        defs[name] = new CardDefinition { Name = name, Type = "infantry", Attack = 1, Defense = 9 };
+        var ctor = typeof(CardDatabase).GetConstructors(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).Single();
+        var fixture = (CardDatabase)ctor.Invoke(new object[] { defs, db.DeckCodeIds.ToDictionary(x => x.Key, x => x.Value, StringComparer.Ordinal) }); int cases = 0;
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (int mode in Enumerable.Range(0, 6))
+        foreach (int basis in new[] { -1, 0, 2, 5 })
+        foreach (int temporary in new[] { -2, 0, 4 })
+        foreach (int amount in new[] { -3, 0, 2, int.MaxValue })
+        foreach (bool previous in new[] { false, true })
+        foreach (bool exists in new[] { false, true })
+        foreach (bool skip in new[] { false, true })
+        foreach (bool deck in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(fixture);
+            int sourceId = exists ? 20 : 9999;
+            var source = exists ? state.CreateWithId(name, side, 20, CardLocation.Discard, 0) : null;
+            var card = state.CreateWithId(name, side, 60, deck ? side.DeckOf() : side.HqOf(), 1);
+            card.BaseHeavyArmor = basis; card.TemporaryHeavyArmor = temporary;
+            if (previous) card.BuffsBySource[(sourceId, false)] = new CardBuff { SourceCardId = sourceId, HeavyArmor = 2, TemporaryHeavyArmorGive = 3, HeavyArmorSetValue = 0, HasSuppressLedgerEntry = true };
+            card.BuffsBySource[(30, false)] = new CardBuff { SourceCardId = 30, HeavyArmor = 1, TemporaryHeavyArmorGive = 4, HeavyArmorSetValue = 2, Attack = 7, HasSuppressLedgerEntry = true };
+            int removed = mode == 4 && previous ? -3 : 0;
+            bool changed = mode is 0 or 1 ? amount != 0 : mode == 4 ? removed != 0 : basis != amount;
+            int expectedBase = !changed ? basis : mode == 1 ? Math.Clamp(unchecked(basis + amount), 0, 3) : mode is 2 or 3 or 5 ? Math.Clamp(amount, 0, 3) : basis;
+            int expectedTemp = !changed ? temporary : mode == 0 ? unchecked(temporary + amount) : mode == 4 ? unchecked(temporary + removed) : temporary;
+            engine.Api.InvokeByName("ChangeHeavyArmor", null, new object?[] { card, sourceId, amount, mode, skip, null },
+                new EffectContext { Engine = engine, State = state, Self = source, Controller = side }, out _);
+            if (card.BaseHeavyArmor != expectedBase || card.TemporaryHeavyArmor != expectedTemp || card.HeavyArmor != Math.Clamp(unchecked(expectedBase + expectedTemp), 0, 3))
+                return $"armor numeric {side}/{mode}/{basis}/{temporary}/{amount}/{previous}/{exists}/{skip}/{deck}: {card.BaseHeavyArmor}/{card.TemporaryHeavyArmor}, expected{expectedBase}/{expectedTemp}";
+            card.BuffsBySource.TryGetValue((sourceId, false), out var current);
+            int perm = mode == 1 ? unchecked((previous ? 2 : 0) + amount) : mode == 5 ? 0 : previous ? 2 : 0;
+            if (mode == 2 && !previous || mode == 3 && !previous) perm = 0;
+            int temp = mode == 0 ? unchecked((previous ? 3 : 0) + amount) : mode == 4 ? 0 : previous ? 3 : 0;
+            int? set = mode == 2 ? amount : mode == 5 ? null : previous ? 0 : null;
+            bool suppress = previous || mode == 3;
+            if ((current?.HeavyArmor ?? 0) != perm || (current?.TemporaryHeavyArmorGive ?? 0) != temp || current?.HeavyArmorSetValue != set || (current?.HasSuppressLedgerEntry ?? false) != suppress)
+                return $"armor current typed keys {mode}/{amount}/{previous}";
+            var foreign = card.BuffsBySource[(30, false)];
+            if (foreign.Attack != 7 || foreign.TemporaryHeavyArmorGive != 4 || foreign.HeavyArmor != (mode is 2 or 3 or 5 ? 0 : 1)
+                || foreign.HeavyArmorSetValue != (mode is 2 or 3 or 5 ? null : 2) || foreign.HasSuppressLedgerEntry != (mode != 3))
+                return $"armor foreign cleanup {mode}/{amount}/{previous}";
+            var notifications = state.ActionLog.SelectMany(x => x.SubActions).Where(x => x.Name == "ZActionAddHeavyArmor").ToArray();
+            if (notifications.Length != (changed && !skip && !deck ? 1 : 0)) return $"armor notify {mode}/{amount}/{skip}/{deck}";
+            cases++;
+        }
+        return cases == 9216 ? null : $"armor independent profiles={cases}";
+    }
+
+    private static string? HeavyArmorIndependentLifecycle(CardDatabase db)
+    {
+        const string name = "card_unit_rule480_lifecycle"; int cases = 0;
+        foreach (int basis in new[] { int.MinValue, -2, 0, 3, int.MaxValue })
+        foreach (int temporary in new[] { -3, 0, 5 })
+        {
+            var defs = db.All.ToDictionary(x => x.Name, StringComparer.Ordinal);
+            defs[name] = new CardDefinition { Name = name, Type = "infantry", Attack = 1, Defense = 9, HeavyArmor = basis, HeavyArmorBuff = temporary };
+            var ctor = typeof(CardDatabase).GetConstructors(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).Single();
+            var fixture = (CardDatabase)ctor.Invoke(new object[] { defs, db.DeckCodeIds.ToDictionary(x => x.Key, x => x.Value, StringComparer.Ordinal) });
+            foreach (Side side in new[] { Side.Left, Side.Right })
+            {
+                var (engine, state) = EmptyBoard(fixture);
+                var card = state.CreateWithId(name, side, 60, side.HqOf(), 1);
+                if (card.BaseHeavyArmor != basis || card.TemporaryHeavyArmor != temporary) return "armor template components lost";
+                card.BuffsBySource[(20, false)] = new CardBuff { SourceCardId = 20, HeavyArmor = 2, TemporaryHeavyArmorGive = 3, HeavyArmorSetValue = 0, HeavyArmorEmptyDetail = 0 };
+                var clone = (CardInstance)typeof(CardApi).GetMethod("CopyForStealSide", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)!.Invoke(null, new object[] { card })!;
+                if (clone.BaseHeavyArmor != basis || clone.TemporaryHeavyArmor != temporary || clone.BuffsBySource[(20, false)].TemporaryHeavyArmorGive != 3
+                    || clone.BuffsBySource[(20, false)].HeavyArmorSetValue != 0 || !card.Snapshot().TemporaryHeavyArmorBySource.ContainsKey("20/False")) return "armor copy/snapshot lost components or typed keys";
+                clone.TemporaryHeavyArmor = 17; clone.BuffsBySource[(20, false)].TemporaryHeavyArmorGive = 19;
+                if (card.TemporaryHeavyArmor != temporary || card.BuffsBySource[(20, false)].TemporaryHeavyArmorGive != 3) return "armor copied values aliased";
+                var program = new KismetProgram(new[] {
+                    new KismetStep(0, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), new KismetExpr { Int = 1 }, null, -1, "heavyArmor", null) { DestinationScope = "instance" },
+                    new KismetStep(1, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), new KismetExpr { Int = -2 }, null, -1, "heavyArmorBuff", null) { DestinationScope = "instance" },
+                    new KismetStep(2, "call", "getTotalHeavyArmor", new[] { new KismetExpr { Var = "armor" } }, new[] { 0 }, null, null, -1, null, null)
+                }, 0);
+                var result = engine.Api.Vm.RunLocalProgramMulti(program, new EffectContext { Engine = engine, State = state, Self = card, Controller = side }, null, "armor");
+                if (card.BaseHeavyArmor != 1 || card.TemporaryHeavyArmor != -2 || Convert.ToInt32(result.GetValueOrDefault("armor")) != 0) return "armor VM raw mapping failed";
+                engine.Api.ResetCardInBattle(card);
+                if (card.BaseHeavyArmor != basis || card.TemporaryHeavyArmor != temporary || card.BuffsBySource.Count != 0 || card.Snapshot().BaseHeavyArmor != basis || card.Snapshot().TemporaryHeavyArmor != temporary)
+                    return "armor reset lost nonzero template temporary component";
+                card.BaseHeavyArmor = 2; card.TemporaryHeavyArmor = 2;
+                engine.Api.SuppressUnit(card, 20);
+                if (card.BaseHeavyArmor != 0 || card.TemporaryHeavyArmor != 2 || card.HeavyArmor != 2)
+                    return "suppression must reset only permanent armor, preserving temporary numeric component";
+                engine.Api.RestoreAfterSuppression(card); // compatibility route, not a native unsuppression claim
+                if (card.BaseHeavyArmor != 2 || card.TemporaryHeavyArmor != 2) return "legacy armor restore must not double-count ledger";
+                cases++;
+            }
+        }
+        return cases == 30 ? null : $"armor lifecycle profiles={cases}";
+    }
+
     private static CardDatabase VeteranGuardFixture(CardDatabase db, int mask)
     {
         const string name = "card_unit_rule476_fixture";
@@ -33166,6 +33263,7 @@ internal static class SelfTest
             var perm = new CardBuff { SourceCardId = 30, HeavyArmor = permanent, HeavyArmorEmptyDetail = 0 };
             var temp = new CardBuff { SourceCardId = 40, Temporary = true, HeavyArmor = temporary, DefenseEmptyDetail = 0 };
             target.BuffsBySource[(30, false)] = perm; target.BuffsBySource[(40, true)] = temp;
+            target.BaseHeavyArmor = unchecked(2 + permanent); target.TemporaryHeavyArmor = temporary;
             target.Keywords.Add(Keyword.Covert); target.IsRevealed = false;
             if (prior > 0) target.Keywords.Add(Keyword.Suppressed);
             target.HeavyArmorZeroedBySuppress = prior == 2;
@@ -33226,6 +33324,7 @@ internal static class SelfTest
             var perm = new CardBuff { SourceCardId = 30, HeavyArmor = permanent, HeavyArmorEmptyDetail = 0 };
             var temp = new CardBuff { SourceCardId = 40, Temporary = true, HeavyArmor = temporary, DefenseEmptyDetail = 0 };
             target.BuffsBySource[(30, false)] = perm; target.BuffsBySource[(40, true)] = temp;
+            target.BaseHeavyArmor = unchecked(2 + permanent); target.TemporaryHeavyArmor = temporary;
             if (prior > 0) target.Keywords.Add(Keyword.Suppressed);
             target.HeavyArmorZeroedBySuppress = prior == 2;
             int armor = target.HeavyArmor;
@@ -33533,11 +33632,12 @@ internal static class SelfTest
                 var (engine, state) = EmptyBoard(fixture);
                 var target = state.CreateWithId(name, side, 60, CardLocation.Discard, 0);
                 var decoy = state.CreateWithId(PlainUnit, side.Opposite(), 61, CardLocation.Discard, 0);
-                target.HeavyArmorZeroedBySuppress = zeroed;
+                target.HeavyArmorZeroedBySuppress = zeroed; // compatibility metadata does not replace numeric storage
+                target.BaseHeavyArmor = unchecked(basis + permanent); target.TemporaryHeavyArmor = temporary;
                 target.BuffsBySource[(30, false)] = new CardBuff { SourceCardId = 30, HeavyArmor = permanent };
                 target.BuffsBySource[(40, true)] = new CardBuff { SourceCardId = 40, Temporary = true, HeavyArmor = temporary };
                 string before = System.Text.Json.JsonSerializer.Serialize(target.Snapshot());
-                int expected = Math.Clamp(unchecked((zeroed ? 0 : basis) + permanent + temporary), 0, 3);
+                int expected = Math.Clamp(unchecked(basis + permanent + temporary), 0, 3);
                 var ctx = new EffectContext { Engine = engine, State = state, Self = decoy, Controller = side };
                 object? actual;
                 if (!vm) actual = engine.Api.InvokeByName("getTotalHeavyArmor", target, new object?[] { null }, ctx, out _);
@@ -33578,6 +33678,7 @@ internal static class SelfTest
                 var (engine, state) = EmptyBoard(fixture);
                 var card = state.CreateWithId(name, side, 60, side.HqOf(), 1);
                 card.BaseAttack = 2; card.TemporaryAttack = temporary; card.MaxAttack = 91;
+                card.BaseHeavyArmor = 2; card.TemporaryHeavyArmor = 1;
                 card.Defense = 8; card.MaxDefense = 21; card.BaseOperationCost = 4; card.TemporaryOperationCost = temporary;
                 card.BuffsBySource[(30, false)] = new CardBuff { SourceCardId = 30, Attack = 5, Defense = 6, OperationCost = 7, HeavyArmor = 2 };
                 card.BuffsBySource[(60, false)] = new CardBuff { SourceCardId = 60, Attack = 2, Defense = 2, OperationCost = 2, HeavyArmor = 1 };
@@ -33592,8 +33693,8 @@ internal static class SelfTest
                     return $"veteran numeric template {attack}/{defense}/{operation}/{side}/{temporary}/{suppressed}: attack={card.BaseAttack}/{card.MaxAttack}, defense={card.Defense}, op={card.BaseOperationCost}";
                 if (card.BuffsBySource.Where(x => !x.Key.Temporary).Any(x => x.Value.Attack != 0 || x.Value.Defense != 0 || x.Value.OperationCost != 0)
                     || card.BuffsBySource[(40, true)].Attack != temporary || card.BuffsBySource[(40, true)].Defense != 3 || card.BuffsBySource[(40, true)].OperationCost != temporary
-                    || card.HeavyArmor != 3 || !engine.Api.JsonGetBool(card, "veteran"))
-                    return "mode5 must clean numeric permanent ledgers, preserve temporary entries and unrelated armor; armor upgrade remains unaudited";
+                    || card.BaseHeavyArmor != 0 || card.TemporaryHeavyArmor != 1 || card.HeavyArmor != 1 || !engine.Api.JsonGetBool(card, "veteran"))
+                    return "mode5 must clear permanent ledgers and set veteran armor while preserving independent temporary fields";
                 cases++;
             }
         }
@@ -34607,6 +34708,8 @@ internal static class SelfTest
             unit.Keywords.Add(k);
         }
 
+        unit.BaseHeavyArmor = 1; // raw numeric fixture, not a standalone derived keyword
+        baseHeavy = unit.HeavyArmor;
         // 不在摘除集里的两个：`Pinned`（压制 —— 玩家明说抑制不影响压制）、`Veteran`（★ 该被摘）。
         unit.PinnedTurns = 2;
         unit.Keywords.Add(Keyword.Veteran);

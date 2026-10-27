@@ -537,16 +537,7 @@ public sealed class CardInstance
     /// </summary>
     public List<KeyValuePair<(int SourceCardId, bool Temporary), CardBuff>>? SuppressStrippedBuffs { get; set; }
 
-    /// <summary>
-    /// 抑制把**卡面自带的重甲**清零了（蓝图 `L_070E`
-    /// `ChangeHeavyArmor(card, 0, 0, changeType=3 /*Suppress*/, skipAction=true)`）。
-    ///
-    /// ⚠️ 为什么需要这个位：`Keyword.HeavyArmor` 是**派生**的
-    /// （见 <see cref="RecalculateStats"/>：`HeavyArmor &gt; 0` 就挂上），
-    /// 所以只把关键字摘掉、下次 `RecalculateStats()` 立刻又挂回来。
-    /// 卡面重甲（`Definition.HeavyArmor`）必须能被**暂时遮蔽**，
-    /// 解除时（`RestoreAfterSuppression`）复位。
-    /// </summary>
+    /// <summary>Legacy manual-restore metadata; it never masks raw armor arithmetic.</summary>
     public bool HeavyArmorZeroedBySuppress { get; set; }
 
     /// <summary>被抑制时清掉的 `CustomAbility`（卡牌给单位添加的额外特效），解除时装回。</summary>
@@ -715,32 +706,17 @@ public sealed class CardInstance
 
     /// <summary>
     /// 重甲总量的读取投影，按原生 int32 相加并截断到 0..3。
-    /// 当前原始分量仍从卡面/账本派生；独立基础与临时字段写入尚未完成。
+    /// RULE-480: 原始两分量独立于账本；账本写入或删除不隐式改变数值。
     ///
     /// 为什么要单独算而不能只看 <see cref="Keywords"/>：`ChangeHeavyArmor(卡, 来源, +1)`
     /// 是可以叠加的数值（客户端另有 `getTotalHeavyArmor`），关键字只能表示「有没有」。
     /// 关键字仍然同步维护（<c>HeavyArmor</c> 出现 ⟺ 点数 &gt; 0），
     /// 因为快照对拍、`AddHeavyArmor` 那条老路径都按关键字判。
     /// </summary>
-    public int HeavyArmor
-    {
-        get
-        {
-            // ⚠️ 抑制会把**卡面自带**的重甲也清零（蓝图 `L_070E`
-            //    `ChangeHeavyArmor(卡, 0, 0, Suppress(3), skipAction=true)`），
-            //    所以卡面那一项要能被 <see cref="HeavyArmorZeroedBySuppress"/> 遮蔽。
-            int total = HeavyArmorZeroedBySuppress ? 0 : Definition.HeavyArmor;
-            foreach (var buff in BuffsBySource.Values)
-            {
-                total = unchecked(total + buff.HeavyArmor);
-            }
-
-            // RULE-456: native getTotalHeavyArmor adds int32 components and
-            // clips only the read result to0..3. Raw writer independence is
-            // still open; never clamp or rewrite the source ledger here.
-            return Math.Clamp(total, 0, 3);
-        }
-    }
+    public int BaseHeavyArmor { get; set; }
+    public int TemporaryHeavyArmor { get; set; }
+    public (int Base, int Temporary)? SuppressStrippedArmorPair { get; set; }
+    public int HeavyArmor => Math.Clamp(unchecked(BaseHeavyArmor + TemporaryHeavyArmor), 0, 3);
 
     /// <summary>
     /// 建卡时灌入**卡面自带**的关键字（Blitz / Guard / Ambush / Fury / Smokescreen …），
@@ -791,6 +767,8 @@ public sealed class CardInstance
             Keywords.Add(keyword);
         }
 
+        BaseHeavyArmor = Definition.HeavyArmor;
+        TemporaryHeavyArmor = Definition.HeavyArmorBuff;
         Cipher = Definition.Cipher;
         KreditsTaxAsEnemyTarget = Definition.TargetTax;
         foreach (var (ability, givers) in Definition.InnateAbilities)
@@ -819,6 +797,7 @@ public sealed class CardInstance
         Keywords.Clear();
         RemovedGameplayTags.Clear();
         HeavyArmorZeroedBySuppress = false;
+        SuppressStrippedArmorPair = null;
         SuppressedOnTurn = -1;
         SuppressStrippedKeywords = null;
         SuppressStrippedBuffs = null;
@@ -902,6 +881,7 @@ public sealed class CardInstance
 
         // 基础数值：搬差值（保留 buff 与已受伤害）
         BaseAttack += def.Attack - oldDef.Attack;
+        BaseHeavyArmor = unchecked(BaseHeavyArmor + def.HeavyArmor - oldDef.HeavyArmor);
         // Identity correction is a compatibility path, not native conversion.
         BaseOperationCost = unchecked(BaseOperationCost + def.OperationCost - oldDef.OperationCost);
         Defense += def.Defense - oldDef.Defense;
@@ -1008,6 +988,8 @@ public sealed class CardInstance
         CustomAbility,
         CustomJson.OrderBy(kv => kv.Key, StringComparer.Ordinal).ToDictionary(kv => kv.Key, kv => kv.Value))
         {
+            BaseHeavyArmor = BaseHeavyArmor,
+            TemporaryHeavyArmor = TemporaryHeavyArmor,
             BaseKreditCost = BaseKreditCost,
             TemporaryKreditCost = TemporaryKreditCost,
             BaseOperationCost = BaseOperationCost,
@@ -1051,6 +1033,12 @@ public sealed class CardInstance
             KreditCostZeroEntrySources = BuffsBySource.Where(kv => kv.Value.HasZeroKreditCostEntry && kv.Value.KreditCost == 0)
                 .OrderBy(kv => kv.Key.SourceCardId).ThenBy(kv => kv.Key.Temporary)
                 .Select(kv => $"{kv.Key.SourceCardId}/{kv.Key.Temporary}").ToArray(),
+            PermanentHeavyArmorBySource = BuffsBySource.Where(kv => kv.Value.HeavyArmor != 0)
+                .ToDictionary(kv => $"{kv.Key.SourceCardId}/{kv.Key.Temporary}", kv => kv.Value.HeavyArmor),
+            TemporaryHeavyArmorBySource = BuffsBySource.Where(kv => kv.Value.TemporaryHeavyArmorGive != 0)
+                .ToDictionary(kv => $"{kv.Key.SourceCardId}/{kv.Key.Temporary}", kv => kv.Value.TemporaryHeavyArmorGive),
+            HeavyArmorSetValuesBySource = BuffsBySource.Where(kv => kv.Value.HeavyArmorSetValue.HasValue)
+                .ToDictionary(kv => $"{kv.Key.SourceCardId}/{kv.Key.Temporary}", kv => kv.Value.HeavyArmorSetValue!.Value),
             HeavyArmorEmptyDetailsBySource = BuffsBySource.Where(kv => kv.Value.HeavyArmorEmptyDetail.HasValue)
                 .OrderBy(kv => kv.Key.SourceCardId).ThenBy(kv => kv.Key.Temporary)
                 .ToDictionary(kv => $"{kv.Key.SourceCardId}/{kv.Key.Temporary}", kv => kv.Value.HeavyArmorEmptyDetail!.Value),
@@ -1181,8 +1169,10 @@ public sealed class CardBuff
     /// <summary>旧兼容记录的绝对偏移标志；原生已知模式不再创建此标志。</summary>
     public bool OperationCostSetsAbsoluteValue { get; set; }
 
-    /// <summary>重甲点数（可叠加的数值，不是布尔）。</summary>
+    /// <summary>Native heavyArmor_permBuff ledger; not the current numeric component.</summary>
     public int HeavyArmor { get; set; }
+    public int TemporaryHeavyArmorGive { get; set; }
+    public int? HeavyArmorSetValue { get; set; }
     // RULE-461: heavyArmor_ ledger key; null is absent, zero is present.
     // This metadata is not a numerical armor contribution.
     public int? HeavyArmorEmptyDetail { get; set; }
@@ -1218,7 +1208,7 @@ public sealed class CardBuff
     public bool Temporary { get; set; }
 
     public bool IsEmpty => Attack == 0 && !AttackSetValue.HasValue && !HasSuppressLedgerEntry && Defense == 0 && !DefenseSetValue.HasValue && !DefenseEmptyDetail.HasValue && !HasNonOrdinaryDefenseEntry && KreditCost == 0
-                           && OperationCost == 0 && HeavyArmor == 0 && !HeavyArmorEmptyDetail.HasValue && Fury == 0 && Blitz == 0 && Smokescreen == 0 && Guard == 0 && Destruction == 0 && Pinned == 0
+                           && OperationCost == 0 && HeavyArmor == 0 && TemporaryHeavyArmorGive == 0 && !HeavyArmorSetValue.HasValue && !HeavyArmorEmptyDetail.HasValue && Fury == 0 && Blitz == 0 && Smokescreen == 0 && Guard == 0 && Destruction == 0 && Pinned == 0
                            && CustomAbilityDetails.Count == 0 && !KreditCostSetsAbsoluteValue
                            && !OperationCostSetsAbsoluteValue && !OperationCostSetValue.HasValue && !KreditCostSetValue.HasValue && !KreditCostEmptyDetail.HasValue && !HasZeroKreditCostEntry && !HasZeroAttackEntry && !HasZeroOperationCostEntry && !HasZeroDefenseEntry;
 
@@ -1247,6 +1237,8 @@ public sealed class CardBuff
         HasZeroOperationCostEntry = HasZeroOperationCostEntry,
         OperationCostSetValue = OperationCostSetValue,
         HeavyArmor = HeavyArmor,
+        TemporaryHeavyArmorGive = TemporaryHeavyArmorGive,
+        HeavyArmorSetValue = HeavyArmorSetValue,
         HeavyArmorEmptyDetail = HeavyArmorEmptyDetail,
         Fury = Fury,
         Blitz = Blitz,
@@ -1312,6 +1304,11 @@ public sealed record CardSnapshot(
     public Dictionary<string, int> KreditCostSetValuesBySource { get; init; } = new(StringComparer.Ordinal);
     public Dictionary<string, int> KreditCostEmptyDetailsBySource { get; init; } = new(StringComparer.Ordinal);
     public Dictionary<string, int> DefenseEmptyDetailsBySource { get; init; } = new(StringComparer.Ordinal);
+    public int BaseHeavyArmor { get; init; }
+    public int TemporaryHeavyArmor { get; init; }
+    public Dictionary<string, int> PermanentHeavyArmorBySource { get; init; } = new(StringComparer.Ordinal);
+    public Dictionary<string, int> TemporaryHeavyArmorBySource { get; init; } = new(StringComparer.Ordinal);
+    public Dictionary<string, int> HeavyArmorSetValuesBySource { get; init; } = new(StringComparer.Ordinal);
     public Dictionary<string, int> HeavyArmorEmptyDetailsBySource { get; init; } = new(StringComparer.Ordinal);
     public string[] KreditCostZeroEntrySources { get; init; } = [];
     public string[] AttackZeroEntrySources { get; init; } = [];

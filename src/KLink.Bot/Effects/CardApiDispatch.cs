@@ -4912,34 +4912,54 @@ public sealed partial class CardApi
         // Other modes still process zero (notably absolute set and removal).
         if (amount == 0 && (changeType is 0 or 1)) return null;
 
-        if (changeType == ChangeTypeTempBuffRemove)
+        PruneEmptySourceBuffSlots(target, sourceId);
+        int removed = 0;
+        if (changeType is 2 or 3 or 5)
         {
-            if (target.BuffsBySource.TryGetValue((sourceId, false), out var existing))
+            var key = (sourceId, false);
+            var original = target.BuffsBySource.TryGetValue(key, out var previous)
+                ? previous.Clone() : new CardBuff { SourceCardId = sourceId };
+            foreach (var candidate in target.BuffsBySource.Keys.ToArray())
             {
-                existing.HeavyArmor = 0;
-                if (existing.IsEmpty)
-                {
-                    RemoveBuffEntry(target, (sourceId, false));
-                }
-                else SynchronizeBuffTarget(target, sourceId);
-
-                target.RecalculateStats();
+                var record = target.BuffsBySource[candidate];
+                record.HeavyArmor = 0;
+                record.HeavyArmorSetValue = null;
+                if (changeType == 3) record.HasSuppressLedgerEntry = false;
+                if (record.IsEmpty) target.BuffsBySource.Remove(candidate);
             }
-
-            return null;
+            if (changeType == 2) { original.HeavyArmorSetValue = amount; target.BuffsBySource[key] = original; }
+            if (changeType == 3) { original.HasSuppressLedgerEntry = true; target.BuffsBySource[key] = original; }
+            SynchronizeBuffTarget(target, sourceId);
         }
-
-        var buff = GetOrCreateBuff(target, sourceId);
-        buff.HeavyArmor = amount;
-        target.RecalculateStats();
-
-        _engine.FireSubAction("ZActionAddHeavyArmor", new[]
+        else
         {
-            ActionValue2.Int("cardID", target.CardId),
-            ActionValue2.Int("instigatorID", sourceId),
-            ActionValue2.Int("amount", amount),
-        });
-
+            var record = GetOrCreateBuff(target, sourceId);
+            if (changeType == 0) record.TemporaryHeavyArmorGive = unchecked(record.TemporaryHeavyArmorGive + amount);
+            else if (changeType == 1) record.HeavyArmor = unchecked(record.HeavyArmor + amount);
+            else if (changeType == 4) { removed = unchecked(-record.TemporaryHeavyArmorGive); record.TemporaryHeavyArmorGive = 0; }
+            if (record.IsEmpty) RemoveBuffEntry(target, (sourceId, false));
+            else SynchronizeBuffTarget(target, sourceId);
+        }
+        bool changed = changeType switch {
+            0 or 1 => amount != 0,
+            2 or 3 or 5 => target.BaseHeavyArmor != amount,
+            4 => removed != 0,
+            _ => false
+        };
+        if (!changed) return null;
+        if (changeType == 0) target.TemporaryHeavyArmor = unchecked(target.TemporaryHeavyArmor + amount);
+        else if (changeType == 1) target.BaseHeavyArmor = Math.Clamp(unchecked(target.BaseHeavyArmor + amount), 0, 3);
+        else if (changeType is 2 or 3 or 5) target.BaseHeavyArmor = Math.Clamp(amount, 0, 3);
+        else if (changeType == 4) target.TemporaryHeavyArmor = unchecked(target.TemporaryHeavyArmor + removed);
+        target.RecalculateStats();
+        // The native skip/deck gate skips both notification and ability events.
+        if (!TruthyArg(a, 4) && target.Location is not (CardLocation.DeckLeft or CardLocation.DeckRight))
+        {
+            _engine.FireSubAction("ZActionAddHeavyArmor", new[] {
+                ActionValue2.Int("cardID", target.CardId), ActionValue2.Int("instigatorID", sourceId),
+                ActionValue2.Int("amount", changeType == 4 ? removed : amount), ActionValue2.Int("changeType", changeType) });
+            FireAbilitiesChanged(target);
+        }
         return null;
     }
 
@@ -6101,14 +6121,10 @@ public sealed partial class CardApi
     private void ApplyAuraHeavyArmor(CardInstance aura, CardInstance target, int amount)
     {
         if (target.BuffsBySource.TryGetValue((aura.CardId, false), out var existing)
-            && existing.HeavyArmor == amount)
-        {
-            return;
-        }
-
-        var buff = GetOrCreateBuff(target, aura.CardId);
-        buff.HeavyArmor = amount;
-        target.RecalculateStats();
+            && existing.TemporaryHeavyArmorGive == amount) return;
+        int delta = unchecked(amount - (existing?.TemporaryHeavyArmorGive ?? 0));
+        DoChangeHeavyArmor(new EffectContext { Engine = _engine, State = State, Self = aura, Controller = aura.Owner },
+            null, new object?[] { target, aura.CardId, delta, 0, false, null });
         RememberBuffedCard(aura, target);
         MarkBuffActive(aura, true);
     }
@@ -6161,6 +6177,9 @@ public sealed partial class CardApi
         AuraTrace?.Add($"RemoveTheBuff: {aura.Definition.Name} → {target.Name}#{target.CardId}" +
                        $"（buff槽={target.BuffsBySource.Count} 含本来源={target.BuffsBySource.ContainsKey((aura.CardId, false)) || target.BuffsBySource.ContainsKey((aura.CardId, true))}）");
 
+        if (target.BuffsBySource.TryGetValue((aura.CardId, false), out var armor) && armor.TemporaryHeavyArmorGive != 0)
+            DoChangeHeavyArmor(new EffectContext { Engine = _engine, State = State, Self = aura, Controller = aura.Owner },
+                null, new object?[] { target, aura.CardId, 0, 4, false, null });
         bool removed = RemoveBuffEntry(target, (aura.CardId, false));
         removed |= RemoveBuffEntry(target, (aura.CardId, true));
         if (!removed)

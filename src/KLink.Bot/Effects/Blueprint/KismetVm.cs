@@ -1444,6 +1444,8 @@ public sealed class KismetVm
             "hasAmbush" => card.Keywords.Contains(Keyword.Ambush),
             "hasFury" => card.Keywords.Contains(Keyword.Fury),
             "hasSmokescreen" => card.Keywords.Contains(Keyword.Smokescreen),
+            "heavyArmor" => card.BaseHeavyArmor,
+            "heavyArmorBuff" => card.TemporaryHeavyArmor,
             "hasHeavyArmor" => card.Keywords.Contains(Keyword.HeavyArmor),
             "hasAlpine" => card.Keywords.Contains(Keyword.Alpine),
             "hasShock" => card.Keywords.Contains(Keyword.Shock),
@@ -1754,6 +1756,13 @@ public sealed class KismetVm
                     {
                         self.HasEverAttacked = Truthy(value);
                         self.BlueprintVariables.Remove(name);
+                    }
+                    else if (name is "heavyArmor" or "heavyArmorBuff")
+                    {
+                        if (name == "heavyArmor") self.BaseHeavyArmor = ToInt(value);
+                        else self.TemporaryHeavyArmor = ToInt(value);
+                        self.BlueprintVariables.Remove(name);
+                        self.RecalculateStats();
                     }
                     else if (name is "kredits" or "kreditsBuff")
                     {

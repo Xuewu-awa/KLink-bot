@@ -1348,6 +1348,9 @@ public sealed partial class CardApi
             IsGold = source.IsGold,
             Location = source.Location,
             LocationNumber = source.LocationNumber,
+            BaseHeavyArmor = source.BaseHeavyArmor,
+            TemporaryHeavyArmor = source.TemporaryHeavyArmor,
+            SuppressStrippedArmorPair = source.SuppressStrippedArmorPair,
             BaseAttack = source.BaseAttack,
             MaxAttack = source.MaxAttack,
             TemporaryAttack = source.TemporaryAttack,
@@ -4516,17 +4519,21 @@ public sealed partial class CardApi
             }
         }
 
-        // 重甲清零：`Keyword.HeavyArmor` 是派生关键字（RecalculateStats 会按点数重挂），
-        // 所以必须同时把**卡面重甲**遮住（L_070E 的 ChangeHeavyArmor(0)）。
-        // ⚠️ 这里**不**立刻重算：此刻重甲的 buff 还在（要到 ③ 才摘），
-        //    现在算会把 `Keyword.HeavyArmor` 又挂回去。真正的重算在 ③ 之后统一做一次。
+        // Native armor mode3 runs here, before later cleanup/numeric phases.
+        // It resets the permanent value, retaining the independent temporary value.
         // RULE-463: the native armor call receives the raw instigator ID.
         // Its nonpositive-source rejection must also gate legacy cleanup.
         // RULE-464: the armor subcall also rejects unrevealed Covert at this
         // phase. Its later batch reveal must not retroactively admit cleanup.
         bool applyArmorSuppression = (instigatorId ?? target.CardId) > 0
             && !IsUnrevealedCovertCard(target);
-        if (applyArmorSuppression) target.HeavyArmorZeroedBySuppress = true;
+        if (applyArmorSuppression)
+        {
+            target.SuppressStrippedArmorPair ??= (target.BaseHeavyArmor, target.TemporaryHeavyArmor);
+            target.HeavyArmorZeroedBySuppress = true; // legacy restore metadata only
+            DoChangeHeavyArmor(new EffectContext { Engine = _engine, State = State, Self = State.ById(instigatorId ?? target.CardId), Controller = target.Owner },
+                null, new object?[] { target, instigatorId ?? target.CardId, 0, 3, true, null });
+        }
 
         // Suppression removes the five custom-effect keys; other keys retain
         // foreign sources. Preserve the old snapshot for the legacy restore adapter.
@@ -4610,8 +4617,8 @@ public sealed partial class CardApi
         ApplySuppressionDefensePhase(target, staticDefense, instigatorId ?? target.CardId);
         ApplySuppressionOperationCostPhase(target, staticOperationCost, instigatorId ?? target.CardId);
 
-        // Attack, defense, then operation events have completed. Armor and
-        // kredit/batch suppression remain separately pending.
+        // Attack, defense, then operation events have completed; armor ran earlier.
+        // Kredit/batch suppression retain their separately audited paths.
         target.SuppressStrippedBuffs ??= new List<KeyValuePair<(int, bool), CardBuff>>();
         foreach (var (key, saved) in beforeAttack)
         {
@@ -4629,15 +4636,6 @@ public sealed partial class CardApi
             if (!applyArmorSuppression) saved.HeavyArmor = 0;
             if (saved.Attack != 0 || saved.AttackSetValue.HasValue || saved.Defense != 0 || saved.DefenseSetValue.HasValue || saved.HeavyArmor != 0 || saved.OperationCost != 0)
                 target.SuppressStrippedBuffs.Add(new KeyValuePair<(int, bool), CardBuff>(key, saved));
-        }
-        foreach (var key in target.BuffsBySource.Keys.ToArray())
-        {
-            var buff = target.BuffsBySource[key];
-            if (!applyArmorSuppression) continue;
-            if (buff.HeavyArmor == 0) continue;
-            buff.HeavyArmor = 0;
-            if (buff.IsEmpty) RemoveBuffEntry(target, key);
-            else SynchronizeBuffTarget(target, key.SourceCardId);
         }
 
         // Do not flatten operation fields or strip its typed ledger here:
@@ -4751,6 +4749,12 @@ public sealed partial class CardApi
             buffs.Clear();
         }
 
+        if (card.SuppressStrippedArmorPair is { } pair)
+        {
+            card.BaseHeavyArmor = pair.Base;
+            card.TemporaryHeavyArmor = pair.Temporary;
+            card.SuppressStrippedArmorPair = null;
+        }
         card.HeavyArmorZeroedBySuppress = false;
         // Legacy manual restore adapter, not the native cost mutation paths.
         // Restoring non-fee legacy payloads must preserve current fee components.
@@ -4780,7 +4784,7 @@ public sealed partial class CardApi
     /// The own hook at2806 is only on the unsuppressed branch, then2842
     /// continues to the T32 query at2463. Both branches reach abilities2782;
     /// the execution-flow stack returns after that observer loop.
-    /// Armor and the enclosing action boundary remain open. EffectType feeds
+    /// Armor is routed through mode5; full native lifetime/action routing remains open. EffectType feeds
     /// observed presentation metadata and is excluded by headless scope (RULE-477).
     /// </summary>
     public void MakeVeteran(CardInstance target)
@@ -4797,7 +4801,7 @@ public sealed partial class CardApi
                 && (target.HasAttackLeft || target.AttacksThisTurn == 1);
             target.Keywords.Add(Keyword.Veteran);
             // RULE-452: native MakeVeteran i=724 writes this marker before
-            // later effects/notifications query IsVeteran. Armor/raw ability and outer action-mode stages remain open.
+            // later effects/notifications query IsVeteran; full action/lifetime remains open.
             JsonSetBool(target, "veteran", true);
             // RULE-455: native i=766 caches the upgrade object, then i=867,
             // 983 and1058 use absolute mode5 in this order. Each primitive
@@ -4808,6 +4812,7 @@ public sealed partial class CardApi
             DoChangeAttack(context, null, new object?[] { target, target.CardId, veteran.BaseAttack, 5, false, null });
             DoChangeDefense(context, null, new object?[] { target, target.CardId, veteran.Defense, 5, false, null });
             DoChangeOperationCost(context, null, new object?[] { target, target.CardId, veteran.BaseOperationCost, 5, false, false, false });
+            DoChangeHeavyArmor(context, null, new object?[] { target, target.CardId, veteran.HeavyArmor, 5, false, null });
             // Direct raw writes at1264..1516 do not call Give/Remove helpers.
             // Preserve native attackLeft while changing its derived Fury basis.
             int attackLeft = target.RemainingAttacks;
