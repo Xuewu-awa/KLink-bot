@@ -1,0 +1,222 @@
+{
+  "rule_id": "RULE-471",
+  "date": "2026-10-27",
+  "base_commit": "527d53505c0021204d249c1e61c2cd738ddffaae",
+  "status": "重置联通完整数值刷新本地函数已验证；外部诊断/所有权辅助仍受控，未改生产规则",
+  "findings": [
+    "当前内存复读RVA0x4af9a30完整本地CFG740字节，与当前安装PE/既有完整解码一致；该函数接收整个卡对象，为RULE-470明确开放边界。",
+    "离线Unicorn中使用原始call/ret，让ResetCardAttributes1566字节主体实际执行该740字节函数。此前整体跳过该调用的边界已缩小；不是调用真实进程中的游戏函数。",
+    "每场景检查5次CRC调用长度12、种子0，并以实际栈块计算zlib CRC32；数值组+0x568攻击、+0x57c临时攻击、+0x5b8防御、+0x590指挥点费用、+0x5a4临时费用的三参数/密文/CRC均核对。密文为((value+1)*1939模2^32)异或salt，参数1939/1939/1。只验证本轮供应的值，不扩张为任意加密算术完整认证。",
+    "384场景：沿用四种登记数组、四种例外数组、四种不同模板例外、两种打捞状态，再加三种salt。五组数值及校验通过，登记/例外数组头和载荷无写入；原模板/容器等仍为受控布景。",
+    "诊断路径和安全cookie等外部调用仍跳过并置RAX0，不是完整运行时异常/诊断语义。尤其+0x560不能随意断言保持零：首次模型错误断言被触发，已撤销该未被证明的假设；本轮不认证此字段最终真实语义。",
+    "DeepSeek提取39条含[rdi内存操作数字符串的指令及13个call，主agent以JSON解析和完整对象/顺序全等独立校验。worker文字对输入总数描述不一致，不用其文字计数作权威，结论使用原始解码和独立程序结果。",
+    "托管补入定义抑制例外仍为候选差异。尚需其余辅助/所有权别名/合法实例变化路径，不能把当前受控模型升级为完整重置或全局登记生命周期证明。"
+  ],
+  "verification": {
+    "rule": "RULE-471",
+    "pid": 24220,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "native_reset_body_bytes": 1566,
+    "native_refresh_bytes": 740,
+    "offline_profiles": 384,
+    "case_sha256": "b47eb727e63bfd28bc8abfa0858c76645517bc1a10fa269968879fbc2deaefea",
+    "worker_exact_memory_operand_rows": 39,
+    "worker_exact_calls": 13,
+    "crc_calls_per_profile": 5,
+    "refresh_calls_per_profile": 1,
+    "executed_callsite_profiles": 1,
+    "last_profile_calls": [
+      {
+        "rva": "0x4b079be",
+        "target": "0x144b2e080",
+        "rcx": "0x0"
+      },
+      {
+        "rva": "0x4b07a18",
+        "target": "0x144abaf80",
+        "rcx": "0x300208"
+      },
+      {
+        "rva": "0x4b07ad0",
+        "target": "0x144abaee0",
+        "rcx": "0x3000b8"
+      },
+      {
+        "rva": "0x4b07bf3",
+        "target": "0x1413c1eb0",
+        "rcx": "0x0"
+      },
+      {
+        "rva": "0x4b07c33",
+        "target": "0x1413c1eb0",
+        "rcx": "0x0"
+      },
+      {
+        "rva": "0x4b07c73",
+        "target": "0x1413c1eb0",
+        "rcx": "0x0"
+      },
+      {
+        "rva": "0x4b07cb3",
+        "target": "0x1413c1eb0",
+        "rcx": "0x0"
+      },
+      {
+        "rva": "0x4b07cf3",
+        "target": "0x1413c1eb0",
+        "rcx": "0x0"
+      },
+      {
+        "rva": "0x4b07d83",
+        "target": "0x141555f20",
+        "rcx": "0x300158"
+      },
+      {
+        "rva": "0x4b07da8",
+        "target": "0x1411afc70",
+        "rcx": "0xc"
+      },
+      {
+        "rva": "0x4b07dc8",
+        "target": "0x1411ee250",
+        "rcx": "0x300168"
+      },
+      {
+        "rva": "0x4b07e55",
+        "target": "0x1436abdc0",
+        "rcx": "0x300030"
+      },
+      {
+        "rva": "0x4b07e84",
+        "target": "0x144abae50",
+        "rcx": "0x3005d0"
+      },
+      {
+        "rva": "0x4b07e9a",
+        "target": "0x1436abdc0",
+        "rcx": "0x3005e0"
+      },
+      {
+        "rva": "0x4b07ea2",
+        "target": "0x144af9a30",
+        "rcx": "0x300000"
+      },
+      {
+        "rva": "0x4af9ab9",
+        "target": "rax",
+        "rcx": "0x500728"
+      },
+      {
+        "rva": "0x4af9b1f",
+        "target": "rax",
+        "rcx": "0x500728"
+      },
+      {
+        "rva": "0x4af9b85",
+        "target": "rax",
+        "rcx": "0x500728"
+      },
+      {
+        "rva": "0x4af9bee",
+        "target": "rax",
+        "rcx": "0x500728"
+      },
+      {
+        "rva": "0x4af9c57",
+        "target": "rax",
+        "rcx": "0x500728"
+      },
+      {
+        "rva": "0x4af9c74",
+        "target": "0x144521710",
+        "rcx": "0x500728"
+      },
+      {
+        "rva": "0x4af9c83",
+        "target": "0x1414a26b0",
+        "rcx": "0x0"
+      },
+      {
+        "rva": "0x4af9c90",
+        "target": "0x14138b470",
+        "rcx": "0x500728"
+      },
+      {
+        "rva": "0x4af9ca4",
+        "target": "0x1411d4010",
+        "rcx": "0x500708"
+      },
+      {
+        "rva": "0x4af9cc5",
+        "target": "0x1411cd340",
+        "rcx": "0x0"
+      },
+      {
+        "rva": "0x4af9cfd",
+        "target": "0x146e9f680",
+        "rcx": "0x2b992ddfa232"
+      }
+    ],
+    "scope": "Whole native reset1566B calls whole refresh740B via original call/ret under Unicorn. Five CRC calls use zlib crc32 on actual 12-byte stack blocks with length12/seed0. Refresh diagnostics helpers, security-cookie validation and other reset helpers remain controlled (skipped with RAX0). Empty owned containers/refcounts/tag lists, supplied valid template, no native diagnostics side effects. Instance usedTriggers/suppression-exception headers/payloads preserved, five numeric encrypted groups and checksums checked.",
+    "unresolved": [
+      "Other reset helper/ownership/alias/diagnostic/exception semantics remain unexecuted. No blanket proof of complete reset preserving arrays.",
+      "Managed definition-exception union remains candidate difference; legal live mutation reachability not certified.",
+      "Global registration table and physical TSet order are different storage and remain open."
+    ],
+    "game_writes": 0,
+    "real_game_function_calls": 0,
+    "fully_certified_cards": 0
+  },
+  "production_changes": false,
+  "tests": {
+    "offline_profiles": 384,
+    "csharp_tests_rerun": false,
+    "previous_round_csharp_passed": 919,
+    "reason": "仅新增审计证据，C#未修改；919为RULE-469历史验证。"
+  },
+  "unresolved": [
+    "刷新诊断、外部所有权/容器辅助及全部异常路径未执行。",
+    "实例抑制例外变化合法可达性、托管模板例外补入是否实际导致差异。",
+    "全局登记表维护、原生复制与TSet顺序，以及老兵装甲等仍开放。"
+  ],
+  "game_writes": 0,
+  "real_game_function_calls": 0,
+  "fully_certified_cards": 0,
+  "artifacts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule471-reset-numeric-refresh-live-20261027.json",
+      "bytes": 18597,
+      "sha256": "4f314eab960a4086589b9acb83a5d5f0ed064be41d5399afc57ac3429205f5bd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule470-reset-trigger-arrays-native-20261027.json",
+      "bytes": 46931,
+      "sha256": "a8600f78fd297b8c881641d4efe238b3598407240ba01957d533923f7d374e2e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule471-reset-with-refresh.py",
+      "bytes": 7943,
+      "sha256": "1998dbcff06c05acc0cda57d2a28a3e3dabe61dede4dccda3947bf5a2973cb1b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule471-reset-with-numeric-refresh-verification-20261027.json",
+      "bytes": 4019,
+      "sha256": "1d34e4d5785c865c2012ca81736483b273397fa43023c457df0280cfd59fb5e1"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule471-worker\\input.json",
+      "bytes": 14381,
+      "sha256": "220951dc2030f40a2fad250ff2e14f1d2cdffcbd6d3e88f137c777f0f16b9cb2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule471-worker\\output.json",
+      "bytes": 5578,
+      "sha256": "21f09ea01bf0f2aba8949df4e8855014ed3dcaa50f673061c38b09680c0fb42d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule471-worker\\task.txt",
+      "bytes": 377,
+      "sha256": "d6ccb3a16c3648cf08cc60e2a35b58ded05421f4f821e73965443ee764ecf917"
+    }
+  ]
+}
