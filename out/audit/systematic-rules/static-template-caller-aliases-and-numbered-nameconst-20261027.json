@@ -1,0 +1,646 @@
+{
+  "rule_id": "RULE-483",
+  "date": "2026-10-27",
+  "base_commit": "0150da6839f6171d8dd0f9796aea4428e75b3ac6",
+  "status": "静态getter已加载字节码调用点与直接别名写入清单建立；修复审计解码器NameConst编号遗漏，未修改模拟器模板缓存",
+  "findings": [
+    "当前30583个UFunction对象中18111个有脚本，共7922413字节，使用当前GetStaticCard/getStaticVeteranUpgrade两个UFunction指针的字面量筛选得到95个候选、331058字节。非完整调用图，不覆盖虚拟名调用、间接/反射/原生调用和未加载资产。",
+    "初始解码88/95完整，旧decoder对EX_NameConst假设三个uint32后两者均为0，遇Hampshire Regiment的convoy_175编号176失败。当前opcode21注册槽RVA91f7d68指向15a5720的52字节处理器，读取12字节后输出第0、第2个uint32，忽略中间display字段。",
+    "新增可提交的tools/audit_script_nameconst.py，保留comparison/display/number/end，不再拒绝有效编号；本地runtime-kismet-subset-483使用该公共审计helper。36组真实处理器机器码离线Unicorn执行，与修正decoder接收的comparison/number一致，验证游标前进12、源不变、输出只写8字节。无真实游戏函数调用。",
+    "修正后91/95完整，原88个完整AST逐项不变；Hampshire候选恢复desert_rats、convoy_175、fortification，另两个商店/收藏WidgetSetup也成功。仍4个UI候选因opcode67/TextConst subtype4未解析，不纳入PvP认证。",
+    "选择BP_CardFunctions5、UtilityFunctions2、BP_OnlineMatch1和9个card_*函数，共17个全部可完整解码。对GetStaticCard赋值、getStaticVeteranUpgrade出参、直接LetObj变量别名做固定点跟踪，未发现作用于模板直接别名Context的字段写入。结果不是对数组/字段/返回值/原生内部/跨函数传递的闭包证明。",
+    "InitializeSideEffectHolders实际先GetStaticCard再GetObjectClass/SpawnObject，CardID/cardFunction写入新持有者；CreateCardObject同样取class后写新对象。MakeVeteran、SuppressMultipleUnits和37mm_m1_aa_gun观察到的模板getter读取不等于写入；9个单卡候选多数返回或构造静态候选卡数组。",
+    "CreateCardFromLimitedCardText在模板上调用CreateCopy，数组返回/Array_Add及其他内部helper仍需跨函数验证；本轮不声称这些用途都不会修改模板。当前托管每次新投影与原生缓存同指针的状态共享差异仍开放，未根据没有直接写入而贸然改变缓存策略。",
+    "DeepSeek对原采集包17个函数机械提取58条对象写入行和32条getter行，主agent独立精确核对。原包Hampshire解码失败且rows为空，worker没有提供该函数恢复证据；该恢复由主agent完成并重新解码当前字节码验证。"
+  ],
+  "verification": {
+    "rule": "RULE-483",
+    "pid": 24220,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "census": {
+      "function_objects": 30583,
+      "scripted_functions": 18111,
+      "script_bytes": 7922413
+    },
+    "literal_pointer_candidates": 95,
+    "candidate_bytes": 331058,
+    "redecoded_complete": 91,
+    "previous_complete_unchanged": 88,
+    "improved_functions": [
+      {
+        "owner": "W_ShopDeckCard_C",
+        "name": "WidgetSetup"
+      },
+      {
+        "owner": "W_CollectionCardDeckWidget_C",
+        "name": "WidgetSetup"
+      },
+      {
+        "owner": "card_unit_hampshire_regiment_C",
+        "name": "GetChooseSpawnCards"
+      }
+    ],
+    "remaining_decode_failures": [
+      {
+        "owner": "BP_CollectionDisplayController_C",
+        "name": "CreateCardInCollection",
+        "error": "unsupported opcode 67 at 1464"
+      },
+      {
+        "owner": "W_Card2D_C",
+        "name": "ExecuteUbergraph_W_Card2D",
+        "error": "unsupported opcode 67 at 822"
+      },
+      {
+        "owner": "BP_NUI_CollectionCard_C",
+        "name": "Can IStart Dragging",
+        "error": "('unsupported TextConst subtype', 4)"
+      },
+      {
+        "owner": "W_RewardScreen_C",
+        "name": "CreateAlternativeArtItem",
+        "error": "('unsupported TextConst subtype', 4)"
+      }
+    ],
+    "nameconst_native_cases": 36,
+    "case_sha256": "af0e67c76097e8e79f06f83f70c7417476657fdea0842623fdefa1263be034f6",
+    "selected_complete_functions": 17,
+    "direct_template_alias_field_writes": 0,
+    "worker_functions": 17,
+    "worker_context_write_rows": 58,
+    "worker_getter_rows": 32,
+    "scope": "Loaded literal UFunction-pointer candidates only. Path-insensitive direct variable alias closure, Context field writes and direct receiver/argument inventory. Array/field/return/native/indirect/transitive aliases not exhaustively followed. Native NameConst handler only executed offline; no whole-card or mutable-static-template safety certification.",
+    "game_writes": 0,
+    "real_game_function_calls": 0,
+    "fully_certified_cards": 0
+  },
+  "implementation": [
+    "tools/audit_script_nameconst.py",
+    ".gitignore (allow the new audit helper)"
+  ],
+  "worker": {
+    "job_id": "20261027-172933-rule483-static-template-write-inventory-8bdc9a71",
+    "role": "mechanical extraction only",
+    "functions": 17,
+    "context_write_rows": 58,
+    "getter_rows": 32
+  },
+  "tests": {
+    "this_round_native_machine_code_cases": 36,
+    "this_round_candidate_redecodes": 91,
+    "this_round_simulator_selftest_rerun": false,
+    "previous_round_selftest_passed": 928,
+    "previous_result_is_historical": true
+  },
+  "remaining": [
+    "静态对象身份/状态共享尚未完整还原，需继续追踪CreateCopy、数组/返回值逃逸与原生内部写入。",
+    "字面量筛选不能保证穷尽；物理TSet/登记历史、模板突变、对象生命周期/GC、异步和非动作仍开放。",
+    "未解析4个UI候选保留原始字节码，不将它们当作PvP卡牌缺失，也不宣称全部UI已审计。",
+    "完整认证卡数仍为0；本轮没有修改游戏进程、注入或调用真实游戏函数。"
+  ],
+  "decoder_patch_source": "\"\"\"RULE-483: EX_NameConst preserves comparison index and serialized number.\nCurrent opcode21 handler copies dword0/dword2 into runtime FName; dword1\nis not read into its output. Other syntax remains delegated unchanged.\n\"\"\"\nfrom pathlib import Path\nimport importlib.util,sys\nsys.path.insert(0,str(Path(\"D:/Codex Workshop/KLink-bot/tools\")))\nfrom audit_script_nameconst import read_name_const\nsp=importlib.util.spec_from_file_location('base438',Path(__file__).with_name('runtime-kismet-subset-438.py'));base=importlib.util.module_from_spec(sp);sp.loader.exec_module(base)\nclass Decoder(base.Decoder):\n def expr(self):\n  if self.raw[self.at]==0x21:\n   name=read_name_const(self.raw,self.at);self.at=name.end\n   return dict(Inst='NameConst',Value=self.fname(name.comparison,name.number))\n  return super().expr()\n",
+  "direct_alias_inventory": [
+    {
+      "owner": "UtilityFunctions_C",
+      "name": "IsCardReserved",
+      "aliases": [
+        [
+          "LocalVariable",
+          "CallFunc_GetStaticCard_ReturnValue"
+        ]
+      ],
+      "direct_writes": [],
+      "receiver_calls": [],
+      "argument_uses": [
+        {
+          "statement": 1307,
+          "call": "IsValid",
+          "positions": [
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "owner": "UtilityFunctions_C",
+      "name": "CreateCardFromLimitedCardText",
+      "aliases": [
+        [
+          "LocalVariable",
+          "CallFunc_GetStaticCard_ReturnValue"
+        ]
+      ],
+      "direct_writes": [],
+      "receiver_calls": [
+        {
+          "statement": 1316,
+          "call": "CreateCopy"
+        }
+      ],
+      "argument_uses": []
+    },
+    {
+      "owner": "BP_CardFunctions_C",
+      "name": "InitializeSideEffectHolders",
+      "aliases": [
+        [
+          "LocalVariable",
+          "CallFunc_GetStaticCard_ReturnValue"
+        ],
+        [
+          "LocalVariable",
+          "CallFunc_GetStaticCard_ReturnValue_1"
+        ]
+      ],
+      "direct_writes": [],
+      "receiver_calls": [],
+      "argument_uses": [
+        {
+          "statement": 48,
+          "call": "GetObjectClass",
+          "positions": [
+            0
+          ]
+        },
+        {
+          "statement": 283,
+          "call": "GetObjectClass",
+          "positions": [
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "owner": "BP_CardFunctions_C",
+      "name": "CreateCardObject",
+      "aliases": [
+        [
+          "LocalVariable",
+          "CallFunc_GetStaticCard_ReturnValue"
+        ],
+        [
+          "LocalVariable",
+          "StaticCardRef"
+        ]
+      ],
+      "direct_writes": [],
+      "receiver_calls": [],
+      "argument_uses": [
+        {
+          "statement": 53,
+          "call": "GetObjectClass",
+          "positions": [
+            0
+          ]
+        },
+        {
+          "statement": 125,
+          "call": "GetObjectClass",
+          "positions": [
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "owner": "BP_CardFunctions_C",
+      "name": "SuppressMultipleUnits",
+      "aliases": [
+        [
+          "LocalVariable",
+          "CallFunc_GetStaticCard_ReturnValue"
+        ],
+        [
+          "LocalVariable",
+          "StaticCardRef"
+        ]
+      ],
+      "direct_writes": [],
+      "receiver_calls": [
+        {
+          "statement": 4667,
+          "call": "getAndDecryptKredit"
+        },
+        {
+          "statement": 4939,
+          "call": "getAndDecryptAttack"
+        },
+        {
+          "statement": 5007,
+          "call": "getAndDecryptDefense"
+        },
+        {
+          "statement": 5075,
+          "call": "getAndDecryptKredit"
+        }
+      ],
+      "argument_uses": []
+    },
+    {
+      "owner": "BP_CardFunctions_C",
+      "name": "MakeVeteran",
+      "aliases": [
+        [
+          "LocalVariable",
+          "CallFunc_getStaticVeteranUpgrade_staticVeteranCard"
+        ],
+        [
+          "LocalVariable",
+          "vet_card"
+        ]
+      ],
+      "direct_writes": [],
+      "receiver_calls": [
+        {
+          "statement": 826,
+          "call": "getAndDecryptAttack"
+        },
+        {
+          "statement": 942,
+          "call": "getAndDecryptDefense"
+        },
+        {
+          "statement": 1148,
+          "call": "getTotalHeavyArmor"
+        }
+      ],
+      "argument_uses": [
+        {
+          "statement": 766,
+          "call": "getStaticVeteranUpgrade",
+          "positions": [
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "owner": "BP_CardFunctions_C",
+      "name": "RemoveSmokescreen",
+      "aliases": [
+        [
+          "LocalVariable",
+          "CallFunc_GetStaticCard_ReturnValue"
+        ]
+      ],
+      "direct_writes": [],
+      "receiver_calls": [],
+      "argument_uses": []
+    },
+    {
+      "owner": "BP_OnlineMatch_C",
+      "name": "GetMatchCardsAsJsonString",
+      "aliases": [
+        [
+          "LocalVariable",
+          "CallFunc_GetStaticCard_ReturnValue"
+        ],
+        [
+          "LocalVariable",
+          "currentCardStatic"
+        ]
+      ],
+      "direct_writes": [],
+      "receiver_calls": [
+        {
+          "statement": 2375,
+          "call": "getAndDecryptKredit"
+        },
+        {
+          "statement": 4747,
+          "call": "getAndDecryptAttack"
+        },
+        {
+          "statement": 5968,
+          "call": "getAndDecryptDefense"
+        },
+        {
+          "statement": 15730,
+          "call": "getAndDecryptAttack"
+        },
+        {
+          "statement": 16313,
+          "call": "getAndDecryptDefense"
+        },
+        {
+          "statement": 28690,
+          "call": "GetAllChildrenGameplayTagsAsStrings"
+        },
+        {
+          "statement": 29250,
+          "call": "GetAllChildrenGameplayTagsAsStrings"
+        },
+        {
+          "statement": 29516,
+          "call": "GetAllChildrenGameplayTagsAsStrings"
+        },
+        {
+          "statement": 29819,
+          "call": "getHasGameplayTag"
+        }
+      ],
+      "argument_uses": []
+    },
+    {
+      "owner": "card_unit_tropic_lightning_C",
+      "name": "GetChooseSpawnCards",
+      "aliases": [
+        [
+          "LocalVariable",
+          "CallFunc_GetStaticCard_ReturnValue"
+        ],
+        [
+          "LocalVariable",
+          "CallFunc_GetStaticCard_ReturnValue_1"
+        ],
+        [
+          "LocalVariable",
+          "CallFunc_GetStaticCard_ReturnValue_2"
+        ]
+      ],
+      "direct_writes": [],
+      "receiver_calls": [],
+      "argument_uses": []
+    },
+    {
+      "owner": "card_unit_41st_infantry_regiment_C",
+      "name": "GetChooseSpawnCards",
+      "aliases": [
+        [
+          "LocalVariable",
+          "CallFunc_GetStaticCard_ReturnValue"
+        ],
+        [
+          "LocalVariable",
+          "CallFunc_GetStaticCard_ReturnValue_1"
+        ],
+        [
+          "LocalVariable",
+          "CallFunc_GetStaticCard_ReturnValue_2"
+        ]
+      ],
+      "direct_writes": [],
+      "receiver_calls": [],
+      "argument_uses": []
+    },
+    {
+      "owner": "card_unit_hampshire_regiment_C",
+      "name": "GetChooseSpawnCards",
+      "aliases": [
+        [
+          "LocalVariable",
+          "CallFunc_GetStaticCard_ReturnValue"
+        ],
+        [
+          "LocalVariable",
+          "CallFunc_GetStaticCard_ReturnValue_1"
+        ],
+        [
+          "LocalVariable",
+          "CallFunc_GetStaticCard_ReturnValue_2"
+        ]
+      ],
+      "direct_writes": [],
+      "receiver_calls": [],
+      "argument_uses": []
+    },
+    {
+      "owner": "card_unit_740th_rifle_regiment_C",
+      "name": "GetChooseSpawnCards",
+      "aliases": [
+        [
+          "LocalVariable",
+          "CallFunc_GetStaticCard_ReturnValue"
+        ],
+        [
+          "LocalVariable",
+          "CallFunc_GetStaticCard_ReturnValue_1"
+        ],
+        [
+          "LocalVariable",
+          "CallFunc_GetStaticCard_ReturnValue_2"
+        ]
+      ],
+      "direct_writes": [],
+      "receiver_calls": [],
+      "argument_uses": []
+    },
+    {
+      "owner": "card_unit_151st_infantry_regiment_C",
+      "name": "GetChooseSpawnCards",
+      "aliases": [
+        [
+          "LocalVariable",
+          "CallFunc_GetStaticCard_ReturnValue"
+        ],
+        [
+          "LocalVariable",
+          "CallFunc_GetStaticCard_ReturnValue_1"
+        ],
+        [
+          "LocalVariable",
+          "CallFunc_GetStaticCard_ReturnValue_2"
+        ]
+      ],
+      "direct_writes": [],
+      "receiver_calls": [],
+      "argument_uses": []
+    },
+    {
+      "owner": "card_unit_92_infantry_regiment_C",
+      "name": "GetChooseSpawnCards",
+      "aliases": [
+        [
+          "LocalVariable",
+          "CallFunc_GetStaticCard_ReturnValue"
+        ],
+        [
+          "LocalVariable",
+          "CallFunc_GetStaticCard_ReturnValue_1"
+        ],
+        [
+          "LocalVariable",
+          "CallFunc_GetStaticCard_ReturnValue_2"
+        ]
+      ],
+      "direct_writes": [],
+      "receiver_calls": [],
+      "argument_uses": []
+    },
+    {
+      "owner": "card_event_ingenuity_C",
+      "name": "GetChooseSpawnCards",
+      "aliases": [
+        [
+          "LocalVariable",
+          "CallFunc_GetStaticCard_ReturnValue"
+        ],
+        [
+          "LocalVariable",
+          "CallFunc_GetStaticCard_ReturnValue_1"
+        ]
+      ],
+      "direct_writes": [],
+      "receiver_calls": [],
+      "argument_uses": [
+        {
+          "statement": 835,
+          "call": "Array_Add",
+          "positions": [
+            1
+          ]
+        },
+        {
+          "statement": 936,
+          "call": "Array_Add",
+          "positions": [
+            1
+          ]
+        }
+      ]
+    },
+    {
+      "owner": "card_event_bpf_C",
+      "name": "GetChooseSpawnCards",
+      "aliases": [
+        [
+          "LocalVariable",
+          "CallFunc_GetStaticCard_ReturnValue"
+        ],
+        [
+          "LocalVariable",
+          "CallFunc_GetStaticCard_ReturnValue_1"
+        ],
+        [
+          "LocalVariable",
+          "CallFunc_GetStaticCard_ReturnValue_2"
+        ]
+      ],
+      "direct_writes": [],
+      "receiver_calls": [],
+      "argument_uses": []
+    },
+    {
+      "owner": "card_unit_37mm_m1_aa_gun_C",
+      "name": "ExecuteUbergraph_card_unit_37mm_m1_aa_gun",
+      "aliases": [
+        [
+          "LocalVariable",
+          "CallFunc_GetStaticCard_ReturnValue"
+        ],
+        [
+          "LocalVariable",
+          "CallFunc_getStaticVeteranUpgrade_staticVeteranCard"
+        ]
+      ],
+      "direct_writes": [],
+      "receiver_calls": [
+        {
+          "statement": 609,
+          "call": "getAndDecryptAttack"
+        },
+        {
+          "statement": 733,
+          "call": "getAndDecryptAttack"
+        }
+      ],
+      "argument_uses": [
+        {
+          "statement": 568,
+          "call": "getStaticVeteranUpgrade",
+          "positions": [
+            0
+          ]
+        }
+      ]
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule483-static-getters.py",
+      "bytes": 2379,
+      "sha256": "994a09eafbe1aaa93adb05a37f8fc14c906593f706e7008d75ae8bfb3136857d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule483-static-template-getters-20261027.json",
+      "bytes": 4488989,
+      "sha256": "e6dcd37ac61c53be180215422d52e3f0a5fc57b7a7f90cf7566f396aca3d69f1"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule483-static-callers.py",
+      "bytes": 2813,
+      "sha256": "3e60a6e94b39ad59f751ba19d8840f2a8946fca08d5411c142b71eba3b275a6e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule483-static-template-callers-20261027.json",
+      "bytes": 12716203,
+      "sha256": "03a9b4bd6d964eff9dfd12f03d59e583ce15ab881f095a04220983b4bd80c648"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule483-static-callers-corrected.py",
+      "bytes": 2833,
+      "sha256": "9641abfd63c8e13d34213b694067074deda82de9997ca9e0481e24cecb45f9d6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule483-static-template-callers-corrected-20261027.json",
+      "bytes": 12851484,
+      "sha256": "732c8bbcb50bce625b117e3347382dee1ee69f6d367bd5998521feaf67b173d1"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule483-nameconst-handler.py",
+      "bytes": 2149,
+      "sha256": "dabcc4cd056eddc513d7846876f603b21fc489ffb1b79a0fe81374255ac6ef0c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule483-nameconst-handler-20261027.json",
+      "bytes": 2515,
+      "sha256": "080c14d9b1671aac8d1ce936ca3037a889262dac41d75559246d9522dc887bb4"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-483.py",
+      "bytes": 824,
+      "sha256": "cb5db92ddaf6b3915fef6bc7c55ec89778d887e285577b6557829ff3554fbcac"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule483-static-template.py",
+      "bytes": 6116,
+      "sha256": "2cdad90d1ffd13e23f16885ceb1d760b1cf1b582d80f00ee01257271e143ef82"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule483-static-template-verification-20261027.json",
+      "bytes": 2062,
+      "sha256": "c3e88db08e79278c845ee11859a929b99aebec20edd62161fe2c306f9fce9832"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule483-static-alias-model.py",
+      "bytes": 1888,
+      "sha256": "c106188d35e2b9586ff9edb74422d7fd8317b44515e3d489e6b3c69a4e1e70b8"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule483-static-alias-inventory-20261027.json",
+      "bytes": 9617,
+      "sha256": "84a9cfa48dc573bd0c281391a3179d9450da0bf9ca058fddd90527246251974b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule483-worker\\input.json",
+      "bytes": 854696,
+      "sha256": "e3101ffb5cb4f5b0d9cd3549298d4fa3f848fe1fa49fdb317980c37a3a5f5887"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule483-worker\\output.json",
+      "bytes": 54856,
+      "sha256": "a2a57722ef0c2227df4054c04f2da4c5729343c39972af049737c1ade4b6a373"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule483-worker\\task.txt",
+      "bytes": 629,
+      "sha256": "258b8a2066fa5bec1174150238843c171879023c790c6708635fd70e40d68c54"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\audit_script_nameconst.py",
+      "bytes": 942,
+      "sha256": "7d5ea8dfed1e428e5ae73e3b65a7ef77a60343ca3218a8a34cbf12a053a867f3"
+    }
+  ]
+}
