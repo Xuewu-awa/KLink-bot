@@ -870,5 +870,6 @@
   ],
   "game_writes": 0,
   "real_game_function_calls": 0,
-  "fully_certified_cards": 0
+  "fully_certified_cards": 0,
+  "later_copy_clarification_RULE496": "RULE496以真实虚复制替换当前所选InitProperties中此前跳过的88次调用：28次对象引用复制，60次UberGraphFrame结构体复制。当前Frame结构体flags8001、无字段且无父结构，真实结构迭代路径保持目标，不是源指针memcpy。只消除此InitProperties阶段的skip；类定制默认hook的其他非POD复制仍跳过，当前64组合中计888次，未认证其真实语义/所有权。"
 }

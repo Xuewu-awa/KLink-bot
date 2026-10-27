@@ -1,0 +1,353 @@
+{
+  "rule_id": "RULE-496",
+  "date": "2026-10-27",
+  "base_commit": "1889a5e37a03e623291778ef2fd1a07261e1872f",
+  "status": "所选InitProperties的对象引用及Frame虚复制已接入；定制默认hook其他非POD复制仍开放",
+  "findings": [
+    "当前只读核对22个postconstruct非POD属性槽：15个UberGraphFrame到1581e30，7个对象引用到1555580。另采集CopyScriptStruct14658d0、迭代器1420680、父结构getter1401840，共5体710B，与安装PE/内存一致。368B结构复制的POD分支仍有向memcpy尾跳，9B结构包装尾跳已追入；并非所有通用分支均执行。",
+    "对象引用109B体按r9d数量逐8字节复制原始引用，当前写屏障开关00。32隔离案例覆盖count -1/0/1/3、null/非null混合引用、00/A5目标、独立/精确自身别名与屏障0/1；逐8字节写及顺序通过。开启屏障时14a7f00为供给回调，不据此证明真实GC或所有权。此路径不克隆被引用对象。",
+    "当前UberGraphFrame属性指向同一8字节、对齐8的结构定义，flags8001，没有native-copy位1000、POD位2000、字段或父结构。实际9B包装→368B CopyScriptStruct→219B迭代器→5B父getter执行后无字段可复制，目标数据不写入。24隔离案例用不同源/目标值、count0/1/3、独立/精确自身别名确认保持目标；不得将其一概简化成8字节memcpy。",
+    "64新存储清零/构造/实际InitProperties/class默认注入组合再通过。此前88个InitProperties虚复制skip全部替换为实际槽分派与代码执行，28对象引用、60Frame调用；Pincer、CurrentTarget及usedTriggers结果保持。非POD不等于此调用必有目标数据写入。",
+    "RULE496以真实虚复制替换当前所选InitProperties中此前跳过的88次调用：28次对象引用复制，60次UberGraphFrame结构体复制。当前Frame结构体flags8001、无字段且无父结构，真实结构迭代路径保持目标，不是源指针memcpy。只消除此InitProperties阶段的skip；类定制默认hook的其他非POD复制仍跳过，当前64组合中计888次，未认证其真实语义/所有权。",
+    "仍供给owner getter、mutex/堆/identity取整、空文本/JSON等已有边界；完整finalizer/TLS/登记/复用、通用结构复制其它分支、真实写屏障/GC与所有权仍未认证。Frame字段属于引擎对象初始化证据，本轮没有扩展到UI、战役或教程逻辑。",
+    "DeepSeek整理2组22属性及5体7调用/31分支。其properties误用指针键对象而非要求的数组，原输出保留；主agent检查键顺序/唯一性后另存规范化数组，逐字段比对原始22条及全部指令精确一致。未直接接受不合规范结构。",
+    "本轮120案例通过，无新的已证规则差异，未修改产品规则、未重跑C#；929/929仅RULE485历史结果，完整认证卡数仍0。"
+  ],
+  "verification": {
+    "rule": "RULE-496",
+    "pid": 24220,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "captured_native_bytes": 710,
+    "composed_cases": 64,
+    "object_copy_cases": 32,
+    "frame_copy_cases": 24,
+    "actual_init_nonpod_calls": 88,
+    "actual_object_reference_calls": 28,
+    "actual_frame_copy_calls": 60,
+    "remaining_class_hook_nonpod_skips": 888,
+    "composed_case_sha256": "03fb9e5c40c17403277432485523b1009b5a82e50dfa2b92fa93344ff9cc56ed",
+    "isolated_case_sha256": "2e1c1ce6ae6e6cec6eb6b20725357ca847446bd06f37cf84dbc5887e028db6a1",
+    "scope": "Actual virtual copying for all88 InitProperties non-POD calls on selected16 classes replaces skip: object pointers109B and struct wrapper9B+CopyScriptStruct368B+iterator219B+super getter5B. Actual observed frame struct flags8001, size/alignment8, null child/super => no destination writes. Isolated barrier helper supplied; observed barrierflag00. Earlier construction/owner/heap/mutex/quantization boundaries remain; class custom-hook non-POD copy still skipped. No general struct-copy/GC/ownership/full SpawnObject certification.",
+    "game_writes": 0,
+    "real_game_function_calls": 0,
+    "fully_certified_cards": 0
+  },
+  "total_cases": 120,
+  "property_targets": [
+    {
+      "target_rva": "0x1581e30",
+      "properties": [
+        {
+          "class_name": "card_unit_2nd_para_c_C",
+          "name": "UberGraphFrame",
+          "offset": 1656,
+          "element_size": 8,
+          "array_dim": 1
+        },
+        {
+          "class_name": "card_unit_57mm_m1943_C",
+          "name": "UberGraphFrame",
+          "offset": 1656,
+          "element_size": 8,
+          "array_dim": 1
+        },
+        {
+          "class_name": "card_unit_54_jager_regiment_C",
+          "name": "UberGraphFrame",
+          "offset": 1656,
+          "element_size": 8,
+          "array_dim": 1
+        },
+        {
+          "class_name": "card_unit_5_panzergrenadier_C",
+          "name": "UberGraphFrame",
+          "offset": 1656,
+          "element_size": 8,
+          "array_dim": 1
+        },
+        {
+          "class_name": "card_unit_101_infantry_regiment_C",
+          "name": "UberGraphFrame",
+          "offset": 1656,
+          "element_size": 8,
+          "array_dim": 1
+        },
+        {
+          "class_name": "card_unit_irish_guards_C",
+          "name": "UberGraphFrame",
+          "offset": 1656,
+          "element_size": 8,
+          "array_dim": 1
+        },
+        {
+          "class_name": "card_unit_kings_own_scottish_C",
+          "name": "UberGraphFrame",
+          "offset": 1656,
+          "element_size": 8,
+          "array_dim": 1
+        },
+        {
+          "class_name": "card_unit_128th_rifles_C",
+          "name": "UberGraphFrame",
+          "offset": 1656,
+          "element_size": 8,
+          "array_dim": 1
+        },
+        {
+          "class_name": "card_unit_222th_guard_rifles_C",
+          "name": "UberGraphFrame",
+          "offset": 1656,
+          "element_size": 8,
+          "array_dim": 1
+        },
+        {
+          "class_name": "card_unit_cruiser_mk_iii_C",
+          "name": "UberGraphFrame",
+          "offset": 1656,
+          "element_size": 8,
+          "array_dim": 1
+        },
+        {
+          "class_name": "card_unit_t_28_pincer_C",
+          "name": "UberGraphFrame",
+          "offset": 1656,
+          "element_size": 8,
+          "array_dim": 1
+        },
+        {
+          "class_name": "card_unit_stug_iii_g_schurzen_C",
+          "name": "UberGraphFrame",
+          "offset": 1656,
+          "element_size": 8,
+          "array_dim": 1
+        },
+        {
+          "class_name": "card_unit_panzer_iii_g_desert_C",
+          "name": "UberGraphFrame",
+          "offset": 1656,
+          "element_size": 8,
+          "array_dim": 1
+        },
+        {
+          "class_name": "card_unit_tupolev_sb_2_C",
+          "name": "UberGraphFrame",
+          "offset": 1656,
+          "element_size": 8,
+          "array_dim": 1
+        },
+        {
+          "class_name": "card_unit_me_bf_109_brothers_C",
+          "name": "UberGraphFrame",
+          "offset": 1656,
+          "element_size": 8,
+          "array_dim": 1
+        }
+      ]
+    },
+    {
+      "target_rva": "0x1555580",
+      "properties": [
+        {
+          "class_name": "card_unit_5_panzergrenadier_C",
+          "name": "tempCard",
+          "offset": 1672,
+          "element_size": 8,
+          "array_dim": 1
+        },
+        {
+          "class_name": "card_unit_5_panzergrenadier_C",
+          "name": "survivor",
+          "offset": 1680,
+          "element_size": 8,
+          "array_dim": 1
+        },
+        {
+          "class_name": "card_unit_101_infantry_regiment_C",
+          "name": "tempCard",
+          "offset": 1672,
+          "element_size": 8,
+          "array_dim": 1
+        },
+        {
+          "class_name": "card_unit_irish_guards_C",
+          "name": "tempCard",
+          "offset": 1664,
+          "element_size": 8,
+          "array_dim": 1
+        },
+        {
+          "class_name": "card_unit_cruiser_mk_iii_C",
+          "name": "tempCard",
+          "offset": 1664,
+          "element_size": 8,
+          "array_dim": 1
+        },
+        {
+          "class_name": "card_unit_me_bf_109_brothers_C",
+          "name": "killer",
+          "offset": 1672,
+          "element_size": 8,
+          "array_dim": 1
+        },
+        {
+          "class_name": "card_unit_me_bf_109_brothers_C",
+          "name": "Card Destroyed",
+          "offset": 1680,
+          "element_size": 8,
+          "array_dim": 1
+        }
+      ]
+    }
+  ],
+  "frame_struct_metadata": [
+    {
+      "address": "0x7ff49575ea80",
+      "header_hex": "f0dd2e11f77f0000410000001629000040282895f47f0000f29400000000000008174a95f47f000000000000000000009076578fca0100000000000000000000000000000000000000000000000000000000000000000000080000000800010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000180000001000000a076578fca010000",
+      "flags": "0x8001",
+      "size": 8,
+      "alignment": 8,
+      "ops": "0x1ca8f5776a0",
+      "vtable": "0x7ff7112eddf0",
+      "super_slot": "0x7ff7112ee0b0",
+      "super_target": "0x7ff70b621840",
+      "super_target_rva": "0x1401840"
+    }
+  ],
+  "worker_job": "20261027-234552-rule496-property-copy-targets-36bbfb55",
+  "worker_schema_correction": "properties object-map rejected as requested schema; original kept, separately normalized after exact key/order/uniqueness and field checks.",
+  "evidence": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule496-property-copy-targets.py",
+      "bytes": 2715,
+      "sha256": "8c48363ef777fdc935e65fd57394e92c273536cee23f3f555b1703a0c43fa9ba"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule496-property-copies.py",
+      "bytes": 6176,
+      "sha256": "21ce2d0ce03827faa727e1bb2a45ddc08316b27e24e21bf930ed8e787fa21ce1"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule496-property-copy-verification-20261027.json",
+      "bytes": 1535651,
+      "sha256": "3ebea55deeee822963c3052032c694a9532102759fe5377b430862327cfb45a1"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule496-worker\\input.json",
+      "bytes": 54922,
+      "sha256": "f03788e4628e4967a1395e51dffc5af6430b16847a43369805dc7f324a50b3fe"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule496-worker\\output.json",
+      "bytes": 11100,
+      "sha256": "3eb894b2c8c79044b020b61e017297b1f664b4549adfd66698bb00e19918e904"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule496-worker\\normalized-output.json",
+      "bytes": 10726,
+      "sha256": "bb97e5c060539496329bf543785b30af7c868f0d52b41108806346f49f547bd2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule496-worker\\task.txt",
+      "bytes": 673,
+      "sha256": "6d2be168e6639fc784b2d326ee1d22332db8b6a6ea20343c2d97aa3c96224649"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule493-card-construction.py",
+      "bytes": 12795,
+      "sha256": "e8ea54e89245394dc65ae0d9a61fd19fee83600ffe978a56735ef4c1d0abac1e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule494-storage-zeroing.py",
+      "bytes": 5808,
+      "sha256": "e9e6a3da8edfcb0ca804204b9f1e2eebc2d0bfd9d6a209bc7ef6b5c51f3a7ef2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule495-init-properties-composition.py",
+      "bytes": 8852,
+      "sha256": "1ea05c145079ab8114d60201ab91a8ced5cf86ada99f71676d7897cef0707a3f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule496-property-copy-targets-native-20261027.json",
+      "bytes": 54924,
+      "sha256": "fb454d588f011ac04784b5fe9529d0ef23ccecd642d0d0cb1151a850396c51b2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule495-property-init-helper-native-20261027.json",
+      "bytes": 12014,
+      "sha256": "250b542c0d22a219fe63720d6de6323e5aa55a8c1d88cfc6f457130c73bfbb39"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule441-post-initialization-native-20261026.json",
+      "bytes": 119087,
+      "sha256": "28ddd6c87ded98abc3c7fa5a3aa2e5dd6a29acf89f3f4a0d654a7b4e6b9e7d7b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule487-construction-property-chains-20261027.json",
+      "bytes": 158433,
+      "sha256": "8accaedd6340c02acf2729e4dfe4f14b34d35c9730c5cce856f281fc25f4f068"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule489-custom-default-lists-20261027.json",
+      "bytes": 239953,
+      "sha256": "404be092c272bd063b10fff0205f557d1875b4a65f2beb244fcb1b4abbfcfe80"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule489-card-constructor-native-20261027.json",
+      "bytes": 35165,
+      "sha256": "86ed1b705e81d7a3a429fec18d895cf65225f65b047331d1976120277501c581"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule489-parent-and-initializer-native-20261027.json",
+      "bytes": 7867,
+      "sha256": "afc7c644cedbcab6e2149e2fcb831816e63c6b327606e9c38312279e347c8ce9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule489-object-constructor-native-20261027.json",
+      "bytes": 3817,
+      "sha256": "4b861db7fb2b40a70d176d6544e9bf5f7c29b3531dd981dbb09814bfa740b969"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule489-class-postcopy-hooks-20261027.json",
+      "bytes": 24714,
+      "sha256": "867cecd1fc0812dd728b3707da23ff180f7d32397bea7c9e68f5faa35d558038"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule489-custom-property-copy-native-20261027.json",
+      "bytes": 13510,
+      "sha256": "aaca45e7e76ef1d14fd1407aed9db972b08baeb4b00b8b26284bf02586bf71dd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule490-custom-array-copy-native-20261027.json",
+      "bytes": 45361,
+      "sha256": "78ab967874fb99ec24c2e0c8493336e69115ce8403929617b5a3307b8ad90d43"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule490-array-property-metadata-20261027.json",
+      "bytes": 6116,
+      "sha256": "0fe5f91d2482bcf19367826ff3337d2a372062a8bc824a6d1e07869df89a161e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule491-array-resize-native-20261027.json",
+      "bytes": 36179,
+      "sha256": "f69f0efea497052257b4baafb7b71e8baf8080cf34121d28ead41f34b0dfb6b0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule492-array-allocation-native-20261027.json",
+      "bytes": 22204,
+      "sha256": "2028d21c8725818af9314a1c296f437f3632146a883979cce7092e88bb1be389"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule494-object-storage-native-20261027.json",
+      "bytes": 126006,
+      "sha256": "fc388546dc9209a3b0af62cc2759dc71019d6d0c78775eaf77145d07c92a796b"
+    }
+  ],
+  "remaining": [
+    "定制默认hook中的非POD复制：本64组合仍跳过888次，需按具体属性类型继续核对。",
+    "通用结构复制的native-copy/POD/有字段分支及真实写屏障/GC、引用生命周期。",
+    "完整finalizer/TLS/对象登记及SpawnObject到CopyData最终规则映射。"
+  ],
+  "game_writes": 0,
+  "real_game_function_calls": 0,
+  "fully_certified_cards": 0
+}
