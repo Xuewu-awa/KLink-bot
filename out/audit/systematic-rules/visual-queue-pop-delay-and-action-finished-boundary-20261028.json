@@ -1,0 +1,4152 @@
+{
+  "rule_id": "RULE-504",
+  "date": "2026-10-28",
+  "base_commit": "06d0c0ece474cf08051cab373bc86f3c832e4221",
+  "status": "视觉队首取出/延迟/耗尽分支受控验证；下一动作启动和效果栏传递调用未认证",
+  "findings": [
+    "只读复读当前客户端。45003B VisualController ubergraph整体解码仍在30798 opcode2b失败，未宣称完整语法解码；仅15/65/604/619/634/792/815/848/1020定点窗口解码。另完整解码ExecuteSubAction6502B、ActionFinished280B及ExecuteEffectbarChanges3136B；最后者本轮仅保留静态定义，未执行其函数体。",
+    "15请求DelayUntilNextTick，latent恢复入口65。65先调用ExecuteEffectbarChanges，然后79/138/172检查tmpVisualActions长度；空则604 ActionFinished。非空293将索引0复制到tmpCurrentVisualAction，326移除原队首，再372/432按大小写敏感字符串比较_SkipVisual；同名跳过分派并走delayAfter，否则634检查delayBefore，正值724 Delay后恢复792清零计数，815调用ExecuteSubAction。",
+    "普通文字动作由实际ExecuteSubAction路由调用文字消费者并发出SubActionResolved；本轮文字消费者/完成回调为记录边界，测试驱动显式转446而非真实引擎重入。后延迟正值记录Delay并模拟恢复1020；非正计数+1，>20清零转15请求下一帧。192场景均在声明供给边界下完成，覆盖0/1/3项、跳过标记/文字、前后延迟有无、初始计数0/20、待启动动作有无与观战真假。",
+    "ActionFinished的actionQueue非空107调用StartVisualActionQueue并直接返回；空则126置actionQueueIsRunning=false。137处仅isSpectate=true才173 ReplayNextMatchActionWithDelay(0.20000000298023224)、218 DidStuff和254计数清零。非观战空队列不执行254，不能断言所有完成路径均清零。观战分支只是当前客户端控制流边界测试，不使用旧回放作规则权威，亦不纳入无头PvP机制恢复范围。",
+    "大小写附加例：外层_skipvisual不等于_SkipVisual，进入815实际分派器；内层RightChop后SkipVisual使用不区分大小写匹配，走完成回调而非未知类型诊断。这是两级匹配语义差异，不证明任意大小写是合法线上协议。",
+    "ExecuteEffectbarChanges在每次65进入时先被调用，包括队列空时；当前捕获函数先读取/移除currentEffectBarSnapshot.cards[0]。本轮记录该调用但未执行，无法用空视觉队列推定其无调用或原生数组越界语义；非空棋盘、效果栏操作、委托/下一队列启动、真实latent时序/重入均保持开放。数值哨兵仅本地直接写检查，不能推出整链无PvP副作用。",
+    "DeepSeek提取ActionFinished两个实例写位置和五个调用位置，主agent按原AST独立递归重算精确核对。本轮证据未要求修改无头产品规则，仅更新审计材料；C#未重跑，历史929/929不是本轮测试。完整认证卡数0，游戏写入/注入/真实函数调用0。"
+  ],
+  "verification": {
+    "rule": "RULE-504",
+    "queue_scenarios": 192,
+    "case_sensitive_marker_checks": 1,
+    "marker_events": [
+      {
+        "call": "ExecuteEffectbarChanges",
+        "queue_length": 1
+      },
+      {
+        "call": "ExecuteSubAction",
+        "args": [
+          {
+            "Name": "_skipvisual"
+          }
+        ]
+      },
+      {
+        "call": "SubActionResolved",
+        "args": []
+      }
+    ],
+    "scope": "Actual windows15/65/604/619/634/792/815/848/1020, actual ExecuteSubAction dispatcher and ActionFinished AST. Effect-bar snapshot helper, handlers, diagnostics, next-action start and spectator callbacks supplied/recorded. Float cast4 supplied. Native Delay/DelayUntilNextTick recorded; a bounded driver explicitly resumes latent entries or completion446, not native engine timing/reentrancy certification. Empty/1/3 queues, marker/nonmarker, before/after delay, threshold20, pending action queue and spectate combinations. Sentinel invariance only local direct-write check. Full ubergraph remains partial opcode2b30798; no blanket visual/PvP purity claim.",
+    "game_writes": 0,
+    "real_game_function_calls": 0,
+    "fully_certified_cards": 0,
+    "case_sha256": "980cf3870f2dc3641eb0109d82f7a9089d76cf00c92d7883cedd01d8d91dde71",
+    "profile_summaries": [
+      {
+        "size": 0,
+        "skip": false,
+        "delay_before": 0.0,
+        "delay_after": 0.0,
+        "initial_loops": 0,
+        "has_next": false,
+        "spectate": false,
+        "final_loops": 0,
+        "phases": 1,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 1,
+          "ActionFinished": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 0,
+        "skip": false,
+        "delay_before": 0.0,
+        "delay_after": 0.0,
+        "initial_loops": 0,
+        "has_next": false,
+        "spectate": true,
+        "final_loops": 0,
+        "phases": 1,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 1,
+          "ActionFinished": 1,
+          "ReplayNextMatchActionWithDelay": 1,
+          "DidStuff": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 0,
+        "skip": false,
+        "delay_before": 0.0,
+        "delay_after": 0.0,
+        "initial_loops": 0,
+        "has_next": true,
+        "spectate": false,
+        "final_loops": 0,
+        "phases": 1,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 1,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 0,
+        "skip": false,
+        "delay_before": 0.0,
+        "delay_after": 0.0,
+        "initial_loops": 0,
+        "has_next": true,
+        "spectate": true,
+        "final_loops": 0,
+        "phases": 1,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 1,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 0,
+        "skip": false,
+        "delay_before": 0.0,
+        "delay_after": 0.0,
+        "initial_loops": 20,
+        "has_next": false,
+        "spectate": false,
+        "final_loops": 20,
+        "phases": 1,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 1,
+          "ActionFinished": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 0,
+        "skip": false,
+        "delay_before": 0.0,
+        "delay_after": 0.0,
+        "initial_loops": 20,
+        "has_next": false,
+        "spectate": true,
+        "final_loops": 0,
+        "phases": 1,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 1,
+          "ActionFinished": 1,
+          "ReplayNextMatchActionWithDelay": 1,
+          "DidStuff": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 0,
+        "skip": false,
+        "delay_before": 0.0,
+        "delay_after": 0.0,
+        "initial_loops": 20,
+        "has_next": true,
+        "spectate": false,
+        "final_loops": 20,
+        "phases": 1,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 1,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 0,
+        "skip": false,
+        "delay_before": 0.0,
+        "delay_after": 0.0,
+        "initial_loops": 20,
+        "has_next": true,
+        "spectate": true,
+        "final_loops": 20,
+        "phases": 1,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 1,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 0,
+        "skip": false,
+        "delay_before": 0.0,
+        "delay_after": 0.5,
+        "initial_loops": 0,
+        "has_next": false,
+        "spectate": false,
+        "final_loops": 0,
+        "phases": 1,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 1,
+          "ActionFinished": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 0,
+        "skip": false,
+        "delay_before": 0.0,
+        "delay_after": 0.5,
+        "initial_loops": 0,
+        "has_next": false,
+        "spectate": true,
+        "final_loops": 0,
+        "phases": 1,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 1,
+          "ActionFinished": 1,
+          "ReplayNextMatchActionWithDelay": 1,
+          "DidStuff": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 0,
+        "skip": false,
+        "delay_before": 0.0,
+        "delay_after": 0.5,
+        "initial_loops": 0,
+        "has_next": true,
+        "spectate": false,
+        "final_loops": 0,
+        "phases": 1,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 1,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 0,
+        "skip": false,
+        "delay_before": 0.0,
+        "delay_after": 0.5,
+        "initial_loops": 0,
+        "has_next": true,
+        "spectate": true,
+        "final_loops": 0,
+        "phases": 1,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 1,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 0,
+        "skip": false,
+        "delay_before": 0.0,
+        "delay_after": 0.5,
+        "initial_loops": 20,
+        "has_next": false,
+        "spectate": false,
+        "final_loops": 20,
+        "phases": 1,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 1,
+          "ActionFinished": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 0,
+        "skip": false,
+        "delay_before": 0.0,
+        "delay_after": 0.5,
+        "initial_loops": 20,
+        "has_next": false,
+        "spectate": true,
+        "final_loops": 0,
+        "phases": 1,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 1,
+          "ActionFinished": 1,
+          "ReplayNextMatchActionWithDelay": 1,
+          "DidStuff": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 0,
+        "skip": false,
+        "delay_before": 0.0,
+        "delay_after": 0.5,
+        "initial_loops": 20,
+        "has_next": true,
+        "spectate": false,
+        "final_loops": 20,
+        "phases": 1,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 1,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 0,
+        "skip": false,
+        "delay_before": 0.0,
+        "delay_after": 0.5,
+        "initial_loops": 20,
+        "has_next": true,
+        "spectate": true,
+        "final_loops": 20,
+        "phases": 1,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 1,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 0,
+        "skip": false,
+        "delay_before": 0.25,
+        "delay_after": 0.0,
+        "initial_loops": 0,
+        "has_next": false,
+        "spectate": false,
+        "final_loops": 0,
+        "phases": 1,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 1,
+          "ActionFinished": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 0,
+        "skip": false,
+        "delay_before": 0.25,
+        "delay_after": 0.0,
+        "initial_loops": 0,
+        "has_next": false,
+        "spectate": true,
+        "final_loops": 0,
+        "phases": 1,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 1,
+          "ActionFinished": 1,
+          "ReplayNextMatchActionWithDelay": 1,
+          "DidStuff": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 0,
+        "skip": false,
+        "delay_before": 0.25,
+        "delay_after": 0.0,
+        "initial_loops": 0,
+        "has_next": true,
+        "spectate": false,
+        "final_loops": 0,
+        "phases": 1,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 1,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 0,
+        "skip": false,
+        "delay_before": 0.25,
+        "delay_after": 0.0,
+        "initial_loops": 0,
+        "has_next": true,
+        "spectate": true,
+        "final_loops": 0,
+        "phases": 1,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 1,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 0,
+        "skip": false,
+        "delay_before": 0.25,
+        "delay_after": 0.0,
+        "initial_loops": 20,
+        "has_next": false,
+        "spectate": false,
+        "final_loops": 20,
+        "phases": 1,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 1,
+          "ActionFinished": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 0,
+        "skip": false,
+        "delay_before": 0.25,
+        "delay_after": 0.0,
+        "initial_loops": 20,
+        "has_next": false,
+        "spectate": true,
+        "final_loops": 0,
+        "phases": 1,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 1,
+          "ActionFinished": 1,
+          "ReplayNextMatchActionWithDelay": 1,
+          "DidStuff": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 0,
+        "skip": false,
+        "delay_before": 0.25,
+        "delay_after": 0.0,
+        "initial_loops": 20,
+        "has_next": true,
+        "spectate": false,
+        "final_loops": 20,
+        "phases": 1,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 1,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 0,
+        "skip": false,
+        "delay_before": 0.25,
+        "delay_after": 0.0,
+        "initial_loops": 20,
+        "has_next": true,
+        "spectate": true,
+        "final_loops": 20,
+        "phases": 1,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 1,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 0,
+        "skip": false,
+        "delay_before": 0.25,
+        "delay_after": 0.5,
+        "initial_loops": 0,
+        "has_next": false,
+        "spectate": false,
+        "final_loops": 0,
+        "phases": 1,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 1,
+          "ActionFinished": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 0,
+        "skip": false,
+        "delay_before": 0.25,
+        "delay_after": 0.5,
+        "initial_loops": 0,
+        "has_next": false,
+        "spectate": true,
+        "final_loops": 0,
+        "phases": 1,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 1,
+          "ActionFinished": 1,
+          "ReplayNextMatchActionWithDelay": 1,
+          "DidStuff": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 0,
+        "skip": false,
+        "delay_before": 0.25,
+        "delay_after": 0.5,
+        "initial_loops": 0,
+        "has_next": true,
+        "spectate": false,
+        "final_loops": 0,
+        "phases": 1,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 1,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 0,
+        "skip": false,
+        "delay_before": 0.25,
+        "delay_after": 0.5,
+        "initial_loops": 0,
+        "has_next": true,
+        "spectate": true,
+        "final_loops": 0,
+        "phases": 1,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 1,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 0,
+        "skip": false,
+        "delay_before": 0.25,
+        "delay_after": 0.5,
+        "initial_loops": 20,
+        "has_next": false,
+        "spectate": false,
+        "final_loops": 20,
+        "phases": 1,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 1,
+          "ActionFinished": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 0,
+        "skip": false,
+        "delay_before": 0.25,
+        "delay_after": 0.5,
+        "initial_loops": 20,
+        "has_next": false,
+        "spectate": true,
+        "final_loops": 0,
+        "phases": 1,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 1,
+          "ActionFinished": 1,
+          "ReplayNextMatchActionWithDelay": 1,
+          "DidStuff": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 0,
+        "skip": false,
+        "delay_before": 0.25,
+        "delay_after": 0.5,
+        "initial_loops": 20,
+        "has_next": true,
+        "spectate": false,
+        "final_loops": 20,
+        "phases": 1,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 1,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 0,
+        "skip": false,
+        "delay_before": 0.25,
+        "delay_after": 0.5,
+        "initial_loops": 20,
+        "has_next": true,
+        "spectate": true,
+        "final_loops": 20,
+        "phases": 1,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 1,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 0,
+        "skip": true,
+        "delay_before": 0.0,
+        "delay_after": 0.0,
+        "initial_loops": 0,
+        "has_next": false,
+        "spectate": false,
+        "final_loops": 0,
+        "phases": 1,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 1,
+          "ActionFinished": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 0,
+        "skip": true,
+        "delay_before": 0.0,
+        "delay_after": 0.0,
+        "initial_loops": 0,
+        "has_next": false,
+        "spectate": true,
+        "final_loops": 0,
+        "phases": 1,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 1,
+          "ActionFinished": 1,
+          "ReplayNextMatchActionWithDelay": 1,
+          "DidStuff": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 0,
+        "skip": true,
+        "delay_before": 0.0,
+        "delay_after": 0.0,
+        "initial_loops": 0,
+        "has_next": true,
+        "spectate": false,
+        "final_loops": 0,
+        "phases": 1,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 1,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 0,
+        "skip": true,
+        "delay_before": 0.0,
+        "delay_after": 0.0,
+        "initial_loops": 0,
+        "has_next": true,
+        "spectate": true,
+        "final_loops": 0,
+        "phases": 1,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 1,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 0,
+        "skip": true,
+        "delay_before": 0.0,
+        "delay_after": 0.0,
+        "initial_loops": 20,
+        "has_next": false,
+        "spectate": false,
+        "final_loops": 20,
+        "phases": 1,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 1,
+          "ActionFinished": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 0,
+        "skip": true,
+        "delay_before": 0.0,
+        "delay_after": 0.0,
+        "initial_loops": 20,
+        "has_next": false,
+        "spectate": true,
+        "final_loops": 0,
+        "phases": 1,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 1,
+          "ActionFinished": 1,
+          "ReplayNextMatchActionWithDelay": 1,
+          "DidStuff": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 0,
+        "skip": true,
+        "delay_before": 0.0,
+        "delay_after": 0.0,
+        "initial_loops": 20,
+        "has_next": true,
+        "spectate": false,
+        "final_loops": 20,
+        "phases": 1,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 1,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 0,
+        "skip": true,
+        "delay_before": 0.0,
+        "delay_after": 0.0,
+        "initial_loops": 20,
+        "has_next": true,
+        "spectate": true,
+        "final_loops": 20,
+        "phases": 1,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 1,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 0,
+        "skip": true,
+        "delay_before": 0.0,
+        "delay_after": 0.5,
+        "initial_loops": 0,
+        "has_next": false,
+        "spectate": false,
+        "final_loops": 0,
+        "phases": 1,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 1,
+          "ActionFinished": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 0,
+        "skip": true,
+        "delay_before": 0.0,
+        "delay_after": 0.5,
+        "initial_loops": 0,
+        "has_next": false,
+        "spectate": true,
+        "final_loops": 0,
+        "phases": 1,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 1,
+          "ActionFinished": 1,
+          "ReplayNextMatchActionWithDelay": 1,
+          "DidStuff": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 0,
+        "skip": true,
+        "delay_before": 0.0,
+        "delay_after": 0.5,
+        "initial_loops": 0,
+        "has_next": true,
+        "spectate": false,
+        "final_loops": 0,
+        "phases": 1,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 1,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 0,
+        "skip": true,
+        "delay_before": 0.0,
+        "delay_after": 0.5,
+        "initial_loops": 0,
+        "has_next": true,
+        "spectate": true,
+        "final_loops": 0,
+        "phases": 1,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 1,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 0,
+        "skip": true,
+        "delay_before": 0.0,
+        "delay_after": 0.5,
+        "initial_loops": 20,
+        "has_next": false,
+        "spectate": false,
+        "final_loops": 20,
+        "phases": 1,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 1,
+          "ActionFinished": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 0,
+        "skip": true,
+        "delay_before": 0.0,
+        "delay_after": 0.5,
+        "initial_loops": 20,
+        "has_next": false,
+        "spectate": true,
+        "final_loops": 0,
+        "phases": 1,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 1,
+          "ActionFinished": 1,
+          "ReplayNextMatchActionWithDelay": 1,
+          "DidStuff": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 0,
+        "skip": true,
+        "delay_before": 0.0,
+        "delay_after": 0.5,
+        "initial_loops": 20,
+        "has_next": true,
+        "spectate": false,
+        "final_loops": 20,
+        "phases": 1,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 1,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 0,
+        "skip": true,
+        "delay_before": 0.0,
+        "delay_after": 0.5,
+        "initial_loops": 20,
+        "has_next": true,
+        "spectate": true,
+        "final_loops": 20,
+        "phases": 1,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 1,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 0,
+        "skip": true,
+        "delay_before": 0.25,
+        "delay_after": 0.0,
+        "initial_loops": 0,
+        "has_next": false,
+        "spectate": false,
+        "final_loops": 0,
+        "phases": 1,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 1,
+          "ActionFinished": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 0,
+        "skip": true,
+        "delay_before": 0.25,
+        "delay_after": 0.0,
+        "initial_loops": 0,
+        "has_next": false,
+        "spectate": true,
+        "final_loops": 0,
+        "phases": 1,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 1,
+          "ActionFinished": 1,
+          "ReplayNextMatchActionWithDelay": 1,
+          "DidStuff": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 0,
+        "skip": true,
+        "delay_before": 0.25,
+        "delay_after": 0.0,
+        "initial_loops": 0,
+        "has_next": true,
+        "spectate": false,
+        "final_loops": 0,
+        "phases": 1,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 1,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 0,
+        "skip": true,
+        "delay_before": 0.25,
+        "delay_after": 0.0,
+        "initial_loops": 0,
+        "has_next": true,
+        "spectate": true,
+        "final_loops": 0,
+        "phases": 1,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 1,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 0,
+        "skip": true,
+        "delay_before": 0.25,
+        "delay_after": 0.0,
+        "initial_loops": 20,
+        "has_next": false,
+        "spectate": false,
+        "final_loops": 20,
+        "phases": 1,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 1,
+          "ActionFinished": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 0,
+        "skip": true,
+        "delay_before": 0.25,
+        "delay_after": 0.0,
+        "initial_loops": 20,
+        "has_next": false,
+        "spectate": true,
+        "final_loops": 0,
+        "phases": 1,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 1,
+          "ActionFinished": 1,
+          "ReplayNextMatchActionWithDelay": 1,
+          "DidStuff": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 0,
+        "skip": true,
+        "delay_before": 0.25,
+        "delay_after": 0.0,
+        "initial_loops": 20,
+        "has_next": true,
+        "spectate": false,
+        "final_loops": 20,
+        "phases": 1,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 1,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 0,
+        "skip": true,
+        "delay_before": 0.25,
+        "delay_after": 0.0,
+        "initial_loops": 20,
+        "has_next": true,
+        "spectate": true,
+        "final_loops": 20,
+        "phases": 1,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 1,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 0,
+        "skip": true,
+        "delay_before": 0.25,
+        "delay_after": 0.5,
+        "initial_loops": 0,
+        "has_next": false,
+        "spectate": false,
+        "final_loops": 0,
+        "phases": 1,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 1,
+          "ActionFinished": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 0,
+        "skip": true,
+        "delay_before": 0.25,
+        "delay_after": 0.5,
+        "initial_loops": 0,
+        "has_next": false,
+        "spectate": true,
+        "final_loops": 0,
+        "phases": 1,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 1,
+          "ActionFinished": 1,
+          "ReplayNextMatchActionWithDelay": 1,
+          "DidStuff": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 0,
+        "skip": true,
+        "delay_before": 0.25,
+        "delay_after": 0.5,
+        "initial_loops": 0,
+        "has_next": true,
+        "spectate": false,
+        "final_loops": 0,
+        "phases": 1,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 1,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 0,
+        "skip": true,
+        "delay_before": 0.25,
+        "delay_after": 0.5,
+        "initial_loops": 0,
+        "has_next": true,
+        "spectate": true,
+        "final_loops": 0,
+        "phases": 1,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 1,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 0,
+        "skip": true,
+        "delay_before": 0.25,
+        "delay_after": 0.5,
+        "initial_loops": 20,
+        "has_next": false,
+        "spectate": false,
+        "final_loops": 20,
+        "phases": 1,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 1,
+          "ActionFinished": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 0,
+        "skip": true,
+        "delay_before": 0.25,
+        "delay_after": 0.5,
+        "initial_loops": 20,
+        "has_next": false,
+        "spectate": true,
+        "final_loops": 0,
+        "phases": 1,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 1,
+          "ActionFinished": 1,
+          "ReplayNextMatchActionWithDelay": 1,
+          "DidStuff": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 0,
+        "skip": true,
+        "delay_before": 0.25,
+        "delay_after": 0.5,
+        "initial_loops": 20,
+        "has_next": true,
+        "spectate": false,
+        "final_loops": 20,
+        "phases": 1,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 1,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 0,
+        "skip": true,
+        "delay_before": 0.25,
+        "delay_after": 0.5,
+        "initial_loops": 20,
+        "has_next": true,
+        "spectate": true,
+        "final_loops": 20,
+        "phases": 1,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 1,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 1,
+        "skip": false,
+        "delay_before": 0.0,
+        "delay_after": 0.0,
+        "initial_loops": 0,
+        "has_next": false,
+        "spectate": false,
+        "final_loops": 1,
+        "phases": 2,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 2,
+          "ExecuteSubAction": 1,
+          "ExecuteSubActionAddNumberToText": 1,
+          "SubActionResolved": 1,
+          "ActionFinished": 1
+        },
+        "dispatch_ordinals": [
+          0
+        ]
+      },
+      {
+        "size": 1,
+        "skip": false,
+        "delay_before": 0.0,
+        "delay_after": 0.0,
+        "initial_loops": 0,
+        "has_next": false,
+        "spectate": true,
+        "final_loops": 0,
+        "phases": 2,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 2,
+          "ExecuteSubAction": 1,
+          "ExecuteSubActionAddNumberToText": 1,
+          "SubActionResolved": 1,
+          "ActionFinished": 1,
+          "ReplayNextMatchActionWithDelay": 1,
+          "DidStuff": 1
+        },
+        "dispatch_ordinals": [
+          0
+        ]
+      },
+      {
+        "size": 1,
+        "skip": false,
+        "delay_before": 0.0,
+        "delay_after": 0.0,
+        "initial_loops": 0,
+        "has_next": true,
+        "spectate": false,
+        "final_loops": 1,
+        "phases": 2,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 2,
+          "ExecuteSubAction": 1,
+          "ExecuteSubActionAddNumberToText": 1,
+          "SubActionResolved": 1,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": [
+          0
+        ]
+      },
+      {
+        "size": 1,
+        "skip": false,
+        "delay_before": 0.0,
+        "delay_after": 0.0,
+        "initial_loops": 0,
+        "has_next": true,
+        "spectate": true,
+        "final_loops": 1,
+        "phases": 2,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 2,
+          "ExecuteSubAction": 1,
+          "ExecuteSubActionAddNumberToText": 1,
+          "SubActionResolved": 1,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": [
+          0
+        ]
+      },
+      {
+        "size": 1,
+        "skip": false,
+        "delay_before": 0.0,
+        "delay_after": 0.0,
+        "initial_loops": 20,
+        "has_next": false,
+        "spectate": false,
+        "final_loops": 0,
+        "phases": 3,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 2,
+          "ExecuteSubAction": 1,
+          "ExecuteSubActionAddNumberToText": 1,
+          "SubActionResolved": 1,
+          "DelayUntilNextTick": 1,
+          "ActionFinished": 1
+        },
+        "dispatch_ordinals": [
+          0
+        ]
+      },
+      {
+        "size": 1,
+        "skip": false,
+        "delay_before": 0.0,
+        "delay_after": 0.0,
+        "initial_loops": 20,
+        "has_next": false,
+        "spectate": true,
+        "final_loops": 0,
+        "phases": 3,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 2,
+          "ExecuteSubAction": 1,
+          "ExecuteSubActionAddNumberToText": 1,
+          "SubActionResolved": 1,
+          "DelayUntilNextTick": 1,
+          "ActionFinished": 1,
+          "ReplayNextMatchActionWithDelay": 1,
+          "DidStuff": 1
+        },
+        "dispatch_ordinals": [
+          0
+        ]
+      },
+      {
+        "size": 1,
+        "skip": false,
+        "delay_before": 0.0,
+        "delay_after": 0.0,
+        "initial_loops": 20,
+        "has_next": true,
+        "spectate": false,
+        "final_loops": 0,
+        "phases": 3,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 2,
+          "ExecuteSubAction": 1,
+          "ExecuteSubActionAddNumberToText": 1,
+          "SubActionResolved": 1,
+          "DelayUntilNextTick": 1,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": [
+          0
+        ]
+      },
+      {
+        "size": 1,
+        "skip": false,
+        "delay_before": 0.0,
+        "delay_after": 0.0,
+        "initial_loops": 20,
+        "has_next": true,
+        "spectate": true,
+        "final_loops": 0,
+        "phases": 3,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 2,
+          "ExecuteSubAction": 1,
+          "ExecuteSubActionAddNumberToText": 1,
+          "SubActionResolved": 1,
+          "DelayUntilNextTick": 1,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": [
+          0
+        ]
+      },
+      {
+        "size": 1,
+        "skip": false,
+        "delay_before": 0.0,
+        "delay_after": 0.5,
+        "initial_loops": 0,
+        "has_next": false,
+        "spectate": false,
+        "final_loops": 0,
+        "phases": 3,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 2,
+          "ExecuteSubAction": 1,
+          "ExecuteSubActionAddNumberToText": 1,
+          "SubActionResolved": 1,
+          "Delay": 1,
+          "ActionFinished": 1
+        },
+        "dispatch_ordinals": [
+          0
+        ]
+      },
+      {
+        "size": 1,
+        "skip": false,
+        "delay_before": 0.0,
+        "delay_after": 0.5,
+        "initial_loops": 0,
+        "has_next": false,
+        "spectate": true,
+        "final_loops": 0,
+        "phases": 3,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 2,
+          "ExecuteSubAction": 1,
+          "ExecuteSubActionAddNumberToText": 1,
+          "SubActionResolved": 1,
+          "Delay": 1,
+          "ActionFinished": 1,
+          "ReplayNextMatchActionWithDelay": 1,
+          "DidStuff": 1
+        },
+        "dispatch_ordinals": [
+          0
+        ]
+      },
+      {
+        "size": 1,
+        "skip": false,
+        "delay_before": 0.0,
+        "delay_after": 0.5,
+        "initial_loops": 0,
+        "has_next": true,
+        "spectate": false,
+        "final_loops": 0,
+        "phases": 3,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 2,
+          "ExecuteSubAction": 1,
+          "ExecuteSubActionAddNumberToText": 1,
+          "SubActionResolved": 1,
+          "Delay": 1,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": [
+          0
+        ]
+      },
+      {
+        "size": 1,
+        "skip": false,
+        "delay_before": 0.0,
+        "delay_after": 0.5,
+        "initial_loops": 0,
+        "has_next": true,
+        "spectate": true,
+        "final_loops": 0,
+        "phases": 3,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 2,
+          "ExecuteSubAction": 1,
+          "ExecuteSubActionAddNumberToText": 1,
+          "SubActionResolved": 1,
+          "Delay": 1,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": [
+          0
+        ]
+      },
+      {
+        "size": 1,
+        "skip": false,
+        "delay_before": 0.0,
+        "delay_after": 0.5,
+        "initial_loops": 20,
+        "has_next": false,
+        "spectate": false,
+        "final_loops": 0,
+        "phases": 3,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 2,
+          "ExecuteSubAction": 1,
+          "ExecuteSubActionAddNumberToText": 1,
+          "SubActionResolved": 1,
+          "Delay": 1,
+          "ActionFinished": 1
+        },
+        "dispatch_ordinals": [
+          0
+        ]
+      },
+      {
+        "size": 1,
+        "skip": false,
+        "delay_before": 0.0,
+        "delay_after": 0.5,
+        "initial_loops": 20,
+        "has_next": false,
+        "spectate": true,
+        "final_loops": 0,
+        "phases": 3,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 2,
+          "ExecuteSubAction": 1,
+          "ExecuteSubActionAddNumberToText": 1,
+          "SubActionResolved": 1,
+          "Delay": 1,
+          "ActionFinished": 1,
+          "ReplayNextMatchActionWithDelay": 1,
+          "DidStuff": 1
+        },
+        "dispatch_ordinals": [
+          0
+        ]
+      },
+      {
+        "size": 1,
+        "skip": false,
+        "delay_before": 0.0,
+        "delay_after": 0.5,
+        "initial_loops": 20,
+        "has_next": true,
+        "spectate": false,
+        "final_loops": 0,
+        "phases": 3,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 2,
+          "ExecuteSubAction": 1,
+          "ExecuteSubActionAddNumberToText": 1,
+          "SubActionResolved": 1,
+          "Delay": 1,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": [
+          0
+        ]
+      },
+      {
+        "size": 1,
+        "skip": false,
+        "delay_before": 0.0,
+        "delay_after": 0.5,
+        "initial_loops": 20,
+        "has_next": true,
+        "spectate": true,
+        "final_loops": 0,
+        "phases": 3,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 2,
+          "ExecuteSubAction": 1,
+          "ExecuteSubActionAddNumberToText": 1,
+          "SubActionResolved": 1,
+          "Delay": 1,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": [
+          0
+        ]
+      },
+      {
+        "size": 1,
+        "skip": false,
+        "delay_before": 0.25,
+        "delay_after": 0.0,
+        "initial_loops": 0,
+        "has_next": false,
+        "spectate": false,
+        "final_loops": 1,
+        "phases": 3,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 2,
+          "Delay": 1,
+          "ExecuteSubAction": 1,
+          "ExecuteSubActionAddNumberToText": 1,
+          "SubActionResolved": 1,
+          "ActionFinished": 1
+        },
+        "dispatch_ordinals": [
+          0
+        ]
+      },
+      {
+        "size": 1,
+        "skip": false,
+        "delay_before": 0.25,
+        "delay_after": 0.0,
+        "initial_loops": 0,
+        "has_next": false,
+        "spectate": true,
+        "final_loops": 0,
+        "phases": 3,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 2,
+          "Delay": 1,
+          "ExecuteSubAction": 1,
+          "ExecuteSubActionAddNumberToText": 1,
+          "SubActionResolved": 1,
+          "ActionFinished": 1,
+          "ReplayNextMatchActionWithDelay": 1,
+          "DidStuff": 1
+        },
+        "dispatch_ordinals": [
+          0
+        ]
+      },
+      {
+        "size": 1,
+        "skip": false,
+        "delay_before": 0.25,
+        "delay_after": 0.0,
+        "initial_loops": 0,
+        "has_next": true,
+        "spectate": false,
+        "final_loops": 1,
+        "phases": 3,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 2,
+          "Delay": 1,
+          "ExecuteSubAction": 1,
+          "ExecuteSubActionAddNumberToText": 1,
+          "SubActionResolved": 1,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": [
+          0
+        ]
+      },
+      {
+        "size": 1,
+        "skip": false,
+        "delay_before": 0.25,
+        "delay_after": 0.0,
+        "initial_loops": 0,
+        "has_next": true,
+        "spectate": true,
+        "final_loops": 1,
+        "phases": 3,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 2,
+          "Delay": 1,
+          "ExecuteSubAction": 1,
+          "ExecuteSubActionAddNumberToText": 1,
+          "SubActionResolved": 1,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": [
+          0
+        ]
+      },
+      {
+        "size": 1,
+        "skip": false,
+        "delay_before": 0.25,
+        "delay_after": 0.0,
+        "initial_loops": 20,
+        "has_next": false,
+        "spectate": false,
+        "final_loops": 1,
+        "phases": 3,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 2,
+          "Delay": 1,
+          "ExecuteSubAction": 1,
+          "ExecuteSubActionAddNumberToText": 1,
+          "SubActionResolved": 1,
+          "ActionFinished": 1
+        },
+        "dispatch_ordinals": [
+          0
+        ]
+      },
+      {
+        "size": 1,
+        "skip": false,
+        "delay_before": 0.25,
+        "delay_after": 0.0,
+        "initial_loops": 20,
+        "has_next": false,
+        "spectate": true,
+        "final_loops": 0,
+        "phases": 3,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 2,
+          "Delay": 1,
+          "ExecuteSubAction": 1,
+          "ExecuteSubActionAddNumberToText": 1,
+          "SubActionResolved": 1,
+          "ActionFinished": 1,
+          "ReplayNextMatchActionWithDelay": 1,
+          "DidStuff": 1
+        },
+        "dispatch_ordinals": [
+          0
+        ]
+      },
+      {
+        "size": 1,
+        "skip": false,
+        "delay_before": 0.25,
+        "delay_after": 0.0,
+        "initial_loops": 20,
+        "has_next": true,
+        "spectate": false,
+        "final_loops": 1,
+        "phases": 3,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 2,
+          "Delay": 1,
+          "ExecuteSubAction": 1,
+          "ExecuteSubActionAddNumberToText": 1,
+          "SubActionResolved": 1,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": [
+          0
+        ]
+      },
+      {
+        "size": 1,
+        "skip": false,
+        "delay_before": 0.25,
+        "delay_after": 0.0,
+        "initial_loops": 20,
+        "has_next": true,
+        "spectate": true,
+        "final_loops": 1,
+        "phases": 3,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 2,
+          "Delay": 1,
+          "ExecuteSubAction": 1,
+          "ExecuteSubActionAddNumberToText": 1,
+          "SubActionResolved": 1,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": [
+          0
+        ]
+      },
+      {
+        "size": 1,
+        "skip": false,
+        "delay_before": 0.25,
+        "delay_after": 0.5,
+        "initial_loops": 0,
+        "has_next": false,
+        "spectate": false,
+        "final_loops": 0,
+        "phases": 4,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 2,
+          "Delay": 2,
+          "ExecuteSubAction": 1,
+          "ExecuteSubActionAddNumberToText": 1,
+          "SubActionResolved": 1,
+          "ActionFinished": 1
+        },
+        "dispatch_ordinals": [
+          0
+        ]
+      },
+      {
+        "size": 1,
+        "skip": false,
+        "delay_before": 0.25,
+        "delay_after": 0.5,
+        "initial_loops": 0,
+        "has_next": false,
+        "spectate": true,
+        "final_loops": 0,
+        "phases": 4,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 2,
+          "Delay": 2,
+          "ExecuteSubAction": 1,
+          "ExecuteSubActionAddNumberToText": 1,
+          "SubActionResolved": 1,
+          "ActionFinished": 1,
+          "ReplayNextMatchActionWithDelay": 1,
+          "DidStuff": 1
+        },
+        "dispatch_ordinals": [
+          0
+        ]
+      },
+      {
+        "size": 1,
+        "skip": false,
+        "delay_before": 0.25,
+        "delay_after": 0.5,
+        "initial_loops": 0,
+        "has_next": true,
+        "spectate": false,
+        "final_loops": 0,
+        "phases": 4,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 2,
+          "Delay": 2,
+          "ExecuteSubAction": 1,
+          "ExecuteSubActionAddNumberToText": 1,
+          "SubActionResolved": 1,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": [
+          0
+        ]
+      },
+      {
+        "size": 1,
+        "skip": false,
+        "delay_before": 0.25,
+        "delay_after": 0.5,
+        "initial_loops": 0,
+        "has_next": true,
+        "spectate": true,
+        "final_loops": 0,
+        "phases": 4,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 2,
+          "Delay": 2,
+          "ExecuteSubAction": 1,
+          "ExecuteSubActionAddNumberToText": 1,
+          "SubActionResolved": 1,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": [
+          0
+        ]
+      },
+      {
+        "size": 1,
+        "skip": false,
+        "delay_before": 0.25,
+        "delay_after": 0.5,
+        "initial_loops": 20,
+        "has_next": false,
+        "spectate": false,
+        "final_loops": 0,
+        "phases": 4,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 2,
+          "Delay": 2,
+          "ExecuteSubAction": 1,
+          "ExecuteSubActionAddNumberToText": 1,
+          "SubActionResolved": 1,
+          "ActionFinished": 1
+        },
+        "dispatch_ordinals": [
+          0
+        ]
+      },
+      {
+        "size": 1,
+        "skip": false,
+        "delay_before": 0.25,
+        "delay_after": 0.5,
+        "initial_loops": 20,
+        "has_next": false,
+        "spectate": true,
+        "final_loops": 0,
+        "phases": 4,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 2,
+          "Delay": 2,
+          "ExecuteSubAction": 1,
+          "ExecuteSubActionAddNumberToText": 1,
+          "SubActionResolved": 1,
+          "ActionFinished": 1,
+          "ReplayNextMatchActionWithDelay": 1,
+          "DidStuff": 1
+        },
+        "dispatch_ordinals": [
+          0
+        ]
+      },
+      {
+        "size": 1,
+        "skip": false,
+        "delay_before": 0.25,
+        "delay_after": 0.5,
+        "initial_loops": 20,
+        "has_next": true,
+        "spectate": false,
+        "final_loops": 0,
+        "phases": 4,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 2,
+          "Delay": 2,
+          "ExecuteSubAction": 1,
+          "ExecuteSubActionAddNumberToText": 1,
+          "SubActionResolved": 1,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": [
+          0
+        ]
+      },
+      {
+        "size": 1,
+        "skip": false,
+        "delay_before": 0.25,
+        "delay_after": 0.5,
+        "initial_loops": 20,
+        "has_next": true,
+        "spectate": true,
+        "final_loops": 0,
+        "phases": 4,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 2,
+          "Delay": 2,
+          "ExecuteSubAction": 1,
+          "ExecuteSubActionAddNumberToText": 1,
+          "SubActionResolved": 1,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": [
+          0
+        ]
+      },
+      {
+        "size": 1,
+        "skip": true,
+        "delay_before": 0.0,
+        "delay_after": 0.0,
+        "initial_loops": 0,
+        "has_next": false,
+        "spectate": false,
+        "final_loops": 1,
+        "phases": 1,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 2,
+          "ActionFinished": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 1,
+        "skip": true,
+        "delay_before": 0.0,
+        "delay_after": 0.0,
+        "initial_loops": 0,
+        "has_next": false,
+        "spectate": true,
+        "final_loops": 0,
+        "phases": 1,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 2,
+          "ActionFinished": 1,
+          "ReplayNextMatchActionWithDelay": 1,
+          "DidStuff": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 1,
+        "skip": true,
+        "delay_before": 0.0,
+        "delay_after": 0.0,
+        "initial_loops": 0,
+        "has_next": true,
+        "spectate": false,
+        "final_loops": 1,
+        "phases": 1,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 2,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 1,
+        "skip": true,
+        "delay_before": 0.0,
+        "delay_after": 0.0,
+        "initial_loops": 0,
+        "has_next": true,
+        "spectate": true,
+        "final_loops": 1,
+        "phases": 1,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 2,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 1,
+        "skip": true,
+        "delay_before": 0.0,
+        "delay_after": 0.0,
+        "initial_loops": 20,
+        "has_next": false,
+        "spectate": false,
+        "final_loops": 0,
+        "phases": 2,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 2,
+          "DelayUntilNextTick": 1,
+          "ActionFinished": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 1,
+        "skip": true,
+        "delay_before": 0.0,
+        "delay_after": 0.0,
+        "initial_loops": 20,
+        "has_next": false,
+        "spectate": true,
+        "final_loops": 0,
+        "phases": 2,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 2,
+          "DelayUntilNextTick": 1,
+          "ActionFinished": 1,
+          "ReplayNextMatchActionWithDelay": 1,
+          "DidStuff": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 1,
+        "skip": true,
+        "delay_before": 0.0,
+        "delay_after": 0.0,
+        "initial_loops": 20,
+        "has_next": true,
+        "spectate": false,
+        "final_loops": 0,
+        "phases": 2,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 2,
+          "DelayUntilNextTick": 1,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 1,
+        "skip": true,
+        "delay_before": 0.0,
+        "delay_after": 0.0,
+        "initial_loops": 20,
+        "has_next": true,
+        "spectate": true,
+        "final_loops": 0,
+        "phases": 2,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 2,
+          "DelayUntilNextTick": 1,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 1,
+        "skip": true,
+        "delay_before": 0.0,
+        "delay_after": 0.5,
+        "initial_loops": 0,
+        "has_next": false,
+        "spectate": false,
+        "final_loops": 0,
+        "phases": 2,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 2,
+          "Delay": 1,
+          "ActionFinished": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 1,
+        "skip": true,
+        "delay_before": 0.0,
+        "delay_after": 0.5,
+        "initial_loops": 0,
+        "has_next": false,
+        "spectate": true,
+        "final_loops": 0,
+        "phases": 2,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 2,
+          "Delay": 1,
+          "ActionFinished": 1,
+          "ReplayNextMatchActionWithDelay": 1,
+          "DidStuff": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 1,
+        "skip": true,
+        "delay_before": 0.0,
+        "delay_after": 0.5,
+        "initial_loops": 0,
+        "has_next": true,
+        "spectate": false,
+        "final_loops": 0,
+        "phases": 2,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 2,
+          "Delay": 1,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 1,
+        "skip": true,
+        "delay_before": 0.0,
+        "delay_after": 0.5,
+        "initial_loops": 0,
+        "has_next": true,
+        "spectate": true,
+        "final_loops": 0,
+        "phases": 2,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 2,
+          "Delay": 1,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 1,
+        "skip": true,
+        "delay_before": 0.0,
+        "delay_after": 0.5,
+        "initial_loops": 20,
+        "has_next": false,
+        "spectate": false,
+        "final_loops": 0,
+        "phases": 2,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 2,
+          "Delay": 1,
+          "ActionFinished": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 1,
+        "skip": true,
+        "delay_before": 0.0,
+        "delay_after": 0.5,
+        "initial_loops": 20,
+        "has_next": false,
+        "spectate": true,
+        "final_loops": 0,
+        "phases": 2,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 2,
+          "Delay": 1,
+          "ActionFinished": 1,
+          "ReplayNextMatchActionWithDelay": 1,
+          "DidStuff": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 1,
+        "skip": true,
+        "delay_before": 0.0,
+        "delay_after": 0.5,
+        "initial_loops": 20,
+        "has_next": true,
+        "spectate": false,
+        "final_loops": 0,
+        "phases": 2,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 2,
+          "Delay": 1,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 1,
+        "skip": true,
+        "delay_before": 0.0,
+        "delay_after": 0.5,
+        "initial_loops": 20,
+        "has_next": true,
+        "spectate": true,
+        "final_loops": 0,
+        "phases": 2,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 2,
+          "Delay": 1,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 1,
+        "skip": true,
+        "delay_before": 0.25,
+        "delay_after": 0.0,
+        "initial_loops": 0,
+        "has_next": false,
+        "spectate": false,
+        "final_loops": 1,
+        "phases": 1,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 2,
+          "ActionFinished": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 1,
+        "skip": true,
+        "delay_before": 0.25,
+        "delay_after": 0.0,
+        "initial_loops": 0,
+        "has_next": false,
+        "spectate": true,
+        "final_loops": 0,
+        "phases": 1,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 2,
+          "ActionFinished": 1,
+          "ReplayNextMatchActionWithDelay": 1,
+          "DidStuff": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 1,
+        "skip": true,
+        "delay_before": 0.25,
+        "delay_after": 0.0,
+        "initial_loops": 0,
+        "has_next": true,
+        "spectate": false,
+        "final_loops": 1,
+        "phases": 1,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 2,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 1,
+        "skip": true,
+        "delay_before": 0.25,
+        "delay_after": 0.0,
+        "initial_loops": 0,
+        "has_next": true,
+        "spectate": true,
+        "final_loops": 1,
+        "phases": 1,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 2,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 1,
+        "skip": true,
+        "delay_before": 0.25,
+        "delay_after": 0.0,
+        "initial_loops": 20,
+        "has_next": false,
+        "spectate": false,
+        "final_loops": 0,
+        "phases": 2,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 2,
+          "DelayUntilNextTick": 1,
+          "ActionFinished": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 1,
+        "skip": true,
+        "delay_before": 0.25,
+        "delay_after": 0.0,
+        "initial_loops": 20,
+        "has_next": false,
+        "spectate": true,
+        "final_loops": 0,
+        "phases": 2,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 2,
+          "DelayUntilNextTick": 1,
+          "ActionFinished": 1,
+          "ReplayNextMatchActionWithDelay": 1,
+          "DidStuff": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 1,
+        "skip": true,
+        "delay_before": 0.25,
+        "delay_after": 0.0,
+        "initial_loops": 20,
+        "has_next": true,
+        "spectate": false,
+        "final_loops": 0,
+        "phases": 2,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 2,
+          "DelayUntilNextTick": 1,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 1,
+        "skip": true,
+        "delay_before": 0.25,
+        "delay_after": 0.0,
+        "initial_loops": 20,
+        "has_next": true,
+        "spectate": true,
+        "final_loops": 0,
+        "phases": 2,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 2,
+          "DelayUntilNextTick": 1,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 1,
+        "skip": true,
+        "delay_before": 0.25,
+        "delay_after": 0.5,
+        "initial_loops": 0,
+        "has_next": false,
+        "spectate": false,
+        "final_loops": 0,
+        "phases": 2,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 2,
+          "Delay": 1,
+          "ActionFinished": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 1,
+        "skip": true,
+        "delay_before": 0.25,
+        "delay_after": 0.5,
+        "initial_loops": 0,
+        "has_next": false,
+        "spectate": true,
+        "final_loops": 0,
+        "phases": 2,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 2,
+          "Delay": 1,
+          "ActionFinished": 1,
+          "ReplayNextMatchActionWithDelay": 1,
+          "DidStuff": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 1,
+        "skip": true,
+        "delay_before": 0.25,
+        "delay_after": 0.5,
+        "initial_loops": 0,
+        "has_next": true,
+        "spectate": false,
+        "final_loops": 0,
+        "phases": 2,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 2,
+          "Delay": 1,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 1,
+        "skip": true,
+        "delay_before": 0.25,
+        "delay_after": 0.5,
+        "initial_loops": 0,
+        "has_next": true,
+        "spectate": true,
+        "final_loops": 0,
+        "phases": 2,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 2,
+          "Delay": 1,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 1,
+        "skip": true,
+        "delay_before": 0.25,
+        "delay_after": 0.5,
+        "initial_loops": 20,
+        "has_next": false,
+        "spectate": false,
+        "final_loops": 0,
+        "phases": 2,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 2,
+          "Delay": 1,
+          "ActionFinished": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 1,
+        "skip": true,
+        "delay_before": 0.25,
+        "delay_after": 0.5,
+        "initial_loops": 20,
+        "has_next": false,
+        "spectate": true,
+        "final_loops": 0,
+        "phases": 2,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 2,
+          "Delay": 1,
+          "ActionFinished": 1,
+          "ReplayNextMatchActionWithDelay": 1,
+          "DidStuff": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 1,
+        "skip": true,
+        "delay_before": 0.25,
+        "delay_after": 0.5,
+        "initial_loops": 20,
+        "has_next": true,
+        "spectate": false,
+        "final_loops": 0,
+        "phases": 2,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 2,
+          "Delay": 1,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 1,
+        "skip": true,
+        "delay_before": 0.25,
+        "delay_after": 0.5,
+        "initial_loops": 20,
+        "has_next": true,
+        "spectate": true,
+        "final_loops": 0,
+        "phases": 2,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 2,
+          "Delay": 1,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 3,
+        "skip": false,
+        "delay_before": 0.0,
+        "delay_after": 0.0,
+        "initial_loops": 0,
+        "has_next": false,
+        "spectate": false,
+        "final_loops": 3,
+        "phases": 4,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 4,
+          "ExecuteSubAction": 3,
+          "ExecuteSubActionAddNumberToText": 3,
+          "SubActionResolved": 3,
+          "ActionFinished": 1
+        },
+        "dispatch_ordinals": [
+          0,
+          1,
+          2
+        ]
+      },
+      {
+        "size": 3,
+        "skip": false,
+        "delay_before": 0.0,
+        "delay_after": 0.0,
+        "initial_loops": 0,
+        "has_next": false,
+        "spectate": true,
+        "final_loops": 0,
+        "phases": 4,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 4,
+          "ExecuteSubAction": 3,
+          "ExecuteSubActionAddNumberToText": 3,
+          "SubActionResolved": 3,
+          "ActionFinished": 1,
+          "ReplayNextMatchActionWithDelay": 1,
+          "DidStuff": 1
+        },
+        "dispatch_ordinals": [
+          0,
+          1,
+          2
+        ]
+      },
+      {
+        "size": 3,
+        "skip": false,
+        "delay_before": 0.0,
+        "delay_after": 0.0,
+        "initial_loops": 0,
+        "has_next": true,
+        "spectate": false,
+        "final_loops": 3,
+        "phases": 4,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 4,
+          "ExecuteSubAction": 3,
+          "ExecuteSubActionAddNumberToText": 3,
+          "SubActionResolved": 3,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": [
+          0,
+          1,
+          2
+        ]
+      },
+      {
+        "size": 3,
+        "skip": false,
+        "delay_before": 0.0,
+        "delay_after": 0.0,
+        "initial_loops": 0,
+        "has_next": true,
+        "spectate": true,
+        "final_loops": 3,
+        "phases": 4,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 4,
+          "ExecuteSubAction": 3,
+          "ExecuteSubActionAddNumberToText": 3,
+          "SubActionResolved": 3,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": [
+          0,
+          1,
+          2
+        ]
+      },
+      {
+        "size": 3,
+        "skip": false,
+        "delay_before": 0.0,
+        "delay_after": 0.0,
+        "initial_loops": 20,
+        "has_next": false,
+        "spectate": false,
+        "final_loops": 2,
+        "phases": 5,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 4,
+          "ExecuteSubAction": 3,
+          "ExecuteSubActionAddNumberToText": 3,
+          "SubActionResolved": 3,
+          "DelayUntilNextTick": 1,
+          "ActionFinished": 1
+        },
+        "dispatch_ordinals": [
+          0,
+          1,
+          2
+        ]
+      },
+      {
+        "size": 3,
+        "skip": false,
+        "delay_before": 0.0,
+        "delay_after": 0.0,
+        "initial_loops": 20,
+        "has_next": false,
+        "spectate": true,
+        "final_loops": 0,
+        "phases": 5,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 4,
+          "ExecuteSubAction": 3,
+          "ExecuteSubActionAddNumberToText": 3,
+          "SubActionResolved": 3,
+          "DelayUntilNextTick": 1,
+          "ActionFinished": 1,
+          "ReplayNextMatchActionWithDelay": 1,
+          "DidStuff": 1
+        },
+        "dispatch_ordinals": [
+          0,
+          1,
+          2
+        ]
+      },
+      {
+        "size": 3,
+        "skip": false,
+        "delay_before": 0.0,
+        "delay_after": 0.0,
+        "initial_loops": 20,
+        "has_next": true,
+        "spectate": false,
+        "final_loops": 2,
+        "phases": 5,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 4,
+          "ExecuteSubAction": 3,
+          "ExecuteSubActionAddNumberToText": 3,
+          "SubActionResolved": 3,
+          "DelayUntilNextTick": 1,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": [
+          0,
+          1,
+          2
+        ]
+      },
+      {
+        "size": 3,
+        "skip": false,
+        "delay_before": 0.0,
+        "delay_after": 0.0,
+        "initial_loops": 20,
+        "has_next": true,
+        "spectate": true,
+        "final_loops": 2,
+        "phases": 5,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 4,
+          "ExecuteSubAction": 3,
+          "ExecuteSubActionAddNumberToText": 3,
+          "SubActionResolved": 3,
+          "DelayUntilNextTick": 1,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": [
+          0,
+          1,
+          2
+        ]
+      },
+      {
+        "size": 3,
+        "skip": false,
+        "delay_before": 0.0,
+        "delay_after": 0.5,
+        "initial_loops": 0,
+        "has_next": false,
+        "spectate": false,
+        "final_loops": 0,
+        "phases": 7,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 4,
+          "ExecuteSubAction": 3,
+          "ExecuteSubActionAddNumberToText": 3,
+          "SubActionResolved": 3,
+          "Delay": 3,
+          "ActionFinished": 1
+        },
+        "dispatch_ordinals": [
+          0,
+          1,
+          2
+        ]
+      },
+      {
+        "size": 3,
+        "skip": false,
+        "delay_before": 0.0,
+        "delay_after": 0.5,
+        "initial_loops": 0,
+        "has_next": false,
+        "spectate": true,
+        "final_loops": 0,
+        "phases": 7,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 4,
+          "ExecuteSubAction": 3,
+          "ExecuteSubActionAddNumberToText": 3,
+          "SubActionResolved": 3,
+          "Delay": 3,
+          "ActionFinished": 1,
+          "ReplayNextMatchActionWithDelay": 1,
+          "DidStuff": 1
+        },
+        "dispatch_ordinals": [
+          0,
+          1,
+          2
+        ]
+      },
+      {
+        "size": 3,
+        "skip": false,
+        "delay_before": 0.0,
+        "delay_after": 0.5,
+        "initial_loops": 0,
+        "has_next": true,
+        "spectate": false,
+        "final_loops": 0,
+        "phases": 7,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 4,
+          "ExecuteSubAction": 3,
+          "ExecuteSubActionAddNumberToText": 3,
+          "SubActionResolved": 3,
+          "Delay": 3,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": [
+          0,
+          1,
+          2
+        ]
+      },
+      {
+        "size": 3,
+        "skip": false,
+        "delay_before": 0.0,
+        "delay_after": 0.5,
+        "initial_loops": 0,
+        "has_next": true,
+        "spectate": true,
+        "final_loops": 0,
+        "phases": 7,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 4,
+          "ExecuteSubAction": 3,
+          "ExecuteSubActionAddNumberToText": 3,
+          "SubActionResolved": 3,
+          "Delay": 3,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": [
+          0,
+          1,
+          2
+        ]
+      },
+      {
+        "size": 3,
+        "skip": false,
+        "delay_before": 0.0,
+        "delay_after": 0.5,
+        "initial_loops": 20,
+        "has_next": false,
+        "spectate": false,
+        "final_loops": 0,
+        "phases": 7,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 4,
+          "ExecuteSubAction": 3,
+          "ExecuteSubActionAddNumberToText": 3,
+          "SubActionResolved": 3,
+          "Delay": 3,
+          "ActionFinished": 1
+        },
+        "dispatch_ordinals": [
+          0,
+          1,
+          2
+        ]
+      },
+      {
+        "size": 3,
+        "skip": false,
+        "delay_before": 0.0,
+        "delay_after": 0.5,
+        "initial_loops": 20,
+        "has_next": false,
+        "spectate": true,
+        "final_loops": 0,
+        "phases": 7,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 4,
+          "ExecuteSubAction": 3,
+          "ExecuteSubActionAddNumberToText": 3,
+          "SubActionResolved": 3,
+          "Delay": 3,
+          "ActionFinished": 1,
+          "ReplayNextMatchActionWithDelay": 1,
+          "DidStuff": 1
+        },
+        "dispatch_ordinals": [
+          0,
+          1,
+          2
+        ]
+      },
+      {
+        "size": 3,
+        "skip": false,
+        "delay_before": 0.0,
+        "delay_after": 0.5,
+        "initial_loops": 20,
+        "has_next": true,
+        "spectate": false,
+        "final_loops": 0,
+        "phases": 7,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 4,
+          "ExecuteSubAction": 3,
+          "ExecuteSubActionAddNumberToText": 3,
+          "SubActionResolved": 3,
+          "Delay": 3,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": [
+          0,
+          1,
+          2
+        ]
+      },
+      {
+        "size": 3,
+        "skip": false,
+        "delay_before": 0.0,
+        "delay_after": 0.5,
+        "initial_loops": 20,
+        "has_next": true,
+        "spectate": true,
+        "final_loops": 0,
+        "phases": 7,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 4,
+          "ExecuteSubAction": 3,
+          "ExecuteSubActionAddNumberToText": 3,
+          "SubActionResolved": 3,
+          "Delay": 3,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": [
+          0,
+          1,
+          2
+        ]
+      },
+      {
+        "size": 3,
+        "skip": false,
+        "delay_before": 0.25,
+        "delay_after": 0.0,
+        "initial_loops": 0,
+        "has_next": false,
+        "spectate": false,
+        "final_loops": 1,
+        "phases": 7,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 4,
+          "Delay": 3,
+          "ExecuteSubAction": 3,
+          "ExecuteSubActionAddNumberToText": 3,
+          "SubActionResolved": 3,
+          "ActionFinished": 1
+        },
+        "dispatch_ordinals": [
+          0,
+          1,
+          2
+        ]
+      },
+      {
+        "size": 3,
+        "skip": false,
+        "delay_before": 0.25,
+        "delay_after": 0.0,
+        "initial_loops": 0,
+        "has_next": false,
+        "spectate": true,
+        "final_loops": 0,
+        "phases": 7,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 4,
+          "Delay": 3,
+          "ExecuteSubAction": 3,
+          "ExecuteSubActionAddNumberToText": 3,
+          "SubActionResolved": 3,
+          "ActionFinished": 1,
+          "ReplayNextMatchActionWithDelay": 1,
+          "DidStuff": 1
+        },
+        "dispatch_ordinals": [
+          0,
+          1,
+          2
+        ]
+      },
+      {
+        "size": 3,
+        "skip": false,
+        "delay_before": 0.25,
+        "delay_after": 0.0,
+        "initial_loops": 0,
+        "has_next": true,
+        "spectate": false,
+        "final_loops": 1,
+        "phases": 7,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 4,
+          "Delay": 3,
+          "ExecuteSubAction": 3,
+          "ExecuteSubActionAddNumberToText": 3,
+          "SubActionResolved": 3,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": [
+          0,
+          1,
+          2
+        ]
+      },
+      {
+        "size": 3,
+        "skip": false,
+        "delay_before": 0.25,
+        "delay_after": 0.0,
+        "initial_loops": 0,
+        "has_next": true,
+        "spectate": true,
+        "final_loops": 1,
+        "phases": 7,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 4,
+          "Delay": 3,
+          "ExecuteSubAction": 3,
+          "ExecuteSubActionAddNumberToText": 3,
+          "SubActionResolved": 3,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": [
+          0,
+          1,
+          2
+        ]
+      },
+      {
+        "size": 3,
+        "skip": false,
+        "delay_before": 0.25,
+        "delay_after": 0.0,
+        "initial_loops": 20,
+        "has_next": false,
+        "spectate": false,
+        "final_loops": 1,
+        "phases": 7,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 4,
+          "Delay": 3,
+          "ExecuteSubAction": 3,
+          "ExecuteSubActionAddNumberToText": 3,
+          "SubActionResolved": 3,
+          "ActionFinished": 1
+        },
+        "dispatch_ordinals": [
+          0,
+          1,
+          2
+        ]
+      },
+      {
+        "size": 3,
+        "skip": false,
+        "delay_before": 0.25,
+        "delay_after": 0.0,
+        "initial_loops": 20,
+        "has_next": false,
+        "spectate": true,
+        "final_loops": 0,
+        "phases": 7,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 4,
+          "Delay": 3,
+          "ExecuteSubAction": 3,
+          "ExecuteSubActionAddNumberToText": 3,
+          "SubActionResolved": 3,
+          "ActionFinished": 1,
+          "ReplayNextMatchActionWithDelay": 1,
+          "DidStuff": 1
+        },
+        "dispatch_ordinals": [
+          0,
+          1,
+          2
+        ]
+      },
+      {
+        "size": 3,
+        "skip": false,
+        "delay_before": 0.25,
+        "delay_after": 0.0,
+        "initial_loops": 20,
+        "has_next": true,
+        "spectate": false,
+        "final_loops": 1,
+        "phases": 7,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 4,
+          "Delay": 3,
+          "ExecuteSubAction": 3,
+          "ExecuteSubActionAddNumberToText": 3,
+          "SubActionResolved": 3,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": [
+          0,
+          1,
+          2
+        ]
+      },
+      {
+        "size": 3,
+        "skip": false,
+        "delay_before": 0.25,
+        "delay_after": 0.0,
+        "initial_loops": 20,
+        "has_next": true,
+        "spectate": true,
+        "final_loops": 1,
+        "phases": 7,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 4,
+          "Delay": 3,
+          "ExecuteSubAction": 3,
+          "ExecuteSubActionAddNumberToText": 3,
+          "SubActionResolved": 3,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": [
+          0,
+          1,
+          2
+        ]
+      },
+      {
+        "size": 3,
+        "skip": false,
+        "delay_before": 0.25,
+        "delay_after": 0.5,
+        "initial_loops": 0,
+        "has_next": false,
+        "spectate": false,
+        "final_loops": 0,
+        "phases": 10,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 4,
+          "Delay": 6,
+          "ExecuteSubAction": 3,
+          "ExecuteSubActionAddNumberToText": 3,
+          "SubActionResolved": 3,
+          "ActionFinished": 1
+        },
+        "dispatch_ordinals": [
+          0,
+          1,
+          2
+        ]
+      },
+      {
+        "size": 3,
+        "skip": false,
+        "delay_before": 0.25,
+        "delay_after": 0.5,
+        "initial_loops": 0,
+        "has_next": false,
+        "spectate": true,
+        "final_loops": 0,
+        "phases": 10,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 4,
+          "Delay": 6,
+          "ExecuteSubAction": 3,
+          "ExecuteSubActionAddNumberToText": 3,
+          "SubActionResolved": 3,
+          "ActionFinished": 1,
+          "ReplayNextMatchActionWithDelay": 1,
+          "DidStuff": 1
+        },
+        "dispatch_ordinals": [
+          0,
+          1,
+          2
+        ]
+      },
+      {
+        "size": 3,
+        "skip": false,
+        "delay_before": 0.25,
+        "delay_after": 0.5,
+        "initial_loops": 0,
+        "has_next": true,
+        "spectate": false,
+        "final_loops": 0,
+        "phases": 10,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 4,
+          "Delay": 6,
+          "ExecuteSubAction": 3,
+          "ExecuteSubActionAddNumberToText": 3,
+          "SubActionResolved": 3,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": [
+          0,
+          1,
+          2
+        ]
+      },
+      {
+        "size": 3,
+        "skip": false,
+        "delay_before": 0.25,
+        "delay_after": 0.5,
+        "initial_loops": 0,
+        "has_next": true,
+        "spectate": true,
+        "final_loops": 0,
+        "phases": 10,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 4,
+          "Delay": 6,
+          "ExecuteSubAction": 3,
+          "ExecuteSubActionAddNumberToText": 3,
+          "SubActionResolved": 3,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": [
+          0,
+          1,
+          2
+        ]
+      },
+      {
+        "size": 3,
+        "skip": false,
+        "delay_before": 0.25,
+        "delay_after": 0.5,
+        "initial_loops": 20,
+        "has_next": false,
+        "spectate": false,
+        "final_loops": 0,
+        "phases": 10,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 4,
+          "Delay": 6,
+          "ExecuteSubAction": 3,
+          "ExecuteSubActionAddNumberToText": 3,
+          "SubActionResolved": 3,
+          "ActionFinished": 1
+        },
+        "dispatch_ordinals": [
+          0,
+          1,
+          2
+        ]
+      },
+      {
+        "size": 3,
+        "skip": false,
+        "delay_before": 0.25,
+        "delay_after": 0.5,
+        "initial_loops": 20,
+        "has_next": false,
+        "spectate": true,
+        "final_loops": 0,
+        "phases": 10,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 4,
+          "Delay": 6,
+          "ExecuteSubAction": 3,
+          "ExecuteSubActionAddNumberToText": 3,
+          "SubActionResolved": 3,
+          "ActionFinished": 1,
+          "ReplayNextMatchActionWithDelay": 1,
+          "DidStuff": 1
+        },
+        "dispatch_ordinals": [
+          0,
+          1,
+          2
+        ]
+      },
+      {
+        "size": 3,
+        "skip": false,
+        "delay_before": 0.25,
+        "delay_after": 0.5,
+        "initial_loops": 20,
+        "has_next": true,
+        "spectate": false,
+        "final_loops": 0,
+        "phases": 10,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 4,
+          "Delay": 6,
+          "ExecuteSubAction": 3,
+          "ExecuteSubActionAddNumberToText": 3,
+          "SubActionResolved": 3,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": [
+          0,
+          1,
+          2
+        ]
+      },
+      {
+        "size": 3,
+        "skip": false,
+        "delay_before": 0.25,
+        "delay_after": 0.5,
+        "initial_loops": 20,
+        "has_next": true,
+        "spectate": true,
+        "final_loops": 0,
+        "phases": 10,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 4,
+          "Delay": 6,
+          "ExecuteSubAction": 3,
+          "ExecuteSubActionAddNumberToText": 3,
+          "SubActionResolved": 3,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": [
+          0,
+          1,
+          2
+        ]
+      },
+      {
+        "size": 3,
+        "skip": true,
+        "delay_before": 0.0,
+        "delay_after": 0.0,
+        "initial_loops": 0,
+        "has_next": false,
+        "spectate": false,
+        "final_loops": 3,
+        "phases": 1,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 4,
+          "ActionFinished": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 3,
+        "skip": true,
+        "delay_before": 0.0,
+        "delay_after": 0.0,
+        "initial_loops": 0,
+        "has_next": false,
+        "spectate": true,
+        "final_loops": 0,
+        "phases": 1,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 4,
+          "ActionFinished": 1,
+          "ReplayNextMatchActionWithDelay": 1,
+          "DidStuff": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 3,
+        "skip": true,
+        "delay_before": 0.0,
+        "delay_after": 0.0,
+        "initial_loops": 0,
+        "has_next": true,
+        "spectate": false,
+        "final_loops": 3,
+        "phases": 1,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 4,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 3,
+        "skip": true,
+        "delay_before": 0.0,
+        "delay_after": 0.0,
+        "initial_loops": 0,
+        "has_next": true,
+        "spectate": true,
+        "final_loops": 3,
+        "phases": 1,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 4,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 3,
+        "skip": true,
+        "delay_before": 0.0,
+        "delay_after": 0.0,
+        "initial_loops": 20,
+        "has_next": false,
+        "spectate": false,
+        "final_loops": 2,
+        "phases": 2,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 4,
+          "DelayUntilNextTick": 1,
+          "ActionFinished": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 3,
+        "skip": true,
+        "delay_before": 0.0,
+        "delay_after": 0.0,
+        "initial_loops": 20,
+        "has_next": false,
+        "spectate": true,
+        "final_loops": 0,
+        "phases": 2,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 4,
+          "DelayUntilNextTick": 1,
+          "ActionFinished": 1,
+          "ReplayNextMatchActionWithDelay": 1,
+          "DidStuff": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 3,
+        "skip": true,
+        "delay_before": 0.0,
+        "delay_after": 0.0,
+        "initial_loops": 20,
+        "has_next": true,
+        "spectate": false,
+        "final_loops": 2,
+        "phases": 2,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 4,
+          "DelayUntilNextTick": 1,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 3,
+        "skip": true,
+        "delay_before": 0.0,
+        "delay_after": 0.0,
+        "initial_loops": 20,
+        "has_next": true,
+        "spectate": true,
+        "final_loops": 2,
+        "phases": 2,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 4,
+          "DelayUntilNextTick": 1,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 3,
+        "skip": true,
+        "delay_before": 0.0,
+        "delay_after": 0.5,
+        "initial_loops": 0,
+        "has_next": false,
+        "spectate": false,
+        "final_loops": 0,
+        "phases": 4,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 4,
+          "Delay": 3,
+          "ActionFinished": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 3,
+        "skip": true,
+        "delay_before": 0.0,
+        "delay_after": 0.5,
+        "initial_loops": 0,
+        "has_next": false,
+        "spectate": true,
+        "final_loops": 0,
+        "phases": 4,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 4,
+          "Delay": 3,
+          "ActionFinished": 1,
+          "ReplayNextMatchActionWithDelay": 1,
+          "DidStuff": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 3,
+        "skip": true,
+        "delay_before": 0.0,
+        "delay_after": 0.5,
+        "initial_loops": 0,
+        "has_next": true,
+        "spectate": false,
+        "final_loops": 0,
+        "phases": 4,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 4,
+          "Delay": 3,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 3,
+        "skip": true,
+        "delay_before": 0.0,
+        "delay_after": 0.5,
+        "initial_loops": 0,
+        "has_next": true,
+        "spectate": true,
+        "final_loops": 0,
+        "phases": 4,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 4,
+          "Delay": 3,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 3,
+        "skip": true,
+        "delay_before": 0.0,
+        "delay_after": 0.5,
+        "initial_loops": 20,
+        "has_next": false,
+        "spectate": false,
+        "final_loops": 0,
+        "phases": 4,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 4,
+          "Delay": 3,
+          "ActionFinished": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 3,
+        "skip": true,
+        "delay_before": 0.0,
+        "delay_after": 0.5,
+        "initial_loops": 20,
+        "has_next": false,
+        "spectate": true,
+        "final_loops": 0,
+        "phases": 4,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 4,
+          "Delay": 3,
+          "ActionFinished": 1,
+          "ReplayNextMatchActionWithDelay": 1,
+          "DidStuff": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 3,
+        "skip": true,
+        "delay_before": 0.0,
+        "delay_after": 0.5,
+        "initial_loops": 20,
+        "has_next": true,
+        "spectate": false,
+        "final_loops": 0,
+        "phases": 4,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 4,
+          "Delay": 3,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 3,
+        "skip": true,
+        "delay_before": 0.0,
+        "delay_after": 0.5,
+        "initial_loops": 20,
+        "has_next": true,
+        "spectate": true,
+        "final_loops": 0,
+        "phases": 4,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 4,
+          "Delay": 3,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 3,
+        "skip": true,
+        "delay_before": 0.25,
+        "delay_after": 0.0,
+        "initial_loops": 0,
+        "has_next": false,
+        "spectate": false,
+        "final_loops": 3,
+        "phases": 1,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 4,
+          "ActionFinished": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 3,
+        "skip": true,
+        "delay_before": 0.25,
+        "delay_after": 0.0,
+        "initial_loops": 0,
+        "has_next": false,
+        "spectate": true,
+        "final_loops": 0,
+        "phases": 1,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 4,
+          "ActionFinished": 1,
+          "ReplayNextMatchActionWithDelay": 1,
+          "DidStuff": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 3,
+        "skip": true,
+        "delay_before": 0.25,
+        "delay_after": 0.0,
+        "initial_loops": 0,
+        "has_next": true,
+        "spectate": false,
+        "final_loops": 3,
+        "phases": 1,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 4,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 3,
+        "skip": true,
+        "delay_before": 0.25,
+        "delay_after": 0.0,
+        "initial_loops": 0,
+        "has_next": true,
+        "spectate": true,
+        "final_loops": 3,
+        "phases": 1,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 4,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 3,
+        "skip": true,
+        "delay_before": 0.25,
+        "delay_after": 0.0,
+        "initial_loops": 20,
+        "has_next": false,
+        "spectate": false,
+        "final_loops": 2,
+        "phases": 2,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 4,
+          "DelayUntilNextTick": 1,
+          "ActionFinished": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 3,
+        "skip": true,
+        "delay_before": 0.25,
+        "delay_after": 0.0,
+        "initial_loops": 20,
+        "has_next": false,
+        "spectate": true,
+        "final_loops": 0,
+        "phases": 2,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 4,
+          "DelayUntilNextTick": 1,
+          "ActionFinished": 1,
+          "ReplayNextMatchActionWithDelay": 1,
+          "DidStuff": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 3,
+        "skip": true,
+        "delay_before": 0.25,
+        "delay_after": 0.0,
+        "initial_loops": 20,
+        "has_next": true,
+        "spectate": false,
+        "final_loops": 2,
+        "phases": 2,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 4,
+          "DelayUntilNextTick": 1,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 3,
+        "skip": true,
+        "delay_before": 0.25,
+        "delay_after": 0.0,
+        "initial_loops": 20,
+        "has_next": true,
+        "spectate": true,
+        "final_loops": 2,
+        "phases": 2,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 4,
+          "DelayUntilNextTick": 1,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 3,
+        "skip": true,
+        "delay_before": 0.25,
+        "delay_after": 0.5,
+        "initial_loops": 0,
+        "has_next": false,
+        "spectate": false,
+        "final_loops": 0,
+        "phases": 4,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 4,
+          "Delay": 3,
+          "ActionFinished": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 3,
+        "skip": true,
+        "delay_before": 0.25,
+        "delay_after": 0.5,
+        "initial_loops": 0,
+        "has_next": false,
+        "spectate": true,
+        "final_loops": 0,
+        "phases": 4,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 4,
+          "Delay": 3,
+          "ActionFinished": 1,
+          "ReplayNextMatchActionWithDelay": 1,
+          "DidStuff": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 3,
+        "skip": true,
+        "delay_before": 0.25,
+        "delay_after": 0.5,
+        "initial_loops": 0,
+        "has_next": true,
+        "spectate": false,
+        "final_loops": 0,
+        "phases": 4,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 4,
+          "Delay": 3,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 3,
+        "skip": true,
+        "delay_before": 0.25,
+        "delay_after": 0.5,
+        "initial_loops": 0,
+        "has_next": true,
+        "spectate": true,
+        "final_loops": 0,
+        "phases": 4,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 4,
+          "Delay": 3,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 3,
+        "skip": true,
+        "delay_before": 0.25,
+        "delay_after": 0.5,
+        "initial_loops": 20,
+        "has_next": false,
+        "spectate": false,
+        "final_loops": 0,
+        "phases": 4,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 4,
+          "Delay": 3,
+          "ActionFinished": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 3,
+        "skip": true,
+        "delay_before": 0.25,
+        "delay_after": 0.5,
+        "initial_loops": 20,
+        "has_next": false,
+        "spectate": true,
+        "final_loops": 0,
+        "phases": 4,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 4,
+          "Delay": 3,
+          "ActionFinished": 1,
+          "ReplayNextMatchActionWithDelay": 1,
+          "DidStuff": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 3,
+        "skip": true,
+        "delay_before": 0.25,
+        "delay_after": 0.5,
+        "initial_loops": 20,
+        "has_next": true,
+        "spectate": false,
+        "final_loops": 0,
+        "phases": 4,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 4,
+          "Delay": 3,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": []
+      },
+      {
+        "size": 3,
+        "skip": true,
+        "delay_before": 0.25,
+        "delay_after": 0.5,
+        "initial_loops": 20,
+        "has_next": true,
+        "spectate": true,
+        "final_loops": 0,
+        "phases": 4,
+        "event_counts": {
+          "ExecuteEffectbarChanges": 4,
+          "Delay": 3,
+          "ActionFinished": 1,
+          "StartVisualActionQueue": 1
+        },
+        "dispatch_ordinals": []
+      }
+    ]
+  },
+  "action_finished_index": {
+    "instance_writes": [
+      {
+        "index": 126,
+        "field": "actionQueueIsRunning"
+      },
+      {
+        "index": 254,
+        "field": "loopsWithoutDelay"
+      }
+    ],
+    "calls": [
+      {
+        "index": 0,
+        "name": "Array_Length"
+      },
+      {
+        "index": 59,
+        "name": "Greater_IntInt"
+      },
+      {
+        "index": 107,
+        "name": "StartVisualActionQueue"
+      },
+      {
+        "index": 173,
+        "name": "ReplayNextMatchActionWithDelay"
+      },
+      {
+        "index": 218,
+        "name": "DidStuff"
+      }
+    ]
+  },
+  "completion_windows": [
+    {
+      "start": 15,
+      "end": 65,
+      "statement_indexes": [
+        15,
+        64
+      ]
+    },
+    {
+      "start": 65,
+      "end": 604,
+      "statement_indexes": [
+        65,
+        79,
+        138,
+        172,
+        186,
+        245,
+        279,
+        293,
+        326,
+        372,
+        432,
+        446,
+        484,
+        522,
+        536,
+        603
+      ]
+    },
+    {
+      "start": 604,
+      "end": 619,
+      "statement_indexes": [
+        604,
+        618
+      ]
+    },
+    {
+      "start": 619,
+      "end": 634,
+      "statement_indexes": [
+        619,
+        633
+      ]
+    },
+    {
+      "start": 634,
+      "end": 792,
+      "statement_indexes": [
+        634,
+        672,
+        710,
+        724,
+        791
+      ]
+    },
+    {
+      "start": 792,
+      "end": 848,
+      "statement_indexes": [
+        792,
+        815,
+        847
+      ]
+    },
+    {
+      "start": 815,
+      "end": 848,
+      "statement_indexes": [
+        815,
+        847
+      ]
+    },
+    {
+      "start": 848,
+      "end": 1020,
+      "statement_indexes": [
+        848,
+        890,
+        917,
+        944,
+        978,
+        992,
+        1015
+      ]
+    },
+    {
+      "start": 1020,
+      "end": 1048,
+      "statement_indexes": [
+        1020,
+        1043
+      ]
+    }
+  ],
+  "action_finished_ast": [
+    {
+      "Inst": "Let",
+      "Variable": {
+        "Inst": "LocalVariable",
+        "Variable Name": "CallFunc_Array_Length_ReturnValue"
+      },
+      "Expression": {
+        "Inst": "Context",
+        "Context": {
+          "Inst": "ObjectConst",
+          "Object": "Default__KismetArrayLibrary"
+        },
+        "SkipOffsetForNull": 19,
+        "RValuePropertyName": "CallFunc_Array_Length_ReturnValue",
+        "Expression": {
+          "Inst": "FinalFunction",
+          "Function": "Array_Length",
+          "Parameters": [
+            {
+              "Inst": "InstanceVariable",
+              "Variable Name": "actionQueue"
+            }
+          ]
+        }
+      },
+      "StatementIndex": 0
+    },
+    {
+      "Inst": "LetBool",
+      "Variable": {
+        "Inst": "LocalVariable",
+        "Variable Name": "CallFunc_Greater_IntInt_ReturnValue"
+      },
+      "Expression": {
+        "Inst": "CallMath",
+        "Function": "Greater_IntInt",
+        "Parameters": [
+          {
+            "Inst": "LocalVariable",
+            "Variable Name": "CallFunc_Array_Length_ReturnValue"
+          },
+          {
+            "Inst": "IntConst",
+            "Value": 0
+          }
+        ]
+      },
+      "StatementIndex": 59
+    },
+    {
+      "Inst": "JumpIfNot",
+      "Offset": 126,
+      "Condition": {
+        "Inst": "LocalVariable",
+        "Variable Name": "CallFunc_Greater_IntInt_ReturnValue"
+      },
+      "StatementIndex": 93
+    },
+    {
+      "Inst": "LocalVirtualFunction",
+      "FunctionName": "StartVisualActionQueue",
+      "Parameters": [],
+      "StatementIndex": 107
+    },
+    {
+      "Inst": "Jump",
+      "Offset": 277,
+      "StatementIndex": 121
+    },
+    {
+      "Inst": "LetBool",
+      "Variable": {
+        "Inst": "InstanceVariable",
+        "Variable Name": "actionQueueIsRunning"
+      },
+      "Expression": {
+        "Inst": "False"
+      },
+      "StatementIndex": 126
+    },
+    {
+      "Inst": "JumpIfNot",
+      "Offset": 277,
+      "Condition": {
+        "Inst": "Context",
+        "Context": {
+          "Inst": "InstanceVariable",
+          "Variable Name": "Logic"
+        },
+        "SkipOffsetForNull": 9,
+        "RValuePropertyName": "isSpectate",
+        "Expression": {
+          "Inst": "InstanceVariable",
+          "Variable Name": "isSpectate"
+        }
+      },
+      "StatementIndex": 137
+    },
+    {
+      "Inst": "Context",
+      "Context": {
+        "Inst": "InstanceVariable",
+        "Variable Name": "Logic"
+      },
+      "SkipOffsetForNull": 23,
+      "RValuePropertyName": null,
+      "Expression": {
+        "Inst": "LocalVirtualFunction",
+        "FunctionName": "ReplayNextMatchActionWithDelay",
+        "Parameters": [
+          {
+            "Inst": "DoubleConst",
+            "Value": 0.20000000298023224
+          }
+        ]
+      },
+      "StatementIndex": 173
+    },
+    {
+      "Inst": "Context",
+      "Context": {
+        "Inst": "InstanceVariable",
+        "Variable Name": "Logic"
+      },
+      "SkipOffsetForNull": 14,
+      "RValuePropertyName": null,
+      "Expression": {
+        "Inst": "LocalVirtualFunction",
+        "FunctionName": "DidStuff",
+        "Parameters": []
+      },
+      "StatementIndex": 218
+    },
+    {
+      "Inst": "Let",
+      "Variable": {
+        "Inst": "InstanceVariable",
+        "Variable Name": "loopsWithoutDelay"
+      },
+      "Expression": {
+        "Inst": "IntConst",
+        "Value": 0
+      },
+      "StatementIndex": 254
+    },
+    {
+      "Inst": "Return",
+      "Expression": {
+        "Inst": "Nothing"
+      },
+      "StatementIndex": 277
+    },
+    {
+      "Inst": "EndOfScript",
+      "StatementIndex": 279
+    }
+  ],
+  "effectbar_boundary": {
+    "script_size": 3136,
+    "decode_complete": true,
+    "executed": false
+  },
+  "worker_job": "20261028-025659-rule504-finish-index-1a745890",
+  "evidence": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule504-queue.py",
+      "bytes": 626,
+      "sha256": "436808250e500cc72bb62616d06cd5dde4a53c34dac148bf272c6f61a18c1402"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule503-completion.py",
+      "bytes": 1522,
+      "sha256": "e40fb88aea6f8dd3e3e380ef211513045e75068cabb4afe15b88d1a995e66cf0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule504-visual-queue-20261028.json",
+      "bytes": 6257333,
+      "sha256": "7a1bd0b7bddaca126db1c35905c0c513939505c91c56e8c8f8c30d5de2cc55c0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\build-rule504-verifier.py",
+      "bytes": 5523,
+      "sha256": "120a63fcf2a9f05e8f6dfaec5da4edab69a646e1f952f87f7b7d41fe8f33b904"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule504-queue.py",
+      "bytes": 10357,
+      "sha256": "b262cf8a6498b31266f9377f5f11e13265d2f3574ff73aa515db74943ae4a920"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule504-queue-verification-20261028.json",
+      "bytes": 533378,
+      "sha256": "7d2cc76a84cb3c21f83ebd970207745b6e04678a9c527bb0a19573966d0436bf"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule504-worker\\input.json",
+      "bytes": 2480,
+      "sha256": "c4f91234595f5dbf19c89ed2822ce3204736964568c951204c6017a2f99b11fb"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule504-worker\\task.txt",
+      "bytes": 506,
+      "sha256": "b891a128f230385189fcf5ab858d620e84863ee25c130e7a935f981d154d4f3c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule504-worker\\output.json",
+      "bytes": 407,
+      "sha256": "a762d49f458b0930a113bd72dc6e71e62fcfc25b475011fea5998214b2c8c51f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-498.py",
+      "bytes": 752,
+      "sha256": "254664d0aa1146756993fda4ac54e58891709c0ec5bcdd2cfa852f874c4e67ef"
+    }
+  ],
+  "remaining": [
+    "StartVisualActionQueue及动作/快照对齐；ExecuteEffectbarChanges对PvP状态与投影状态的实际写入边界。",
+    "真实latent调度、重入和订阅者传递调用，不以当前受控测试作全局无干扰保证。",
+    "应回到无头PvP规则依赖与全卡池认证，不扩展恢复UI/观战功能。"
+  ],
+  "game_writes": 0,
+  "real_game_function_calls": 0,
+  "fully_certified_cards": 0
+}
