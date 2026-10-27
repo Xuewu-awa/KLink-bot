@@ -1,0 +1,932 @@
+{
+  "rule_id": "RULE-486",
+  "date": "2026-10-27",
+  "base_commit": "47e823e37583a7147e7569430c0b4d6b241bc133",
+  "status": "更正CopyData机械候选中的目标读取误标；直接写入分层验证通过，类默认/未复制字段保持边界",
+  "findings": [
+    "RULE-485机械过滤条件只检查第二条指令是否包含[rdi+offset]，未要求它位于Intel语法的目标操作数，故89候选中有3条实际上读取目标旧值。现提交tools/audit_native_copy_pairs.py，按逗号前的目标操作数区分86 direct_store与3 destination_read。此更正不影响RULE-485守护缓存的独立两指令证明或产品修复。",
+    "三组误标分别为4adc3f3/4adc3fa（+90 Text）、4adc436/4adc43d（+a0 flavorText）、4adc874/4adc87b（+1b0 campaignName）。第二条形如mov rsi,qword ptr[rdi+offset]，是在为后续所有权处理读取旧对象，不是直接复制；未把完整FText所有权据此认证。",
+    "当前CopyData133B包装/2397B主体复读，与PE采集及反汇编相同。89候选各6组源/目标缓冲区布景执行原始相邻指令：86真实写入516组验证写入范围/值和源4KB保持，3目标读取18组验证目标4KB保持；共534例通过。未将单指令片段证明扩大到整个CopyData及helper/循环/虚调用。",
+    "DeepSeek将89候选与SDK字段范围机械连接，主agent重新生成并精确核验。77行有SDK字段范围、12行未映射；这不是12个新卡牌逻辑缺口，也不是SDK未反射私有数值区语义判断。SDK范围对应只作为定位线索。",
+    "当前2019卡类CDO加1基础CDO重新核对对象头及两个字段双读。SDK偏移hasPincer+258的15卡类默认非零，CurrentTarget+2b0的2020默认全部零。CopyData完整直接指令文本未见这两个字面量偏移，但不能排除间接/helper作用。新对象继承类默认及完整构造尚需独立证明。",
+    "因此不能无条件增加CurrentTarget复制，也不能以复制所有关键词即等于原生完整CopyData。当前托管CurrentTarget在副本为null，与已观测默认相符，但不是整个路径认证；hasPincer的类默认/源变更可达性和共享状态仍待核对，未凭直接引用缺失改规则。",
+    "本轮修正审计分类工具和历史清单说明，产品规则未改，未重跑C#全套；929/929仅RULE-485历史结果。"
+  ],
+  "verification": {
+    "rule": "RULE-486",
+    "pid": 24220,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "exact_adjacent_candidates": 89,
+    "direct_store_pairs": 86,
+    "destination_read_pairs": 3,
+    "direct_store_cases": 516,
+    "destination_read_cases": 18,
+    "sdk_mapped_rows": 77,
+    "sdk_unmapped_rows": 12,
+    "isolated_native_cases": 534,
+    "case_sha256": "4b152e447fe045d8d3b67cf9239dc113a1132cb6bc58f5fc3f6718df1fde5b27",
+    "cdo_summary": {
+      "cards": 2019,
+      "base": 1,
+      "pincer_nonzero": 15,
+      "current_target_nonzero": 0
+    },
+    "direct_literal_offset_absence": {
+      "hasPincer": [],
+      "CurrentTarget": []
+    },
+    "scope": "89 syntactically adjacent RBX/RDI MOV candidates:86 direct stores and3 destination reads;6 isolated buffer profiles each. Read candidates preserve target bytes, not copy values. SDK range join is a location clue, not semantic/type ownership certification. Pairs are not all CopyData writes: nonadjacent moves, aliases, loops, helper/virtual calls omitted. Literal-offset absence does not prove helper-side absence. Current CDO defaults do not certify complete construction or mutable-source reachability.",
+    "game_writes": 0,
+    "real_game_function_calls": 0,
+    "fully_certified_cards": 0
+  },
+  "candidate_inventory": [
+    {
+      "kind": "direct_store",
+      "load_rva": "0x4adc3a3",
+      "store_rva": "0x4adc3a6",
+      "offset": 96,
+      "bytes": 4,
+      "sdk_field": "title",
+      "raw_hex": "8b4360894760"
+    },
+    {
+      "kind": "direct_store",
+      "load_rva": "0x4adc3a9",
+      "store_rva": "0x4adc3ad",
+      "offset": 104,
+      "bytes": 1,
+      "sdk_field": "Type",
+      "raw_hex": "0fb64368884768"
+    },
+    {
+      "kind": "direct_store",
+      "load_rva": "0x4adc3b0",
+      "store_rva": "0x4adc3b3",
+      "offset": 108,
+      "bytes": 4,
+      "sdk_field": "attack",
+      "raw_hex": "8b436c89476c"
+    },
+    {
+      "kind": "direct_store",
+      "load_rva": "0x4adc3b6",
+      "store_rva": "0x4adc3b9",
+      "offset": 112,
+      "bytes": 4,
+      "sdk_field": "attackBuff",
+      "raw_hex": "8b4370894770"
+    },
+    {
+      "kind": "direct_store",
+      "load_rva": "0x4adc3bc",
+      "store_rva": "0x4adc3bf",
+      "offset": 116,
+      "bytes": 4,
+      "sdk_field": "defense",
+      "raw_hex": "8b4374894774"
+    },
+    {
+      "kind": "direct_store",
+      "load_rva": "0x4adc3c2",
+      "store_rva": "0x4adc3c5",
+      "offset": 120,
+      "bytes": 4,
+      "sdk_field": "range",
+      "raw_hex": "8b4378894778"
+    },
+    {
+      "kind": "direct_store",
+      "load_rva": "0x4adc3c8",
+      "store_rva": "0x4adc3cc",
+      "offset": 124,
+      "bytes": 1,
+      "sdk_field": "faction",
+      "raw_hex": "0fb6437c88477c"
+    },
+    {
+      "kind": "direct_store",
+      "load_rva": "0x4adc3cf",
+      "store_rva": "0x4adc3d5",
+      "offset": 128,
+      "bytes": 4,
+      "sdk_field": "kredits",
+      "raw_hex": "8b8380000000898780000000"
+    },
+    {
+      "kind": "direct_store",
+      "load_rva": "0x4adc3db",
+      "store_rva": "0x4adc3e1",
+      "offset": 636,
+      "bytes": 4,
+      "sdk_field": "pinnedTurns",
+      "raw_hex": "8b837c02000089877c020000"
+    },
+    {
+      "kind": "direct_store",
+      "load_rva": "0x4adc3e7",
+      "store_rva": "0x4adc3ed",
+      "offset": 132,
+      "bytes": 4,
+      "sdk_field": "kreditsBuff",
+      "raw_hex": "8b8384000000898784000000"
+    },
+    {
+      "kind": "destination_read",
+      "load_rva": "0x4adc3f3",
+      "store_rva": "0x4adc3fa",
+      "offset": 144,
+      "bytes": 8,
+      "sdk_field": "Text",
+      "raw_hex": "488b8b90000000488bb790000000"
+    },
+    {
+      "kind": "direct_store",
+      "load_rva": "0x4adc42a",
+      "store_rva": "0x4adc430",
+      "offset": 152,
+      "bytes": 4,
+      "sdk_field": "Text",
+      "raw_hex": "8b8398000000898798000000"
+    },
+    {
+      "kind": "destination_read",
+      "load_rva": "0x4adc436",
+      "store_rva": "0x4adc43d",
+      "offset": 160,
+      "bytes": 8,
+      "sdk_field": "flavorText",
+      "raw_hex": "488b8ba0000000488bb7a0000000"
+    },
+    {
+      "kind": "direct_store",
+      "load_rva": "0x4adc487",
+      "store_rva": "0x4adc48d",
+      "offset": 176,
+      "bytes": 4,
+      "sdk_field": "operationCost",
+      "raw_hex": "8b83b00000008987b0000000"
+    },
+    {
+      "kind": "direct_store",
+      "load_rva": "0x4adc493",
+      "store_rva": "0x4adc499",
+      "offset": 180,
+      "bytes": 4,
+      "sdk_field": "operationCostBuff",
+      "raw_hex": "8b83b40000008987b4000000"
+    },
+    {
+      "kind": "direct_store",
+      "load_rva": "0x4adc4d2",
+      "store_rva": "0x4adc4d9",
+      "offset": 285,
+      "bytes": 1,
+      "sdk_field": "selectTargetOnPlayedFromHand",
+      "raw_hex": "0fb6831d01000088871d010000"
+    },
+    {
+      "kind": "direct_store",
+      "load_rva": "0x4adc4df",
+      "store_rva": "0x4adc4e6",
+      "offset": 304,
+      "bytes": 1,
+      "sdk_field": "cardSet",
+      "raw_hex": "0fb68330010000888730010000"
+    },
+    {
+      "kind": "direct_store",
+      "load_rva": "0x4adc4ec",
+      "store_rva": "0x4adc4f3",
+      "offset": 472,
+      "bytes": 1,
+      "sdk_field": "hasDeployment",
+      "raw_hex": "0fb683d80100008887d8010000"
+    },
+    {
+      "kind": "direct_store",
+      "load_rva": "0x4adc4f9",
+      "store_rva": "0x4adc500",
+      "offset": 473,
+      "bytes": 1,
+      "sdk_field": "hasDestruction",
+      "raw_hex": "0fb683d90100008887d9010000"
+    },
+    {
+      "kind": "direct_store",
+      "load_rva": "0x4adc506",
+      "store_rva": "0x4adc50d",
+      "offset": 474,
+      "bytes": 1,
+      "sdk_field": "hasBlitz",
+      "raw_hex": "0fb683da0100008887da010000"
+    },
+    {
+      "kind": "direct_store",
+      "load_rva": "0x4adc513",
+      "store_rva": "0x4adc51a",
+      "offset": 475,
+      "bytes": 1,
+      "sdk_field": "hasAmbush",
+      "raw_hex": "0fb683db0100008887db010000"
+    },
+    {
+      "kind": "direct_store",
+      "load_rva": "0x4adc520",
+      "store_rva": "0x4adc527",
+      "offset": 485,
+      "bytes": 1,
+      "sdk_field": "hasMobilize",
+      "raw_hex": "0fb683e50100008887e5010000"
+    },
+    {
+      "kind": "direct_store",
+      "load_rva": "0x4adc52d",
+      "store_rva": "0x4adc534",
+      "offset": 486,
+      "bytes": 1,
+      "sdk_field": "hasAlpine",
+      "raw_hex": "0fb683e60100008887e6010000"
+    },
+    {
+      "kind": "direct_store",
+      "load_rva": "0x4adc53a",
+      "store_rva": "0x4adc540",
+      "offset": 476,
+      "bytes": 4,
+      "sdk_field": "heavyArmor",
+      "raw_hex": "8b83dc0100008987dc010000"
+    },
+    {
+      "kind": "direct_store",
+      "load_rva": "0x4adc546",
+      "store_rva": "0x4adc54c",
+      "offset": 480,
+      "bytes": 4,
+      "sdk_field": "heavyArmorBuff",
+      "raw_hex": "8b83e00100008987e0010000"
+    },
+    {
+      "kind": "direct_store",
+      "load_rva": "0x4adc552",
+      "store_rva": "0x4adc559",
+      "offset": 484,
+      "bytes": 1,
+      "sdk_field": "hasSmokescreen",
+      "raw_hex": "0fb683e40100008887e4010000"
+    },
+    {
+      "kind": "direct_store",
+      "load_rva": "0x4adc55f",
+      "store_rva": "0x4adc566",
+      "offset": 487,
+      "bytes": 1,
+      "sdk_field": "hasFury",
+      "raw_hex": "0fb683e70100008887e7010000"
+    },
+    {
+      "kind": "direct_store",
+      "load_rva": "0x4adc56c",
+      "store_rva": "0x4adc573",
+      "offset": 488,
+      "bytes": 1,
+      "sdk_field": "hasGuard",
+      "raw_hex": "0fb683e80100008887e8010000"
+    },
+    {
+      "kind": "direct_store",
+      "load_rva": "0x4adc579",
+      "store_rva": "0x4adc580",
+      "offset": 512,
+      "bytes": 1,
+      "sdk_field": "hasScrying",
+      "raw_hex": "0fb68300020000888700020000"
+    },
+    {
+      "kind": "direct_store",
+      "load_rva": "0x4adc586",
+      "store_rva": "0x4adc58c",
+      "offset": 612,
+      "bytes": 4,
+      "sdk_field": "CardID",
+      "raw_hex": "8b8364020000898764020000"
+    },
+    {
+      "kind": "direct_store",
+      "load_rva": "0x4adc592",
+      "store_rva": "0x4adc598",
+      "offset": 616,
+      "bytes": 4,
+      "sdk_field": "movementLeft",
+      "raw_hex": "8b8368020000898768020000"
+    },
+    {
+      "kind": "direct_store",
+      "load_rva": "0x4adc59e",
+      "store_rva": "0x4adc5a4",
+      "offset": 620,
+      "bytes": 4,
+      "sdk_field": "attackLeft",
+      "raw_hex": "8b836c02000089876c020000"
+    },
+    {
+      "kind": "direct_store",
+      "load_rva": "0x4adc5aa",
+      "store_rva": "0x4adc5b0",
+      "offset": 624,
+      "bytes": 4,
+      "sdk_field": "enterPlayOnTurn",
+      "raw_hex": "8b8370020000898770020000"
+    },
+    {
+      "kind": "direct_store",
+      "load_rva": "0x4adc5b6",
+      "store_rva": "0x4adc5bd",
+      "offset": 628,
+      "bytes": 1,
+      "sdk_field": "hasEverAttacked",
+      "raw_hex": "0fb68374020000888774020000"
+    },
+    {
+      "kind": "direct_store",
+      "load_rva": "0x4adc5c3",
+      "store_rva": "0x4adc5ca",
+      "offset": 629,
+      "bytes": 1,
+      "sdk_field": "Location",
+      "raw_hex": "0fb68375020000888775020000"
+    },
+    {
+      "kind": "direct_store",
+      "load_rva": "0x4adc5d0",
+      "store_rva": "0x4adc5d7",
+      "offset": 630,
+      "bytes": 1,
+      "sdk_field": "side",
+      "raw_hex": "0fb68376020000888776020000"
+    },
+    {
+      "kind": "direct_store",
+      "load_rva": "0x4adc5dd",
+      "store_rva": "0x4adc5e3",
+      "offset": 632,
+      "bytes": 4,
+      "sdk_field": "locationNumber",
+      "raw_hex": "8b8378020000898778020000"
+    },
+    {
+      "kind": "direct_store",
+      "load_rva": "0x4adc5e9",
+      "store_rva": "0x4adc5f0",
+      "offset": 640,
+      "bytes": 1,
+      "sdk_field": "hasBeenAttackedThisTurn",
+      "raw_hex": "0fb68380020000888780020000"
+    },
+    {
+      "kind": "direct_store",
+      "load_rva": "0x4adc5f6",
+      "store_rva": "0x4adc5fd",
+      "offset": 641,
+      "bytes": 1,
+      "sdk_field": "hasAttackedThisTurn",
+      "raw_hex": "0fb68381020000888781020000"
+    },
+    {
+      "kind": "direct_store",
+      "load_rva": "0x4adc603",
+      "store_rva": "0x4adc609",
+      "offset": 644,
+      "bytes": 4,
+      "sdk_field": "attackCountThisTurn",
+      "raw_hex": "8b8384020000898784020000"
+    },
+    {
+      "kind": "direct_store",
+      "load_rva": "0x4adc60f",
+      "store_rva": "0x4adc616",
+      "offset": 648,
+      "bytes": 1,
+      "sdk_field": "isBeingGuarded",
+      "raw_hex": "0fb68388020000888788020000"
+    },
+    {
+      "kind": "direct_store",
+      "load_rva": "0x4adc61c",
+      "store_rva": "0x4adc623",
+      "offset": 649,
+      "bytes": 1,
+      "sdk_field": "isImmune",
+      "raw_hex": "0fb68389020000888789020000"
+    },
+    {
+      "kind": "direct_store",
+      "load_rva": "0x4adc62e",
+      "store_rva": "0x4adc634",
+      "offset": 676,
+      "bytes": 4,
+      "sdk_field": "maxAttack",
+      "raw_hex": "8b83a40200008987a4020000"
+    },
+    {
+      "kind": "direct_store",
+      "load_rva": "0x4adc63a",
+      "store_rva": "0x4adc640",
+      "offset": 680,
+      "bytes": 4,
+      "sdk_field": "maxDefense",
+      "raw_hex": "8b83a80200008987a8020000"
+    },
+    {
+      "kind": "direct_store",
+      "load_rva": "0x4adc646",
+      "store_rva": "0x4adc64d",
+      "offset": 832,
+      "bytes": 8,
+      "sdk_field": "soundEnterPlay",
+      "raw_hex": "488b834003000048898740030000"
+    },
+    {
+      "kind": "direct_store",
+      "load_rva": "0x4adc654",
+      "store_rva": "0x4adc65b",
+      "offset": 840,
+      "bytes": 8,
+      "sdk_field": "soundMoveToFrontline",
+      "raw_hex": "488b834803000048898748030000"
+    },
+    {
+      "kind": "direct_store",
+      "load_rva": "0x4adc662",
+      "store_rva": "0x4adc669",
+      "offset": 848,
+      "bytes": 8,
+      "sdk_field": "soundAttack",
+      "raw_hex": "488b835003000048898750030000"
+    },
+    {
+      "kind": "direct_store",
+      "load_rva": "0x4adc704",
+      "store_rva": "0x4adc70b",
+      "offset": 1120,
+      "bytes": 8,
+      "sdk_field": "blowUpExplosion",
+      "raw_hex": "488b836004000048898760040000"
+    },
+    {
+      "kind": "direct_store",
+      "load_rva": "0x4adc744",
+      "store_rva": "0x4adc74b",
+      "offset": 1284,
+      "bytes": 8,
+      "sdk_field": "customName1",
+      "raw_hex": "488b830405000048898704050000"
+    },
+    {
+      "kind": "direct_store",
+      "load_rva": "0x4adc752",
+      "store_rva": "0x4adc759",
+      "offset": 1292,
+      "bytes": 8,
+      "sdk_field": "customName2",
+      "raw_hex": "488b830c0500004889870c050000"
+    },
+    {
+      "kind": "direct_store",
+      "load_rva": "0x4adc790",
+      "store_rva": "0x4adc797",
+      "offset": 1337,
+      "bytes": 1,
+      "sdk_field": "isDiscard",
+      "raw_hex": "0fb68339050000888739050000"
+    },
+    {
+      "kind": "direct_store",
+      "load_rva": "0x4adc79d",
+      "store_rva": "0x4adc7a4",
+      "offset": 1338,
+      "bytes": 1,
+      "sdk_field": "isRemoval",
+      "raw_hex": "0fb6833a05000088873a050000"
+    },
+    {
+      "kind": "direct_store",
+      "load_rva": "0x4adc7aa",
+      "store_rva": "0x4adc7b1",
+      "offset": 1339,
+      "bytes": 1,
+      "sdk_field": "isDirectDamage",
+      "raw_hex": "0fb6833b05000088873b050000"
+    },
+    {
+      "kind": "direct_store",
+      "load_rva": "0x4adc7b7",
+      "store_rva": "0x4adc7be",
+      "offset": 1340,
+      "bytes": 1,
+      "sdk_field": "isHQDamage",
+      "raw_hex": "0fb6833c05000088873c050000"
+    },
+    {
+      "kind": "direct_store",
+      "load_rva": "0x4adc7c4",
+      "store_rva": "0x4adc7cb",
+      "offset": 1341,
+      "bytes": 1,
+      "sdk_field": "isHQRepair",
+      "raw_hex": "0fb6833d05000088873d050000"
+    },
+    {
+      "kind": "direct_store",
+      "load_rva": "0x4adc7d1",
+      "store_rva": "0x4adc7d8",
+      "offset": 1342,
+      "bytes": 1,
+      "sdk_field": "isRepair",
+      "raw_hex": "0fb6833e05000088873e050000"
+    },
+    {
+      "kind": "direct_store",
+      "load_rva": "0x4adc7de",
+      "store_rva": "0x4adc7e5",
+      "offset": 1343,
+      "bytes": 1,
+      "sdk_field": "isKreditsBuff",
+      "raw_hex": "0fb6833f05000088873f050000"
+    },
+    {
+      "kind": "direct_store",
+      "load_rva": "0x4adc7eb",
+      "store_rva": "0x4adc7f2",
+      "offset": 1344,
+      "bytes": 1,
+      "sdk_field": "isAttackBuff",
+      "raw_hex": "0fb68340050000888740050000"
+    },
+    {
+      "kind": "direct_store",
+      "load_rva": "0x4adc7f8",
+      "store_rva": "0x4adc7ff",
+      "offset": 1345,
+      "bytes": 1,
+      "sdk_field": "isDefenseBuff",
+      "raw_hex": "0fb68341050000888741050000"
+    },
+    {
+      "kind": "direct_store",
+      "load_rva": "0x4adc805",
+      "store_rva": "0x4adc80b",
+      "offset": 776,
+      "bytes": 4,
+      "sdk_field": "gotchaActivated",
+      "raw_hex": "8b8308030000898708030000"
+    },
+    {
+      "kind": "direct_store",
+      "load_rva": "0x4adc811",
+      "store_rva": "0x4adc818",
+      "offset": 780,
+      "bytes": 1,
+      "sdk_field": "isGoldCard",
+      "raw_hex": "0fb6830c03000088870c030000"
+    },
+    {
+      "kind": "direct_store",
+      "load_rva": "0x4adc81e",
+      "store_rva": "0x4adc825",
+      "offset": 672,
+      "bytes": 1,
+      "sdk_field": "underEnemyControl",
+      "raw_hex": "0fb683a00200008887a0020000"
+    },
+    {
+      "kind": "direct_store",
+      "load_rva": "0x4adc82b",
+      "store_rva": "0x4adc832",
+      "offset": 1360,
+      "bytes": 8,
+      "sdk_field": "cardFunction",
+      "raw_hex": "488b835005000048898750050000"
+    },
+    {
+      "kind": "direct_store",
+      "load_rva": "0x4adc839",
+      "store_rva": "0x4adc83f",
+      "offset": 784,
+      "bytes": 4,
+      "sdk_field": "chooseOneIndex",
+      "raw_hex": "8b8310030000898710030000"
+    },
+    {
+      "kind": "destination_read",
+      "load_rva": "0x4adc874",
+      "store_rva": "0x4adc87b",
+      "offset": 432,
+      "bytes": 8,
+      "sdk_field": "campaignName",
+      "raw_hex": "488b8bb0010000488bb7b0010000"
+    },
+    {
+      "kind": "direct_store",
+      "load_rva": "0x4adc94c",
+      "store_rva": "0x4adc952",
+      "offset": 604,
+      "bytes": 4,
+      "sdk_field": "cipher",
+      "raw_hex": "8b835c02000089875c020000"
+    },
+    {
+      "kind": "direct_store",
+      "load_rva": "0x4adc958",
+      "store_rva": "0x4adc95f",
+      "offset": 608,
+      "bytes": 1,
+      "sdk_field": "cardSeen",
+      "raw_hex": "0fb68360020000888760020000"
+    },
+    {
+      "kind": "direct_store",
+      "load_rva": "0x4adc965",
+      "store_rva": "0x4adc96b",
+      "offset": 136,
+      "bytes": 4,
+      "sdk_field": "KreditsTax_AsEnemyTarget",
+      "raw_hex": "8b8388000000898788000000"
+    },
+    {
+      "kind": "direct_store",
+      "load_rva": "0x4adc971",
+      "store_rva": "0x4adc978",
+      "offset": 826,
+      "bytes": 1,
+      "sdk_field": "isSuppressed",
+      "raw_hex": "0fb6833a03000088873a030000"
+    },
+    {
+      "kind": "direct_store",
+      "load_rva": "0x4adc97e",
+      "store_rva": "0x4adc985",
+      "offset": 825,
+      "bytes": 1,
+      "sdk_field": "salvageFaction",
+      "raw_hex": "0fb68339030000888739030000"
+    },
+    {
+      "kind": "direct_store",
+      "load_rva": "0x4adc98b",
+      "store_rva": "0x4adc992",
+      "offset": 610,
+      "bytes": 1,
+      "sdk_field": "hasSalvage",
+      "raw_hex": "0fb68362020000888762020000"
+    },
+    {
+      "kind": "direct_store",
+      "load_rva": "0x4adc998",
+      "store_rva": "0x4adc99f",
+      "offset": 824,
+      "bytes": 1,
+      "sdk_field": "isSalvaged",
+      "raw_hex": "0fb68338030000888738030000"
+    },
+    {
+      "kind": "direct_store",
+      "load_rva": "0x4adc9a5",
+      "store_rva": "0x4adc9ac",
+      "offset": 309,
+      "bytes": 1,
+      "sdk_field": "EffectType",
+      "raw_hex": "0fb68335010000888735010000"
+    },
+    {
+      "kind": "direct_store",
+      "load_rva": "0x4adc9b2",
+      "store_rva": "0x4adc9b9",
+      "offset": 609,
+      "bytes": 1,
+      "sdk_field": "exileNation",
+      "raw_hex": "0fb68361020000888761020000"
+    },
+    {
+      "kind": "direct_store",
+      "load_rva": "0x4adc9bf",
+      "store_rva": "0x4adc9c6",
+      "offset": 827,
+      "bytes": 1,
+      "sdk_field": "isRevealed",
+      "raw_hex": "0fb6833b03000088873b030000"
+    },
+    {
+      "kind": "direct_store",
+      "load_rva": "0x4adc9cc",
+      "store_rva": "0x4adc9d3",
+      "offset": 490,
+      "bytes": 1,
+      "sdk_field": "hasCovert",
+      "raw_hex": "0fb683ea0100008887ea010000"
+    },
+    {
+      "kind": "direct_store",
+      "load_rva": "0x4adc9d9",
+      "store_rva": "0x4adc9e0",
+      "offset": 489,
+      "bytes": 1,
+      "sdk_field": "hasShock",
+      "raw_hex": "0fb683e90100008887e9010000"
+    },
+    {
+      "kind": "direct_store",
+      "load_rva": "0x4adc9e6",
+      "store_rva": "0x4adc9ec",
+      "offset": 1372,
+      "bytes": 4,
+      "sdk_field": null,
+      "raw_hex": "8b835c05000089875c050000"
+    },
+    {
+      "kind": "direct_store",
+      "load_rva": "0x4adc9f2",
+      "store_rva": "0x4adc9f8",
+      "offset": 1376,
+      "bytes": 4,
+      "sdk_field": null,
+      "raw_hex": "8b8360050000898760050000"
+    },
+    {
+      "kind": "direct_store",
+      "load_rva": "0x4adca14",
+      "store_rva": "0x4adca1a",
+      "offset": 1400,
+      "bytes": 4,
+      "sdk_field": null,
+      "raw_hex": "8b8378050000898778050000"
+    },
+    {
+      "kind": "direct_store",
+      "load_rva": "0x4adca20",
+      "store_rva": "0x4adca27",
+      "offset": 1404,
+      "bytes": 16,
+      "sdk_field": null,
+      "raw_hex": "0f10837c0500000f11877c050000"
+    },
+    {
+      "kind": "direct_store",
+      "load_rva": "0x4adca2e",
+      "store_rva": "0x4adca34",
+      "offset": 1420,
+      "bytes": 4,
+      "sdk_field": null,
+      "raw_hex": "8b838c05000089878c050000"
+    },
+    {
+      "kind": "direct_store",
+      "load_rva": "0x4adca3a",
+      "store_rva": "0x4adca41",
+      "offset": 1424,
+      "bytes": 16,
+      "sdk_field": null,
+      "raw_hex": "0f1083900500000f118790050000"
+    },
+    {
+      "kind": "direct_store",
+      "load_rva": "0x4adca48",
+      "store_rva": "0x4adca4e",
+      "offset": 1440,
+      "bytes": 4,
+      "sdk_field": null,
+      "raw_hex": "8b83a00500008987a0050000"
+    },
+    {
+      "kind": "direct_store",
+      "load_rva": "0x4adca54",
+      "store_rva": "0x4adca5b",
+      "offset": 1444,
+      "bytes": 16,
+      "sdk_field": null,
+      "raw_hex": "0f1083a40500000f1187a4050000"
+    },
+    {
+      "kind": "direct_store",
+      "load_rva": "0x4adca62",
+      "store_rva": "0x4adca68",
+      "offset": 1460,
+      "bytes": 4,
+      "sdk_field": null,
+      "raw_hex": "8b83b40500008987b4050000"
+    },
+    {
+      "kind": "direct_store",
+      "load_rva": "0x4adca6e",
+      "store_rva": "0x4adca75",
+      "offset": 1464,
+      "bytes": 16,
+      "sdk_field": null,
+      "raw_hex": "0f1083b80500000f1187b8050000"
+    },
+    {
+      "kind": "direct_store",
+      "load_rva": "0x4adca7c",
+      "store_rva": "0x4adca82",
+      "offset": 1480,
+      "bytes": 4,
+      "sdk_field": null,
+      "raw_hex": "8b83c80500008987c8050000"
+    },
+    {
+      "kind": "direct_store",
+      "load_rva": "0x4adcaa8",
+      "store_rva": "0x4adcaae",
+      "offset": 1484,
+      "bytes": 4,
+      "sdk_field": null,
+      "raw_hex": "8b83cc0500008987cc050000"
+    }
+  ],
+  "pincer_default_nonzero_cards": [
+    "card_unit_2nd_para_c",
+    "card_unit_57mm_m1943",
+    "card_unit_54_jager_regiment",
+    "card_unit_5_panzergrenadier",
+    "card_unit_101_infantry_regiment",
+    "card_unit_irish_guards",
+    "card_unit_kings_own_scottish",
+    "card_unit_128th_rifles",
+    "card_unit_222th_guard_rifles",
+    "card_unit_cruiser_mk_iii",
+    "card_unit_t_28_pincer",
+    "card_unit_stug_iii_g_schurzen",
+    "card_unit_panzer_iii_g_desert",
+    "card_unit_tupolev_sb_2",
+    "card_unit_me_bf_109_brothers"
+  ],
+  "worker": {
+    "job_id": "20261027-174909-rule486-copy-sdk-field-join-0e7325e6",
+    "exact_rows": 89,
+    "role": "mechanical SDK location join only"
+  },
+  "tests": {
+    "this_round_offline_cases": 534,
+    "direct_store_cases": 516,
+    "destination_read_cases": 18,
+    "this_round_simulator_selftest_rerun": false,
+    "previous_selftest_passed": 929,
+    "previous_result_is_historical": true
+  },
+  "implementation": [
+    "tools/audit_native_copy_pairs.py",
+    ".gitignore (allow the new audit helper)"
+  ],
+  "remaining": [
+    "相邻候选不含全部写入；非相邻寄存器传递、循环、容器/JSON/FText所有权和所有helper仍需追踪。",
+    "类默认到新对象的完整构造、原始Pincer变化是否可达、字段/数组/返回别名和静态状态共享未关闭。",
+    "完整CopyData、全PvP及全部单卡均未认证，完整认证卡数仍0。"
+  ],
+  "artifacts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule486-copy-class-defaults.py",
+      "bytes": 1766,
+      "sha256": "9ad360e8b8c9216b1758739968a074dd77cf0586703976b3f154e2513c133066"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule486-copy-class-defaults-20261027.json",
+      "bytes": 778218,
+      "sha256": "2bc93c2705da6d9cb2a8c92ba3efb29d63eb93e1649870da445fa1491f5e8dbe"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule486-copy-field-inventory.py",
+      "bytes": 6151,
+      "sha256": "fa7d40654f08a819faa25ef087f6721af6b3c33ac736b47f3463472df1e5ea93"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule486-copy-field-verification-20261027.json",
+      "bytes": 21957,
+      "sha256": "88de6386fba00e9339939fec325c36ef2dad618066e0b268ada81ea0573368cb"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule486-worker\\input.json",
+      "bytes": 40852,
+      "sha256": "5577c4f13a51fbcee2641a3b7f80847574ebc1aedb3a9550d93ddd272d4a9798"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule486-worker\\output.json",
+      "bytes": 38116,
+      "sha256": "b932da0bf63765ec45295445fa28e61ea2221bae5d18d12172574d83d4e7d391"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule486-worker\\task.txt",
+      "bytes": 521,
+      "sha256": "5b00fd28cebe5de7420ef1061634c59039522527eab1f3e15bd910057cd9786c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\audit_native_copy_pairs.py",
+      "bytes": 786,
+      "sha256": "36907f6cf61df42663c776e4f85d84475499fba395dd827053813eb7242f9e64"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule479-copydata-native-20261027.json",
+      "bytes": 67882,
+      "sha256": "69fa7833b16dfce3e3895d83c7db73c20b9418df2b05967fb3b16cb8aee91756"
+    }
+  ]
+}

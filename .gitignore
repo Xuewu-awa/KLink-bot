@@ -102,6 +102,7 @@ pak-filelist-live.txt
 !/tools/audit-rule-evidence.py
 !/tools/audit-json-array-callers.py
 !/tools/audit_script_nameconst.py
+!/tools/audit_native_copy_pairs.py
 
 # ---------------------------------------------------------------------------
 # 构建产物
