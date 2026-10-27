@@ -1,0 +1,2094 @@
+{
+  "rule_id": "RULE-500",
+  "date": "2026-10-28",
+  "base_commit": "544aab57a24efb86f3287956d96ba3b7f66b3ce8",
+  "status": "文字格式化、通知至子动作构造及快照Text差异已核对；完整客户端投影/队列消费仍开放",
+  "findings": [
+    "按当前BaseCardObject.Text真实字段指针扫描所有已加载脚本，并补采同名通知、接口、事件图和子动作构造函数。29个Text直接引用函数均完整语法解码；CardFunctionsStub.AddNumberToText无脚本，明确标为native/declaration未解码而非当空脚本完成。其它所选脚本与符号缓冲只读复核稳定。",
+    "完整1633B AddNumberToText直接写卡牌Text。空numberText恢复GetStaticText，非空使用基础文本与参数格式化；Color0原样、1绿、2红。IsActionProcess为true时，1558经notifier发CardID/原numberText/CardID/Color；此处来源参数用同一CardID，不把传输名误解为另一次规则行动。",
+    "通知静态链：U_CardFunctionsNotifier.NotifyAppendNumberToCardText(76B)转OnlineMatchReceiver接口HandleAppendNumberToCardText；BP_OnlineMatch的90B入口写persistent frame后进ubergraph12721，再调用AddSubActionAppendNumberToCardText(298B)。实际对局实例接口绑定未核对，本轮证明的是所采定义/入口链。",
+    "子动作构造把CardID、number、instigatorID、color装入ZActionAppendNumberToCardText，再到CreateAction_AddSubAction(847B)。后者正常动作名非空时追加subActions，重连时由ExecuteXActionsWithLocalSubActions决定追加/跳过；无当前动作的正常路径发诊断。不是所有上下文无副作用；未执行实际队列后续消费或完整客户端事件循环。",
+    "72文本AST案例、16队列AST案例共88通过。基础文本/本地化SourceString格式化、卡对象查询、动作/重连旗标、数组存储与诊断均供给。测试验证当前片段的文本/通知及队列分支，数值/所属方哨兵保持仅为直接写入边界，不是全局规则不干扰证明。初版布景的对象引用复制和彩色值映射按实际AST修正后完成验证，未视为产品缺陷。",
+    "ReceiveSubActionAppendNumberToCardText还会获取卡牌与控件、设置文本/请求重绘、调用AddNumberToText；SetNewCardText有直接Text写。GetMatchCardsAsJsonString在26966比较动态/静态Text，只有不同时才在27221起追加text字段。因此当前无头no-op没有完整客户端文本/快照等价保证；本轮不宣称文本传输完全还原。",
+    "当前模拟器AddNumberToText/AppendNumberToCardText仍是显式no-op。本轮没有发现它们在所测直接路径修改战斗数值的证据，保留实现；原生/反射、快照回灌、后续子动作消费与策略输入是否依赖文字继续开放。仅因显示字段名称不能排除全部影响。",
+    "DeepSeek只给6个AST做调用名和Text访问/赋值索引，主agent独立重算逐字段一致。未修改规则源码、未重跑C#；929/929为历史结果，完整认证卡数0。"
+  ],
+  "verification": {
+    "rule": "RULE-500",
+    "text_cases": 72,
+    "queue_cases": 16,
+    "text_profiles": [
+      {
+        "base": "Base",
+        "number": "",
+        "color": 0,
+        "action": false,
+        "prior": "old",
+        "text": "Base",
+        "events": []
+      },
+      {
+        "base": "Base",
+        "number": "",
+        "color": 0,
+        "action": false,
+        "prior": "other",
+        "text": "Base",
+        "events": []
+      },
+      {
+        "base": "Base",
+        "number": "",
+        "color": 0,
+        "action": true,
+        "prior": "old",
+        "text": "Base",
+        "events": [
+          [
+            "notify",
+            [
+              11,
+              "",
+              11,
+              0
+            ]
+          ]
+        ]
+      },
+      {
+        "base": "Base",
+        "number": "",
+        "color": 0,
+        "action": true,
+        "prior": "other",
+        "text": "Base",
+        "events": [
+          [
+            "notify",
+            [
+              11,
+              "",
+              11,
+              0
+            ]
+          ]
+        ]
+      },
+      {
+        "base": "Base",
+        "number": "",
+        "color": 1,
+        "action": false,
+        "prior": "old",
+        "text": "Base",
+        "events": []
+      },
+      {
+        "base": "Base",
+        "number": "",
+        "color": 1,
+        "action": false,
+        "prior": "other",
+        "text": "Base",
+        "events": []
+      },
+      {
+        "base": "Base",
+        "number": "",
+        "color": 1,
+        "action": true,
+        "prior": "old",
+        "text": "Base",
+        "events": [
+          [
+            "notify",
+            [
+              11,
+              "",
+              11,
+              1
+            ]
+          ]
+        ]
+      },
+      {
+        "base": "Base",
+        "number": "",
+        "color": 1,
+        "action": true,
+        "prior": "other",
+        "text": "Base",
+        "events": [
+          [
+            "notify",
+            [
+              11,
+              "",
+              11,
+              1
+            ]
+          ]
+        ]
+      },
+      {
+        "base": "Base",
+        "number": "",
+        "color": 2,
+        "action": false,
+        "prior": "old",
+        "text": "Base",
+        "events": []
+      },
+      {
+        "base": "Base",
+        "number": "",
+        "color": 2,
+        "action": false,
+        "prior": "other",
+        "text": "Base",
+        "events": []
+      },
+      {
+        "base": "Base",
+        "number": "",
+        "color": 2,
+        "action": true,
+        "prior": "old",
+        "text": "Base",
+        "events": [
+          [
+            "notify",
+            [
+              11,
+              "",
+              11,
+              2
+            ]
+          ]
+        ]
+      },
+      {
+        "base": "Base",
+        "number": "",
+        "color": 2,
+        "action": true,
+        "prior": "other",
+        "text": "Base",
+        "events": [
+          [
+            "notify",
+            [
+              11,
+              "",
+              11,
+              2
+            ]
+          ]
+        ]
+      },
+      {
+        "base": "Base",
+        "number": "7",
+        "color": 0,
+        "action": false,
+        "prior": "old",
+        "text": "Base (7)",
+        "events": []
+      },
+      {
+        "base": "Base",
+        "number": "7",
+        "color": 0,
+        "action": false,
+        "prior": "other",
+        "text": "Base (7)",
+        "events": []
+      },
+      {
+        "base": "Base",
+        "number": "7",
+        "color": 0,
+        "action": true,
+        "prior": "old",
+        "text": "Base (7)",
+        "events": [
+          [
+            "notify",
+            [
+              11,
+              "7",
+              11,
+              0
+            ]
+          ]
+        ]
+      },
+      {
+        "base": "Base",
+        "number": "7",
+        "color": 0,
+        "action": true,
+        "prior": "other",
+        "text": "Base (7)",
+        "events": [
+          [
+            "notify",
+            [
+              11,
+              "7",
+              11,
+              0
+            ]
+          ]
+        ]
+      },
+      {
+        "base": "Base",
+        "number": "7",
+        "color": 1,
+        "action": false,
+        "prior": "old",
+        "text": "Base (<green>7</>)",
+        "events": []
+      },
+      {
+        "base": "Base",
+        "number": "7",
+        "color": 1,
+        "action": false,
+        "prior": "other",
+        "text": "Base (<green>7</>)",
+        "events": []
+      },
+      {
+        "base": "Base",
+        "number": "7",
+        "color": 1,
+        "action": true,
+        "prior": "old",
+        "text": "Base (<green>7</>)",
+        "events": [
+          [
+            "notify",
+            [
+              11,
+              "7",
+              11,
+              1
+            ]
+          ]
+        ]
+      },
+      {
+        "base": "Base",
+        "number": "7",
+        "color": 1,
+        "action": true,
+        "prior": "other",
+        "text": "Base (<green>7</>)",
+        "events": [
+          [
+            "notify",
+            [
+              11,
+              "7",
+              11,
+              1
+            ]
+          ]
+        ]
+      },
+      {
+        "base": "Base",
+        "number": "7",
+        "color": 2,
+        "action": false,
+        "prior": "old",
+        "text": "Base (<red>7</>)",
+        "events": []
+      },
+      {
+        "base": "Base",
+        "number": "7",
+        "color": 2,
+        "action": false,
+        "prior": "other",
+        "text": "Base (<red>7</>)",
+        "events": []
+      },
+      {
+        "base": "Base",
+        "number": "7",
+        "color": 2,
+        "action": true,
+        "prior": "old",
+        "text": "Base (<red>7</>)",
+        "events": [
+          [
+            "notify",
+            [
+              11,
+              "7",
+              11,
+              2
+            ]
+          ]
+        ]
+      },
+      {
+        "base": "Base",
+        "number": "7",
+        "color": 2,
+        "action": true,
+        "prior": "other",
+        "text": "Base (<red>7</>)",
+        "events": [
+          [
+            "notify",
+            [
+              11,
+              "7",
+              11,
+              2
+            ]
+          ]
+        ]
+      },
+      {
+        "base": "Base",
+        "number": "-2",
+        "color": 0,
+        "action": false,
+        "prior": "old",
+        "text": "Base (-2)",
+        "events": []
+      },
+      {
+        "base": "Base",
+        "number": "-2",
+        "color": 0,
+        "action": false,
+        "prior": "other",
+        "text": "Base (-2)",
+        "events": []
+      },
+      {
+        "base": "Base",
+        "number": "-2",
+        "color": 0,
+        "action": true,
+        "prior": "old",
+        "text": "Base (-2)",
+        "events": [
+          [
+            "notify",
+            [
+              11,
+              "-2",
+              11,
+              0
+            ]
+          ]
+        ]
+      },
+      {
+        "base": "Base",
+        "number": "-2",
+        "color": 0,
+        "action": true,
+        "prior": "other",
+        "text": "Base (-2)",
+        "events": [
+          [
+            "notify",
+            [
+              11,
+              "-2",
+              11,
+              0
+            ]
+          ]
+        ]
+      },
+      {
+        "base": "Base",
+        "number": "-2",
+        "color": 1,
+        "action": false,
+        "prior": "old",
+        "text": "Base (<green>-2</>)",
+        "events": []
+      },
+      {
+        "base": "Base",
+        "number": "-2",
+        "color": 1,
+        "action": false,
+        "prior": "other",
+        "text": "Base (<green>-2</>)",
+        "events": []
+      },
+      {
+        "base": "Base",
+        "number": "-2",
+        "color": 1,
+        "action": true,
+        "prior": "old",
+        "text": "Base (<green>-2</>)",
+        "events": [
+          [
+            "notify",
+            [
+              11,
+              "-2",
+              11,
+              1
+            ]
+          ]
+        ]
+      },
+      {
+        "base": "Base",
+        "number": "-2",
+        "color": 1,
+        "action": true,
+        "prior": "other",
+        "text": "Base (<green>-2</>)",
+        "events": [
+          [
+            "notify",
+            [
+              11,
+              "-2",
+              11,
+              1
+            ]
+          ]
+        ]
+      },
+      {
+        "base": "Base",
+        "number": "-2",
+        "color": 2,
+        "action": false,
+        "prior": "old",
+        "text": "Base (<red>-2</>)",
+        "events": []
+      },
+      {
+        "base": "Base",
+        "number": "-2",
+        "color": 2,
+        "action": false,
+        "prior": "other",
+        "text": "Base (<red>-2</>)",
+        "events": []
+      },
+      {
+        "base": "Base",
+        "number": "-2",
+        "color": 2,
+        "action": true,
+        "prior": "old",
+        "text": "Base (<red>-2</>)",
+        "events": [
+          [
+            "notify",
+            [
+              11,
+              "-2",
+              11,
+              2
+            ]
+          ]
+        ]
+      },
+      {
+        "base": "Base",
+        "number": "-2",
+        "color": 2,
+        "action": true,
+        "prior": "other",
+        "text": "Base (<red>-2</>)",
+        "events": [
+          [
+            "notify",
+            [
+              11,
+              "-2",
+              11,
+              2
+            ]
+          ]
+        ]
+      },
+      {
+        "base": "基础",
+        "number": "",
+        "color": 0,
+        "action": false,
+        "prior": "old",
+        "text": "基础",
+        "events": []
+      },
+      {
+        "base": "基础",
+        "number": "",
+        "color": 0,
+        "action": false,
+        "prior": "other",
+        "text": "基础",
+        "events": []
+      },
+      {
+        "base": "基础",
+        "number": "",
+        "color": 0,
+        "action": true,
+        "prior": "old",
+        "text": "基础",
+        "events": [
+          [
+            "notify",
+            [
+              11,
+              "",
+              11,
+              0
+            ]
+          ]
+        ]
+      },
+      {
+        "base": "基础",
+        "number": "",
+        "color": 0,
+        "action": true,
+        "prior": "other",
+        "text": "基础",
+        "events": [
+          [
+            "notify",
+            [
+              11,
+              "",
+              11,
+              0
+            ]
+          ]
+        ]
+      },
+      {
+        "base": "基础",
+        "number": "",
+        "color": 1,
+        "action": false,
+        "prior": "old",
+        "text": "基础",
+        "events": []
+      },
+      {
+        "base": "基础",
+        "number": "",
+        "color": 1,
+        "action": false,
+        "prior": "other",
+        "text": "基础",
+        "events": []
+      },
+      {
+        "base": "基础",
+        "number": "",
+        "color": 1,
+        "action": true,
+        "prior": "old",
+        "text": "基础",
+        "events": [
+          [
+            "notify",
+            [
+              11,
+              "",
+              11,
+              1
+            ]
+          ]
+        ]
+      },
+      {
+        "base": "基础",
+        "number": "",
+        "color": 1,
+        "action": true,
+        "prior": "other",
+        "text": "基础",
+        "events": [
+          [
+            "notify",
+            [
+              11,
+              "",
+              11,
+              1
+            ]
+          ]
+        ]
+      },
+      {
+        "base": "基础",
+        "number": "",
+        "color": 2,
+        "action": false,
+        "prior": "old",
+        "text": "基础",
+        "events": []
+      },
+      {
+        "base": "基础",
+        "number": "",
+        "color": 2,
+        "action": false,
+        "prior": "other",
+        "text": "基础",
+        "events": []
+      },
+      {
+        "base": "基础",
+        "number": "",
+        "color": 2,
+        "action": true,
+        "prior": "old",
+        "text": "基础",
+        "events": [
+          [
+            "notify",
+            [
+              11,
+              "",
+              11,
+              2
+            ]
+          ]
+        ]
+      },
+      {
+        "base": "基础",
+        "number": "",
+        "color": 2,
+        "action": true,
+        "prior": "other",
+        "text": "基础",
+        "events": [
+          [
+            "notify",
+            [
+              11,
+              "",
+              11,
+              2
+            ]
+          ]
+        ]
+      },
+      {
+        "base": "基础",
+        "number": "7",
+        "color": 0,
+        "action": false,
+        "prior": "old",
+        "text": "基础 (7)",
+        "events": []
+      },
+      {
+        "base": "基础",
+        "number": "7",
+        "color": 0,
+        "action": false,
+        "prior": "other",
+        "text": "基础 (7)",
+        "events": []
+      },
+      {
+        "base": "基础",
+        "number": "7",
+        "color": 0,
+        "action": true,
+        "prior": "old",
+        "text": "基础 (7)",
+        "events": [
+          [
+            "notify",
+            [
+              11,
+              "7",
+              11,
+              0
+            ]
+          ]
+        ]
+      },
+      {
+        "base": "基础",
+        "number": "7",
+        "color": 0,
+        "action": true,
+        "prior": "other",
+        "text": "基础 (7)",
+        "events": [
+          [
+            "notify",
+            [
+              11,
+              "7",
+              11,
+              0
+            ]
+          ]
+        ]
+      },
+      {
+        "base": "基础",
+        "number": "7",
+        "color": 1,
+        "action": false,
+        "prior": "old",
+        "text": "基础 (<green>7</>)",
+        "events": []
+      },
+      {
+        "base": "基础",
+        "number": "7",
+        "color": 1,
+        "action": false,
+        "prior": "other",
+        "text": "基础 (<green>7</>)",
+        "events": []
+      },
+      {
+        "base": "基础",
+        "number": "7",
+        "color": 1,
+        "action": true,
+        "prior": "old",
+        "text": "基础 (<green>7</>)",
+        "events": [
+          [
+            "notify",
+            [
+              11,
+              "7",
+              11,
+              1
+            ]
+          ]
+        ]
+      },
+      {
+        "base": "基础",
+        "number": "7",
+        "color": 1,
+        "action": true,
+        "prior": "other",
+        "text": "基础 (<green>7</>)",
+        "events": [
+          [
+            "notify",
+            [
+              11,
+              "7",
+              11,
+              1
+            ]
+          ]
+        ]
+      },
+      {
+        "base": "基础",
+        "number": "7",
+        "color": 2,
+        "action": false,
+        "prior": "old",
+        "text": "基础 (<red>7</>)",
+        "events": []
+      },
+      {
+        "base": "基础",
+        "number": "7",
+        "color": 2,
+        "action": false,
+        "prior": "other",
+        "text": "基础 (<red>7</>)",
+        "events": []
+      },
+      {
+        "base": "基础",
+        "number": "7",
+        "color": 2,
+        "action": true,
+        "prior": "old",
+        "text": "基础 (<red>7</>)",
+        "events": [
+          [
+            "notify",
+            [
+              11,
+              "7",
+              11,
+              2
+            ]
+          ]
+        ]
+      },
+      {
+        "base": "基础",
+        "number": "7",
+        "color": 2,
+        "action": true,
+        "prior": "other",
+        "text": "基础 (<red>7</>)",
+        "events": [
+          [
+            "notify",
+            [
+              11,
+              "7",
+              11,
+              2
+            ]
+          ]
+        ]
+      },
+      {
+        "base": "基础",
+        "number": "-2",
+        "color": 0,
+        "action": false,
+        "prior": "old",
+        "text": "基础 (-2)",
+        "events": []
+      },
+      {
+        "base": "基础",
+        "number": "-2",
+        "color": 0,
+        "action": false,
+        "prior": "other",
+        "text": "基础 (-2)",
+        "events": []
+      },
+      {
+        "base": "基础",
+        "number": "-2",
+        "color": 0,
+        "action": true,
+        "prior": "old",
+        "text": "基础 (-2)",
+        "events": [
+          [
+            "notify",
+            [
+              11,
+              "-2",
+              11,
+              0
+            ]
+          ]
+        ]
+      },
+      {
+        "base": "基础",
+        "number": "-2",
+        "color": 0,
+        "action": true,
+        "prior": "other",
+        "text": "基础 (-2)",
+        "events": [
+          [
+            "notify",
+            [
+              11,
+              "-2",
+              11,
+              0
+            ]
+          ]
+        ]
+      },
+      {
+        "base": "基础",
+        "number": "-2",
+        "color": 1,
+        "action": false,
+        "prior": "old",
+        "text": "基础 (<green>-2</>)",
+        "events": []
+      },
+      {
+        "base": "基础",
+        "number": "-2",
+        "color": 1,
+        "action": false,
+        "prior": "other",
+        "text": "基础 (<green>-2</>)",
+        "events": []
+      },
+      {
+        "base": "基础",
+        "number": "-2",
+        "color": 1,
+        "action": true,
+        "prior": "old",
+        "text": "基础 (<green>-2</>)",
+        "events": [
+          [
+            "notify",
+            [
+              11,
+              "-2",
+              11,
+              1
+            ]
+          ]
+        ]
+      },
+      {
+        "base": "基础",
+        "number": "-2",
+        "color": 1,
+        "action": true,
+        "prior": "other",
+        "text": "基础 (<green>-2</>)",
+        "events": [
+          [
+            "notify",
+            [
+              11,
+              "-2",
+              11,
+              1
+            ]
+          ]
+        ]
+      },
+      {
+        "base": "基础",
+        "number": "-2",
+        "color": 2,
+        "action": false,
+        "prior": "old",
+        "text": "基础 (<red>-2</>)",
+        "events": []
+      },
+      {
+        "base": "基础",
+        "number": "-2",
+        "color": 2,
+        "action": false,
+        "prior": "other",
+        "text": "基础 (<red>-2</>)",
+        "events": []
+      },
+      {
+        "base": "基础",
+        "number": "-2",
+        "color": 2,
+        "action": true,
+        "prior": "old",
+        "text": "基础 (<red>-2</>)",
+        "events": [
+          [
+            "notify",
+            [
+              11,
+              "-2",
+              11,
+              2
+            ]
+          ]
+        ]
+      },
+      {
+        "base": "基础",
+        "number": "-2",
+        "color": 2,
+        "action": true,
+        "prior": "other",
+        "text": "基础 (<red>-2</>)",
+        "events": [
+          [
+            "notify",
+            [
+              11,
+              "-2",
+              11,
+              2
+            ]
+          ]
+        ]
+      }
+    ],
+    "queue_profiles": [
+      {
+        "reconnect": false,
+        "local": false,
+        "active": false,
+        "prior": false,
+        "append": false,
+        "diagnostic": true
+      },
+      {
+        "reconnect": false,
+        "local": false,
+        "active": false,
+        "prior": true,
+        "append": false,
+        "diagnostic": true
+      },
+      {
+        "reconnect": false,
+        "local": false,
+        "active": true,
+        "prior": false,
+        "append": true,
+        "diagnostic": false
+      },
+      {
+        "reconnect": false,
+        "local": false,
+        "active": true,
+        "prior": true,
+        "append": true,
+        "diagnostic": false
+      },
+      {
+        "reconnect": false,
+        "local": true,
+        "active": false,
+        "prior": false,
+        "append": false,
+        "diagnostic": true
+      },
+      {
+        "reconnect": false,
+        "local": true,
+        "active": false,
+        "prior": true,
+        "append": false,
+        "diagnostic": true
+      },
+      {
+        "reconnect": false,
+        "local": true,
+        "active": true,
+        "prior": false,
+        "append": true,
+        "diagnostic": false
+      },
+      {
+        "reconnect": false,
+        "local": true,
+        "active": true,
+        "prior": true,
+        "append": true,
+        "diagnostic": false
+      },
+      {
+        "reconnect": true,
+        "local": false,
+        "active": false,
+        "prior": false,
+        "append": false,
+        "diagnostic": false
+      },
+      {
+        "reconnect": true,
+        "local": false,
+        "active": false,
+        "prior": true,
+        "append": false,
+        "diagnostic": false
+      },
+      {
+        "reconnect": true,
+        "local": false,
+        "active": true,
+        "prior": false,
+        "append": false,
+        "diagnostic": false
+      },
+      {
+        "reconnect": true,
+        "local": false,
+        "active": true,
+        "prior": true,
+        "append": false,
+        "diagnostic": false
+      },
+      {
+        "reconnect": true,
+        "local": true,
+        "active": false,
+        "prior": false,
+        "append": true,
+        "diagnostic": false
+      },
+      {
+        "reconnect": true,
+        "local": true,
+        "active": false,
+        "prior": true,
+        "append": true,
+        "diagnostic": false
+      },
+      {
+        "reconnect": true,
+        "local": true,
+        "active": true,
+        "prior": false,
+        "append": true,
+        "diagnostic": false
+      },
+      {
+        "reconnect": true,
+        "local": true,
+        "active": true,
+        "prior": true,
+        "append": true,
+        "diagnostic": false
+      }
+    ],
+    "case_sha256": "b5581a8467ffd3ad6a62eec116aa7be32d8f26fb46a85131abda216af7d5a931",
+    "scope": "Actual decoded AddNumberToText1633B and CreateAction_AddSubAction847B AST control flow. Source-template text, current-card lookup, IsActionProcess/reconnect flags, localization SourceString Format/string helpers, array storage and diagnostics supplied. Numeric/owner fixture invariants are local direct-write checks, not global noninterference. No full client replay/queue execution, actual notifier binding or native text/JSON semantic certification.",
+    "game_writes": 0,
+    "real_game_function_calls": 0,
+    "fully_certified_cards": 0
+  },
+  "loaded_script_census": {
+    "function_objects": 30583,
+    "scripted_functions": 18111,
+    "script_bytes": 7922413
+  },
+  "captured_functions": [
+    {
+      "owner": "CardFunctionsStub",
+      "name": "AddNumberToText",
+      "script_size": 0,
+      "decode_complete": false,
+      "decode_status": "no-script; native/declaration not decoded",
+      "resolved_text_refs": 0
+    },
+    {
+      "owner": "I_OnlineMatchReceiver_C",
+      "name": "HandleAppendNumberToCardText",
+      "script_size": 3,
+      "decode_complete": true,
+      "decode_status": null,
+      "resolved_text_refs": 0
+    },
+    {
+      "owner": "U_CardFunctionsNotifier_C",
+      "name": "NotifyAppendNumberToCardText",
+      "script_size": 76,
+      "decode_complete": true,
+      "decode_status": null,
+      "resolved_text_refs": 0
+    },
+    {
+      "owner": "BP_BaseCard_C",
+      "name": "ShowShowCaseCard",
+      "script_size": 4500,
+      "decode_complete": true,
+      "decode_status": null,
+      "resolved_text_refs": 5
+    },
+    {
+      "owner": "BP_Board_C",
+      "name": "ChangeSplitCardTextForOpponent",
+      "script_size": 460,
+      "decode_complete": true,
+      "decode_status": null,
+      "resolved_text_refs": 3
+    },
+    {
+      "owner": "BP_CardFunctions_C",
+      "name": "AddNumberToText",
+      "script_size": 1633,
+      "decode_complete": true,
+      "decode_status": null,
+      "resolved_text_refs": 3
+    },
+    {
+      "owner": "BP_Logic_C",
+      "name": "AddCardStats",
+      "script_size": 791,
+      "decode_complete": true,
+      "decode_status": null,
+      "resolved_text_refs": 2
+    },
+    {
+      "owner": "BP_BoardCard_C",
+      "name": "CreateHelpBubbleEntries",
+      "script_size": 2628,
+      "decode_complete": true,
+      "decode_status": null,
+      "resolved_text_refs": 2
+    },
+    {
+      "owner": "BP_OnlineMatch_C",
+      "name": "ExecuteUbergraph_BP_OnlineMatch",
+      "script_size": 29897,
+      "decode_complete": true,
+      "decode_status": null,
+      "resolved_text_refs": 0
+    },
+    {
+      "owner": "BP_OnlineMatch_C",
+      "name": "ReceiveSubActionAppendNumberToCardText",
+      "script_size": 2161,
+      "decode_complete": true,
+      "decode_status": null,
+      "resolved_text_refs": 6
+    },
+    {
+      "owner": "BP_OnlineMatch_C",
+      "name": "AddSubActionAppendNumberToCardText",
+      "script_size": 298,
+      "decode_complete": true,
+      "decode_status": null,
+      "resolved_text_refs": 0
+    },
+    {
+      "owner": "BP_OnlineMatch_C",
+      "name": "SetNewCardText",
+      "script_size": 989,
+      "decode_complete": true,
+      "decode_status": null,
+      "resolved_text_refs": 6
+    },
+    {
+      "owner": "BP_OnlineMatch_C",
+      "name": "GetMatchCardsAsJsonString",
+      "script_size": 31038,
+      "decode_complete": true,
+      "decode_status": null,
+      "resolved_text_refs": 6
+    },
+    {
+      "owner": "BP_OnlineMatch_C",
+      "name": "CreateAction_AddSubAction",
+      "script_size": 847,
+      "decode_complete": true,
+      "decode_status": null,
+      "resolved_text_refs": 0
+    },
+    {
+      "owner": "BP_OnlineMatch_C",
+      "name": "ActionValueString",
+      "script_size": 134,
+      "decode_complete": true,
+      "decode_status": null,
+      "resolved_text_refs": 0
+    },
+    {
+      "owner": "BP_OnlineMatch_C",
+      "name": "ActionValueInt",
+      "script_size": 131,
+      "decode_complete": true,
+      "decode_status": null,
+      "resolved_text_refs": 0
+    },
+    {
+      "owner": "BP_OnlineMatch_C",
+      "name": "ActionValueCardID",
+      "script_size": 130,
+      "decode_complete": true,
+      "decode_status": null,
+      "resolved_text_refs": 0
+    },
+    {
+      "owner": "BP_OnlineMatch_C",
+      "name": "HandleAppendNumberToCardText",
+      "script_size": 90,
+      "decode_complete": true,
+      "decode_status": null,
+      "resolved_text_refs": 0
+    },
+    {
+      "owner": "BP_Widget_HandCardTextV2_C",
+      "name": "SetCardText",
+      "script_size": 4557,
+      "decode_complete": true,
+      "decode_status": null,
+      "resolved_text_refs": 4
+    },
+    {
+      "owner": "BP_VisualController_C",
+      "name": "ExecuteSubActionAddNumberToText",
+      "script_size": 3069,
+      "decode_complete": true,
+      "decode_status": null,
+      "resolved_text_refs": 11
+    },
+    {
+      "owner": "BP_ChooseOneCard_C",
+      "name": "ExecuteUbergraph_BP_ChooseOneCard",
+      "script_size": 12180,
+      "decode_complete": true,
+      "decode_status": null,
+      "resolved_text_refs": 3
+    },
+    {
+      "owner": "BP_History_C",
+      "name": "ActionToBattleLogs",
+      "script_size": 25322,
+      "decode_complete": true,
+      "decode_status": null,
+      "resolved_text_refs": 8
+    },
+    {
+      "owner": "BP_CardTextOverlay_C",
+      "name": "ExecuteUbergraph_BP_CardTextOverlay",
+      "script_size": 649,
+      "decode_complete": true,
+      "decode_status": null,
+      "resolved_text_refs": 2
+    },
+    {
+      "owner": "card_unit_10th_guards_regiment_cam1_C",
+      "name": "ExecuteUbergraph_card_unit_10th_guards_regiment_cam1",
+      "script_size": 1477,
+      "decode_complete": true,
+      "decode_status": null,
+      "resolved_text_refs": 1
+    },
+    {
+      "owner": "card_event_desert_rats_cam1_C",
+      "name": "ExecuteUbergraph_card_event_desert_rats_cam1",
+      "script_size": 2616,
+      "decode_complete": true,
+      "decode_status": null,
+      "resolved_text_refs": 1
+    },
+    {
+      "owner": "card_event_combined_arms_cam1_C",
+      "name": "ExecuteUbergraph_card_event_combined_arms_cam1",
+      "script_size": 4517,
+      "decode_complete": true,
+      "decode_status": null,
+      "resolved_text_refs": 1
+    },
+    {
+      "owner": "card_event_joint_operation_cam1_C",
+      "name": "ExecuteUbergraph_card_event_joint_operation_cam1",
+      "script_size": 2893,
+      "decode_complete": true,
+      "decode_status": null,
+      "resolved_text_refs": 1
+    },
+    {
+      "owner": "card_unit_361_light_regiment_cam1_C",
+      "name": "ExecuteUbergraph_card_unit_361_light_regiment_cam1",
+      "script_size": 2205,
+      "decode_complete": true,
+      "decode_status": null,
+      "resolved_text_refs": 1
+    },
+    {
+      "owner": "card_event_amphibious_assault_cam1_C",
+      "name": "ExecuteUbergraph_card_event_amphibious_assault_cam1",
+      "script_size": 2602,
+      "decode_complete": true,
+      "decode_status": null,
+      "resolved_text_refs": 1
+    },
+    {
+      "owner": "card_event_sneak_maneuver_cam1_C",
+      "name": "ExecuteUbergraph_card_event_sneak_maneuver_cam1",
+      "script_size": 2827,
+      "decode_complete": true,
+      "decode_status": null,
+      "resolved_text_refs": 1
+    },
+    {
+      "owner": "card_event_for_prosperety_cam1_C",
+      "name": "ExecuteUbergraph_card_event_for_prosperety_cam1",
+      "script_size": 3257,
+      "decode_complete": true,
+      "decode_status": null,
+      "resolved_text_refs": 1
+    },
+    {
+      "owner": "card_event_supply_shipment_cam1_C",
+      "name": "ExecuteUbergraph_card_event_supply_shipment_cam1",
+      "script_size": 2976,
+      "decode_complete": true,
+      "decode_status": null,
+      "resolved_text_refs": 1
+    },
+    {
+      "owner": "card_event_cup_of_tea_cam1_C",
+      "name": "ExecuteUbergraph_card_event_cup_of_tea_cam1",
+      "script_size": 3533,
+      "decode_complete": true,
+      "decode_status": null,
+      "resolved_text_refs": 1
+    },
+    {
+      "owner": "card_event_naval_bombardment_cam1_C",
+      "name": "ExecuteUbergraph_card_event_naval_bombardment_cam1",
+      "script_size": 4084,
+      "decode_complete": true,
+      "decode_status": null,
+      "resolved_text_refs": 1
+    },
+    {
+      "owner": "card_event_fortified_position_cam1_C",
+      "name": "ExecuteUbergraph_card_event_fortified_position_cam1",
+      "script_size": 3691,
+      "decode_complete": true,
+      "decode_status": null,
+      "resolved_text_refs": 1
+    },
+    {
+      "owner": "card_event_desert_push_cam1_C",
+      "name": "ExecuteUbergraph_card_event_desert_push_cam1",
+      "script_size": 4011,
+      "decode_complete": true,
+      "decode_status": null,
+      "resolved_text_refs": 1
+    },
+    {
+      "owner": "card_event_ural_factories_cam1_C",
+      "name": "ExecuteUbergraph_card_event_ural_factories_cam1",
+      "script_size": 4725,
+      "decode_complete": true,
+      "decode_status": null,
+      "resolved_text_refs": 1
+    },
+    {
+      "owner": "card_event_reserves_cam1_C",
+      "name": "ExecuteUbergraph_card_event_reserves_cam1",
+      "script_size": 4519,
+      "decode_complete": true,
+      "decode_status": null,
+      "resolved_text_refs": 1
+    },
+    {
+      "owner": "card_unit_f4f_wildcat_cam1_C",
+      "name": "ExecuteUbergraph_card_unit_f4f_wildcat_cam1",
+      "script_size": 1437,
+      "decode_complete": true,
+      "decode_status": null,
+      "resolved_text_refs": 1
+    }
+  ],
+  "ast_index": [
+    {
+      "owner": "BP_CardFunctions_C",
+      "name": "AddNumberToText",
+      "call_names": [
+        "Format",
+        "TextIsEmpty",
+        "GetCardFromID",
+        "GetStaticText",
+        "IsActionProcess",
+        "Conv_TextToString",
+        "NotifyAppendNumberToCardText"
+      ],
+      "text_access_indexes": [
+        1391
+      ],
+      "text_assignment_indexes": [
+        1391
+      ]
+    },
+    {
+      "owner": "U_CardFunctionsNotifier_C",
+      "name": "NotifyAppendNumberToCardText",
+      "call_names": [
+        "HandleAppendNumberToCardText"
+      ],
+      "text_access_indexes": [],
+      "text_assignment_indexes": []
+    },
+    {
+      "owner": "BP_OnlineMatch_C",
+      "name": "HandleAppendNumberToCardText",
+      "call_names": [
+        "ExecuteUbergraph_BP_OnlineMatch"
+      ],
+      "text_access_indexes": [],
+      "text_assignment_indexes": []
+    },
+    {
+      "owner": "BP_OnlineMatch_C",
+      "name": "AddSubActionAppendNumberToCardText",
+      "call_names": [
+        "ActionValueCardID",
+        "Conv_ByteToInt",
+        "ActionValueInt",
+        "ActionValueString",
+        "CreateAction_AddSubAction"
+      ],
+      "text_access_indexes": [],
+      "text_assignment_indexes": []
+    },
+    {
+      "owner": "BP_OnlineMatch_C",
+      "name": "CreateAction_AddSubAction",
+      "call_names": [
+        "GetMatchController",
+        "IsReconnectMatch",
+        "ExecuteXActionsWithLocalSubActions",
+        "Array_Add",
+        "Len",
+        "Greater_IntInt",
+        "Conv_StringToText",
+        "Format",
+        "Conv_TextToString",
+        "ErrorWithStackTrace"
+      ],
+      "text_access_indexes": [],
+      "text_assignment_indexes": []
+    },
+    {
+      "owner": "BP_OnlineMatch_C",
+      "name": "GetMatchCardsAsJsonString",
+      "call_names": [
+        "GetKardsGameInstancePure",
+        "GetEnemyPlayerID",
+        "GetGameInstance",
+        "Less_IntInt",
+        "BooleanOR",
+        "Array_Length",
+        "Array_Get",
+        "GetDeckByside",
+        "GetCardFromID",
+        "JoinStringArray",
+        "Concat_StrStr",
+        "GetAllCardInBattle",
+        "GetStaticCard",
+        "Conv_NameToString",
+        "Map_Find",
+        "getAndDecryptKredit",
+        "NotEqual_IntInt",
+        "Conv_IntToString",
+        "GetEnumeratorUserFriendlyName",
+        "Add_IntInt",
+        "getAndDecryptKreditBuff",
+        "getAndDecryptAttack",
+        "getAndDecryptAttackBuff",
+        "getAndDecryptDefense",
+        "Conv_IntToBool",
+        "IsPinned",
+        "NotEqual_BoolBool",
+        "Conv_BoolToString",
+        "Greater_IntInt",
+        "NotEqual_NameName",
+        "Split",
+        "Conv_JsonObjectToString",
+        "EqualEqual_StriStri",
+        "Map_Keys",
+        "Array_Identical",
+        "Not_PreBool",
+        "BooleanAND",
+        "Array_IsValidIndex",
+        "EndsWith",
+        "LeftChop",
+        "NotEqual_TextText",
+        "Conv_TextToString",
+        "Map_IsNotEmpty",
+        "getbuffsFromCardsAsJsonString",
+        "Set_Clear",
+        "GetAllChildrenGameplayTagsAsStrings",
+        "Set_AddItems",
+        "Set_Length",
+        "Set_ToArray",
+        "Set_Contains",
+        "getHasGameplayTag",
+        "Array_Add"
+      ],
+      "text_access_indexes": [
+        26966,
+        27162
+      ],
+      "text_assignment_indexes": []
+    }
+  ],
+  "text_event_window": {
+    "start": 12721,
+    "end": 12772,
+    "decoded": [
+      {
+        "Inst": "LocalVirtualFunction",
+        "FunctionName": "AddSubActionAppendNumberToCardText",
+        "Parameters": [
+          {
+            "Inst": "LocalVariable",
+            "Variable Name": "K2Node_Event_CardID_22"
+          },
+          {
+            "Inst": "LocalVariable",
+            "Variable Name": "K2Node_Event_NewCardText_1"
+          },
+          {
+            "Inst": "LocalVariable",
+            "Variable Name": "K2Node_Event_InstigatorID_18"
+          },
+          {
+            "Inst": "LocalVariable",
+            "Variable Name": "K2Node_Event_Color"
+          }
+        ],
+        "StatementIndex": 12721
+      },
+      {
+        "Inst": "PopExecutionFlow",
+        "StatementIndex": 12771
+      }
+    ],
+    "references": [
+      {
+        "offset": 12735,
+        "kind": "property",
+        "address": "0x1cb46263f80",
+        "name": "K2Node_Event_CardID_22"
+      },
+      {
+        "offset": 12744,
+        "kind": "property",
+        "address": "0x1cb46263f10",
+        "name": "K2Node_Event_NewCardText_1"
+      },
+      {
+        "offset": 12753,
+        "kind": "property",
+        "address": "0x1cb46263ea0",
+        "name": "K2Node_Event_InstigatorID_18"
+      },
+      {
+        "offset": 12762,
+        "kind": "property",
+        "address": "0x1cb4627a280",
+        "name": "K2Node_Event_Color"
+      }
+    ]
+  },
+  "subaction_builder": [
+    {
+      "Inst": "LocalVirtualFunction",
+      "FunctionName": "ActionValueCardID",
+      "Parameters": [
+        {
+          "Inst": "LocalVariable",
+          "Variable Name": "CardID"
+        },
+        {
+          "Inst": "LocalVariable",
+          "Variable Name": "CallFunc_ActionValueCardID_actionValue"
+        }
+      ],
+      "StatementIndex": 0
+    },
+    {
+      "Inst": "Let",
+      "Variable": {
+        "Inst": "LocalVariable",
+        "Variable Name": "CallFunc_Conv_ByteToInt_ReturnValue"
+      },
+      "Expression": {
+        "Inst": "CallMath",
+        "Function": "Conv_ByteToInt",
+        "Parameters": [
+          {
+            "Inst": "LocalVariable",
+            "Variable Name": "Color"
+          }
+        ]
+      },
+      "StatementIndex": 32
+    },
+    {
+      "Inst": "LocalVirtualFunction",
+      "FunctionName": "ActionValueInt",
+      "Parameters": [
+        {
+          "Inst": "StringConst",
+          "Value": "instigatorID"
+        },
+        {
+          "Inst": "LocalVariable",
+          "Variable Name": "instigatorID"
+        },
+        {
+          "Inst": "LocalVariable",
+          "Variable Name": "CallFunc_ActionValueInt_actionValue"
+        }
+      ],
+      "StatementIndex": 69
+    },
+    {
+      "Inst": "LocalVirtualFunction",
+      "FunctionName": "ActionValueInt",
+      "Parameters": [
+        {
+          "Inst": "StringConst",
+          "Value": "color"
+        },
+        {
+          "Inst": "LocalVariable",
+          "Variable Name": "CallFunc_Conv_ByteToInt_ReturnValue"
+        },
+        {
+          "Inst": "LocalVariable",
+          "Variable Name": "CallFunc_ActionValueInt_actionValue_1"
+        }
+      ],
+      "StatementIndex": 115
+    },
+    {
+      "Inst": "LocalVirtualFunction",
+      "FunctionName": "ActionValueString",
+      "Parameters": [
+        {
+          "Inst": "StringConst",
+          "Value": "number"
+        },
+        {
+          "Inst": "LocalVariable",
+          "Variable Name": "newCardText"
+        },
+        {
+          "Inst": "LocalVariable",
+          "Variable Name": "CallFunc_ActionValueString_actionValue"
+        }
+      ],
+      "StatementIndex": 154
+    },
+    {
+      "Inst": "SetArray",
+      "LeftSideExpression": {
+        "Inst": "LocalVariable",
+        "Variable Name": "K2Node_MakeArray_Array"
+      },
+      "Values": [
+        {
+          "Inst": "LocalVariable",
+          "Variable Name": "CallFunc_ActionValueCardID_actionValue"
+        },
+        {
+          "Inst": "LocalVariable",
+          "Variable Name": "CallFunc_ActionValueString_actionValue"
+        },
+        {
+          "Inst": "LocalVariable",
+          "Variable Name": "CallFunc_ActionValueInt_actionValue"
+        },
+        {
+          "Inst": "LocalVariable",
+          "Variable Name": "CallFunc_ActionValueInt_actionValue_1"
+        }
+      ],
+      "StatementIndex": 194
+    },
+    {
+      "Inst": "LocalVirtualFunction",
+      "FunctionName": "CreateAction_AddSubAction",
+      "Parameters": [
+        {
+          "Inst": "StringConst",
+          "Value": "ZActionAppendNumberToCardText"
+        },
+        {
+          "Inst": "LocalVariable",
+          "Variable Name": "K2Node_MakeArray_Array"
+        }
+      ],
+      "StatementIndex": 241
+    },
+    {
+      "Inst": "Return",
+      "Expression": {
+        "Inst": "Nothing"
+      },
+      "StatementIndex": 295
+    },
+    {
+      "Inst": "EndOfScript",
+      "StatementIndex": 297
+    }
+  ],
+  "snapshot_text_window": [
+    {
+      "Inst": "LetBool",
+      "Variable": {
+        "Inst": "LocalVariable",
+        "Variable Name": "CallFunc_NotEqual_TextText_ReturnValue"
+      },
+      "Expression": {
+        "Inst": "CallMath",
+        "Function": "NotEqual_TextText",
+        "Parameters": [
+          {
+            "Inst": "Context",
+            "Context": {
+              "Inst": "LocalVariable",
+              "Variable Name": "CallFunc_Array_Get_Item"
+            },
+            "SkipOffsetForNull": 9,
+            "RValuePropertyName": "Text",
+            "Expression": {
+              "Inst": "InstanceVariable",
+              "Variable Name": "Text"
+            }
+          },
+          {
+            "Inst": "Context",
+            "Context": {
+              "Inst": "LocalVariable",
+              "Variable Name": "currentCardStatic"
+            },
+            "SkipOffsetForNull": 9,
+            "RValuePropertyName": "Text",
+            "Expression": {
+              "Inst": "InstanceVariable",
+              "Variable Name": "Text"
+            }
+          }
+        ]
+      },
+      "StatementIndex": 26966
+    },
+    {
+      "Inst": "PopExecutionFlowIfNot",
+      "Condition": {
+        "Inst": "LocalVariable",
+        "Variable Name": "CallFunc_NotEqual_TextText_ReturnValue"
+      },
+      "StatementIndex": 27048
+    },
+    {
+      "Inst": "Context",
+      "Context": {
+        "Inst": "InstanceVariable",
+        "Variable Name": "GameStateRef"
+      },
+      "SkipOffsetForNull": 23,
+      "RValuePropertyName": null,
+      "Expression": {
+        "Inst": "LocalVirtualFunction",
+        "FunctionName": "GetAllCardInBattle",
+        "Parameters": [
+          {
+            "Inst": "LocalVariable",
+            "Variable Name": "CallFunc_GetAllCardInBattle_AllCardsInBattle"
+          }
+        ]
+      },
+      "StatementIndex": 27058
+    },
+    {
+      "Inst": "Context",
+      "Context": {
+        "Inst": "ObjectConst",
+        "Object": "Default__KismetArrayLibrary"
+      },
+      "SkipOffsetForNull": 37,
+      "RValuePropertyName": null,
+      "Expression": {
+        "Inst": "FinalFunction",
+        "Function": "Array_Get",
+        "Parameters": [
+          {
+            "Inst": "LocalVariable",
+            "Variable Name": "CallFunc_GetAllCardInBattle_AllCardsInBattle"
+          },
+          {
+            "Inst": "LocalVariable",
+            "Variable Name": "Temp_int_Array_Index_Variable_6"
+          },
+          {
+            "Inst": "LocalVariable",
+            "Variable Name": "CallFunc_Array_Get_Item"
+          }
+        ]
+      },
+      "StatementIndex": 27103
+    },
+    {
+      "Inst": "Let",
+      "Variable": {
+        "Inst": "LocalVariable",
+        "Variable Name": "CallFunc_Conv_TextToString_ReturnValue"
+      },
+      "Expression": {
+        "Inst": "CallMath",
+        "Function": "Conv_TextToString",
+        "Parameters": [
+          {
+            "Inst": "Context",
+            "Context": {
+              "Inst": "LocalVariable",
+              "Variable Name": "CallFunc_Array_Get_Item"
+            },
+            "SkipOffsetForNull": 9,
+            "RValuePropertyName": "Text",
+            "Expression": {
+              "Inst": "InstanceVariable",
+              "Variable Name": "Text"
+            }
+          }
+        ]
+      },
+      "StatementIndex": 27162
+    },
+    {
+      "Inst": "Let",
+      "Variable": {
+        "Inst": "LocalVariable",
+        "Variable Name": "CallFunc_Concat_StrStr_ReturnValue_17"
+      },
+      "Expression": {
+        "Inst": "CallMath",
+        "Function": "Concat_StrStr",
+        "Parameters": [
+          {
+            "Inst": "LocalVariable",
+            "Variable Name": "matchCardsJson"
+          },
+          {
+            "Inst": "StringConst",
+            "Value": ", \"text\": \""
+          }
+        ]
+      },
+      "StatementIndex": 27221
+    },
+    {
+      "Inst": "Let",
+      "Variable": {
+        "Inst": "LocalVariable",
+        "Variable Name": "CallFunc_Concat_StrStr_ReturnValue_18"
+      },
+      "Expression": {
+        "Inst": "CallMath",
+        "Function": "Concat_StrStr",
+        "Parameters": [
+          {
+            "Inst": "LocalVariable",
+            "Variable Name": "CallFunc_Concat_StrStr_ReturnValue_17"
+          },
+          {
+            "Inst": "LocalVariable",
+            "Variable Name": "CallFunc_Conv_TextToString_ReturnValue"
+          }
+        ]
+      },
+      "StatementIndex": 27271
+    },
+    {
+      "Inst": "Let",
+      "Variable": {
+        "Inst": "LocalVariable",
+        "Variable Name": "CallFunc_Concat_StrStr_ReturnValue_19"
+      },
+      "Expression": {
+        "Inst": "CallMath",
+        "Function": "Concat_StrStr",
+        "Parameters": [
+          {
+            "Inst": "LocalVariable",
+            "Variable Name": "CallFunc_Concat_StrStr_ReturnValue_18"
+          },
+          {
+            "Inst": "StringConst",
+            "Value": "\""
+          }
+        ]
+      },
+      "StatementIndex": 27317
+    },
+    {
+      "Inst": "Let",
+      "Variable": {
+        "Inst": "LocalVariable",
+        "Variable Name": "matchCardsJson"
+      },
+      "Expression": {
+        "Inst": "LocalVariable",
+        "Variable Name": "CallFunc_Concat_StrStr_ReturnValue_19"
+      },
+      "StatementIndex": 27357
+    },
+    {
+      "Inst": "PopExecutionFlow",
+      "StatementIndex": 27384
+    }
+  ],
+  "worker_job": "20261028-013500-rule500-text-ast-index-3d812d06",
+  "evidence": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule500-text-chain.py",
+      "bytes": 3047,
+      "sha256": "37f2cc61ab6b0ee7136efde349b86f94df9ef977de22f9fbdb8d5a8f8772b5ad"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule500-text-chain-20261028.json",
+      "bytes": 10946223,
+      "sha256": "be1d6af23d257bed600fed5cf8088395dc49f28df90dc5bcdbb9ea3a3b792359"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule500-text-and-queue.py",
+      "bytes": 7129,
+      "sha256": "66920b035d56dd7138e734338e15a960821efea2a058bf16e7f23a338d10a760"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule500-text-and-queue-verification-20261028.json",
+      "bytes": 21365,
+      "sha256": "c1413a68aac6f31b99f3600bca32af2d8ed197dde0d4d6b69faea99d80d53e18"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule500-worker\\input.json",
+      "bytes": 486622,
+      "sha256": "1827f73942bbe40adb79f3142028a9bd5ce4b6b0b2f45b3130bb60a0b29b6286"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule500-worker\\output.json",
+      "bytes": 3204,
+      "sha256": "1fcd104ed376703d9b25220cbe5c94c298917c39b50d71b2b08b03fd31e36466"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule500-worker\\task.txt",
+      "bytes": 833,
+      "sha256": "339b12568ceb017b1512257bce2f5ef6846b64e64b679e408598704c63ba45ef"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-498.py",
+      "bytes": 752,
+      "sha256": "254664d0aa1146756993fda4ac54e58891709c0ec5bcdd2cfa852f874c4e67ef"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule477-effecttype-references.py",
+      "bytes": 2743,
+      "sha256": "c505e46454ed6677d9f53242ab838d60f10017e493339badac98b5e3e061b37f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule285-controller-blueprint.py",
+      "bytes": 3642,
+      "sha256": "213e54bca57f013491749fa18ed709dcf095f28b930fa7f5b4cd733d1158d5c6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs",
+      "bytes": 402458,
+      "sha256": "97e5d5efac6a97b575c4f74267ea13d898178fb250edcaf9fe0e756e9db67c9f"
+    }
+  ],
+  "remaining": [
+    "真实对局notifier接口绑定、完整子动作执行/快照回灌及其与PvP动作状态的边界。",
+    "原生/反射或未加载的Text消费者、策略输入文字投影。",
+    "完整finalizer/TLS/CopyData与全量规则语义及合法动作/触发顺序审计。"
+  ],
+  "game_writes": 0,
+  "real_game_function_calls": 0,
+  "fully_certified_cards": 0
+}
