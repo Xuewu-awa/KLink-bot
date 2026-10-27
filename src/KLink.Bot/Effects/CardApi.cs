@@ -4809,12 +4809,33 @@ public sealed partial class CardApi
 
             // i=2427 false -> own hook2806 -> jump2842 -> T32 query2463.
             // The suppressed branch enters T32 directly, skipping the own hook.
-            if (!target.IsSuppressed)
-                FireTrigger("OnBecomingVeteran", target, target.Owner);
-            FireTrigger("OnOtherCardBecomingVeteran", target, target.Owner,
-                eventArgs: new object?[] { target }, eventSubject: target,
-                namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal) { ["card"] = target });
+            ExecuteVeteranEvents(target);
             FireAbilitiesChanged(target);
+        }
+    }
+
+    // RULE-469: MakeVeteran's own hook holds the target reference. T32 is
+    // queried afterwards and called directly, with no subject exclusion or
+    // late registration/suppression/location check.
+    private void ExecuteVeteranEvents(CardInstance target)
+    {
+        var library = Blueprint.KismetLibrary.Default;
+        if (library is null) return;
+        const string own = "OnBecomingVeteran";
+        if (!target.IsSuppressed && library.FindProgram(target.Name, own) is not null)
+        {
+            TriggerTrace?.Add($"{own} → {target.Name}#{target.CardId}（eventCard={target.Name}#{target.CardId}）");
+            RunTriggerProgram(library, target, target.Name, own, target);
+        }
+        const string other = "OnOtherCardBecomingVeteran";
+        var recipients = CaptureRegisteredTriggerSnapshot(other);
+        var args = new object?[] { target };
+        var named = new Dictionary<string, object?> { ["card"] = target };
+        foreach (var observer in recipients)
+        {
+            if (library.FindProgram(observer.Name, other) is null) continue;
+            TriggerTrace?.Add($"{other} → {observer.Name}#{observer.CardId}（eventCard={target.Name}#{target.CardId}）");
+            RunTriggerProgram(library, observer, observer.Name, other, target, eventArgs: args, namedArgs: named);
         }
     }
 

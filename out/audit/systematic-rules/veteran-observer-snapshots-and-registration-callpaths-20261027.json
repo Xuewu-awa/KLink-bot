@@ -1,0 +1,167 @@
+{
+  "rule_id": "RULE-469",
+  "date": "2026-10-27",
+  "base_commit": "f0c94aec44e1dbcf86e6814a136e723329224aad",
+  "status": "已修复老兵自身事件与T32持有快照派发；登记生命周期及老兵装甲仍开放",
+  "findings": [
+    "本轮核查转换/老兵/重置登记调用链。ConvertCard2384调用CreateCard且ID覆盖参数为字面量0；CreateCard295调用CreateCardObject；MakeVeteran和ResetCardInBattle脚本无这类创建/登记调用。只确认所选脚本显式调用，不等于原生辅助或回调无副作用。转换创建新对象的既有模拟路径未作修改。",
+    "MakeVeteran2349动作门为真后2382通知；2427检查当前isSuppressed，普通目标先2806自身OnBecomingVeteran，再2842跳回2463查询T32；抑制目标仅跳自身。2736逐个直接调用保存对象OnOtherCardBecomingVeteran(card)，无主体ID/指针排除，无晚位置/抑制/注册检查，最后2782进入独立能力变化辅助。",
+    "旧通用FireTrigger会排除主体、过滤NotAvailable并在回调之间重新检查注册/抑制；自身派发仍受通用位置筛选与补发条件约束。新增私有ExecuteVeteranEvents直接调用当前持有主体并在其后查询T32，保留查询结果对象引用逐个派发，不改变全局广播或能力变化helper。",
+    "新增两项共144托管场景：查询96组（双方、五位置、自身注册、抑制及实例例外）；变化48组（晚移除/抑制/注销、增加新订阅者、自身回调前置抑制、移除主体、同ID替换接收者）。检查主体参数引用和事件先后，定义修改仅为当前模拟器的登记控制，不证明客户端登记维护。",
+    "相同919项测试旧实现917通过2失败，修复后919全部通过。旧版复现NotAvailable漏派发及晚移除导致快照漏派发；本轮保留完整基线/修复日志和退出码。",
+    "独立复读/重解码5个函数共13119字节一致；74组离线模型执行原MakeVeteran2349起尾段、原回边及完整1174字节查询。此前数值/装甲和能力变化函数体未执行，通知和能力变化helper为受控边界。无动作分支2组只验证原尾段门，不称完整非动作路由已还原。",
+    "DeepSeek机械提取5条原始调用节点，主agent递归全等核验。首次采集候选名称包含不存在的ResetCard/CopyCard等，断言停止未写结果；改用实际ResetCardInBattle等名称后重新采集成功。"
+  ],
+  "verification": {
+    "rule": "RULE-469",
+    "pid": 24220,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "live_redecoded_functions": [
+      {
+        "name": "CreateCard",
+        "bytes": 3115,
+        "sha256": "5c6f1e39f163b4b86a28539d3f12017d4a09322d4ee7695bd8cd3f1be8d61db3"
+      },
+      {
+        "name": "ConvertCard",
+        "bytes": 4558,
+        "sha256": "dcb5f0ffc0cbb4a22c92e61e197dffac6cbffe39a5aeb8fa71df901d549c841d"
+      },
+      {
+        "name": "ResetCardInBattle",
+        "bytes": 1348,
+        "sha256": "48b6d8414e252a089746e2a0472d29fb429f574e95ce497a244bb7a814614556"
+      },
+      {
+        "name": "MakeVeteran",
+        "bytes": 2924,
+        "sha256": "3caec2d19e5f9297b711564f5ec2655d8352314ab5626fcd1b43afac455d2d06"
+      },
+      {
+        "name": "FetchAllCardsWithEventTrigger",
+        "bytes": 1174,
+        "sha256": "cbc442f32842f229de18e86389bd54053582b3533c07518e22547cfed20a41e9"
+      }
+    ],
+    "models": {
+      "query_profiles": 48,
+      "mutation_profiles": 24,
+      "non_action_profiles": 2,
+      "total": 74,
+      "sha256": "d2307a2cb3439036ebe30b76f3b10c5a796616df80d5cd9fb842b7eb78b48304"
+    },
+    "worker_exact_nodes": 5,
+    "scope": "Original MakeVeteran control-flow tail2349..2921 with original backedge2842 and loop2847; full battle query1174B. Prior eligibility/numeric/armor/ability changes outside this execution model. Notification and abilities-changed helpers are controlled boundaries. Explicit registry ordering, object references and mutations; no physical TSet/lifetime certification.",
+    "game_writes": 0,
+    "real_game_function_calls": 0,
+    "fully_certified_cards": 0
+  },
+  "tests": {
+    "new_tests": 2,
+    "new_profiles": {
+      "query": 96,
+      "mutations": 48,
+      "total": 144
+    },
+    "baseline": {
+      "total": 919,
+      "passed": 917,
+      "failed": 2
+    },
+    "fixed": {
+      "total": 919,
+      "passed": 919,
+      "failed": 0
+    }
+  },
+  "implementation": [
+    "src/KLink.Bot/Effects/CardApi.cs",
+    "tools/BotSim/SelfTest.cs"
+  ],
+  "unresolved": [
+    "独立触发登记历史表与当前Definition推导等价性仍未关闭，需继续核对重建/重复ID/原生字段访问及有效PvP可达性。",
+    "本轮供应注册顺序，不认证物理TSet遍历/复制/重哈希顺序。",
+    "真实UObject销毁、GC/pending-kill、运行中类映射和所有重入/异常。",
+    "老兵原始装甲/能力修改及外层非动作路径仍开放；正来源可见压制临时装甲等未修。"
+  ],
+  "game_writes": 0,
+  "real_game_function_calls": 0,
+  "fully_certified_cards": 0,
+  "artifacts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule469-conversion-veteran-registration-20261027.json",
+      "bytes": 4861623,
+      "sha256": "a87d1a8a8c8ed9ee2522c5e7b483b2532e1f71e78fc38ee2ba830b4f3e00da0e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule468-trigger-registration-20261027.json",
+      "bytes": 5306265,
+      "sha256": "b17b2d4fcad6769b858be5cb7d88657521e79d0e0c806b2d12a7553ef47c44be"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule469-registration-lifecycle.py",
+      "bytes": 2414,
+      "sha256": "0eaad88e2d7495466792faa80e8338c62fb98634e8600ccaecc2447acecb1f75"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule469.py",
+      "bytes": 6812,
+      "sha256": "9409efe975d720d32ff39fbede6a78f7be16d1487a50dcebd61751d3b69d1cce"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule469-veteran-event-verification-20261027.json",
+      "bytes": 1648,
+      "sha256": "172fa434f7c44e663a87c9be0cf14f7ad215d6ce69cfa2b143ad1d7e05b2097c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\run-rule469-tests.py",
+      "bytes": 992,
+      "sha256": "a53cb67cfb0b83ea32dd5da3997514f5d61794522527f7e9bb384f9e63f0bc7b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule306-defense-events.py",
+      "bytes": 6573,
+      "sha256": "688343b04c99f8714b9addbc57b2ece59a466fe7fad8079d2f907259f9505518"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-438.py",
+      "bytes": 829,
+      "sha256": "ad9bbaefe00d1cff3da3c488f796a2d8c8b8b5432034e1acf00a03fafcef17d3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule469-worker\\input.json",
+      "bytes": 207404,
+      "sha256": "c4d82c422ab2d2d30611d7b6534857b3ed09023d1ba974f0c72c95def2030cef"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule469-worker\\output.json",
+      "bytes": 5951,
+      "sha256": "7e47c23ea46bf150d8db87d247571e7152a2c79684542f4d81a48f6c3a7f6891"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule469-worker\\task.txt",
+      "bytes": 596,
+      "sha256": "fc1b949104ad13de1b615eefb8a9e6f8ddfbf095480aef9c80cd768ba2061856"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule469-baseline-selftest.log",
+      "bytes": 80468,
+      "sha256": "1bafd100c2ba45b37cc54d69120b9d648e167f0349f8d76fda4cb37fc21627e1"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule469-final-selftest.log",
+      "bytes": 80283,
+      "sha256": "dcc64e805a61d5d77fd880410f22d6b46462c8fa524c6e53a6c8ef621488e952"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule469-baseline-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule469-final-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    }
+  ]
+}

@@ -859,6 +859,8 @@ internal static class SelfTest
         new("压制揭示重入：缓存判定后按当前ID查替代对象", db => SuppressionTailReplacement(db, false)),
         new("压制揭示重入：真实VM不重判替代对象的Covert", db => SuppressionTailReplacement(db, true)),
         new("RevealCard移动通知：原生ID0主体与观察者载荷", RevealMovementSentinel),
+        new("老兵观察者：自身包含及查询过滤", VeteranObserverQueryContract),
+        new("老兵观察者：持有快照及回调变化", VeteranObserverSnapshotContract),
         new("揭示观察者：自身注册、位置、抑制例外与Method4", RevealObserverQueryContract),
         new("揭示观察者：查询快照及自身回调后的重新查询", RevealObserverSnapshotContract),
         new("批量压制输出：真实VM后续分支与单卡输出隔离", db => SuppressionOutputContract(db, true)),
@@ -32527,6 +32529,112 @@ internal static class SelfTest
         }
 
         return null;
+    }
+
+    private static CardDatabase VeteranObserverFixture(CardDatabase db)
+    {
+        var defs = db.All.ToDictionary(x => x.Name, StringComparer.Ordinal);
+        defs["card_unit_typhoon_mk_ib_vet"] = new CardDefinition { Name = "card_unit_typhoon_mk_ib_vet", Type = "infantry", Attack = 3, Defense = 7 };
+        var ctor = typeof(CardDatabase).GetConstructors(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).Single();
+        return (CardDatabase)ctor.Invoke(new object[] { defs, db.DeckCodeIds.ToDictionary(x => x.Key, x => x.Value, StringComparer.Ordinal) });
+    }
+
+    private static IDisposable InstallVeteranEventProbes()
+    {
+        const string name = "card_unit_typhoon_mk_ib";
+        var cleanups = new List<IDisposable>();
+        foreach (string trigger in new[] { "OnBecomingVeteran", "OnOtherCardBecomingVeteran" })
+        {
+            cleanups.Add(InstallSelectionDrawProbe(name, trigger));
+            var locals = (IDictionary<string, IReadOnlyList<KismetStep>>)KismetLibrary.Default!.Find(name)!.Locals;
+            bool own = trigger == "OnBecomingVeteran";
+            locals[trigger] = new[] {
+                new KismetStep(0, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), new KismetExpr { Str = own ? "own" : "T32" }, null, -1, "_r469Phase", null) { DestinationScope = "instance" },
+                new KismetStep(1, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), own ? new KismetExpr { Self = true } : new KismetExpr { Var = "K2Node_Event_card" }, null, -1, "_r469Subject", null) { DestinationScope = "instance" },
+                new KismetStep(2, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), new KismetExpr { Math = "Add_IntInt", Args = new[] { new KismetExpr { Var = "_r469Serial", Scope = "instance" }, new KismetExpr { Int = 1 } } }, null, -1, "_r469Serial", null) { DestinationScope = "instance" },
+                new KismetStep(3, "call", "SpawnCardInDeckBySide", new[] { new KismetExpr { Int = (int)Side.Right }, new KismetExpr { Str = "card_unit_routed_troops" }, new KismetExpr { Int = 30 }, new KismetExpr { Int = 1 } }, Array.Empty<int>(), null, null, -1, null, null),
+                new KismetStep(4, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null) };
+        }
+        return new AuditProbeCleanup(() => { foreach (var cleanup in cleanups.AsEnumerable().Reverse()) cleanup.Dispose(); });
+    }
+
+    private static string? VeteranObserverQueryContract(CardDatabase db)
+    {
+        using var probes = InstallVeteranEventProbes();
+        var fixture = VeteranObserverFixture(db);
+        const string name = "card_unit_typhoon_mk_ib", other = "OnOtherCardBecomingVeteran";
+        int cases = 0;
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (bool self in new[] { false, true })
+        foreach (CardLocation location in self ? new[] { side.HqOf() } : new[] { CardLocation.NotAvailable, side.HqOf(), side.HandOf(), side.DeckOf(), CardLocation.Discard })
+        foreach (bool registered in new[] { false, true })
+        foreach (bool suppressed in new[] { false, true })
+        foreach (bool exception in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(fixture);
+            var target = state.CreateWithId(name, side, 60, side.HqOf(), 0); RegisterRevealObserver(target);
+            var observer = self ? target : state.CreateWithId(name, side.Opposite(), 80, location, 0);
+            target.Keywords.Clear(); observer.Keywords.Clear(); observer.SuppressionExceptionTriggers.Clear();
+            RegisterRevealObserver(observer, registered ? new[] { other } : Array.Empty<string>());
+            if (suppressed) observer.Keywords.Add(Keyword.Suppressed);
+            if (exception) observer.SuppressionExceptionTriggers.Add(other);
+            var trace = new List<string>(); engine.Api.TriggerTrace = trace;
+            engine.Api.MakeVeteran(target);
+            int count = trace.Count(x => x.StartsWith($"{other} → {name}#{observer.CardId}（", StringComparison.Ordinal));
+            int expected = registered && (!suppressed || exception) ? 1 : 0;
+            if (count != expected || trace.Count(x => x.StartsWith($"OnBecomingVeteran → {name}#60（", StringComparison.Ordinal)) != (self && suppressed ? 0 : 1)
+                || expected == 1 && !ReferenceEquals(observer.BlueprintVariables.GetValueOrDefault("_r469Subject"), target))
+                return $"veteran query {side}/{self}/{location}/{registered}/{suppressed}/{exception}: {count}, expected{expected}";
+            cases++;
+        }
+        return cases == 96 ? null : $"veteran query profiles={cases}";
+    }
+
+    private static string? VeteranObserverSnapshotContract(CardDatabase db)
+    {
+        using var probes = InstallVeteranEventProbes();
+        var fixture = VeteranObserverFixture(db);
+        const string name = "card_unit_typhoon_mk_ib", other = "OnOtherCardBecomingVeteran";
+        int cases = 0;
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (int mode in Enumerable.Range(0, 6))
+        foreach (bool self in new[] { false, true })
+        foreach (bool exception in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(fixture);
+            var target = state.CreateWithId(name, side, 60, side.HqOf(), 0); RegisterRevealObserver(target, self ? new[] { other } : Array.Empty<string>());
+            var first = state.CreateWithId(name, side, 70, side.HandOf(), 0); RegisterRevealObserver(first, other);
+            var later = state.CreateWithId(name, side, 80, side.HandOf(), 1); RegisterRevealObserver(later, other);
+            foreach (var card in new[] { target, first, later }) { card.Keywords.Clear(); card.SuppressionExceptionTriggers.Clear(); }
+            if (exception) later.SuppressionExceptionTriggers.Add(other);
+            var labels = new Dictionary<CardInstance, string> { [target] = "target", [first] = "first", [later] = "later" };
+            var seen = new Dictionary<CardInstance, int>(); var events = new List<string>(); bool changed = false; string? failure = null;
+            var created = state.CardCreated;
+            state.CardCreated = made => {
+                created?.Invoke(made); if (made.Name != "card_unit_routed_troops" || made.Location != Side.Right.DeckOf()) return;
+                var who = labels.Keys.SingleOrDefault(c => Convert.ToInt32(c.BlueprintVariables.GetValueOrDefault("_r469Serial")) > seen.GetValueOrDefault(c));
+                if (who is null) { failure = "missing veteran marker"; return; }
+                seen[who] = Convert.ToInt32(who.BlueprintVariables["_r469Serial"]);
+                string phase = who.BlueprintVariables["_r469Phase"]?.ToString() ?? ""; events.Add(phase + ":" + labels[who]);
+                if (!ReferenceEquals(who.BlueprintVariables.GetValueOrDefault("_r469Subject"), target)) failure = "lost veteran subject";
+                bool point = mode is 2 or 3 ? phase == "own" : phase == "T32" && ReferenceEquals(who, first);
+                if (!point || changed) return; changed = true;
+                if (mode is 0 or 5) { later.Keywords.Add(Keyword.Suppressed); RegisterRevealObserver(later); state.Remove(later); later.Location = CardLocation.NotAvailable; }
+                if (mode is 1 or 5) {
+                    var added = state.CreateWithId(name, side, mode == 5 ? 80 : 90, CardLocation.Discard, 0); RegisterRevealObserver(added, other); added.Keywords.Clear(); labels[added] = "new";
+                }
+                if (mode == 2) later.Keywords.Add(Keyword.Suppressed);
+                if (mode is 3 or 4) { state.Remove(target); target.Location = CardLocation.NotAvailable; }
+            };
+            engine.Api.MakeVeteran(target);
+            var expected = new List<string> { "own:target" };
+            if (self && mode != 3) expected.Add("T32:target");
+            expected.Add("T32:first"); if (mode != 2 || exception) expected.Add("T32:later");
+            if (failure is not null || !changed || !events.SequenceEqual(expected))
+                return $"veteran snapshot {side}/{mode}/{self}/{exception}: {failure}, got {string.Join(',',events)}, expected {string.Join(',',expected)}";
+            cases++;
+        }
+        return cases == 48 ? null : $"veteran snapshot profiles={cases}";
     }
 
     private static IDisposable InstallRevealEventProbes()
