@@ -1,0 +1,106 @@
+{
+  "rule_id": "RULE-474",
+  "date": "2026-10-27",
+  "base_commit": "b655daf4139730f330551935d1bcde72db87fe90",
+  "status": "增益外层复制联通嵌套FString-int32 map本地体已验证；所有权/完整重置仍开放",
+  "findings": [
+    "只读捕获3977650完整本地CFG401字节，内存/安装PE一致并独立重解码，未读本地跳转前沿为空。SDK FCardBuffData.BuffMap为+0x10 TMap<FString,int32>，外层map元素内位于+0x18。",
+    "嵌套元素stride32。分配位有效时调用字符串key复制并复制整数值及两项尾字段；空槽复制空闲链。先复制哈希桶、稀疏头，再处理元素，不是浅拷贝原缓冲。",
+    "在上一轮两个外层helper442/527字节基础上，让增益复制按原call/ret实际执行嵌套401字节体，未再跳过3977650。420组＝90能力来源回归＋330增益联通；外层0..3槽全部mask，内层0/1/3槽全部mask，三种值载荷和自赋值/非别名。",
+    "238个外层有效槽、221个内层有效槽检查通过：嵌套字符串目标缓冲与源不同、内容相同；整数值及尾字段一致，修改复制值后源值保持；哈希头/单桶、位数组及空闲链字段按供给结构复制。两触发相关数组头哨兵无写入。",
+    "分配器、空目标prepare/析构、位数组复制、字符串复制和memcpy仍使用受控原语；空FText owner、inline bits和小槽位为前提。非空FText引用计数、已有目标销毁、真实分配器/查找/GC及整个重置调用链未认证。",
+    "初次验证器复用了copied变量，内层元素地址覆盖外层缓冲基址，导致外层后续空槽断言失败。原始指令跟踪确认复制写入正确，改为独立copied_base后全420组通过；这是验证器错误，未归为游戏规则差异。",
+    "DeepSeek机械提取6个call、11个jump，主agent解析并按原始指令完整对象/顺序全等核验。未新增生产规则修改；抑制例外模板补入仍为候选差异。"
+  ],
+  "verification": {
+    "rule": "RULE-474",
+    "pid": 24220,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "native_helpers": [
+      {
+        "rva": "0x4abb3e0",
+        "bytes": 442
+      },
+      {
+        "rva": "0x4abb1d0",
+        "bytes": 527
+      },
+      {
+        "rva": "0x3977650",
+        "bytes": 401
+      }
+    ],
+    "offline_profiles": 420,
+    "ability_profiles": 90,
+    "buff_profiles": 330,
+    "outer_allocated_slots_checked": 238,
+    "nested_allocated_slots_checked": 221,
+    "case_sha256": "bfc6eeb983b9c3fa60666e791f13359d6f38d4feba21ac8d649f4cbbeb855f35",
+    "worker_exact_calls": 6,
+    "worker_exact_jumps": 11,
+    "scope": "Two outer sparse-copy helpers and nested FString-int map helper execute original call/ret. Supplied sparse masks0..3 outer slots, inner0/1/3slots/all masks; empty destinations, null FText owners. Allocator/destruction/bit-array/string/memcpy controlled. Nested key/value and hash/free headers and copy independence checked. Not complete reset or UE allocator/ownership/lookup certification.",
+    "game_writes": 0,
+    "real_game_function_calls": 0,
+    "fully_certified_cards": 0
+  },
+  "production_changes": false,
+  "tests": {
+    "offline_profiles": 420,
+    "ability_regression_profiles": 90,
+    "buff_linked_profiles": 330,
+    "csharp_tests_rerun": false,
+    "previous_round_csharp_passed": 919,
+    "reason": "仅审计证据更新；919为RULE-469历史结果。"
+  },
+  "unresolved": [
+    "非空FText owner引用计数、已有目标非空析构、真实分配器与容器别名。",
+    "大集合/堆bit数组/多桶重哈希及真实map查找。",
+    "完整重置联通、诊断/JSON/生命周期与合法PvP例外变化。",
+    "触发登记历史、TSet顺序及老兵装甲等。"
+  ],
+  "game_writes": 0,
+  "real_game_function_calls": 0,
+  "fully_certified_cards": 0,
+  "artifacts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule474-buff-nested-map-native-20261027.json",
+      "bytes": 16497,
+      "sha256": "932883c16465805a21526c74ad0bdeb4ff50403c0ffae7810365b3766785460f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule473-reset-map-element-helpers-20261027.json",
+      "bytes": 36068,
+      "sha256": "29d4ce1e5c3957123d86af3f3578e2daec8333fb2e1cca10ecc2868a016f71a1"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule474-buff-nested-map.py",
+      "bytes": 2620,
+      "sha256": "9528d18cc55df6c56dab3c362cf8cb4162bab7d4c77f85f3cb0a7b83584a4432"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule474-linked-buff-nested-map.py",
+      "bytes": 10459,
+      "sha256": "044f0eb2ada2b81a2a8c256c272e4f6a18d1c410bc3bd18232b846b47d0a5bac"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule474-buff-nested-copy-verification-20261027.json",
+      "bytes": 1142,
+      "sha256": "5b14a4e965510d07549276217346b3b8ee3bdaffb5446d82bfb64c8c9858bb7f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule474-worker\\input.json",
+      "bytes": 14698,
+      "sha256": "73aeb1bee46dc869018857c1509d955e6627d67b6144124e007c5f3b0a597f96"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule474-worker\\output.json",
+      "bytes": 1939,
+      "sha256": "866b0f77bb8ed6ad45b000cf6db3a716a07b3ad0776df2da3945d17d641614e7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule474-worker\\task.txt",
+      "bytes": 381,
+      "sha256": "fdbe1360ad27da3ea81fd71f39d7c06d8abaf7c71e18eb0091a1e15f6bff31b1"
+    }
+  ]
+}
