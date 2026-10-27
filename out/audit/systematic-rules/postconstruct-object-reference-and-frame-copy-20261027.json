@@ -349,5 +349,6 @@
   ],
   "game_writes": 0,
   "real_game_function_calls": 0,
-  "fully_certified_cards": 0
+  "fully_certified_cards": 0,
+  "later_scope_clarification_RULE497": "RULE497进一步将888次测试组合累计skip归为16当前类的222次调用（每类原来4布景），对应21属性、5种虚复制目标。该数字是通用默认复制库存，不是888项PvP规则缺口。字段以文本/资源/帮助信息为主，但当前title/Text存在规则辅助、增益元数据与快照入口，不能仅按名称全排除。已做当前加载脚本指针扫描，native/反射/未加载代码和6处部分解码仍开放。"
 }

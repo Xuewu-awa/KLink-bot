@@ -1,0 +1,1381 @@
+{
+  "rule_id": "RULE-497",
+  "date": "2026-10-28",
+  "base_commit": "421bf265e4d1539ae42d30093ba0a5459da55c8a",
+  "status": "默认复制库存已按实际字段/脚本身份归类；混合用途依赖仍开放，未把通用复制数当PvP缺口数",
+  "findings": [
+    "在当前16蓝图类的已验证新对象/InitProperties/class hook组合中加入只读离线调用记录，各运行一次，实际记录222次仍供给的定制默认非POD复制，对应21个FProperty、5个虚复制目标；此前每类4布景累计888次。类默认对象及FProperty/虚表槽均按当前进程复读，非用字段名字猜测函数目标。此16次是库存采样/已有边界的断言通过，不是新增16卡语义认证。",
+    "21字段包含title/Text/flavorText、图像/软资源、音效、历史资料和额外帮助气泡。按用户无头PvP范围，不能把其通用FText/FString/资源容器所有权恢复一律计为规则核心缺失；也不能仅凭显示名称认定全部无关。",
+    "当前已加载UObject表扫描30583个UFunction，其中18111有脚本，共7922413B；对21个实际FProperty地址作原始脚本候选搜索，再用解码器确认已解析指令引用。67个候选函数，61完整语法解码、6部分。脚本和符号缓冲复读一致。原始指针候选不是最终语义引用，未覆盖原生、间接/反射或未加载资产。",
+    "实际混合用途证据：BP_CardFunctions.ChangeBuffsFromCards在1923读取title到cardName，1972写CardBuffData.cardName；AddNumberToText在1391写Text并于1558经notifier发NotifyAppendNumberToCardText。BP_Logic.AddCardStats把Text装入CampaignCardStats。前两项位于规则辅助入口但当前直接数据流是增益标签/文字通知，不据此声称存在战斗选择依赖或无任何下游规则依赖。",
+    "BP_OnlineMatch.SetNewCardText、ReceiveSubActionAppendNumberToCardText与GetMatchCardsAsJsonString也访问同一Text字段，需分别区分展示、快照输出与权威规则状态。UtilityFunctions.GetEquipmentNameAndType是title候选但在663处解码中断，尚未解析到该引用，保留开放，不按函数名或未解析到就排除。",
+    "7属性在当前加载脚本中没有字面候选，不能据此证明不存在原生/反射消费。其余候选含widget、粒子/声音、教程/战役和开发菜单；这些上下文库存不自动并入PvP缺口，也未靠owner名字作全局排除结论。",
+    "DeepSeek仅对21属性、222调用及67函数作机械计数，主agent重算逐字段一致。各属性候选函数计数合计76、已解析引用函数计数合计71（跨属性可重复），部分候选计数8；并非76或71个不同函数。",
+    "本轮完成范围校正与当前指针引用库存，未新改产品规则、未重跑C#。后续优先追踪title/Text的混合用途消费与规则状态映射，不为纯显示资源无限扩展引擎内存恢复。929/929仅历史结果，完整认证卡数仍0。"
+  ],
+  "inventory": {
+    "sampled_classes": 16,
+    "copy_calls": 222,
+    "previous_four_profile_calls": 888,
+    "properties": 21,
+    "virtual_targets": 5,
+    "field_summary": [
+      {
+        "name": "title",
+        "virtual_rva": "0x1465e30",
+        "copy_calls_16": 16,
+        "raw_candidate_functions": 22,
+        "resolved_reference_functions": 20,
+        "partial_candidate_functions": 5
+      },
+      {
+        "name": "Text",
+        "virtual_rva": "0x1465e30",
+        "copy_calls_16": 16,
+        "raw_candidate_functions": 29,
+        "resolved_reference_functions": 29,
+        "partial_candidate_functions": 0
+      },
+      {
+        "name": "flavorText",
+        "virtual_rva": "0x1465e30",
+        "copy_calls_16": 16,
+        "raw_candidate_functions": 4,
+        "resolved_reference_functions": 3,
+        "partial_candidate_functions": 1
+      },
+      {
+        "name": "extraHelpTextBubbleTypes",
+        "virtual_rva": "0x1555800",
+        "copy_calls_16": 15,
+        "raw_candidate_functions": 1,
+        "resolved_reference_functions": 1,
+        "partial_candidate_functions": 0
+      },
+      {
+        "name": "soundBlowUp",
+        "virtual_rva": "0x1555580",
+        "copy_calls_16": 16,
+        "raw_candidate_functions": 1,
+        "resolved_reference_functions": 1,
+        "partial_candidate_functions": 0
+      },
+      {
+        "name": "Image",
+        "virtual_rva": "0x1465c00",
+        "copy_calls_16": 16,
+        "raw_candidate_functions": 0,
+        "resolved_reference_functions": 0,
+        "partial_candidate_functions": 0
+      },
+      {
+        "name": "artist",
+        "virtual_rva": "0x1465d60",
+        "copy_calls_16": 16,
+        "raw_candidate_functions": 2,
+        "resolved_reference_functions": 2,
+        "partial_candidate_functions": 0
+      },
+      {
+        "name": "historyPhoto",
+        "virtual_rva": "0x1465c00",
+        "copy_calls_16": 16,
+        "raw_candidate_functions": 1,
+        "resolved_reference_functions": 1,
+        "partial_candidate_functions": 0
+      },
+      {
+        "name": "historyPhotoDescription",
+        "virtual_rva": "0x1465e30",
+        "copy_calls_16": 16,
+        "raw_candidate_functions": 4,
+        "resolved_reference_functions": 3,
+        "partial_candidate_functions": 1
+      },
+      {
+        "name": "blowUpExplosionNiagara",
+        "virtual_rva": "0x1555580",
+        "copy_calls_16": 13,
+        "raw_candidate_functions": 2,
+        "resolved_reference_functions": 2,
+        "partial_candidate_functions": 0
+      },
+      {
+        "name": "blowUpCameraShake",
+        "virtual_rva": "0x1555580",
+        "copy_calls_16": 16,
+        "raw_candidate_functions": 1,
+        "resolved_reference_functions": 1,
+        "partial_candidate_functions": 0
+      },
+      {
+        "name": "OnAttackVisualsSoft",
+        "virtual_rva": "0x1465c00",
+        "copy_calls_16": 16,
+        "raw_candidate_functions": 0,
+        "resolved_reference_functions": 0,
+        "partial_candidate_functions": 0
+      },
+      {
+        "name": "soundEnterPlay",
+        "virtual_rva": "0x1555580",
+        "copy_calls_16": 3,
+        "raw_candidate_functions": 4,
+        "resolved_reference_functions": 3,
+        "partial_candidate_functions": 1
+      },
+      {
+        "name": "soundMoveToFrontline",
+        "virtual_rva": "0x1555580",
+        "copy_calls_16": 3,
+        "raw_candidate_functions": 1,
+        "resolved_reference_functions": 1,
+        "partial_candidate_functions": 0
+      },
+      {
+        "name": "historyTypeDescription",
+        "virtual_rva": "0x1465e30",
+        "copy_calls_16": 11,
+        "raw_candidate_functions": 0,
+        "resolved_reference_functions": 0,
+        "partial_candidate_functions": 0
+      },
+      {
+        "name": "historyPhotoSource",
+        "virtual_rva": "0x1465d60",
+        "copy_calls_16": 5,
+        "raw_candidate_functions": 0,
+        "resolved_reference_functions": 0,
+        "partial_candidate_functions": 0
+      },
+      {
+        "name": "historyPhotoIdentificationCode",
+        "virtual_rva": "0x1465d60",
+        "copy_calls_16": 3,
+        "raw_candidate_functions": 0,
+        "resolved_reference_functions": 0,
+        "partial_candidate_functions": 0
+      },
+      {
+        "name": "historyPhotoAuthor",
+        "virtual_rva": "0x1465d60",
+        "copy_calls_16": 3,
+        "raw_candidate_functions": 0,
+        "resolved_reference_functions": 0,
+        "partial_candidate_functions": 0
+      },
+      {
+        "name": "soundAttack",
+        "virtual_rva": "0x1555580",
+        "copy_calls_16": 2,
+        "raw_candidate_functions": 3,
+        "resolved_reference_functions": 3,
+        "partial_candidate_functions": 0
+      },
+      {
+        "name": "blowUpExplosion",
+        "virtual_rva": "0x1555580",
+        "copy_calls_16": 3,
+        "raw_candidate_functions": 1,
+        "resolved_reference_functions": 1,
+        "partial_candidate_functions": 0
+      },
+      {
+        "name": "Notes",
+        "virtual_rva": "0x1465d60",
+        "copy_calls_16": 1,
+        "raw_candidate_functions": 0,
+        "resolved_reference_functions": 0,
+        "partial_candidate_functions": 0
+      }
+    ]
+  },
+  "loaded_script_census": {
+    "function_objects": 30583,
+    "scripted_functions": 18111,
+    "script_bytes": 7922413
+  },
+  "candidate_functions": [
+    {
+      "owner": "W_HistoryPhoto_C",
+      "name": "AssignTexture",
+      "script_size": 205,
+      "candidate_fields": [
+        "historyPhoto"
+      ],
+      "resolved_fields": [
+        "historyPhoto"
+      ],
+      "decode_complete": true,
+      "decode_error": null,
+      "decoder_offset": null
+    },
+    {
+      "owner": "BP_BaseCard_C",
+      "name": "ExecuteUbergraph_BP_BaseCard",
+      "script_size": 29135,
+      "candidate_fields": [
+        "blowUpCameraShake"
+      ],
+      "resolved_fields": [
+        "blowUpCameraShake"
+      ],
+      "decode_complete": true,
+      "decode_error": null,
+      "decoder_offset": null
+    },
+    {
+      "owner": "BP_BaseCard_C",
+      "name": "Explosion Particle Test",
+      "script_size": 702,
+      "candidate_fields": [
+        "blowUpExplosionNiagara",
+        "blowUpExplosion"
+      ],
+      "resolved_fields": [
+        "blowUpExplosion",
+        "blowUpExplosionNiagara"
+      ],
+      "decode_complete": true,
+      "decode_error": null,
+      "decoder_offset": null
+    },
+    {
+      "owner": "BP_BaseCard_C",
+      "name": "GetEnterPlaySound",
+      "script_size": 1460,
+      "candidate_fields": [
+        "soundEnterPlay"
+      ],
+      "resolved_fields": [
+        "soundEnterPlay"
+      ],
+      "decode_complete": true,
+      "decode_error": null,
+      "decoder_offset": null
+    },
+    {
+      "owner": "BP_BaseCard_C",
+      "name": "GetAttackSound",
+      "script_size": 1302,
+      "candidate_fields": [
+        "soundAttack"
+      ],
+      "resolved_fields": [
+        "soundAttack"
+      ],
+      "decode_complete": true,
+      "decode_error": null,
+      "decoder_offset": null
+    },
+    {
+      "owner": "BP_BaseCard_C",
+      "name": "GetBlowupSound",
+      "script_size": 1275,
+      "candidate_fields": [
+        "soundBlowUp"
+      ],
+      "resolved_fields": [
+        "soundBlowUp"
+      ],
+      "decode_complete": true,
+      "decode_error": null,
+      "decoder_offset": null
+    },
+    {
+      "owner": "BP_BaseCard_C",
+      "name": "ShowShowCaseCard",
+      "script_size": 4500,
+      "candidate_fields": [
+        "Text"
+      ],
+      "resolved_fields": [
+        "Text"
+      ],
+      "decode_complete": true,
+      "decode_error": null,
+      "decoder_offset": null
+    },
+    {
+      "owner": "BP_Board_C",
+      "name": "ExecuteUbergraph_BP_Board",
+      "script_size": 103508,
+      "candidate_fields": [
+        "soundEnterPlay"
+      ],
+      "resolved_fields": [],
+      "decode_complete": false,
+      "decode_error": "unsupported opcode 67 at 22139",
+      "decoder_offset": 22140
+    },
+    {
+      "owner": "BP_Board_C",
+      "name": "HandleFireProjectile",
+      "script_size": 2418,
+      "candidate_fields": [
+        "soundAttack"
+      ],
+      "resolved_fields": [
+        "soundAttack"
+      ],
+      "decode_complete": true,
+      "decode_error": null,
+      "decoder_offset": null
+    },
+    {
+      "owner": "BP_Board_C",
+      "name": "ChangeSplitCardTextForOpponent",
+      "script_size": 460,
+      "candidate_fields": [
+        "Text"
+      ],
+      "resolved_fields": [
+        "Text"
+      ],
+      "decode_complete": true,
+      "decode_error": null,
+      "decoder_offset": null
+    },
+    {
+      "owner": "BP_Widget_Battle_HUD_C",
+      "name": "Get_CardDebugInfo_Text_0",
+      "script_size": 9766,
+      "candidate_fields": [
+        "title"
+      ],
+      "resolved_fields": [
+        "title"
+      ],
+      "decode_complete": true,
+      "decode_error": null,
+      "decoder_offset": null
+    },
+    {
+      "owner": "UtilityFunctions_C",
+      "name": "GetEquipmentNameAndType",
+      "script_size": 2981,
+      "candidate_fields": [
+        "title"
+      ],
+      "resolved_fields": [],
+      "decode_complete": false,
+      "decode_error": "unsupported opcode 67 at 662",
+      "decoder_offset": 663
+    },
+    {
+      "owner": "BP_CardFunctions_C",
+      "name": "ChangeBuffsFromCards",
+      "script_size": 6267,
+      "candidate_fields": [
+        "title"
+      ],
+      "resolved_fields": [
+        "title"
+      ],
+      "decode_complete": true,
+      "decode_error": null,
+      "decoder_offset": null
+    },
+    {
+      "owner": "BP_CardFunctions_C",
+      "name": "AddNumberToText",
+      "script_size": 1633,
+      "candidate_fields": [
+        "Text"
+      ],
+      "resolved_fields": [
+        "Text"
+      ],
+      "decode_complete": true,
+      "decode_error": null,
+      "decoder_offset": null
+    },
+    {
+      "owner": "BP_Logic_C",
+      "name": "AddCardStats",
+      "script_size": 791,
+      "candidate_fields": [
+        "Text"
+      ],
+      "resolved_fields": [
+        "Text"
+      ],
+      "decode_complete": true,
+      "decode_error": null,
+      "decoder_offset": null
+    },
+    {
+      "owner": "BP_BoardCard_C",
+      "name": "CreateHelpBubbleEntries",
+      "script_size": 2628,
+      "candidate_fields": [
+        "Text"
+      ],
+      "resolved_fields": [
+        "Text"
+      ],
+      "decode_complete": true,
+      "decode_error": null,
+      "decoder_offset": null
+    },
+    {
+      "owner": "BP_BoardCard_C",
+      "name": "PopulateEffectBar",
+      "script_size": 3015,
+      "candidate_fields": [
+        "extraHelpTextBubbleTypes"
+      ],
+      "resolved_fields": [
+        "extraHelpTextBubbleTypes"
+      ],
+      "decode_complete": true,
+      "decode_error": null,
+      "decoder_offset": null
+    },
+    {
+      "owner": "BP_HandCard_C",
+      "name": "ToggleGotcha",
+      "script_size": 680,
+      "candidate_fields": [
+        "soundEnterPlay"
+      ],
+      "resolved_fields": [
+        "soundEnterPlay"
+      ],
+      "decode_complete": true,
+      "decode_error": null,
+      "decoder_offset": null
+    },
+    {
+      "owner": "BP_OnlineMatch_C",
+      "name": "ReceiveSubActionAppendNumberToCardText",
+      "script_size": 2161,
+      "candidate_fields": [
+        "Text"
+      ],
+      "resolved_fields": [
+        "Text"
+      ],
+      "decode_complete": true,
+      "decode_error": null,
+      "decoder_offset": null
+    },
+    {
+      "owner": "BP_OnlineMatch_C",
+      "name": "SetNewCardText",
+      "script_size": 989,
+      "candidate_fields": [
+        "Text"
+      ],
+      "resolved_fields": [
+        "Text"
+      ],
+      "decode_complete": true,
+      "decode_error": null,
+      "decoder_offset": null
+    },
+    {
+      "owner": "BP_OnlineMatch_C",
+      "name": "GetMatchCardsAsJsonString",
+      "script_size": 31038,
+      "candidate_fields": [
+        "Text"
+      ],
+      "resolved_fields": [
+        "Text"
+      ],
+      "decode_complete": true,
+      "decode_error": null,
+      "decoder_offset": null
+    },
+    {
+      "owner": "advancedTutorial_Widget_C",
+      "name": "DisplayTutorialsForCard",
+      "script_size": 20957,
+      "candidate_fields": [
+        "title"
+      ],
+      "resolved_fields": [
+        "title"
+      ],
+      "decode_complete": true,
+      "decode_error": null,
+      "decoder_offset": null
+    },
+    {
+      "owner": "BP_Widget_HandCardTextV2_C",
+      "name": "SetCardText",
+      "script_size": 4557,
+      "candidate_fields": [
+        "Text"
+      ],
+      "resolved_fields": [
+        "Text"
+      ],
+      "decode_complete": true,
+      "decode_error": null,
+      "decoder_offset": null
+    },
+    {
+      "owner": "BP_Widget_HandCardTextV2_C",
+      "name": "SetCardTitle",
+      "script_size": 1248,
+      "candidate_fields": [
+        "title"
+      ],
+      "resolved_fields": [
+        "title"
+      ],
+      "decode_complete": true,
+      "decode_error": null,
+      "decoder_offset": null
+    },
+    {
+      "owner": "W_ShopDeckCard_C",
+      "name": "WidgetSetup",
+      "script_size": 3614,
+      "candidate_fields": [
+        "title"
+      ],
+      "resolved_fields": [
+        "title"
+      ],
+      "decode_complete": false,
+      "decode_error": "",
+      "decoder_offset": 1588
+    },
+    {
+      "owner": "W_CollectionCardDeckWidget_C",
+      "name": "WidgetSetup",
+      "script_size": 3618,
+      "candidate_fields": [
+        "title"
+      ],
+      "resolved_fields": [
+        "title"
+      ],
+      "decode_complete": false,
+      "decode_error": "",
+      "decoder_offset": 1789
+    },
+    {
+      "owner": "W_DraftCardDetails_C",
+      "name": "ExecuteUbergraph_W_DraftCardDetails",
+      "script_size": 2077,
+      "candidate_fields": [
+        "title",
+        "flavorText",
+        "historyPhotoDescription"
+      ],
+      "resolved_fields": [
+        "flavorText",
+        "historyPhotoDescription",
+        "title"
+      ],
+      "decode_complete": true,
+      "decode_error": null,
+      "decoder_offset": null
+    },
+    {
+      "owner": "W_DraftCardDetails_C",
+      "name": "setArtistName",
+      "script_size": 1571,
+      "candidate_fields": [
+        "artist"
+      ],
+      "resolved_fields": [
+        "artist"
+      ],
+      "decode_complete": true,
+      "decode_error": null,
+      "decoder_offset": null
+    },
+    {
+      "owner": "W_CollectionCardDetail_Mobile_C",
+      "name": "ExecuteUbergraph_W_CollectionCardDetail_Mobile",
+      "script_size": 7014,
+      "candidate_fields": [
+        "title",
+        "flavorText",
+        "historyPhotoDescription"
+      ],
+      "resolved_fields": [],
+      "decode_complete": false,
+      "decode_error": "unsupported opcode 11 at 2803",
+      "decoder_offset": 2804
+    },
+    {
+      "owner": "W_CollectionCardDetail_PC_C",
+      "name": "ExecuteUbergraph_W_CollectionCardDetail_PC",
+      "script_size": 4021,
+      "candidate_fields": [
+        "title",
+        "flavorText",
+        "historyPhotoDescription"
+      ],
+      "resolved_fields": [
+        "flavorText",
+        "historyPhotoDescription",
+        "title"
+      ],
+      "decode_complete": true,
+      "decode_error": null,
+      "decoder_offset": null
+    },
+    {
+      "owner": "W_DeckBuilderStatsOverview_C",
+      "name": "Init Widget",
+      "script_size": 4362,
+      "candidate_fields": [
+        "title"
+      ],
+      "resolved_fields": [
+        "title"
+      ],
+      "decode_complete": true,
+      "decode_error": null,
+      "decoder_offset": null
+    },
+    {
+      "owner": "BP_DebugInfo_C",
+      "name": "ExecuteUbergraph_BP_DebugInfo",
+      "script_size": 8182,
+      "candidate_fields": [
+        "title"
+      ],
+      "resolved_fields": [
+        "title"
+      ],
+      "decode_complete": true,
+      "decode_error": null,
+      "decoder_offset": null
+    },
+    {
+      "owner": "BP_VisualController_C",
+      "name": "ExecuteSubActionAddNumberToText",
+      "script_size": 3069,
+      "candidate_fields": [
+        "Text"
+      ],
+      "resolved_fields": [
+        "Text"
+      ],
+      "decode_complete": true,
+      "decode_error": null,
+      "decoder_offset": null
+    },
+    {
+      "owner": "BP_VisualController_C",
+      "name": "ExecuteSubActionGotchaTriggered",
+      "script_size": 935,
+      "candidate_fields": [
+        "soundAttack"
+      ],
+      "resolved_fields": [
+        "soundAttack"
+      ],
+      "decode_complete": true,
+      "decode_error": null,
+      "decoder_offset": null
+    },
+    {
+      "owner": "BP_VisualController_C",
+      "name": "ExecuteSubActionMoveCardToNewLocation",
+      "script_size": 3619,
+      "candidate_fields": [
+        "soundMoveToFrontline"
+      ],
+      "resolved_fields": [
+        "soundMoveToFrontline"
+      ],
+      "decode_complete": true,
+      "decode_error": null,
+      "decoder_offset": null
+    },
+    {
+      "owner": "BP_VisualController_C",
+      "name": "ExecuteSubctionPlayFromHand",
+      "script_size": 4023,
+      "candidate_fields": [
+        "soundEnterPlay"
+      ],
+      "resolved_fields": [
+        "soundEnterPlay"
+      ],
+      "decode_complete": true,
+      "decode_error": null,
+      "decoder_offset": null
+    },
+    {
+      "owner": "BP_ChooseOneCard_C",
+      "name": "ExecuteUbergraph_BP_ChooseOneCard",
+      "script_size": 12180,
+      "candidate_fields": [
+        "Text"
+      ],
+      "resolved_fields": [
+        "Text"
+      ],
+      "decode_complete": true,
+      "decode_error": null,
+      "decoder_offset": null
+    },
+    {
+      "owner": "cardBuffContainer_Widget_C",
+      "name": "AddEffectEntry",
+      "script_size": 2472,
+      "candidate_fields": [
+        "title"
+      ],
+      "resolved_fields": [
+        "title"
+      ],
+      "decode_complete": true,
+      "decode_error": null,
+      "decoder_offset": null
+    },
+    {
+      "owner": "BP_History_C",
+      "name": "ActionToBattleLogs",
+      "script_size": 25322,
+      "candidate_fields": [
+        "Text"
+      ],
+      "resolved_fields": [
+        "Text"
+      ],
+      "decode_complete": true,
+      "decode_error": null,
+      "decoder_offset": null
+    },
+    {
+      "owner": "BP_History_C",
+      "name": "GetEntriesForBoardCardID",
+      "script_size": 3153,
+      "candidate_fields": [
+        "title"
+      ],
+      "resolved_fields": [
+        "title"
+      ],
+      "decode_complete": true,
+      "decode_error": null,
+      "decoder_offset": null
+    },
+    {
+      "owner": "BP_CardTextOverlay_C",
+      "name": "ExecuteUbergraph_BP_CardTextOverlay",
+      "script_size": 649,
+      "candidate_fields": [
+        "Text"
+      ],
+      "resolved_fields": [
+        "Text"
+      ],
+      "decode_complete": true,
+      "decode_error": null,
+      "decoder_offset": null
+    },
+    {
+      "owner": "BP_CardTextOverlay_C",
+      "name": "Get_HeaderValue",
+      "script_size": 97,
+      "candidate_fields": [
+        "title"
+      ],
+      "resolved_fields": [
+        "title"
+      ],
+      "decode_complete": true,
+      "decode_error": null,
+      "decoder_offset": null
+    },
+    {
+      "owner": "CampaignTest_Widget_C",
+      "name": "ExecuteUbergraph_CampaignTest_Widget",
+      "script_size": 3650,
+      "candidate_fields": [
+        "title"
+      ],
+      "resolved_fields": [
+        "title"
+      ],
+      "decode_complete": true,
+      "decode_error": null,
+      "decoder_offset": null
+    },
+    {
+      "owner": "RewardSpawnMenu_dev_C",
+      "name": "LoadAlternativeArtIntoPicker",
+      "script_size": 3108,
+      "candidate_fields": [
+        "title"
+      ],
+      "resolved_fields": [
+        "title"
+      ],
+      "decode_complete": true,
+      "decode_error": null,
+      "decoder_offset": null
+    },
+    {
+      "owner": "RewardSpawnMenu_dev_C",
+      "name": "UpdateCardPicker",
+      "script_size": 1699,
+      "candidate_fields": [
+        "title"
+      ],
+      "resolved_fields": [
+        "title"
+      ],
+      "decode_complete": true,
+      "decode_error": null,
+      "decoder_offset": null
+    },
+    {
+      "owner": "deckInformation_Widget_C",
+      "name": "AddCardAndStatsDraft",
+      "script_size": 459,
+      "candidate_fields": [
+        "title"
+      ],
+      "resolved_fields": [
+        "title"
+      ],
+      "decode_complete": true,
+      "decode_error": null,
+      "decoder_offset": null
+    },
+    {
+      "owner": "Effect_To_HandCard_Container_C",
+      "name": "Initialise",
+      "script_size": 4357,
+      "candidate_fields": [
+        "title"
+      ],
+      "resolved_fields": [
+        "title"
+      ],
+      "decode_complete": true,
+      "decode_error": null,
+      "decoder_offset": null
+    },
+    {
+      "owner": "W_DebugTestVisualEffects_C",
+      "name": "GetAllVisualEffects",
+      "script_size": 830,
+      "candidate_fields": [
+        "blowUpExplosionNiagara"
+      ],
+      "resolved_fields": [
+        "blowUpExplosionNiagara"
+      ],
+      "decode_complete": true,
+      "decode_error": null,
+      "decoder_offset": null
+    },
+    {
+      "owner": "W_RewardScreen_C",
+      "name": "CreateAlternativeArtItem",
+      "script_size": 1232,
+      "candidate_fields": [
+        "title"
+      ],
+      "resolved_fields": [
+        "title"
+      ],
+      "decode_complete": false,
+      "decode_error": "('unsupported TextConst subtype', 4)",
+      "decoder_offset": 1108
+    },
+    {
+      "owner": "W_ShopProductCardDetails_C",
+      "name": "ExecuteUbergraph_W_ShopProductCardDetails",
+      "script_size": 2303,
+      "candidate_fields": [
+        "title",
+        "flavorText",
+        "historyPhotoDescription"
+      ],
+      "resolved_fields": [
+        "flavorText",
+        "historyPhotoDescription",
+        "title"
+      ],
+      "decode_complete": true,
+      "decode_error": null,
+      "decoder_offset": null
+    },
+    {
+      "owner": "W_ShopProductCardDetails_C",
+      "name": "setArtistName",
+      "script_size": 1571,
+      "candidate_fields": [
+        "artist"
+      ],
+      "resolved_fields": [
+        "artist"
+      ],
+      "decode_complete": true,
+      "decode_error": null,
+      "decoder_offset": null
+    },
+    {
+      "owner": "card_unit_10th_guards_regiment_cam1_C",
+      "name": "ExecuteUbergraph_card_unit_10th_guards_regiment_cam1",
+      "script_size": 1477,
+      "candidate_fields": [
+        "Text"
+      ],
+      "resolved_fields": [
+        "Text"
+      ],
+      "decode_complete": true,
+      "decode_error": null,
+      "decoder_offset": null
+    },
+    {
+      "owner": "card_event_desert_rats_cam1_C",
+      "name": "ExecuteUbergraph_card_event_desert_rats_cam1",
+      "script_size": 2616,
+      "candidate_fields": [
+        "Text"
+      ],
+      "resolved_fields": [
+        "Text"
+      ],
+      "decode_complete": true,
+      "decode_error": null,
+      "decoder_offset": null
+    },
+    {
+      "owner": "card_event_combined_arms_cam1_C",
+      "name": "ExecuteUbergraph_card_event_combined_arms_cam1",
+      "script_size": 4517,
+      "candidate_fields": [
+        "Text"
+      ],
+      "resolved_fields": [
+        "Text"
+      ],
+      "decode_complete": true,
+      "decode_error": null,
+      "decoder_offset": null
+    },
+    {
+      "owner": "card_event_joint_operation_cam1_C",
+      "name": "ExecuteUbergraph_card_event_joint_operation_cam1",
+      "script_size": 2893,
+      "candidate_fields": [
+        "Text"
+      ],
+      "resolved_fields": [
+        "Text"
+      ],
+      "decode_complete": true,
+      "decode_error": null,
+      "decoder_offset": null
+    },
+    {
+      "owner": "card_unit_361_light_regiment_cam1_C",
+      "name": "ExecuteUbergraph_card_unit_361_light_regiment_cam1",
+      "script_size": 2205,
+      "candidate_fields": [
+        "Text"
+      ],
+      "resolved_fields": [
+        "Text"
+      ],
+      "decode_complete": true,
+      "decode_error": null,
+      "decoder_offset": null
+    },
+    {
+      "owner": "card_event_amphibious_assault_cam1_C",
+      "name": "ExecuteUbergraph_card_event_amphibious_assault_cam1",
+      "script_size": 2602,
+      "candidate_fields": [
+        "Text"
+      ],
+      "resolved_fields": [
+        "Text"
+      ],
+      "decode_complete": true,
+      "decode_error": null,
+      "decoder_offset": null
+    },
+    {
+      "owner": "card_event_sneak_maneuver_cam1_C",
+      "name": "ExecuteUbergraph_card_event_sneak_maneuver_cam1",
+      "script_size": 2827,
+      "candidate_fields": [
+        "Text"
+      ],
+      "resolved_fields": [
+        "Text"
+      ],
+      "decode_complete": true,
+      "decode_error": null,
+      "decoder_offset": null
+    },
+    {
+      "owner": "card_event_for_prosperety_cam1_C",
+      "name": "ExecuteUbergraph_card_event_for_prosperety_cam1",
+      "script_size": 3257,
+      "candidate_fields": [
+        "Text"
+      ],
+      "resolved_fields": [
+        "Text"
+      ],
+      "decode_complete": true,
+      "decode_error": null,
+      "decoder_offset": null
+    },
+    {
+      "owner": "card_event_supply_shipment_cam1_C",
+      "name": "ExecuteUbergraph_card_event_supply_shipment_cam1",
+      "script_size": 2976,
+      "candidate_fields": [
+        "Text"
+      ],
+      "resolved_fields": [
+        "Text"
+      ],
+      "decode_complete": true,
+      "decode_error": null,
+      "decoder_offset": null
+    },
+    {
+      "owner": "card_event_cup_of_tea_cam1_C",
+      "name": "ExecuteUbergraph_card_event_cup_of_tea_cam1",
+      "script_size": 3533,
+      "candidate_fields": [
+        "Text"
+      ],
+      "resolved_fields": [
+        "Text"
+      ],
+      "decode_complete": true,
+      "decode_error": null,
+      "decoder_offset": null
+    },
+    {
+      "owner": "card_event_naval_bombardment_cam1_C",
+      "name": "ExecuteUbergraph_card_event_naval_bombardment_cam1",
+      "script_size": 4084,
+      "candidate_fields": [
+        "Text"
+      ],
+      "resolved_fields": [
+        "Text"
+      ],
+      "decode_complete": true,
+      "decode_error": null,
+      "decoder_offset": null
+    },
+    {
+      "owner": "card_event_fortified_position_cam1_C",
+      "name": "ExecuteUbergraph_card_event_fortified_position_cam1",
+      "script_size": 3691,
+      "candidate_fields": [
+        "Text"
+      ],
+      "resolved_fields": [
+        "Text"
+      ],
+      "decode_complete": true,
+      "decode_error": null,
+      "decoder_offset": null
+    },
+    {
+      "owner": "card_event_desert_push_cam1_C",
+      "name": "ExecuteUbergraph_card_event_desert_push_cam1",
+      "script_size": 4011,
+      "candidate_fields": [
+        "Text"
+      ],
+      "resolved_fields": [
+        "Text"
+      ],
+      "decode_complete": true,
+      "decode_error": null,
+      "decoder_offset": null
+    },
+    {
+      "owner": "card_event_ural_factories_cam1_C",
+      "name": "ExecuteUbergraph_card_event_ural_factories_cam1",
+      "script_size": 4725,
+      "candidate_fields": [
+        "Text"
+      ],
+      "resolved_fields": [
+        "Text"
+      ],
+      "decode_complete": true,
+      "decode_error": null,
+      "decoder_offset": null
+    },
+    {
+      "owner": "card_event_reserves_cam1_C",
+      "name": "ExecuteUbergraph_card_event_reserves_cam1",
+      "script_size": 4519,
+      "candidate_fields": [
+        "Text"
+      ],
+      "resolved_fields": [
+        "Text"
+      ],
+      "decode_complete": true,
+      "decode_error": null,
+      "decoder_offset": null
+    },
+    {
+      "owner": "card_unit_f4f_wildcat_cam1_C",
+      "name": "ExecuteUbergraph_card_unit_f4f_wildcat_cam1",
+      "script_size": 1437,
+      "candidate_fields": [
+        "Text"
+      ],
+      "resolved_fields": [
+        "Text"
+      ],
+      "decode_complete": true,
+      "decode_error": null,
+      "decoder_offset": null
+    }
+  ],
+  "mixed_use_statement_evidence": {
+    "title_read": {
+      "Inst": "Let",
+      "Variable": {
+        "Inst": "LocalVariable",
+        "Variable Name": "cardName"
+      },
+      "Expression": {
+        "Inst": "Context",
+        "Context": {
+          "Inst": "LocalVariable",
+          "Variable Name": "CallFunc_GetCardFromID_card_1"
+        },
+        "SkipOffsetForNull": 9,
+        "RValuePropertyName": "title",
+        "Expression": {
+          "Inst": "InstanceVariable",
+          "Variable Name": "title"
+        }
+      },
+      "StatementIndex": 1923
+    },
+    "title_metadata_sink": {
+      "Inst": "Let",
+      "Variable": {
+        "Inst": "StructMemberContext",
+        "Property Name": "cardName",
+        "StructExpression": {
+          "Inst": "LocalVariable",
+          "Variable Name": "K2Node_MakeStruct_CardBuffData"
+        }
+      },
+      "Expression": {
+        "Inst": "LocalVariable",
+        "Variable Name": "cardName"
+      },
+      "StatementIndex": 1972
+    },
+    "text_write": {
+      "Inst": "Let",
+      "Variable": {
+        "Inst": "Context",
+        "Context": {
+          "Inst": "LocalVariable",
+          "Variable Name": "CallFunc_GetCardFromID_card"
+        },
+        "SkipOffsetForNull": 9,
+        "RValuePropertyName": "Text",
+        "Expression": {
+          "Inst": "InstanceVariable",
+          "Variable Name": "Text"
+        }
+      },
+      "Expression": {
+        "Inst": "SwitchValue",
+        "Expression": {
+          "Inst": "LocalVariable",
+          "Variable Name": "Temp_bool_Variable"
+        },
+        "OffsetToSwitchEnd": 1484,
+        "Cases": [
+          {
+            "CaseValue": {
+              "Inst": "False"
+            },
+            "OffsetToNextCase": 1461,
+            "CaseResult": {
+              "Inst": "LocalVariable",
+              "Variable Name": "CallFunc_Format_ReturnValue_2"
+            }
+          },
+          {
+            "CaseValue": {
+              "Inst": "True"
+            },
+            "OffsetToNextCase": 1475,
+            "CaseResult": {
+              "Inst": "LocalVariable",
+              "Variable Name": "CallFunc_GetStaticText_text"
+            }
+          }
+        ],
+        "DefaultResult": {
+          "Inst": "LocalVariable",
+          "Variable Name": "K2Node_Select_Default_1"
+        }
+      },
+      "StatementIndex": 1391
+    },
+    "text_notifier": {
+      "Inst": "Context",
+      "Context": {
+        "Inst": "InstanceVariable",
+        "Variable Name": "CardFunctionsNotifier"
+      },
+      "SkipOffsetForNull": 50,
+      "RValuePropertyName": null,
+      "Expression": {
+        "Inst": "LocalVirtualFunction",
+        "FunctionName": "NotifyAppendNumberToCardText",
+        "Parameters": [
+          {
+            "Inst": "LocalVariable",
+            "Variable Name": "CardID"
+          },
+          {
+            "Inst": "LocalVariable",
+            "Variable Name": "CallFunc_Conv_TextToString_ReturnValue"
+          },
+          {
+            "Inst": "LocalVariable",
+            "Variable Name": "CardID"
+          },
+          {
+            "Inst": "LocalVariable",
+            "Variable Name": "Color"
+          }
+        ]
+      },
+      "StatementIndex": 1558
+    },
+    "campaign_stats_text": {
+      "Inst": "Let",
+      "Variable": {
+        "Inst": "StructMemberContext",
+        "Property Name": "Text",
+        "StructExpression": {
+          "Inst": "LocalVariable",
+          "Variable Name": "K2Node_MakeStruct_CampaignCardStats"
+        }
+      },
+      "Expression": {
+        "Inst": "Context",
+        "Context": {
+          "Inst": "LocalVariable",
+          "Variable Name": "card"
+        },
+        "SkipOffsetForNull": 9,
+        "RValuePropertyName": "Text",
+        "Expression": {
+          "Inst": "InstanceVariable",
+          "Variable Name": "Text"
+        }
+      },
+      "StatementIndex": 0
+    }
+  },
+  "worker_job": "20261028-010738-rule497-field-scope-counts-120837c9",
+  "evidence": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule497-default-copy-inventory.py",
+      "bytes": 1941,
+      "sha256": "eb6df0ba70fcf09446a2587457de925229856a995043b89bc70318d875ee6aa4"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule497-field-references.py",
+      "bytes": 1618,
+      "sha256": "f6c6f62cac5ca4f5e6e38d8838b58b4a1def577be183416122bf1925def38788"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule497-default-copy-inventory-20261028.json",
+      "bytes": 50829,
+      "sha256": "615076cc1713683aafbe0f501d2a5a471a0a95838b22b0fa7dec0eac3e33aee4"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule497-default-field-references-20261028.json",
+      "bytes": 15472686,
+      "sha256": "e128f9ba3a17dd8a65f181d32ab33f7639ac4754abcc3f8bb6ddcee9bb9f786a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule497-worker\\input.json",
+      "bytes": 89191,
+      "sha256": "a66536ccbe52ae956b83bc8f0ca37835e5e710be1ec89cf835d4308eb4de5c8c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule497-worker\\output.json",
+      "bytes": 4342,
+      "sha256": "ee2741eacec9f19e50add70ba7a3e56a429abeda5ee121f4594697041c6d31ba"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule497-worker\\task.txt",
+      "bytes": 924,
+      "sha256": "1ee3240ce7f60ea697b384e926716775b99190b037dce9c2e955832c6fa4534a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule496-property-copies.py",
+      "bytes": 6176,
+      "sha256": "21ce2d0ce03827faa727e1bb2a45ddc08316b27e24e21bf930ed8e787fa21ce1"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule495-init-properties-composition.py",
+      "bytes": 8852,
+      "sha256": "1ea05c145079ab8114d60201ab91a8ced5cf86ada99f71676d7897cef0707a3f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule494-storage-zeroing.py",
+      "bytes": 5808,
+      "sha256": "e9e6a3da8edfcb0ca804204b9f1e2eebc2d0bfd9d6a209bc7ef6b5c51f3a7ef2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule493-card-construction.py",
+      "bytes": 12795,
+      "sha256": "e8ea54e89245394dc65ae0d9a61fd19fee83600ffe978a56735ef4c1d0abac1e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule489-custom-default-lists-20261027.json",
+      "bytes": 239953,
+      "sha256": "404be092c272bd063b10fff0205f557d1875b4a65f2beb244fcb1b4abbfcfe80"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule487-construction-property-chains-20261027.json",
+      "bytes": 158433,
+      "sha256": "8accaedd6340c02acf2729e4dfe4f14b34d35c9730c5cce856f281fc25f4f068"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-438.py",
+      "bytes": 829,
+      "sha256": "ad9bbaefe00d1cff3da3c488f796a2d8c8b8b5432034e1acf00a03fafcef17d3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule285-controller-blueprint.py",
+      "bytes": 3642,
+      "sha256": "213e54bca57f013491749fa18ed709dcf095f28b930fa7f5b4cd733d1158d5c6"
+    }
+  ],
+  "remaining": [
+    "title/Text增益标签、装备名、快照及通知下游，是否影响PvP规则选择/状态，需继续按消费者核查。",
+    "6部分语法解码（尤其GetEquipmentNameAndType），不能把未解码部分当无引用。",
+    "原生、反射、未加载资产引用及完整finalizer/TLS/CopyData映射；当前16类样本不是全量卡池认证。"
+  ],
+  "game_writes": 0,
+  "real_game_function_calls": 0,
+  "fully_certified_cards": 0
+}
