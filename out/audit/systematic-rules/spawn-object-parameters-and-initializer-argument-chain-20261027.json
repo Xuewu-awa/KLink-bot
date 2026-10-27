@@ -1005,5 +1005,11 @@
       "bytes": 119087,
       "sha256": "28ddd6c87ded98abc3c7fa5a3aa2e5dd6a29acf89f3f4a0d654a7b4e6b9e7d7b"
     }
+  ],
+  "clarifications": [
+    {
+      "rule": "RULE-489",
+      "detail": "对象构造15b58e0会将initializer+13清零；原报告整个初始化结构保持仅为拼接假设，不是事实保证。选链相关字段需分别跟踪；本轮8个受控对象构造案例中+8/+10/+11保持，完整卡牌/helper边界仍开放。"
+    }
   ]
 }

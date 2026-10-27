@@ -1,0 +1,916 @@
+{
+  "rule_id": "RULE-489",
+  "date": "2026-10-27",
+  "base_commit": "d8bf5a719f458f914e9eb9c6570590cc3e36a9fa",
+  "status": "取得卡牌/父构造体；确认蓝图类定制默认复制hook及Pincer直接写入，非完整构造认证",
+  "findings": [
+    "从4a7db60尾跳继续取得实际卡牌构造4aba330共1326B、PrimaryDataAsset父构造3bae430共90B、对象构造15b58e0共89B和当前initializer获取helper15bcd00共117B，当前内存/PE相符。卡牌构造依次取当前初始化器、调用父构造，再初始化容器/文本/JSON。未在卡牌直接指令中看到hasPincer+258或CurrentTarget+2b0赋值；不是全部helper无写入证明。",
+    "对象构造会把initializer+0写成当前对象，并在15b592f将initializer+13清0。89B对象构造8组（原self为空/本对象×旧标志0/1/a5/ff）离线执行，base诊断helper受控，验证这两处变化、其余64B初始化器字节保持及目标仅虚表区直接改变。卡牌1326B和父90B未整体离线执行。",
+    "因此RULE488的整个初始化结构不变假设不能当作实际事实：+13确会变化。选链相关+8/+10/+11在本轮对象构造边界保持，但完整卡牌/helper行为仍需继续验证。旧条件性实参结果未升级为无条件构造结论。",
+    "关键发现：类vtable+380在基础类指向11ad330空ret，但16个蓝图样本指向39cf2b0。该hook461B会在当前selector=0且class+20c bit4成立时执行定制属性清单，不能当作无作用hook忽略。仅按第一段pdata边界读取会得到6B/18B碎片，现以完整局部CFG分别捕获hook461B、递归helper39cf1a0共265B。",
+    "当前16样本类定制链含477个32B节点、46个唯一属性；包含数组用的null-property节点，保留原始数据，不将它们强行按普通属性执行。15个夹击默认非零样本都有hasPincer节点，Typhoon无此节点；全部样本未见CurrentTarget节点。",
+    "64组原始hook/递归helper执行：16类×目标旧Pincer0/1×目标旧CurrentTarget0/非零。在scalar memcpy按字节复制、mutex供给、array及virtual property-copy跳过的明确边界下，15类60组向+258写1字节并恢复CDO默认1；Typhoon4组保持目标原Pincer。全部64组该直接路径保持目标CurrentTarget，源CDO缓冲保持。",
+    "这说明原生类默认注入可发生在构造后hook，CopyData无直接Pincer写入不意味着副本没有天生夹击；同样，该hook不清CurrentTarget不等于完整构造不清它，其初值、底层分配与其他handler仍待。未据此修改当前关键词复制或CurrentTarget投影。",
+    "DeepSeek机械提取卡牌构造21调用/4分支/123条RDI目的MOV，经主agent逐JSON节点精确核验。不是全部对象写入的数据流闭包，也不替代原生语义判断。",
+    "本轮产品规则未改，未重跑C#全套；929/929为RULE485历史结果，完整认证卡数仍0。"
+  ],
+  "verification": {
+    "rule": "RULE-489",
+    "pid": 24220,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "card_constructor_bytes": 1326,
+    "parent_constructor_bytes": 90,
+    "object_constructor_bytes": 89,
+    "class_hook_bytes": 461,
+    "custom_list_helper_bytes": 265,
+    "classes": 16,
+    "custom_nodes": 477,
+    "properties": 46,
+    "class_hook_cases": 64,
+    "object_constructor_cases": 8,
+    "object_constructor_case_sha256": "8ddfe87e16cc598acc64ee52e595ff051b31ecbc05b2b62bc19445ba40da9476",
+    "pincer_written_cases": 60,
+    "target_preserved_cases": 64,
+    "case_sha256": "a5414bce7a039fb9177a9670b1de2d894910af158481095d07974bf47e2522bd",
+    "scope": "Current class hook461B and custom-list helper265B executed on captured16 Blueprint classes and currentCDO buffers. Scalar memcpy modeled exactly by byte copy; mutex lock/unlock supplied; array-copy and virtual property-copy explicitly skipped, so their side effects/ownership not certified. Proves actual optimized-list raw Pincer1B dispatch/write and direct-path target preservation only. Card1326B and parent90B bodies captured but not executed; object89B constructor executed8 cases with base diagnostic helper supplied. Initializer self slot becomes target and+13 becomes0, with remaining64B unchanged in this boundary; not full construction/GC certification.",
+    "game_writes": 0,
+    "real_game_function_calls": 0,
+    "fully_certified_cards": 0
+  },
+  "hook_profiles": [
+    {
+      "name": "card_unit_2nd_para_c_C",
+      "initial_pincer": 0,
+      "initial_target": "0x0",
+      "result_pincer": 1,
+      "target_preserved": true,
+      "pincer_write_sizes": [
+        1
+      ],
+      "opaque_virtual_calls": 12,
+      "opaque_array_calls": 0
+    },
+    {
+      "name": "card_unit_2nd_para_c_C",
+      "initial_pincer": 0,
+      "initial_target": "0x12345678",
+      "result_pincer": 1,
+      "target_preserved": true,
+      "pincer_write_sizes": [
+        1
+      ],
+      "opaque_virtual_calls": 12,
+      "opaque_array_calls": 0
+    },
+    {
+      "name": "card_unit_2nd_para_c_C",
+      "initial_pincer": 1,
+      "initial_target": "0x0",
+      "result_pincer": 1,
+      "target_preserved": true,
+      "pincer_write_sizes": [
+        1
+      ],
+      "opaque_virtual_calls": 12,
+      "opaque_array_calls": 0
+    },
+    {
+      "name": "card_unit_2nd_para_c_C",
+      "initial_pincer": 1,
+      "initial_target": "0x12345678",
+      "result_pincer": 1,
+      "target_preserved": true,
+      "pincer_write_sizes": [
+        1
+      ],
+      "opaque_virtual_calls": 12,
+      "opaque_array_calls": 0
+    },
+    {
+      "name": "card_unit_57mm_m1943_C",
+      "initial_pincer": 0,
+      "initial_target": "0x0",
+      "result_pincer": 1,
+      "target_preserved": true,
+      "pincer_write_sizes": [
+        1
+      ],
+      "opaque_virtual_calls": 15,
+      "opaque_array_calls": 0
+    },
+    {
+      "name": "card_unit_57mm_m1943_C",
+      "initial_pincer": 0,
+      "initial_target": "0x12345678",
+      "result_pincer": 1,
+      "target_preserved": true,
+      "pincer_write_sizes": [
+        1
+      ],
+      "opaque_virtual_calls": 15,
+      "opaque_array_calls": 0
+    },
+    {
+      "name": "card_unit_57mm_m1943_C",
+      "initial_pincer": 1,
+      "initial_target": "0x0",
+      "result_pincer": 1,
+      "target_preserved": true,
+      "pincer_write_sizes": [
+        1
+      ],
+      "opaque_virtual_calls": 15,
+      "opaque_array_calls": 0
+    },
+    {
+      "name": "card_unit_57mm_m1943_C",
+      "initial_pincer": 1,
+      "initial_target": "0x12345678",
+      "result_pincer": 1,
+      "target_preserved": true,
+      "pincer_write_sizes": [
+        1
+      ],
+      "opaque_virtual_calls": 15,
+      "opaque_array_calls": 0
+    },
+    {
+      "name": "card_unit_54_jager_regiment_C",
+      "initial_pincer": 0,
+      "initial_target": "0x0",
+      "result_pincer": 1,
+      "target_preserved": true,
+      "pincer_write_sizes": [
+        1
+      ],
+      "opaque_virtual_calls": 13,
+      "opaque_array_calls": 0
+    },
+    {
+      "name": "card_unit_54_jager_regiment_C",
+      "initial_pincer": 0,
+      "initial_target": "0x12345678",
+      "result_pincer": 1,
+      "target_preserved": true,
+      "pincer_write_sizes": [
+        1
+      ],
+      "opaque_virtual_calls": 13,
+      "opaque_array_calls": 0
+    },
+    {
+      "name": "card_unit_54_jager_regiment_C",
+      "initial_pincer": 1,
+      "initial_target": "0x0",
+      "result_pincer": 1,
+      "target_preserved": true,
+      "pincer_write_sizes": [
+        1
+      ],
+      "opaque_virtual_calls": 13,
+      "opaque_array_calls": 0
+    },
+    {
+      "name": "card_unit_54_jager_regiment_C",
+      "initial_pincer": 1,
+      "initial_target": "0x12345678",
+      "result_pincer": 1,
+      "target_preserved": true,
+      "pincer_write_sizes": [
+        1
+      ],
+      "opaque_virtual_calls": 13,
+      "opaque_array_calls": 0
+    },
+    {
+      "name": "card_unit_5_panzergrenadier_C",
+      "initial_pincer": 0,
+      "initial_target": "0x0",
+      "result_pincer": 1,
+      "target_preserved": true,
+      "pincer_write_sizes": [
+        1
+      ],
+      "opaque_virtual_calls": 12,
+      "opaque_array_calls": 1
+    },
+    {
+      "name": "card_unit_5_panzergrenadier_C",
+      "initial_pincer": 0,
+      "initial_target": "0x12345678",
+      "result_pincer": 1,
+      "target_preserved": true,
+      "pincer_write_sizes": [
+        1
+      ],
+      "opaque_virtual_calls": 12,
+      "opaque_array_calls": 1
+    },
+    {
+      "name": "card_unit_5_panzergrenadier_C",
+      "initial_pincer": 1,
+      "initial_target": "0x0",
+      "result_pincer": 1,
+      "target_preserved": true,
+      "pincer_write_sizes": [
+        1
+      ],
+      "opaque_virtual_calls": 12,
+      "opaque_array_calls": 1
+    },
+    {
+      "name": "card_unit_5_panzergrenadier_C",
+      "initial_pincer": 1,
+      "initial_target": "0x12345678",
+      "result_pincer": 1,
+      "target_preserved": true,
+      "pincer_write_sizes": [
+        1
+      ],
+      "opaque_virtual_calls": 12,
+      "opaque_array_calls": 1
+    },
+    {
+      "name": "card_unit_101_infantry_regiment_C",
+      "initial_pincer": 0,
+      "initial_target": "0x0",
+      "result_pincer": 1,
+      "target_preserved": true,
+      "pincer_write_sizes": [
+        1
+      ],
+      "opaque_virtual_calls": 12,
+      "opaque_array_calls": 1
+    },
+    {
+      "name": "card_unit_101_infantry_regiment_C",
+      "initial_pincer": 0,
+      "initial_target": "0x12345678",
+      "result_pincer": 1,
+      "target_preserved": true,
+      "pincer_write_sizes": [
+        1
+      ],
+      "opaque_virtual_calls": 12,
+      "opaque_array_calls": 1
+    },
+    {
+      "name": "card_unit_101_infantry_regiment_C",
+      "initial_pincer": 1,
+      "initial_target": "0x0",
+      "result_pincer": 1,
+      "target_preserved": true,
+      "pincer_write_sizes": [
+        1
+      ],
+      "opaque_virtual_calls": 12,
+      "opaque_array_calls": 1
+    },
+    {
+      "name": "card_unit_101_infantry_regiment_C",
+      "initial_pincer": 1,
+      "initial_target": "0x12345678",
+      "result_pincer": 1,
+      "target_preserved": true,
+      "pincer_write_sizes": [
+        1
+      ],
+      "opaque_virtual_calls": 12,
+      "opaque_array_calls": 1
+    },
+    {
+      "name": "card_unit_irish_guards_C",
+      "initial_pincer": 0,
+      "initial_target": "0x0",
+      "result_pincer": 1,
+      "target_preserved": true,
+      "pincer_write_sizes": [
+        1
+      ],
+      "opaque_virtual_calls": 16,
+      "opaque_array_calls": 0
+    },
+    {
+      "name": "card_unit_irish_guards_C",
+      "initial_pincer": 0,
+      "initial_target": "0x12345678",
+      "result_pincer": 1,
+      "target_preserved": true,
+      "pincer_write_sizes": [
+        1
+      ],
+      "opaque_virtual_calls": 16,
+      "opaque_array_calls": 0
+    },
+    {
+      "name": "card_unit_irish_guards_C",
+      "initial_pincer": 1,
+      "initial_target": "0x0",
+      "result_pincer": 1,
+      "target_preserved": true,
+      "pincer_write_sizes": [
+        1
+      ],
+      "opaque_virtual_calls": 16,
+      "opaque_array_calls": 0
+    },
+    {
+      "name": "card_unit_irish_guards_C",
+      "initial_pincer": 1,
+      "initial_target": "0x12345678",
+      "result_pincer": 1,
+      "target_preserved": true,
+      "pincer_write_sizes": [
+        1
+      ],
+      "opaque_virtual_calls": 16,
+      "opaque_array_calls": 0
+    },
+    {
+      "name": "card_unit_kings_own_scottish_C",
+      "initial_pincer": 0,
+      "initial_target": "0x0",
+      "result_pincer": 1,
+      "target_preserved": true,
+      "pincer_write_sizes": [
+        1
+      ],
+      "opaque_virtual_calls": 13,
+      "opaque_array_calls": 1
+    },
+    {
+      "name": "card_unit_kings_own_scottish_C",
+      "initial_pincer": 0,
+      "initial_target": "0x12345678",
+      "result_pincer": 1,
+      "target_preserved": true,
+      "pincer_write_sizes": [
+        1
+      ],
+      "opaque_virtual_calls": 13,
+      "opaque_array_calls": 1
+    },
+    {
+      "name": "card_unit_kings_own_scottish_C",
+      "initial_pincer": 1,
+      "initial_target": "0x0",
+      "result_pincer": 1,
+      "target_preserved": true,
+      "pincer_write_sizes": [
+        1
+      ],
+      "opaque_virtual_calls": 13,
+      "opaque_array_calls": 1
+    },
+    {
+      "name": "card_unit_kings_own_scottish_C",
+      "initial_pincer": 1,
+      "initial_target": "0x12345678",
+      "result_pincer": 1,
+      "target_preserved": true,
+      "pincer_write_sizes": [
+        1
+      ],
+      "opaque_virtual_calls": 13,
+      "opaque_array_calls": 1
+    },
+    {
+      "name": "card_unit_128th_rifles_C",
+      "initial_pincer": 0,
+      "initial_target": "0x0",
+      "result_pincer": 1,
+      "target_preserved": true,
+      "pincer_write_sizes": [
+        1
+      ],
+      "opaque_virtual_calls": 13,
+      "opaque_array_calls": 0
+    },
+    {
+      "name": "card_unit_128th_rifles_C",
+      "initial_pincer": 0,
+      "initial_target": "0x12345678",
+      "result_pincer": 1,
+      "target_preserved": true,
+      "pincer_write_sizes": [
+        1
+      ],
+      "opaque_virtual_calls": 13,
+      "opaque_array_calls": 0
+    },
+    {
+      "name": "card_unit_128th_rifles_C",
+      "initial_pincer": 1,
+      "initial_target": "0x0",
+      "result_pincer": 1,
+      "target_preserved": true,
+      "pincer_write_sizes": [
+        1
+      ],
+      "opaque_virtual_calls": 13,
+      "opaque_array_calls": 0
+    },
+    {
+      "name": "card_unit_128th_rifles_C",
+      "initial_pincer": 1,
+      "initial_target": "0x12345678",
+      "result_pincer": 1,
+      "target_preserved": true,
+      "pincer_write_sizes": [
+        1
+      ],
+      "opaque_virtual_calls": 13,
+      "opaque_array_calls": 0
+    },
+    {
+      "name": "card_unit_222th_guard_rifles_C",
+      "initial_pincer": 0,
+      "initial_target": "0x0",
+      "result_pincer": 1,
+      "target_preserved": true,
+      "pincer_write_sizes": [
+        1
+      ],
+      "opaque_virtual_calls": 14,
+      "opaque_array_calls": 1
+    },
+    {
+      "name": "card_unit_222th_guard_rifles_C",
+      "initial_pincer": 0,
+      "initial_target": "0x12345678",
+      "result_pincer": 1,
+      "target_preserved": true,
+      "pincer_write_sizes": [
+        1
+      ],
+      "opaque_virtual_calls": 14,
+      "opaque_array_calls": 1
+    },
+    {
+      "name": "card_unit_222th_guard_rifles_C",
+      "initial_pincer": 1,
+      "initial_target": "0x0",
+      "result_pincer": 1,
+      "target_preserved": true,
+      "pincer_write_sizes": [
+        1
+      ],
+      "opaque_virtual_calls": 14,
+      "opaque_array_calls": 1
+    },
+    {
+      "name": "card_unit_222th_guard_rifles_C",
+      "initial_pincer": 1,
+      "initial_target": "0x12345678",
+      "result_pincer": 1,
+      "target_preserved": true,
+      "pincer_write_sizes": [
+        1
+      ],
+      "opaque_virtual_calls": 14,
+      "opaque_array_calls": 1
+    },
+    {
+      "name": "card_unit_cruiser_mk_iii_C",
+      "initial_pincer": 0,
+      "initial_target": "0x0",
+      "result_pincer": 1,
+      "target_preserved": true,
+      "pincer_write_sizes": [
+        1
+      ],
+      "opaque_virtual_calls": 13,
+      "opaque_array_calls": 0
+    },
+    {
+      "name": "card_unit_cruiser_mk_iii_C",
+      "initial_pincer": 0,
+      "initial_target": "0x12345678",
+      "result_pincer": 1,
+      "target_preserved": true,
+      "pincer_write_sizes": [
+        1
+      ],
+      "opaque_virtual_calls": 13,
+      "opaque_array_calls": 0
+    },
+    {
+      "name": "card_unit_cruiser_mk_iii_C",
+      "initial_pincer": 1,
+      "initial_target": "0x0",
+      "result_pincer": 1,
+      "target_preserved": true,
+      "pincer_write_sizes": [
+        1
+      ],
+      "opaque_virtual_calls": 13,
+      "opaque_array_calls": 0
+    },
+    {
+      "name": "card_unit_cruiser_mk_iii_C",
+      "initial_pincer": 1,
+      "initial_target": "0x12345678",
+      "result_pincer": 1,
+      "target_preserved": true,
+      "pincer_write_sizes": [
+        1
+      ],
+      "opaque_virtual_calls": 13,
+      "opaque_array_calls": 0
+    },
+    {
+      "name": "card_unit_t_28_pincer_C",
+      "initial_pincer": 0,
+      "initial_target": "0x0",
+      "result_pincer": 1,
+      "target_preserved": true,
+      "pincer_write_sizes": [
+        1
+      ],
+      "opaque_virtual_calls": 16,
+      "opaque_array_calls": 1
+    },
+    {
+      "name": "card_unit_t_28_pincer_C",
+      "initial_pincer": 0,
+      "initial_target": "0x12345678",
+      "result_pincer": 1,
+      "target_preserved": true,
+      "pincer_write_sizes": [
+        1
+      ],
+      "opaque_virtual_calls": 16,
+      "opaque_array_calls": 1
+    },
+    {
+      "name": "card_unit_t_28_pincer_C",
+      "initial_pincer": 1,
+      "initial_target": "0x0",
+      "result_pincer": 1,
+      "target_preserved": true,
+      "pincer_write_sizes": [
+        1
+      ],
+      "opaque_virtual_calls": 16,
+      "opaque_array_calls": 1
+    },
+    {
+      "name": "card_unit_t_28_pincer_C",
+      "initial_pincer": 1,
+      "initial_target": "0x12345678",
+      "result_pincer": 1,
+      "target_preserved": true,
+      "pincer_write_sizes": [
+        1
+      ],
+      "opaque_virtual_calls": 16,
+      "opaque_array_calls": 1
+    },
+    {
+      "name": "card_unit_stug_iii_g_schurzen_C",
+      "initial_pincer": 0,
+      "initial_target": "0x0",
+      "result_pincer": 1,
+      "target_preserved": true,
+      "pincer_write_sizes": [
+        1
+      ],
+      "opaque_virtual_calls": 16,
+      "opaque_array_calls": 0
+    },
+    {
+      "name": "card_unit_stug_iii_g_schurzen_C",
+      "initial_pincer": 0,
+      "initial_target": "0x12345678",
+      "result_pincer": 1,
+      "target_preserved": true,
+      "pincer_write_sizes": [
+        1
+      ],
+      "opaque_virtual_calls": 16,
+      "opaque_array_calls": 0
+    },
+    {
+      "name": "card_unit_stug_iii_g_schurzen_C",
+      "initial_pincer": 1,
+      "initial_target": "0x0",
+      "result_pincer": 1,
+      "target_preserved": true,
+      "pincer_write_sizes": [
+        1
+      ],
+      "opaque_virtual_calls": 16,
+      "opaque_array_calls": 0
+    },
+    {
+      "name": "card_unit_stug_iii_g_schurzen_C",
+      "initial_pincer": 1,
+      "initial_target": "0x12345678",
+      "result_pincer": 1,
+      "target_preserved": true,
+      "pincer_write_sizes": [
+        1
+      ],
+      "opaque_virtual_calls": 16,
+      "opaque_array_calls": 0
+    },
+    {
+      "name": "card_unit_panzer_iii_g_desert_C",
+      "initial_pincer": 0,
+      "initial_target": "0x0",
+      "result_pincer": 1,
+      "target_preserved": true,
+      "pincer_write_sizes": [
+        1
+      ],
+      "opaque_virtual_calls": 17,
+      "opaque_array_calls": 0
+    },
+    {
+      "name": "card_unit_panzer_iii_g_desert_C",
+      "initial_pincer": 0,
+      "initial_target": "0x12345678",
+      "result_pincer": 1,
+      "target_preserved": true,
+      "pincer_write_sizes": [
+        1
+      ],
+      "opaque_virtual_calls": 17,
+      "opaque_array_calls": 0
+    },
+    {
+      "name": "card_unit_panzer_iii_g_desert_C",
+      "initial_pincer": 1,
+      "initial_target": "0x0",
+      "result_pincer": 1,
+      "target_preserved": true,
+      "pincer_write_sizes": [
+        1
+      ],
+      "opaque_virtual_calls": 17,
+      "opaque_array_calls": 0
+    },
+    {
+      "name": "card_unit_panzer_iii_g_desert_C",
+      "initial_pincer": 1,
+      "initial_target": "0x12345678",
+      "result_pincer": 1,
+      "target_preserved": true,
+      "pincer_write_sizes": [
+        1
+      ],
+      "opaque_virtual_calls": 17,
+      "opaque_array_calls": 0
+    },
+    {
+      "name": "card_unit_tupolev_sb_2_C",
+      "initial_pincer": 0,
+      "initial_target": "0x0",
+      "result_pincer": 1,
+      "target_preserved": true,
+      "pincer_write_sizes": [
+        1
+      ],
+      "opaque_virtual_calls": 12,
+      "opaque_array_calls": 0
+    },
+    {
+      "name": "card_unit_tupolev_sb_2_C",
+      "initial_pincer": 0,
+      "initial_target": "0x12345678",
+      "result_pincer": 1,
+      "target_preserved": true,
+      "pincer_write_sizes": [
+        1
+      ],
+      "opaque_virtual_calls": 12,
+      "opaque_array_calls": 0
+    },
+    {
+      "name": "card_unit_tupolev_sb_2_C",
+      "initial_pincer": 1,
+      "initial_target": "0x0",
+      "result_pincer": 1,
+      "target_preserved": true,
+      "pincer_write_sizes": [
+        1
+      ],
+      "opaque_virtual_calls": 12,
+      "opaque_array_calls": 0
+    },
+    {
+      "name": "card_unit_tupolev_sb_2_C",
+      "initial_pincer": 1,
+      "initial_target": "0x12345678",
+      "result_pincer": 1,
+      "target_preserved": true,
+      "pincer_write_sizes": [
+        1
+      ],
+      "opaque_virtual_calls": 12,
+      "opaque_array_calls": 0
+    },
+    {
+      "name": "card_unit_typhoon_mk_ib_C",
+      "initial_pincer": 0,
+      "initial_target": "0x0",
+      "result_pincer": 0,
+      "target_preserved": true,
+      "pincer_write_sizes": [],
+      "opaque_virtual_calls": 16,
+      "opaque_array_calls": 1
+    },
+    {
+      "name": "card_unit_typhoon_mk_ib_C",
+      "initial_pincer": 0,
+      "initial_target": "0x12345678",
+      "result_pincer": 0,
+      "target_preserved": true,
+      "pincer_write_sizes": [],
+      "opaque_virtual_calls": 16,
+      "opaque_array_calls": 1
+    },
+    {
+      "name": "card_unit_typhoon_mk_ib_C",
+      "initial_pincer": 1,
+      "initial_target": "0x0",
+      "result_pincer": 1,
+      "target_preserved": true,
+      "pincer_write_sizes": [],
+      "opaque_virtual_calls": 16,
+      "opaque_array_calls": 1
+    },
+    {
+      "name": "card_unit_typhoon_mk_ib_C",
+      "initial_pincer": 1,
+      "initial_target": "0x12345678",
+      "result_pincer": 1,
+      "target_preserved": true,
+      "pincer_write_sizes": [],
+      "opaque_virtual_calls": 16,
+      "opaque_array_calls": 1
+    },
+    {
+      "name": "card_unit_me_bf_109_brothers_C",
+      "initial_pincer": 0,
+      "initial_target": "0x0",
+      "result_pincer": 1,
+      "target_preserved": true,
+      "pincer_write_sizes": [
+        1
+      ],
+      "opaque_virtual_calls": 12,
+      "opaque_array_calls": 1
+    },
+    {
+      "name": "card_unit_me_bf_109_brothers_C",
+      "initial_pincer": 0,
+      "initial_target": "0x12345678",
+      "result_pincer": 1,
+      "target_preserved": true,
+      "pincer_write_sizes": [
+        1
+      ],
+      "opaque_virtual_calls": 12,
+      "opaque_array_calls": 1
+    },
+    {
+      "name": "card_unit_me_bf_109_brothers_C",
+      "initial_pincer": 1,
+      "initial_target": "0x0",
+      "result_pincer": 1,
+      "target_preserved": true,
+      "pincer_write_sizes": [
+        1
+      ],
+      "opaque_virtual_calls": 12,
+      "opaque_array_calls": 1
+    },
+    {
+      "name": "card_unit_me_bf_109_brothers_C",
+      "initial_pincer": 1,
+      "initial_target": "0x12345678",
+      "result_pincer": 1,
+      "target_preserved": true,
+      "pincer_write_sizes": [
+        1
+      ],
+      "opaque_virtual_calls": 12,
+      "opaque_array_calls": 1
+    }
+  ],
+  "custom_graph_summary": {
+    "classes": 16,
+    "nodes": 477,
+    "properties": 46,
+    "selector_address": "0x7ff71356e167",
+    "selector_hex": "00000000"
+  },
+  "worker": {
+    "job_id": "20261027-182219-rule489-native-constructor-writes-346c0e17",
+    "exact_calls": 21,
+    "exact_branches": 4,
+    "exact_direct_rdi_mov_rows": 123
+  },
+  "tests": {
+    "this_round_class_hook_cases": 64,
+    "this_round_object_constructor_cases": 8,
+    "this_round_simulator_selftest_rerun": false,
+    "previous_selftest_passed": 929,
+    "previous_result_is_historical": true
+  },
+  "implementation": [],
+  "remaining": [
+    "完整卡牌/父构造、initializer准备/TLS helper、非空JSON/FText控制块及引用计数未完整执行。",
+    "array-copy39cee30与property虚调用在hook模型中跳过；不能认证其副作用、所有权、异常或任意模板别名。",
+    "需继续衔接底层零填充/更早对象状态与真实构造后hook，确认CurrentTarget最终来源和任意Pincer源变更可达性。",
+    "完整对象生命周期/GC/全PvP/全部卡牌仍未认证。"
+  ],
+  "artifacts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule489-card-constructor.py",
+      "bytes": 2065,
+      "sha256": "ba89fe217a1b6412b88d52c82435b01b55f8c0efbe947677c6d21a08f8bff2db"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule489-card-constructor-native-20261027.json",
+      "bytes": 35165,
+      "sha256": "86ed1b705e81d7a3a429fec18d895cf65225f65b047331d1976120277501c581"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule489-parent-initializer.py",
+      "bytes": 2081,
+      "sha256": "338c7f0905cc18c05d09a1ebb044509a2ce33ec1eda87c28461498697b20c3f0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule489-parent-and-initializer-native-20261027.json",
+      "bytes": 7867,
+      "sha256": "afc7c644cedbcab6e2149e2fcb831816e63c6b327606e9c38312279e347c8ce9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule489-object-constructor.py",
+      "bytes": 2067,
+      "sha256": "845453a256516c08fe492ff2f7292d5a76e2dd20362de27c98991dffe28fad8e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule489-object-constructor-native-20261027.json",
+      "bytes": 3817,
+      "sha256": "4b861db7fb2b40a70d176d6544e9bf5f7c29b3531dd981dbb09814bfa740b969"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule489-class-hooks.py",
+      "bytes": 4073,
+      "sha256": "1087744f4b3bba1fbea4742a51536a238dc5ae74dca506c8dde65e56b0aa3fb5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule489-class-postcopy-hooks-20261027.json",
+      "bytes": 24714,
+      "sha256": "867cecd1fc0812dd728b3707da23ff180f7d32397bea7c9e68f5faa35d558038"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule489-custom-property-copy.py",
+      "bytes": 3444,
+      "sha256": "a762f89685e9a8b9c8776f57d5832c8514300bef90ba80fbd963f142ceabec41"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule489-custom-property-copy-native-20261027.json",
+      "bytes": 13510,
+      "sha256": "aaca45e7e76ef1d14fd1407aed9db972b08baeb4b00b8b26284bf02586bf71dd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule489-custom-default-lists.py",
+      "bytes": 3606,
+      "sha256": "b27ac2df75a7c7f5fc5c7a4bc281beaee2f93b65990a24a1a577e8cc228a7323"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule489-custom-default-lists-20261027.json",
+      "bytes": 239953,
+      "sha256": "404be092c272bd063b10fff0205f557d1875b4a65f2beb244fcb1b4abbfcfe80"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule489-class-default-hook.py",
+      "bytes": 8190,
+      "sha256": "e3233c426fb186011a49a03c8325192f3f8d71a4947d8d2dab55228af40d57ca"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule489-class-default-hook-verification-20261027.json",
+      "bytes": 20753,
+      "sha256": "2a797f2be65700414dfa28c69a4ce1ac1ce3f3b1915339dd5c86f4270e647e59"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule489-worker\\input.json",
+      "bytes": 24407,
+      "sha256": "0489fb8f929f60b559f6b27de87cbf2b1831fed62e8257d0397e3df8b7b4d654"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule489-worker\\output.json",
+      "bytes": 16841,
+      "sha256": "2257842277060d8007ba5d031457b0d614437e6f8baabad83024ab6deb522127"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule489-worker\\task.txt",
+      "bytes": 468,
+      "sha256": "9e93998fad4df97b28858471263cc0853dd2fe42286082c6912e35d32bc029a2"
+    }
+  ]
+}
