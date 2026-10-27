@@ -1,0 +1,266 @@
+{
+  "rule_id": "RULE-492",
+  "date": "2026-10-27",
+  "base_commit": "0660dbddd2c0c553540d74e39e1450311d05f4ab",
+  "status": "普通数组容量与重分配包装链已作隔离验证；真实分配器尺寸取整及内存语义仍开放",
+  "findings": [
+    "当前只读采集并核对扩容1477240(154B)、缩容153f580(147B)、尺寸取整分派124a150(29B)、重分配包装11e9a10(82B)，共412B，与安装PE及当前内存一致。扩容、缩容和重分配包装的完整局部控制流无未决边；尺寸取整函数存在vtable+60间接尾跳。当前allocator/vtable/slot目标只读记录，未调用客户端函数。",
+    "扩容在原Max=0时以max(4,Num)为候选容量，否则候选Num+floor(3*Num/8)+16。将候选字节数与alignment交给分配器尺寸取整，再除元素大小得新Max；写Max后进入重分配包装。静态还有容量下溢/截断检查到INT32_MAX分支，但本轮不声称覆盖整个int32域或真实OOM。",
+    "缩容只有在(slackBytes>=16384或3*Num<2*Max)且(slackCount>64或Num=0)时才考虑。正Num经字节尺寸取整后计算目标Max，零Num目标Max=0；只有新Max不同才更新并重分配。等于64个空闲元素、比例恰好2/3、16384字节阈值附近均纳入所选场景；移除不等于立即缩容。",
+    "11e9a10跳过null数据且新容量0的空操作；否则校验新容量非负及元素大小1..INT32_MAX，将capacity*size字节数、alignment和旧数据指针传给124a780，再写回其返回指针。非法路径到11e3da0诊断；本轮诊断以隔离停止边界供给。实际堆重分配/释放未执行。",
+    "1311独立原机器码案例通过：扩容336、缩容960、重分配15（含3个非法尺寸诊断）。覆盖普通小容量与所选阈值邻域、1/4/24/256字节布局、alignment4/16，以及null allocator回退、虚尺寸取整identity/round16/round64供给。验证容量、取整参数、重分配字节数/对齐、返回指针写回；供给的128字节前缀保持只是边界布景，不是证明实际堆分配器。",
+    "进一步将实际容量/重分配包装接入RULE491数组复制链，513案例通过（56使用7实际非空usedTriggers CDO源值，456合成及1尾部调度证人）。供给realloc故意更换数据指针以检查后续初始化/复制重新读取数据地址。串联采用identity尺寸取整供给，不将此假设说成当前真实分配器行为。",
+    "DeepSeek机械整理4体6调用/14分支/14比较及2条指定容量写入，主agent重新过滤全字段精确核对。未把机械文本过滤或成功退出视为规则语义结论。",
+    "本轮未发现足以新增产品规则修复的差异；未修改规则源码，未重跑C#。929/929仅RULE485历史结果。完整认证卡数仍0。"
+  ],
+  "verification": {
+    "rule": "RULE-492",
+    "pid": 24220,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "native_bytes": 412,
+    "standalone_cases": 1311,
+    "case_counts": {
+      "grow": 336,
+      "shrink": 960,
+      "resize": 15
+    },
+    "case_sha256": "8e4b289b33984799f0a71351e3db669956b79bc41ec16ce10508f8c0187f159c",
+    "live_allocator": {
+      "global_rva": "0x9109780",
+      "allocator": "0x1ca869a8a90",
+      "vtable": "0x7ff7112b5b08",
+      "quantize_slot_60": "0x7ff70b43ef00",
+      "quantize_target_rva": "0x121ef00"
+    },
+    "scope": "Original growth154B, shrink147B, quantization dispatch29B and allocation wrapper82B run offline. Quantization callback(identity/round16/round64), reallocation and invalid-size diagnostic supplied; null allocator fallback uses actual code. Prefix preservation is supplied, not proof of real allocator memory semantics. Ordinary arrays only; threshold neighborhoods, not exhaustive int32 domain.",
+    "game_writes": 0,
+    "real_game_function_calls": 0,
+    "fully_certified_cards": 0
+  },
+  "composed_verification": {
+    "rule": "RULE-492",
+    "pid": 24220,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "native_bytes": 880,
+    "matrix_cases": 512,
+    "tail_dispatch_witness": {
+      "source": [
+        10,
+        11,
+        12
+      ],
+      "old": [
+        100,
+        101,
+        102
+      ],
+      "shape": "tail",
+      "pod": false,
+      "element_size": 1,
+      "alias": false,
+      "result": [
+        100,
+        11,
+        12
+      ],
+      "events": [
+        "nested-probe",
+        "virtual-scalar",
+        "virtual-scalar",
+        "virtual-scalar"
+      ],
+      "virtual_indices": [
+        1,
+        1,
+        2
+      ]
+    },
+    "total_cases": 513,
+    "observed_nonempty_default_profiles": 56,
+    "synthetic_profiles": 456,
+    "case_sha256": "bb1e050d4abeeab86eb2a64a3749e8ca458a6ba8954a3de7ab130f93a8b6fd4d",
+    "observed_array_types": [
+      {
+        "name": "usedTriggers",
+        "address": "0x1cb01c55980",
+        "header_hex": "e00b3011f77f0000006c4013f77f000041ce3d95f47f0000d08d5101cb010000c5f41700000000004500000000000000010000001000000005020000000010000000000048010000d08d5101cb010000000000000000000000000000000000000000000000000000000000000000000000000000000000000059c501cb010000",
+        "memory_image": false,
+        "inner_address": "0x1cb01c55900",
+        "inner_name": "usedTriggers",
+        "inner_hex": "c0163011f77f000080564013f77f00008059c501cb0100000000000000000000c5f41700000000004500000000000000010000000100000000020040100008000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000008058c501cb01000088d26e95f47f0000",
+        "inner_size": 1,
+        "inner_dim": 1,
+        "inner_flags": "0x8001040000200"
+      }
+    ],
+    "observed_nonempty_sources": [
+      {
+        "class_name": "card_unit_5_panzergrenadier_C",
+        "values": [
+          59
+        ]
+      },
+      {
+        "class_name": "card_unit_101_infantry_regiment_C",
+        "values": [
+          31
+        ]
+      },
+      {
+        "class_name": "card_unit_kings_own_scottish_C",
+        "values": [
+          38,
+          8,
+          58
+        ]
+      },
+      {
+        "class_name": "card_unit_222th_guard_rifles_C",
+        "values": [
+          25
+        ]
+      },
+      {
+        "class_name": "card_unit_t_28_pincer_C",
+        "values": [
+          8,
+          58,
+          15
+        ]
+      },
+      {
+        "class_name": "card_unit_typhoon_mk_ib_C",
+        "values": [
+          54
+        ]
+      },
+      {
+        "class_name": "card_unit_me_bf_109_brothers_C",
+        "values": [
+          8,
+          15,
+          58
+        ]
+      }
+    ],
+    "worker_calls": 11,
+    "worker_branches": 46,
+    "scope": "Full880B caller plus three lifecycle bodies and ordinary capacity/reallocation wrappers run offline. Quantization identity and actual heap reallocation/prefix retention supplied; realloc supply deliberately relocates pointer. MinAlignment, memory primitives, virtual element callbacks and nested-probe(false) supplied. No actual allocator ownership or full constructor certification.",
+    "game_writes": 0,
+    "real_game_function_calls": 0,
+    "fully_certified_cards": 0
+  },
+  "total_cases": 1824,
+  "worker_inventory": [
+    {
+      "rva": "0x1477240",
+      "calls": 2,
+      "branches": 2,
+      "comparisons": 3,
+      "capacity_writes": 1
+    },
+    {
+      "rva": "0x153f580",
+      "calls": 2,
+      "branches": 6,
+      "comparisons": 6,
+      "capacity_writes": 1
+    },
+    {
+      "rva": "0x124a150",
+      "calls": 0,
+      "branches": 2,
+      "comparisons": 1,
+      "capacity_writes": 0
+    },
+    {
+      "rva": "0x11e9a10",
+      "calls": 2,
+      "branches": 4,
+      "comparisons": 4,
+      "capacity_writes": 0
+    }
+  ],
+  "worker_job": "20261027-225015-rule492-capacity-index-6b98d153",
+  "evidence": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule492-array-allocation.py",
+      "bytes": 3576,
+      "sha256": "015be9ee8589afaf99790943d1f8ff08fd669a9bd902570bf3cf85e7f182d266"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule492-array-allocation-native-20261027.json",
+      "bytes": 22204,
+      "sha256": "2028d21c8725818af9314a1c296f437f3632146a883979cce7092e88bb1be389"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule492-array-allocation.py",
+      "bytes": 7550,
+      "sha256": "ff5d39cd6067c7745d233608357b5eb2e9c423a3cbac0083c7a335f93c46587b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule492-array-allocation-verification-20261027.json",
+      "bytes": 1058,
+      "sha256": "f735b9e1e15989931f9cbc8476e25a70c2f623f68a6e3638d445401bd8efa093"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule492-composed-copy.py",
+      "bytes": 2643,
+      "sha256": "85e2f29664d7cf15caf3bae79335be42b273b1f04c4b568c50e0699825d09934"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule492-composed-array-verification-20261027.json",
+      "bytes": 3119,
+      "sha256": "ab404b45a60aaf827f09c4b208e596bfccfc5381c29a3f2e436c928e3a520370"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule492-worker\\input.json",
+      "bytes": 20208,
+      "sha256": "5bab646c815e361488268c15b4e33d71c31f873746720475d6d82d70381e6043"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule492-worker\\output.json",
+      "bytes": 5568,
+      "sha256": "172888e3d2cbe1f4b58d61105a527e6c00306cceeb47c1f69fdf34cebfb4311d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule492-worker\\task.txt",
+      "bytes": 769,
+      "sha256": "38ee0822675ffe40089371eca9343b446e6a60f9175ac877a3ef804d808bb6ac"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule491-array-lifecycle.py",
+      "bytes": 9940,
+      "sha256": "ff467f445fa5cceef8ccd8203ecb5caff940066fb88910fc95e86f6670139c07"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule491-array-resize-native-20261027.json",
+      "bytes": 36179,
+      "sha256": "f69f0efea497052257b4baafb7b71e8baf8080cf34121d28ead41f34b0dfb6b0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule490-array-copy.py",
+      "bytes": 8590,
+      "sha256": "c65aea00c4c28603efabeb396c03e70d15dbdc10b7fc6ee24e70d8e4e128cafa"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule490-custom-array-copy-native-20261027.json",
+      "bytes": 45361,
+      "sha256": "78ab967874fb99ec24c2e0c8493336e69115ce8403929617b5a3307b8ad90d43"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule490-array-property-metadata-20261027.json",
+      "bytes": 6116,
+      "sha256": "0fe5f91d2482bcf19367826ff3337d2a372062a8bc824a6d1e07869df89a161e"
+    }
+  ],
+  "remaining": [
+    "当前allocator vtable+60实际尺寸取整实现及124a780真实堆分配/释放语义；不需无限追踪通用分配器才可继续规则层审计。",
+    "完整构造/TLS准备/class hook与默认字段写入顺序，真实非平凡属性复制/析构及所有权。",
+    "memory-image、OOM、异常和GC未认证；本轮并非所有int32尺寸的穷举。",
+    "将已核对默认字段、触发列表及复制行为与模拟器逐项关联，继续PvP规则语义核查。"
+  ],
+  "game_writes": 0,
+  "real_game_function_calls": 0,
+  "fully_certified_cards": 0
+}
