@@ -1,0 +1,874 @@
+{
+  "rule_id": "RULE-495",
+  "date": "2026-10-27",
+  "base_commit": "53ffc09421d815098767b175171478bacdcde6f1",
+  "status": "真实InitProperties到类默认注入虚调用已串联；非POD复制与完整finalizer/TLS仍开放",
+  "findings": [
+    "重新核对当前PID24220、EXE哈希、879B InitProperties、类虚表+380及之前的构造/数组链。将原手动直接进入39cf2b0替换为实际15bef20入口，并使用实际CDO地址（而非同内容的临时副本）满足源身份判断；参数actual class/CDO/copy_transients=false依据RULE488，仍从布景入口传入，尚未执行完整finalizer。",
+    "64串联案例（16当前蓝图类×00/A5初始缓冲×initializer.self空/目标）通过：先实际新存储清零片段、完整构造体，再真实InitProperties循环及类虚槽+380调用，最终进入优化默认注入和数组链。共112属性复制派发，64实际类默认注入；15夹击类60例恢复Pincer1，Typhoon4例0，CurrentTarget全部null，7非空触发列表保持原顺序。",
+    "当前InitProperties全局hook上下文非null，实际调用目标11ad330仅执行空返回（机器码c20000）；64案例执行真实返回体，没有把非null当成未追踪行为或默认为没有调用。上下文原样快照，未调用游戏进程函数。",
+    "另采集非原生初始化helper141dcd0(88B)及owner解析14a29c0(130B)。88B实际执行，owner解析使用当前FProperty+10 tagged owner与类归属核对后的供给值；130B getter只采集，仍有向146c730的尾跳边界，未执行或认证整个owner解析链。",
+    "所选28个postconstruct属性均属对应当前蓝图类且有ZeroConstructor位9。实际helper112次按owner class flags判断非原生，跳过虚初始化并返回true，使后续属性继续处理。ZeroConstructor分支本身不执行清零；依赖先前新存储清零，不能把标志等同主动修复脏值。",
+    "32独立原helper分支案例通过：owner flags0/80/10000000/10000080、ZeroConstructor真假、1/8字节测试字段及00/A5预填。验证AL返回、虚初始化调用/跳过及旁边缓冲保持；虚初始化写5a及owner getter是显式供给。共96案例通过。",
+    "RULE495对当前普通新建蓝图类路径执行了真实88B非原生属性初始化helper。28个postconstruct属性均有ZeroConstructor且tagged owner为对应蓝图类：helper跳过虚初始化并返回true，因此会继续检查后续属性。RULE487供给false只证明其明确边界下的派发，不能当实际helper返回值/初始化次数；该布景没有宣称已执行真实helper。当前真实InitProperties到class+380默认注入衔接已补测64例，完整finalizer/TLS仍开放。",
+    "112属性复制派发中24走供给的字节复制，88为跳过的非POD虚复制（含UberGraphFrame与对象引用等），因此没有证明这些字段的真实复制/所有权。mutex、heap、identity尺寸取整及空文本/JSON等延续已有显式边界。完整对象登记、finalizer/InitProperties入口调度、TLS、异常/GC仍未端到端执行。",
+    "DeepSeek只聚合64执行记录为16类摘要，主agent独立重算后逐字段精确一致。未据摘要或测试数量宣称全卡认证。未发现足以新增产品规则修复的差异，未改规则源码、未重跑C#；929/929仅RULE485历史结果，完整认证卡数0。"
+  ],
+  "verification": {
+    "rule": "RULE-495",
+    "pid": 24220,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "init_properties_bytes": 879,
+    "native_init_helper_bytes": 88,
+    "cases": 64,
+    "global_hook_hex": "102d708cca010000",
+    "actual_global_ret_hook_calls": 64,
+    "actual_nonnative_init_calls": 112,
+    "class_postcopy_calls": 64,
+    "init_property_dispatches": 112,
+    "nonpod_init_copy_calls_skipped": 88,
+    "owners": [
+      {
+        "property": "0x1cb1d26f780",
+        "owner_class": "0x1cb1d2966d0"
+      },
+      {
+        "property": "0x1cb1d22fd60",
+        "owner_class": "0x1cb1d2966d0"
+      },
+      {
+        "property": "0x1cb1dc08580",
+        "owner_class": "0x1cb1b7b14e0"
+      },
+      {
+        "property": "0x1cb1e21d280",
+        "owner_class": "0x1cb1e1ebc50"
+      },
+      {
+        "property": "0x1cb1e21cc80",
+        "owner_class": "0x1cb1e1eb8c0"
+      },
+      {
+        "property": "0x1cb1e197b00",
+        "owner_class": "0x1cb1e1eb8c0"
+      },
+      {
+        "property": "0x1cb1e21cc00",
+        "owner_class": "0x1cb1e1eb8c0"
+      },
+      {
+        "property": "0x1cb1e21cb80",
+        "owner_class": "0x1cb1e1eb8c0"
+      },
+      {
+        "property": "0x1cb1e301780",
+        "owner_class": "0x1cb1e289c40"
+      },
+      {
+        "property": "0x1cb1e2b8120",
+        "owner_class": "0x1cb1e289c40"
+      },
+      {
+        "property": "0x1cb1e301700",
+        "owner_class": "0x1cb1e289c40"
+      },
+      {
+        "property": "0x1cb1e4a8980",
+        "owner_class": "0x1cb1e48bfe0"
+      },
+      {
+        "property": "0x1cb1e4a8900",
+        "owner_class": "0x1cb1e48bfe0"
+      },
+      {
+        "property": "0x1cb1e4a9880",
+        "owner_class": "0x1cb1e48b530"
+      },
+      {
+        "property": "0x1cb1e4b1190",
+        "owner_class": "0x1cb1e48b530"
+      },
+      {
+        "property": "0x1cb1e4acf80",
+        "owner_class": "0x1cb1e48a360"
+      },
+      {
+        "property": "0x1cb1e548080",
+        "owner_class": "0x1ca81a54de0"
+      },
+      {
+        "property": "0x1cb1e547680",
+        "owner_class": "0x1ca81a54330"
+      },
+      {
+        "property": "0x1cb1e547600",
+        "owner_class": "0x1ca81a54330"
+      },
+      {
+        "property": "0x1cb11b08b00",
+        "owner_class": "0x1cb12e55890"
+      },
+      {
+        "property": "0x1cb1e6417b0",
+        "owner_class": "0x1cb12e55890"
+      },
+      {
+        "property": "0x1cb1e6e0480",
+        "owner_class": "0x1cb144a2a40"
+      },
+      {
+        "property": "0x1cb1e6e1e80",
+        "owner_class": "0x1cb144a26b0"
+      },
+      {
+        "property": "0x1cb1b8a6180",
+        "owner_class": "0x1cb14fa0a30"
+      },
+      {
+        "property": "0x1cb150c5900",
+        "owner_class": "0x1cb1281ca90"
+      },
+      {
+        "property": "0x1cb1b6567c0",
+        "owner_class": "0x1cb1281ca90"
+      },
+      {
+        "property": "0x1cb150c7300",
+        "owner_class": "0x1cb1281ca90"
+      },
+      {
+        "property": "0x1cb150c7280",
+        "owner_class": "0x1cb1281ca90"
+      }
+    ],
+    "case_sha256": "ac8333d14d056f522bf795b03fa5f839416ca6e5118bf042e6d7c5b36a9ea8c9",
+    "scope": "Actual879B InitProperties caller/loops and live class virtual+380 dispatch replace manual hook entry; actual88B nonnative-initialize helper runs with owner class supplied from measured tagged property owner and class membership. Inputs(actual class, actual CDO address, copy_transients=false) supplied following earlier argument proof; prior actual zeroing slice and constructors run first. memcpy supplied and non-POD property copy skipped. Actual optimized class hook/array chains run with earlier heap/mutex/quantization boundaries. Finalizer/TLS/registration/full SpawnObject still not executed end-to-end.",
+    "game_writes": 0,
+    "real_game_function_calls": 0,
+    "fully_certified_cards": 0,
+    "helper_cases": 32,
+    "helper_scope": "Actual88B helper on synthetic owner flags/ZeroConstructor/offset/size/fill. Owner getter and virtual init supplied; confirms ZeroConstructor branch skips writes rather than zeroing dirty memory."
+  },
+  "helper_profiles": [
+    {
+      "owner_flags": "0x0",
+      "zero_constructor": false,
+      "offset": 600,
+      "size": 1,
+      "fill": 0,
+      "result": true,
+      "virtual_init_calls": 1
+    },
+    {
+      "owner_flags": "0x0",
+      "zero_constructor": false,
+      "offset": 600,
+      "size": 1,
+      "fill": 165,
+      "result": true,
+      "virtual_init_calls": 1
+    },
+    {
+      "owner_flags": "0x0",
+      "zero_constructor": false,
+      "offset": 688,
+      "size": 8,
+      "fill": 0,
+      "result": true,
+      "virtual_init_calls": 1
+    },
+    {
+      "owner_flags": "0x0",
+      "zero_constructor": false,
+      "offset": 688,
+      "size": 8,
+      "fill": 165,
+      "result": true,
+      "virtual_init_calls": 1
+    },
+    {
+      "owner_flags": "0x0",
+      "zero_constructor": true,
+      "offset": 600,
+      "size": 1,
+      "fill": 0,
+      "result": true,
+      "virtual_init_calls": 0
+    },
+    {
+      "owner_flags": "0x0",
+      "zero_constructor": true,
+      "offset": 600,
+      "size": 1,
+      "fill": 165,
+      "result": true,
+      "virtual_init_calls": 0
+    },
+    {
+      "owner_flags": "0x0",
+      "zero_constructor": true,
+      "offset": 688,
+      "size": 8,
+      "fill": 0,
+      "result": true,
+      "virtual_init_calls": 0
+    },
+    {
+      "owner_flags": "0x0",
+      "zero_constructor": true,
+      "offset": 688,
+      "size": 8,
+      "fill": 165,
+      "result": true,
+      "virtual_init_calls": 0
+    },
+    {
+      "owner_flags": "0x80",
+      "zero_constructor": false,
+      "offset": 600,
+      "size": 1,
+      "fill": 0,
+      "result": false,
+      "virtual_init_calls": 0
+    },
+    {
+      "owner_flags": "0x80",
+      "zero_constructor": false,
+      "offset": 600,
+      "size": 1,
+      "fill": 165,
+      "result": false,
+      "virtual_init_calls": 0
+    },
+    {
+      "owner_flags": "0x80",
+      "zero_constructor": false,
+      "offset": 688,
+      "size": 8,
+      "fill": 0,
+      "result": false,
+      "virtual_init_calls": 0
+    },
+    {
+      "owner_flags": "0x80",
+      "zero_constructor": false,
+      "offset": 688,
+      "size": 8,
+      "fill": 165,
+      "result": false,
+      "virtual_init_calls": 0
+    },
+    {
+      "owner_flags": "0x80",
+      "zero_constructor": true,
+      "offset": 600,
+      "size": 1,
+      "fill": 0,
+      "result": false,
+      "virtual_init_calls": 0
+    },
+    {
+      "owner_flags": "0x80",
+      "zero_constructor": true,
+      "offset": 600,
+      "size": 1,
+      "fill": 165,
+      "result": false,
+      "virtual_init_calls": 0
+    },
+    {
+      "owner_flags": "0x80",
+      "zero_constructor": true,
+      "offset": 688,
+      "size": 8,
+      "fill": 0,
+      "result": false,
+      "virtual_init_calls": 0
+    },
+    {
+      "owner_flags": "0x80",
+      "zero_constructor": true,
+      "offset": 688,
+      "size": 8,
+      "fill": 165,
+      "result": false,
+      "virtual_init_calls": 0
+    },
+    {
+      "owner_flags": "0x10000000",
+      "zero_constructor": false,
+      "offset": 600,
+      "size": 1,
+      "fill": 0,
+      "result": false,
+      "virtual_init_calls": 0
+    },
+    {
+      "owner_flags": "0x10000000",
+      "zero_constructor": false,
+      "offset": 600,
+      "size": 1,
+      "fill": 165,
+      "result": false,
+      "virtual_init_calls": 0
+    },
+    {
+      "owner_flags": "0x10000000",
+      "zero_constructor": false,
+      "offset": 688,
+      "size": 8,
+      "fill": 0,
+      "result": false,
+      "virtual_init_calls": 0
+    },
+    {
+      "owner_flags": "0x10000000",
+      "zero_constructor": false,
+      "offset": 688,
+      "size": 8,
+      "fill": 165,
+      "result": false,
+      "virtual_init_calls": 0
+    },
+    {
+      "owner_flags": "0x10000000",
+      "zero_constructor": true,
+      "offset": 600,
+      "size": 1,
+      "fill": 0,
+      "result": false,
+      "virtual_init_calls": 0
+    },
+    {
+      "owner_flags": "0x10000000",
+      "zero_constructor": true,
+      "offset": 600,
+      "size": 1,
+      "fill": 165,
+      "result": false,
+      "virtual_init_calls": 0
+    },
+    {
+      "owner_flags": "0x10000000",
+      "zero_constructor": true,
+      "offset": 688,
+      "size": 8,
+      "fill": 0,
+      "result": false,
+      "virtual_init_calls": 0
+    },
+    {
+      "owner_flags": "0x10000000",
+      "zero_constructor": true,
+      "offset": 688,
+      "size": 8,
+      "fill": 165,
+      "result": false,
+      "virtual_init_calls": 0
+    },
+    {
+      "owner_flags": "0x10000080",
+      "zero_constructor": false,
+      "offset": 600,
+      "size": 1,
+      "fill": 0,
+      "result": false,
+      "virtual_init_calls": 0
+    },
+    {
+      "owner_flags": "0x10000080",
+      "zero_constructor": false,
+      "offset": 600,
+      "size": 1,
+      "fill": 165,
+      "result": false,
+      "virtual_init_calls": 0
+    },
+    {
+      "owner_flags": "0x10000080",
+      "zero_constructor": false,
+      "offset": 688,
+      "size": 8,
+      "fill": 0,
+      "result": false,
+      "virtual_init_calls": 0
+    },
+    {
+      "owner_flags": "0x10000080",
+      "zero_constructor": false,
+      "offset": 688,
+      "size": 8,
+      "fill": 165,
+      "result": false,
+      "virtual_init_calls": 0
+    },
+    {
+      "owner_flags": "0x10000080",
+      "zero_constructor": true,
+      "offset": 600,
+      "size": 1,
+      "fill": 0,
+      "result": false,
+      "virtual_init_calls": 0
+    },
+    {
+      "owner_flags": "0x10000080",
+      "zero_constructor": true,
+      "offset": 600,
+      "size": 1,
+      "fill": 165,
+      "result": false,
+      "virtual_init_calls": 0
+    },
+    {
+      "owner_flags": "0x10000080",
+      "zero_constructor": true,
+      "offset": 688,
+      "size": 8,
+      "fill": 0,
+      "result": false,
+      "virtual_init_calls": 0
+    },
+    {
+      "owner_flags": "0x10000080",
+      "zero_constructor": true,
+      "offset": 688,
+      "size": 8,
+      "fill": 165,
+      "result": false,
+      "virtual_init_calls": 0
+    }
+  ],
+  "total_cases": 96,
+  "class_summaries": [
+    {
+      "class_name": "card_unit_2nd_para_c_C",
+      "cases": 4,
+      "pincer_results": [
+        1
+      ],
+      "current_targets": [
+        "0000000000000000"
+      ],
+      "used_triggers": [],
+      "init_dispatches": [
+        "UberGraphFrame",
+        "affected_CardID"
+      ],
+      "class_postcopy_calls": 4,
+      "nonnative_init_calls": 8,
+      "nonpod_copy_skipped": 4
+    },
+    {
+      "class_name": "card_unit_57mm_m1943_C",
+      "cases": 4,
+      "pincer_results": [
+        1
+      ],
+      "current_targets": [
+        "0000000000000000"
+      ],
+      "used_triggers": [],
+      "init_dispatches": [
+        "UberGraphFrame"
+      ],
+      "class_postcopy_calls": 4,
+      "nonnative_init_calls": 4,
+      "nonpod_copy_skipped": 4
+    },
+    {
+      "class_name": "card_unit_54_jager_regiment_C",
+      "cases": 4,
+      "pincer_results": [
+        1
+      ],
+      "current_targets": [
+        "0000000000000000"
+      ],
+      "used_triggers": [],
+      "init_dispatches": [
+        "UberGraphFrame"
+      ],
+      "class_postcopy_calls": 4,
+      "nonnative_init_calls": 4,
+      "nonpod_copy_skipped": 4
+    },
+    {
+      "class_name": "card_unit_5_panzergrenadier_C",
+      "cases": 4,
+      "pincer_results": [
+        1
+      ],
+      "current_targets": [
+        "0000000000000000"
+      ],
+      "used_triggers": [
+        59
+      ],
+      "init_dispatches": [
+        "UberGraphFrame",
+        "tmpAttackerCardID",
+        "tempCard",
+        "survivor"
+      ],
+      "class_postcopy_calls": 4,
+      "nonnative_init_calls": 16,
+      "nonpod_copy_skipped": 12
+    },
+    {
+      "class_name": "card_unit_101_infantry_regiment_C",
+      "cases": 4,
+      "pincer_results": [
+        1
+      ],
+      "current_targets": [
+        "0000000000000000"
+      ],
+      "used_triggers": [
+        31
+      ],
+      "init_dispatches": [
+        "UberGraphFrame",
+        "affected_CardID",
+        "tempCard"
+      ],
+      "class_postcopy_calls": 4,
+      "nonnative_init_calls": 12,
+      "nonpod_copy_skipped": 8
+    },
+    {
+      "class_name": "card_unit_irish_guards_C",
+      "cases": 4,
+      "pincer_results": [
+        1
+      ],
+      "current_targets": [
+        "0000000000000000"
+      ],
+      "used_triggers": [],
+      "init_dispatches": [
+        "UberGraphFrame",
+        "tempCard"
+      ],
+      "class_postcopy_calls": 4,
+      "nonnative_init_calls": 8,
+      "nonpod_copy_skipped": 8
+    },
+    {
+      "class_name": "card_unit_kings_own_scottish_C",
+      "cases": 4,
+      "pincer_results": [
+        1
+      ],
+      "current_targets": [
+        "0000000000000000"
+      ],
+      "used_triggers": [
+        38,
+        8,
+        58
+      ],
+      "init_dispatches": [
+        "UberGraphFrame",
+        "affected_CardID"
+      ],
+      "class_postcopy_calls": 4,
+      "nonnative_init_calls": 8,
+      "nonpod_copy_skipped": 4
+    },
+    {
+      "class_name": "card_unit_128th_rifles_C",
+      "cases": 4,
+      "pincer_results": [
+        1
+      ],
+      "current_targets": [
+        "0000000000000000"
+      ],
+      "used_triggers": [],
+      "init_dispatches": [
+        "UberGraphFrame"
+      ],
+      "class_postcopy_calls": 4,
+      "nonnative_init_calls": 4,
+      "nonpod_copy_skipped": 4
+    },
+    {
+      "class_name": "card_unit_222th_guard_rifles_C",
+      "cases": 4,
+      "pincer_results": [
+        1
+      ],
+      "current_targets": [
+        "0000000000000000"
+      ],
+      "used_triggers": [
+        25
+      ],
+      "init_dispatches": [
+        "UberGraphFrame"
+      ],
+      "class_postcopy_calls": 4,
+      "nonnative_init_calls": 4,
+      "nonpod_copy_skipped": 4
+    },
+    {
+      "class_name": "card_unit_cruiser_mk_iii_C",
+      "cases": 4,
+      "pincer_results": [
+        1
+      ],
+      "current_targets": [
+        "0000000000000000"
+      ],
+      "used_triggers": [],
+      "init_dispatches": [
+        "UberGraphFrame",
+        "tempCard"
+      ],
+      "class_postcopy_calls": 4,
+      "nonnative_init_calls": 8,
+      "nonpod_copy_skipped": 8
+    },
+    {
+      "class_name": "card_unit_t_28_pincer_C",
+      "cases": 4,
+      "pincer_results": [
+        1
+      ],
+      "current_targets": [
+        "0000000000000000"
+      ],
+      "used_triggers": [
+        8,
+        58,
+        15
+      ],
+      "init_dispatches": [
+        "UberGraphFrame",
+        "pincer_unit_CardID"
+      ],
+      "class_postcopy_calls": 4,
+      "nonnative_init_calls": 8,
+      "nonpod_copy_skipped": 4
+    },
+    {
+      "class_name": "card_unit_stug_iii_g_schurzen_C",
+      "cases": 4,
+      "pincer_results": [
+        1
+      ],
+      "current_targets": [
+        "0000000000000000"
+      ],
+      "used_triggers": [],
+      "init_dispatches": [
+        "UberGraphFrame"
+      ],
+      "class_postcopy_calls": 4,
+      "nonnative_init_calls": 4,
+      "nonpod_copy_skipped": 4
+    },
+    {
+      "class_name": "card_unit_panzer_iii_g_desert_C",
+      "cases": 4,
+      "pincer_results": [
+        1
+      ],
+      "current_targets": [
+        "0000000000000000"
+      ],
+      "used_triggers": [],
+      "init_dispatches": [
+        "UberGraphFrame"
+      ],
+      "class_postcopy_calls": 4,
+      "nonnative_init_calls": 4,
+      "nonpod_copy_skipped": 4
+    },
+    {
+      "class_name": "card_unit_tupolev_sb_2_C",
+      "cases": 4,
+      "pincer_results": [
+        1
+      ],
+      "current_targets": [
+        "0000000000000000"
+      ],
+      "used_triggers": [],
+      "init_dispatches": [
+        "UberGraphFrame"
+      ],
+      "class_postcopy_calls": 4,
+      "nonnative_init_calls": 4,
+      "nonpod_copy_skipped": 4
+    },
+    {
+      "class_name": "card_unit_typhoon_mk_ib_C",
+      "cases": 4,
+      "pincer_results": [
+        0
+      ],
+      "current_targets": [
+        "0000000000000000"
+      ],
+      "used_triggers": [
+        54
+      ],
+      "init_dispatches": [],
+      "class_postcopy_calls": 4,
+      "nonnative_init_calls": 0,
+      "nonpod_copy_skipped": 0
+    },
+    {
+      "class_name": "card_unit_me_bf_109_brothers_C",
+      "cases": 4,
+      "pincer_results": [
+        1
+      ],
+      "current_targets": [
+        "0000000000000000"
+      ],
+      "used_triggers": [
+        8,
+        15,
+        58
+      ],
+      "init_dispatches": [
+        "UberGraphFrame",
+        "affected_CardID",
+        "killer",
+        "Card Destroyed"
+      ],
+      "class_postcopy_calls": 4,
+      "nonnative_init_calls": 16,
+      "nonpod_copy_skipped": 12
+    }
+  ],
+  "worker_job": "20261027-233045-rule495-default-init-summary-43f3c986",
+  "evidence": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule495-init-properties-composition.py",
+      "bytes": 8852,
+      "sha256": "1ea05c145079ab8114d60201ab91a8ced5cf86ada99f71676d7897cef0707a3f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule495-init-properties-composition-verification-20261027.json",
+      "bytes": 1530475,
+      "sha256": "9b55029d8dc78d24a49f9eeaa72d5404851f1ee4528755ea1eb5bf1bc60ebc27"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule495-final-verification.log",
+      "bytes": 10261,
+      "sha256": "5565711825502c4f6472e3224991a6ff43998c1bea7f6a442762f1cd36406bca"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule495-property-init-helper.py",
+      "bytes": 3560,
+      "sha256": "4d69fad32c4480dda3b23a6090c0929130f8df6a2bd2e5a4c12cbed920639e40"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule495-worker\\input.json",
+      "bytes": 115931,
+      "sha256": "9a96c2d5b4c43fd2c5f317ac60b342ab1f2a90e2267f08e8aa634de57af8734b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule495-worker\\output.json",
+      "bytes": 6181,
+      "sha256": "4e949510ec5dc068864acd2992a94e23e12e72da527737d931196faaca3a8668"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule495-worker\\task.txt",
+      "bytes": 1084,
+      "sha256": "60380b7a9eb64d6650f44f8507d6dc07853b95f0a4943f581cf7f091edf08a8c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule493-card-construction.py",
+      "bytes": 12795,
+      "sha256": "e8ea54e89245394dc65ae0d9a61fd19fee83600ffe978a56735ef4c1d0abac1e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule494-storage-zeroing.py",
+      "bytes": 5808,
+      "sha256": "e9e6a3da8edfcb0ca804204b9f1e2eebc2d0bfd9d6a209bc7ef6b5c51f3a7ef2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule441-post-initialization-native-20261026.json",
+      "bytes": 119087,
+      "sha256": "28ddd6c87ded98abc3c7fa5a3aa2e5dd6a29acf89f3f4a0d654a7b4e6b9e7d7b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule487-construction-property-chains-20261027.json",
+      "bytes": 158433,
+      "sha256": "8accaedd6340c02acf2729e4dfe4f14b34d35c9730c5cce856f281fc25f4f068"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule489-custom-default-lists-20261027.json",
+      "bytes": 239953,
+      "sha256": "404be092c272bd063b10fff0205f557d1875b4a65f2beb244fcb1b4abbfcfe80"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule489-card-constructor-native-20261027.json",
+      "bytes": 35165,
+      "sha256": "86ed1b705e81d7a3a429fec18d895cf65225f65b047331d1976120277501c581"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule489-parent-and-initializer-native-20261027.json",
+      "bytes": 7867,
+      "sha256": "afc7c644cedbcab6e2149e2fcb831816e63c6b327606e9c38312279e347c8ce9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule489-object-constructor-native-20261027.json",
+      "bytes": 3817,
+      "sha256": "4b861db7fb2b40a70d176d6544e9bf5f7c29b3531dd981dbb09814bfa740b969"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule489-class-postcopy-hooks-20261027.json",
+      "bytes": 24714,
+      "sha256": "867cecd1fc0812dd728b3707da23ff180f7d32397bea7c9e68f5faa35d558038"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule489-custom-property-copy-native-20261027.json",
+      "bytes": 13510,
+      "sha256": "aaca45e7e76ef1d14fd1407aed9db972b08baeb4b00b8b26284bf02586bf71dd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule490-custom-array-copy-native-20261027.json",
+      "bytes": 45361,
+      "sha256": "78ab967874fb99ec24c2e0c8493336e69115ce8403929617b5a3307b8ad90d43"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule490-array-property-metadata-20261027.json",
+      "bytes": 6116,
+      "sha256": "0fe5f91d2482bcf19367826ff3337d2a372062a8bc824a6d1e07869df89a161e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule491-array-resize-native-20261027.json",
+      "bytes": 36179,
+      "sha256": "f69f0efea497052257b4baafb7b71e8baf8080cf34121d28ead41f34b0dfb6b0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule492-array-allocation-native-20261027.json",
+      "bytes": 22204,
+      "sha256": "2028d21c8725818af9314a1c296f437f3632146a883979cce7092e88bb1be389"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule494-object-storage-native-20261027.json",
+      "bytes": 126006,
+      "sha256": "fc388546dc9209a3b0af62cc2759dc71019d6d0c78775eaf77145d07c92a796b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule495-property-init-helper-native-20261027.json",
+      "bytes": 12014,
+      "sha256": "250b542c0d22a219fe63720d6de6323e5aa55a8c1d88cfc6f457130c73bfbb39"
+    }
+  ],
+  "remaining": [
+    "非POD属性虚复制、UberGraphFrame与对象引用等真正语义及所有权。",
+    "完整finalizer/TLS到InitProperties的实际入口调度、对象登记/复用与GC。",
+    "CopyData与默认注入最终组合、Pincer原始标志合法变更的可达性及与模拟器的对应。"
+  ],
+  "game_writes": 0,
+  "real_game_function_calls": 0,
+  "fully_certified_cards": 0
+}

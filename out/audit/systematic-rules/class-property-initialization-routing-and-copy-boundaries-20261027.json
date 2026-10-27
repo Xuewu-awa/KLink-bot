@@ -2035,5 +2035,6 @@
       "bytes": 119087,
       "sha256": "28ddd6c87ded98abc3c7fa5a3aa2e5dd6a29acf89f3f4a0d654a7b4e6b9e7d7b"
     }
-  ]
+  ],
+  "later_initialization_clarification_RULE495": "RULE495对当前普通新建蓝图类路径执行了真实88B非原生属性初始化helper。28个postconstruct属性均有ZeroConstructor且tagged owner为对应蓝图类：helper跳过虚初始化并返回true，因此会继续检查后续属性。RULE487供给false只证明其明确边界下的派发，不能当实际helper返回值/初始化次数；该布景没有宣称已执行真实helper。当前真实InitProperties到class+380默认注入衔接已补测64例，完整finalizer/TLS仍开放。"
 }
