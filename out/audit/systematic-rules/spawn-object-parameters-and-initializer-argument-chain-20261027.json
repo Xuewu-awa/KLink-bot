@@ -1,0 +1,1009 @@
+{
+  "rule_id": "RULE-488",
+  "date": "2026-10-27",
+  "base_commit": "757638f3401945e86d2e0fb1957840042fe19aa5",
+  "status": "SpawnObject参数到初始化结构及条件性finalizer实参链已核对；类构造器和hook仍为边界",
+  "findings": [
+    "当前GameplayStatics.SpawnObject包装218B、backend3cbbb40共519B、参数构造15b5700共71B、初始化准备15b9a70共288B只读采集，代码与安装PE一致。准备helper仅采集，不在模型实际执行。",
+    "Backend验证类为Object派生、Outer非空及ClassWithin约束，然后参数class+0、Outer+8、name+10=0、ObjectFlags+18=1000000、transient-copy+20=false、template+28=null，保存instancing相关字段为空。并非每次调用都直接提供类CDO模板。",
+    "原始分配器将显式模板槽+28传入初始化结构+8（此时null），+20布尔传入初始化结构+10（false），在+11..14写01000100，目标对象位于结构+0。模型在类构造器调用前停止，不运行构造器。",
+    "通过17个当前类、空类、Outer有无和两种初始缓冲填充值组成72组，34有效场景抵达类构造器调用，38空类/空Outer场景返回null。参数布局和值、返回前拒绝路径与初始化结构符合原机器码。Lower allocation、root/package、rename/cookie和initializer-preparation为明确供给边界。",
+    "条件性拼接真实finalizer两个精确片段：假定构造器/准备hook不改初始化结构，null archetype在15b5b96..bd8回填对象实际类CDO；再15c1478..14ba传actual class/CDO/transient=false，与RULE487构造后链选择条件一致。此拼接不证明真实constructor/hook保持状态，也不证明更早POD默认写入。",
+    "实际StaticClass1518d90的缓存只读解析为Object 7ff495280070，BaseCardObject父类为PrimaryDataAsset 7ff49536f040，二者不同。最终模型使用真实Object及19个类/父类的继承表，未把BaseCardObject父类猜作Object。",
+    "34有效场景的ClassConstructor全部指向RVA4a7db60。该13B入口若对象非空即条件尾跳4aba330，已单独只读采集入口；尾目标尚未执行，是下一步追踪点。未把13B入口当作完整构造体。",
+    "当前分配器入口受UE4SS detour影响，离线执行使用此前已验证的PE原始前缀；当前live与保存detour字节一致，但本轮不执行detour及其hook回调。结果只代表声明的原始参数路径。",
+    "DeepSeek机械提取3体18调用/34分支/1条RCX目的写入，经主agent精确JSON核验。未修改模拟器规则，未重跑C#全套；929/929为RULE485历史结果。"
+  ],
+  "verification": {
+    "rule": "RULE-488",
+    "pid": 24220,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "native_parts": [
+      {
+        "rva": "0x3cbbb40",
+        "bytes": 519
+      },
+      {
+        "rva": "0x15b5700",
+        "bytes": 71
+      },
+      {
+        "rva": "0x15b9a70",
+        "bytes": 288
+      }
+    ],
+    "cases": 72,
+    "admitted": 34,
+    "rejected": 38,
+    "case_sha256": "0463583a2685dfedf1da2c6a067309ffbcf9fd3cc78f6e8d5b7acf6de93317f1",
+    "scope": "Actual SpawnObject backend519B + parameter ctor71B + original allocator prefix until native class constructor call; then two exact finalizer slices composed under UNCHANGED initializer/constructor boundary. Lower allocation, root/package, rename/cookie and initializer-preparation288B helper supplied; preparation helper skipped rather than executed. Original allocator disk prefix used offline, current live detour not executed. No native class ctor, full allocation/detour/GC or property-copy execution. Thus normal-argument postconstruct selection is conditional on constructor/hook preserving initializer state.",
+    "game_writes": 0,
+    "real_game_function_calls": 0,
+    "fully_certified_cards": 0
+  },
+  "profiles": [
+    {
+      "name": "BaseCardObject",
+      "outer": false,
+      "prefill": 0,
+      "admitted": false
+    },
+    {
+      "name": "BaseCardObject",
+      "outer": false,
+      "prefill": 165,
+      "admitted": false
+    },
+    {
+      "name": "BaseCardObject",
+      "outer": true,
+      "prefill": 0,
+      "admitted": true,
+      "params": "40ce3d95f47f0000000000610000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+      "initializer_before_constructor": "000000620000000000000000000000000001000100000000000000000000000000000000000000000000000000000000",
+      "class_constructor": "0x7ff70ec9db60",
+      "finalizer_archetype": "0x7ff495b945f8",
+      "postselect": {
+        "class_argument": "0x7ff4953dce40",
+        "prototype": "0x7ff495b945f8",
+        "copy_transients": 0
+      },
+      "expected_property_route": "postconstruct",
+      "postconstruct_count": 0
+    },
+    {
+      "name": "BaseCardObject",
+      "outer": true,
+      "prefill": 165,
+      "admitted": true,
+      "params": "40ce3d95f47f00000000006100000000000000000000000000000001000000000000a5a5a5a5a5a50000000000000000000000000000000000000000000000000000000000000000a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5000000000000000000000000a5a5a5a50000000000000000",
+      "initializer_before_constructor": "000000620000000000000000000000000001000100a5a5a50000000000000000a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5",
+      "class_constructor": "0x7ff70ec9db60",
+      "finalizer_archetype": "0x7ff495b945f8",
+      "postselect": {
+        "class_argument": "0x7ff4953dce40",
+        "prototype": "0x7ff495b945f8",
+        "copy_transients": 0
+      },
+      "expected_property_route": "postconstruct",
+      "postconstruct_count": 0
+    },
+    {
+      "name": "card_unit_2nd_para_c_C",
+      "outer": false,
+      "prefill": 0,
+      "admitted": false
+    },
+    {
+      "name": "card_unit_2nd_para_c_C",
+      "outer": false,
+      "prefill": 165,
+      "admitted": false
+    },
+    {
+      "name": "card_unit_2nd_para_c_C",
+      "outer": true,
+      "prefill": 0,
+      "admitted": true,
+      "params": "d066291dcb010000000000610000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+      "initializer_before_constructor": "000000620000000000000000000000000001000100000000000000000000000000000000000000000000000000000000",
+      "class_constructor": "0x7ff70ec9db60",
+      "finalizer_archetype": "0x1cb1d279700",
+      "postselect": {
+        "class_argument": "0x1cb1d2966d0",
+        "prototype": "0x1cb1d279700",
+        "copy_transients": 0
+      },
+      "expected_property_route": "postconstruct",
+      "postconstruct_count": 2
+    },
+    {
+      "name": "card_unit_2nd_para_c_C",
+      "outer": true,
+      "prefill": 165,
+      "admitted": true,
+      "params": "d066291dcb0100000000006100000000000000000000000000000001000000000000a5a5a5a5a5a50000000000000000000000000000000000000000000000000000000000000000a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5000000000000000000000000a5a5a5a50000000000000000",
+      "initializer_before_constructor": "000000620000000000000000000000000001000100a5a5a50000000000000000a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5",
+      "class_constructor": "0x7ff70ec9db60",
+      "finalizer_archetype": "0x1cb1d279700",
+      "postselect": {
+        "class_argument": "0x1cb1d2966d0",
+        "prototype": "0x1cb1d279700",
+        "copy_transients": 0
+      },
+      "expected_property_route": "postconstruct",
+      "postconstruct_count": 2
+    },
+    {
+      "name": "card_unit_57mm_m1943_C",
+      "outer": false,
+      "prefill": 0,
+      "admitted": false
+    },
+    {
+      "name": "card_unit_57mm_m1943_C",
+      "outer": false,
+      "prefill": 165,
+      "admitted": false
+    },
+    {
+      "name": "card_unit_57mm_m1943_C",
+      "outer": true,
+      "prefill": 0,
+      "admitted": true,
+      "params": "e0147b1bcb010000000000610000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+      "initializer_before_constructor": "000000620000000000000000000000000001000100000000000000000000000000000000000000000000000000000000",
+      "class_constructor": "0x7ff70ec9db60",
+      "finalizer_archetype": "0x1cb1dc13490",
+      "postselect": {
+        "class_argument": "0x1cb1b7b14e0",
+        "prototype": "0x1cb1dc13490",
+        "copy_transients": 0
+      },
+      "expected_property_route": "postconstruct",
+      "postconstruct_count": 1
+    },
+    {
+      "name": "card_unit_57mm_m1943_C",
+      "outer": true,
+      "prefill": 165,
+      "admitted": true,
+      "params": "e0147b1bcb0100000000006100000000000000000000000000000001000000000000a5a5a5a5a5a50000000000000000000000000000000000000000000000000000000000000000a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5000000000000000000000000a5a5a5a50000000000000000",
+      "initializer_before_constructor": "000000620000000000000000000000000001000100a5a5a50000000000000000a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5",
+      "class_constructor": "0x7ff70ec9db60",
+      "finalizer_archetype": "0x1cb1dc13490",
+      "postselect": {
+        "class_argument": "0x1cb1b7b14e0",
+        "prototype": "0x1cb1dc13490",
+        "copy_transients": 0
+      },
+      "expected_property_route": "postconstruct",
+      "postconstruct_count": 1
+    },
+    {
+      "name": "card_unit_54_jager_regiment_C",
+      "outer": false,
+      "prefill": 0,
+      "admitted": false
+    },
+    {
+      "name": "card_unit_54_jager_regiment_C",
+      "outer": false,
+      "prefill": 165,
+      "admitted": false
+    },
+    {
+      "name": "card_unit_54_jager_regiment_C",
+      "outer": true,
+      "prefill": 0,
+      "admitted": true,
+      "params": "50bc1e1ecb010000000000610000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+      "initializer_before_constructor": "000000620000000000000000000000000001000100000000000000000000000000000000000000000000000000000000",
+      "class_constructor": "0x7ff70ec9db60",
+      "finalizer_archetype": "0x1cb10364840",
+      "postselect": {
+        "class_argument": "0x1cb1e1ebc50",
+        "prototype": "0x1cb10364840",
+        "copy_transients": 0
+      },
+      "expected_property_route": "postconstruct",
+      "postconstruct_count": 1
+    },
+    {
+      "name": "card_unit_54_jager_regiment_C",
+      "outer": true,
+      "prefill": 165,
+      "admitted": true,
+      "params": "50bc1e1ecb0100000000006100000000000000000000000000000001000000000000a5a5a5a5a5a50000000000000000000000000000000000000000000000000000000000000000a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5000000000000000000000000a5a5a5a50000000000000000",
+      "initializer_before_constructor": "000000620000000000000000000000000001000100a5a5a50000000000000000a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5",
+      "class_constructor": "0x7ff70ec9db60",
+      "finalizer_archetype": "0x1cb10364840",
+      "postselect": {
+        "class_argument": "0x1cb1e1ebc50",
+        "prototype": "0x1cb10364840",
+        "copy_transients": 0
+      },
+      "expected_property_route": "postconstruct",
+      "postconstruct_count": 1
+    },
+    {
+      "name": "card_unit_5_panzergrenadier_C",
+      "outer": false,
+      "prefill": 0,
+      "admitted": false
+    },
+    {
+      "name": "card_unit_5_panzergrenadier_C",
+      "outer": false,
+      "prefill": 165,
+      "admitted": false
+    },
+    {
+      "name": "card_unit_5_panzergrenadier_C",
+      "outer": true,
+      "prefill": 0,
+      "admitted": true,
+      "params": "c0b81e1ecb010000000000610000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+      "initializer_before_constructor": "000000620000000000000000000000000001000100000000000000000000000000000000000000000000000000000000",
+      "class_constructor": "0x7ff70ec9db60",
+      "finalizer_archetype": "0x1cb14fdaf90",
+      "postselect": {
+        "class_argument": "0x1cb1e1eb8c0",
+        "prototype": "0x1cb14fdaf90",
+        "copy_transients": 0
+      },
+      "expected_property_route": "postconstruct",
+      "postconstruct_count": 4
+    },
+    {
+      "name": "card_unit_5_panzergrenadier_C",
+      "outer": true,
+      "prefill": 165,
+      "admitted": true,
+      "params": "c0b81e1ecb0100000000006100000000000000000000000000000001000000000000a5a5a5a5a5a50000000000000000000000000000000000000000000000000000000000000000a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5000000000000000000000000a5a5a5a50000000000000000",
+      "initializer_before_constructor": "000000620000000000000000000000000001000100a5a5a50000000000000000a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5",
+      "class_constructor": "0x7ff70ec9db60",
+      "finalizer_archetype": "0x1cb14fdaf90",
+      "postselect": {
+        "class_argument": "0x1cb1e1eb8c0",
+        "prototype": "0x1cb14fdaf90",
+        "copy_transients": 0
+      },
+      "expected_property_route": "postconstruct",
+      "postconstruct_count": 4
+    },
+    {
+      "name": "card_unit_101_infantry_regiment_C",
+      "outer": false,
+      "prefill": 0,
+      "admitted": false
+    },
+    {
+      "name": "card_unit_101_infantry_regiment_C",
+      "outer": false,
+      "prefill": 165,
+      "admitted": false
+    },
+    {
+      "name": "card_unit_101_infantry_regiment_C",
+      "outer": true,
+      "prefill": 0,
+      "admitted": true,
+      "params": "409c281ecb010000000000610000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+      "initializer_before_constructor": "000000620000000000000000000000000001000100000000000000000000000000000000000000000000000000000000",
+      "class_constructor": "0x7ff70ec9db60",
+      "finalizer_archetype": "0x1cb1e2d5bf0",
+      "postselect": {
+        "class_argument": "0x1cb1e289c40",
+        "prototype": "0x1cb1e2d5bf0",
+        "copy_transients": 0
+      },
+      "expected_property_route": "postconstruct",
+      "postconstruct_count": 3
+    },
+    {
+      "name": "card_unit_101_infantry_regiment_C",
+      "outer": true,
+      "prefill": 165,
+      "admitted": true,
+      "params": "409c281ecb0100000000006100000000000000000000000000000001000000000000a5a5a5a5a5a50000000000000000000000000000000000000000000000000000000000000000a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5000000000000000000000000a5a5a5a50000000000000000",
+      "initializer_before_constructor": "000000620000000000000000000000000001000100a5a5a50000000000000000a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5",
+      "class_constructor": "0x7ff70ec9db60",
+      "finalizer_archetype": "0x1cb1e2d5bf0",
+      "postselect": {
+        "class_argument": "0x1cb1e289c40",
+        "prototype": "0x1cb1e2d5bf0",
+        "copy_transients": 0
+      },
+      "expected_property_route": "postconstruct",
+      "postconstruct_count": 3
+    },
+    {
+      "name": "card_unit_irish_guards_C",
+      "outer": false,
+      "prefill": 0,
+      "admitted": false
+    },
+    {
+      "name": "card_unit_irish_guards_C",
+      "outer": false,
+      "prefill": 165,
+      "admitted": false
+    },
+    {
+      "name": "card_unit_irish_guards_C",
+      "outer": true,
+      "prefill": 0,
+      "admitted": true,
+      "params": "e0bf481ecb010000000000610000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+      "initializer_before_constructor": "000000620000000000000000000000000001000100000000000000000000000000000000000000000000000000000000",
+      "class_constructor": "0x7ff70ec9db60",
+      "finalizer_archetype": "0x1cb1683cb80",
+      "postselect": {
+        "class_argument": "0x1cb1e48bfe0",
+        "prototype": "0x1cb1683cb80",
+        "copy_transients": 0
+      },
+      "expected_property_route": "postconstruct",
+      "postconstruct_count": 2
+    },
+    {
+      "name": "card_unit_irish_guards_C",
+      "outer": true,
+      "prefill": 165,
+      "admitted": true,
+      "params": "e0bf481ecb0100000000006100000000000000000000000000000001000000000000a5a5a5a5a5a50000000000000000000000000000000000000000000000000000000000000000a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5000000000000000000000000a5a5a5a50000000000000000",
+      "initializer_before_constructor": "000000620000000000000000000000000001000100a5a5a50000000000000000a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5",
+      "class_constructor": "0x7ff70ec9db60",
+      "finalizer_archetype": "0x1cb1683cb80",
+      "postselect": {
+        "class_argument": "0x1cb1e48bfe0",
+        "prototype": "0x1cb1683cb80",
+        "copy_transients": 0
+      },
+      "expected_property_route": "postconstruct",
+      "postconstruct_count": 2
+    },
+    {
+      "name": "card_unit_kings_own_scottish_C",
+      "outer": false,
+      "prefill": 0,
+      "admitted": false
+    },
+    {
+      "name": "card_unit_kings_own_scottish_C",
+      "outer": false,
+      "prefill": 165,
+      "admitted": false
+    },
+    {
+      "name": "card_unit_kings_own_scottish_C",
+      "outer": true,
+      "prefill": 0,
+      "admitted": true,
+      "params": "30b5481ecb010000000000610000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+      "initializer_before_constructor": "000000620000000000000000000000000001000100000000000000000000000000000000000000000000000000000000",
+      "class_constructor": "0x7ff70ec9db60",
+      "finalizer_archetype": "0x1cb1683b7d0",
+      "postselect": {
+        "class_argument": "0x1cb1e48b530",
+        "prototype": "0x1cb1683b7d0",
+        "copy_transients": 0
+      },
+      "expected_property_route": "postconstruct",
+      "postconstruct_count": 2
+    },
+    {
+      "name": "card_unit_kings_own_scottish_C",
+      "outer": true,
+      "prefill": 165,
+      "admitted": true,
+      "params": "30b5481ecb0100000000006100000000000000000000000000000001000000000000a5a5a5a5a5a50000000000000000000000000000000000000000000000000000000000000000a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5000000000000000000000000a5a5a5a50000000000000000",
+      "initializer_before_constructor": "000000620000000000000000000000000001000100a5a5a50000000000000000a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5",
+      "class_constructor": "0x7ff70ec9db60",
+      "finalizer_archetype": "0x1cb1683b7d0",
+      "postselect": {
+        "class_argument": "0x1cb1e48b530",
+        "prototype": "0x1cb1683b7d0",
+        "copy_transients": 0
+      },
+      "expected_property_route": "postconstruct",
+      "postconstruct_count": 2
+    },
+    {
+      "name": "card_unit_128th_rifles_C",
+      "outer": false,
+      "prefill": 0,
+      "admitted": false
+    },
+    {
+      "name": "card_unit_128th_rifles_C",
+      "outer": false,
+      "prefill": 165,
+      "admitted": false
+    },
+    {
+      "name": "card_unit_128th_rifles_C",
+      "outer": true,
+      "prefill": 0,
+      "admitted": true,
+      "params": "60a3481ecb010000000000610000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+      "initializer_before_constructor": "000000620000000000000000000000000001000100000000000000000000000000000000000000000000000000000000",
+      "class_constructor": "0x7ff70ec9db60",
+      "finalizer_archetype": "0x1cb16839d90",
+      "postselect": {
+        "class_argument": "0x1cb1e48a360",
+        "prototype": "0x1cb16839d90",
+        "copy_transients": 0
+      },
+      "expected_property_route": "postconstruct",
+      "postconstruct_count": 1
+    },
+    {
+      "name": "card_unit_128th_rifles_C",
+      "outer": true,
+      "prefill": 165,
+      "admitted": true,
+      "params": "60a3481ecb0100000000006100000000000000000000000000000001000000000000a5a5a5a5a5a50000000000000000000000000000000000000000000000000000000000000000a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5000000000000000000000000a5a5a5a50000000000000000",
+      "initializer_before_constructor": "000000620000000000000000000000000001000100a5a5a50000000000000000a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5",
+      "class_constructor": "0x7ff70ec9db60",
+      "finalizer_archetype": "0x1cb16839d90",
+      "postselect": {
+        "class_argument": "0x1cb1e48a360",
+        "prototype": "0x1cb16839d90",
+        "copy_transients": 0
+      },
+      "expected_property_route": "postconstruct",
+      "postconstruct_count": 1
+    },
+    {
+      "name": "card_unit_222th_guard_rifles_C",
+      "outer": false,
+      "prefill": 0,
+      "admitted": false
+    },
+    {
+      "name": "card_unit_222th_guard_rifles_C",
+      "outer": false,
+      "prefill": 165,
+      "admitted": false
+    },
+    {
+      "name": "card_unit_222th_guard_rifles_C",
+      "outer": true,
+      "prefill": 0,
+      "admitted": true,
+      "params": "e04da581ca010000000000610000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+      "initializer_before_constructor": "000000620000000000000000000000000001000100000000000000000000000000000000000000000000000000000000",
+      "class_constructor": "0x7ff70ec9db60",
+      "finalizer_archetype": "0x1cb168306a0",
+      "postselect": {
+        "class_argument": "0x1ca81a54de0",
+        "prototype": "0x1cb168306a0",
+        "copy_transients": 0
+      },
+      "expected_property_route": "postconstruct",
+      "postconstruct_count": 1
+    },
+    {
+      "name": "card_unit_222th_guard_rifles_C",
+      "outer": true,
+      "prefill": 165,
+      "admitted": true,
+      "params": "e04da581ca0100000000006100000000000000000000000000000001000000000000a5a5a5a5a5a50000000000000000000000000000000000000000000000000000000000000000a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5000000000000000000000000a5a5a5a50000000000000000",
+      "initializer_before_constructor": "000000620000000000000000000000000001000100a5a5a50000000000000000a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5",
+      "class_constructor": "0x7ff70ec9db60",
+      "finalizer_archetype": "0x1cb168306a0",
+      "postselect": {
+        "class_argument": "0x1ca81a54de0",
+        "prototype": "0x1cb168306a0",
+        "copy_transients": 0
+      },
+      "expected_property_route": "postconstruct",
+      "postconstruct_count": 1
+    },
+    {
+      "name": "card_unit_cruiser_mk_iii_C",
+      "outer": false,
+      "prefill": 0,
+      "admitted": false
+    },
+    {
+      "name": "card_unit_cruiser_mk_iii_C",
+      "outer": false,
+      "prefill": 165,
+      "admitted": false
+    },
+    {
+      "name": "card_unit_cruiser_mk_iii_C",
+      "outer": true,
+      "prefill": 0,
+      "admitted": true,
+      "params": "3043a581ca010000000000610000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+      "initializer_before_constructor": "000000620000000000000000000000000001000100000000000000000000000000000000000000000000000000000000",
+      "class_constructor": "0x7ff70ec9db60",
+      "finalizer_archetype": "0x1cb1683f2e0",
+      "postselect": {
+        "class_argument": "0x1ca81a54330",
+        "prototype": "0x1cb1683f2e0",
+        "copy_transients": 0
+      },
+      "expected_property_route": "postconstruct",
+      "postconstruct_count": 2
+    },
+    {
+      "name": "card_unit_cruiser_mk_iii_C",
+      "outer": true,
+      "prefill": 165,
+      "admitted": true,
+      "params": "3043a581ca0100000000006100000000000000000000000000000001000000000000a5a5a5a5a5a50000000000000000000000000000000000000000000000000000000000000000a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5000000000000000000000000a5a5a5a50000000000000000",
+      "initializer_before_constructor": "000000620000000000000000000000000001000100a5a5a50000000000000000a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5",
+      "class_constructor": "0x7ff70ec9db60",
+      "finalizer_archetype": "0x1cb1683f2e0",
+      "postselect": {
+        "class_argument": "0x1ca81a54330",
+        "prototype": "0x1cb1683f2e0",
+        "copy_transients": 0
+      },
+      "expected_property_route": "postconstruct",
+      "postconstruct_count": 2
+    },
+    {
+      "name": "card_unit_t_28_pincer_C",
+      "outer": false,
+      "prefill": 0,
+      "admitted": false
+    },
+    {
+      "name": "card_unit_t_28_pincer_C",
+      "outer": false,
+      "prefill": 165,
+      "admitted": false
+    },
+    {
+      "name": "card_unit_t_28_pincer_C",
+      "outer": true,
+      "prefill": 0,
+      "admitted": true,
+      "params": "9058e512cb010000000000610000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+      "initializer_before_constructor": "000000620000000000000000000000000001000100000000000000000000000000000000000000000000000000000000",
+      "class_constructor": "0x7ff70ec9db60",
+      "finalizer_archetype": "0x1cb13bf0010",
+      "postselect": {
+        "class_argument": "0x1cb12e55890",
+        "prototype": "0x1cb13bf0010",
+        "copy_transients": 0
+      },
+      "expected_property_route": "postconstruct",
+      "postconstruct_count": 2
+    },
+    {
+      "name": "card_unit_t_28_pincer_C",
+      "outer": true,
+      "prefill": 165,
+      "admitted": true,
+      "params": "9058e512cb0100000000006100000000000000000000000000000001000000000000a5a5a5a5a5a50000000000000000000000000000000000000000000000000000000000000000a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5000000000000000000000000a5a5a5a50000000000000000",
+      "initializer_before_constructor": "000000620000000000000000000000000001000100a5a5a50000000000000000a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5",
+      "class_constructor": "0x7ff70ec9db60",
+      "finalizer_archetype": "0x1cb13bf0010",
+      "postselect": {
+        "class_argument": "0x1cb12e55890",
+        "prototype": "0x1cb13bf0010",
+        "copy_transients": 0
+      },
+      "expected_property_route": "postconstruct",
+      "postconstruct_count": 2
+    },
+    {
+      "name": "card_unit_stug_iii_g_schurzen_C",
+      "outer": false,
+      "prefill": 0,
+      "admitted": false
+    },
+    {
+      "name": "card_unit_stug_iii_g_schurzen_C",
+      "outer": false,
+      "prefill": 165,
+      "admitted": false
+    },
+    {
+      "name": "card_unit_stug_iii_g_schurzen_C",
+      "outer": true,
+      "prefill": 0,
+      "admitted": true,
+      "params": "402a4a14cb010000000000610000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+      "initializer_before_constructor": "000000620000000000000000000000000001000100000000000000000000000000000000000000000000000000000000",
+      "class_constructor": "0x7ff70ec9db60",
+      "finalizer_archetype": "0x1cb14badf30",
+      "postselect": {
+        "class_argument": "0x1cb144a2a40",
+        "prototype": "0x1cb14badf30",
+        "copy_transients": 0
+      },
+      "expected_property_route": "postconstruct",
+      "postconstruct_count": 1
+    },
+    {
+      "name": "card_unit_stug_iii_g_schurzen_C",
+      "outer": true,
+      "prefill": 165,
+      "admitted": true,
+      "params": "402a4a14cb0100000000006100000000000000000000000000000001000000000000a5a5a5a5a5a50000000000000000000000000000000000000000000000000000000000000000a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5000000000000000000000000a5a5a5a50000000000000000",
+      "initializer_before_constructor": "000000620000000000000000000000000001000100a5a5a50000000000000000a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5",
+      "class_constructor": "0x7ff70ec9db60",
+      "finalizer_archetype": "0x1cb14badf30",
+      "postselect": {
+        "class_argument": "0x1cb144a2a40",
+        "prototype": "0x1cb14badf30",
+        "copy_transients": 0
+      },
+      "expected_property_route": "postconstruct",
+      "postconstruct_count": 1
+    },
+    {
+      "name": "card_unit_panzer_iii_g_desert_C",
+      "outer": false,
+      "prefill": 0,
+      "admitted": false
+    },
+    {
+      "name": "card_unit_panzer_iii_g_desert_C",
+      "outer": false,
+      "prefill": 165,
+      "admitted": false
+    },
+    {
+      "name": "card_unit_panzer_iii_g_desert_C",
+      "outer": true,
+      "prefill": 0,
+      "admitted": true,
+      "params": "b0264a14cb010000000000610000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+      "initializer_before_constructor": "000000620000000000000000000000000001000100000000000000000000000000000000000000000000000000000000",
+      "class_constructor": "0x7ff70ec9db60",
+      "finalizer_archetype": "0x1cb14bad8a0",
+      "postselect": {
+        "class_argument": "0x1cb144a26b0",
+        "prototype": "0x1cb14bad8a0",
+        "copy_transients": 0
+      },
+      "expected_property_route": "postconstruct",
+      "postconstruct_count": 1
+    },
+    {
+      "name": "card_unit_panzer_iii_g_desert_C",
+      "outer": true,
+      "prefill": 165,
+      "admitted": true,
+      "params": "b0264a14cb0100000000006100000000000000000000000000000001000000000000a5a5a5a5a5a50000000000000000000000000000000000000000000000000000000000000000a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5000000000000000000000000a5a5a5a50000000000000000",
+      "initializer_before_constructor": "000000620000000000000000000000000001000100a5a5a50000000000000000a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5",
+      "class_constructor": "0x7ff70ec9db60",
+      "finalizer_archetype": "0x1cb14bad8a0",
+      "postselect": {
+        "class_argument": "0x1cb144a26b0",
+        "prototype": "0x1cb14bad8a0",
+        "copy_transients": 0
+      },
+      "expected_property_route": "postconstruct",
+      "postconstruct_count": 1
+    },
+    {
+      "name": "card_unit_tupolev_sb_2_C",
+      "outer": false,
+      "prefill": 0,
+      "admitted": false
+    },
+    {
+      "name": "card_unit_tupolev_sb_2_C",
+      "outer": false,
+      "prefill": 165,
+      "admitted": false
+    },
+    {
+      "name": "card_unit_tupolev_sb_2_C",
+      "outer": true,
+      "prefill": 0,
+      "admitted": true,
+      "params": "300afa14cb010000000000610000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+      "initializer_before_constructor": "000000620000000000000000000000000001000100000000000000000000000000000000000000000000000000000000",
+      "class_constructor": "0x7ff70ec9db60",
+      "finalizer_archetype": "0x1cb1b94cb80",
+      "postselect": {
+        "class_argument": "0x1cb14fa0a30",
+        "prototype": "0x1cb1b94cb80",
+        "copy_transients": 0
+      },
+      "expected_property_route": "postconstruct",
+      "postconstruct_count": 1
+    },
+    {
+      "name": "card_unit_tupolev_sb_2_C",
+      "outer": true,
+      "prefill": 165,
+      "admitted": true,
+      "params": "300afa14cb0100000000006100000000000000000000000000000001000000000000a5a5a5a5a5a50000000000000000000000000000000000000000000000000000000000000000a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5000000000000000000000000a5a5a5a50000000000000000",
+      "initializer_before_constructor": "000000620000000000000000000000000001000100a5a5a50000000000000000a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5",
+      "class_constructor": "0x7ff70ec9db60",
+      "finalizer_archetype": "0x1cb1b94cb80",
+      "postselect": {
+        "class_argument": "0x1cb14fa0a30",
+        "prototype": "0x1cb1b94cb80",
+        "copy_transients": 0
+      },
+      "expected_property_route": "postconstruct",
+      "postconstruct_count": 1
+    },
+    {
+      "name": "card_unit_typhoon_mk_ib_C",
+      "outer": false,
+      "prefill": 0,
+      "admitted": false
+    },
+    {
+      "name": "card_unit_typhoon_mk_ib_C",
+      "outer": false,
+      "prefill": 165,
+      "admitted": false
+    },
+    {
+      "name": "card_unit_typhoon_mk_ib_C",
+      "outer": true,
+      "prefill": 0,
+      "admitted": true,
+      "params": "20238112cb010000000000610000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+      "initializer_before_constructor": "000000620000000000000000000000000001000100000000000000000000000000000000000000000000000000000000",
+      "class_constructor": "0x7ff70ec9db60",
+      "finalizer_archetype": "0x1cb12c8f970",
+      "postselect": {
+        "class_argument": "0x1cb12812320",
+        "prototype": "0x1cb12c8f970",
+        "copy_transients": 0
+      },
+      "expected_property_route": "postconstruct",
+      "postconstruct_count": 0
+    },
+    {
+      "name": "card_unit_typhoon_mk_ib_C",
+      "outer": true,
+      "prefill": 165,
+      "admitted": true,
+      "params": "20238112cb0100000000006100000000000000000000000000000001000000000000a5a5a5a5a5a50000000000000000000000000000000000000000000000000000000000000000a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5000000000000000000000000a5a5a5a50000000000000000",
+      "initializer_before_constructor": "000000620000000000000000000000000001000100a5a5a50000000000000000a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5",
+      "class_constructor": "0x7ff70ec9db60",
+      "finalizer_archetype": "0x1cb12c8f970",
+      "postselect": {
+        "class_argument": "0x1cb12812320",
+        "prototype": "0x1cb12c8f970",
+        "copy_transients": 0
+      },
+      "expected_property_route": "postconstruct",
+      "postconstruct_count": 0
+    },
+    {
+      "name": "card_unit_me_bf_109_brothers_C",
+      "outer": false,
+      "prefill": 0,
+      "admitted": false
+    },
+    {
+      "name": "card_unit_me_bf_109_brothers_C",
+      "outer": false,
+      "prefill": 165,
+      "admitted": false
+    },
+    {
+      "name": "card_unit_me_bf_109_brothers_C",
+      "outer": true,
+      "prefill": 0,
+      "admitted": true,
+      "params": "90ca8112cb010000000000610000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+      "initializer_before_constructor": "000000620000000000000000000000000001000100000000000000000000000000000000000000000000000000000000",
+      "class_constructor": "0x7ff70ec9db60",
+      "finalizer_archetype": "0x1cb1425ccd0",
+      "postselect": {
+        "class_argument": "0x1cb1281ca90",
+        "prototype": "0x1cb1425ccd0",
+        "copy_transients": 0
+      },
+      "expected_property_route": "postconstruct",
+      "postconstruct_count": 4
+    },
+    {
+      "name": "card_unit_me_bf_109_brothers_C",
+      "outer": true,
+      "prefill": 165,
+      "admitted": true,
+      "params": "90ca8112cb0100000000006100000000000000000000000000000001000000000000a5a5a5a5a5a50000000000000000000000000000000000000000000000000000000000000000a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5000000000000000000000000a5a5a5a50000000000000000",
+      "initializer_before_constructor": "000000620000000000000000000000000001000100a5a5a50000000000000000a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5",
+      "class_constructor": "0x7ff70ec9db60",
+      "finalizer_archetype": "0x1cb1425ccd0",
+      "postselect": {
+        "class_argument": "0x1cb1281ca90",
+        "prototype": "0x1cb1425ccd0",
+        "copy_transients": 0
+      },
+      "expected_property_route": "postconstruct",
+      "postconstruct_count": 4
+    },
+    {
+      "name": "null",
+      "outer": false,
+      "prefill": 0,
+      "admitted": false
+    },
+    {
+      "name": "null",
+      "outer": false,
+      "prefill": 165,
+      "admitted": false
+    },
+    {
+      "name": "null",
+      "outer": true,
+      "prefill": 0,
+      "admitted": false
+    },
+    {
+      "name": "null",
+      "outer": true,
+      "prefill": 165,
+      "admitted": false
+    }
+  ],
+  "constructor_entry": {
+    "rva": "0x4a7db60",
+    "pdata": {
+      "begin_rva": 78109536,
+      "end_rva": 78109549,
+      "boundary": "bounded leaf terminal instruction; no exact pdata start"
+    },
+    "size": 13,
+    "raw_hex": "488b094885c90f85c4c70300c3",
+    "sha256": "c099d1525c60570dc0de80777714a8db3c946246e9a55666fe280c312a2801b2",
+    "instructions": [
+      {
+        "rva": "0x4a7db60",
+        "mnemonic": "mov",
+        "op_str": "rcx, qword ptr [rcx]"
+      },
+      {
+        "rva": "0x4a7db63",
+        "mnemonic": "test",
+        "op_str": "rcx, rcx"
+      },
+      {
+        "rva": "0x4a7db66",
+        "mnemonic": "jne",
+        "op_str": "0x144aba330"
+      },
+      {
+        "rva": "0x4a7db6c",
+        "mnemonic": "ret",
+        "op_str": ""
+      }
+    ]
+  },
+  "root_class_context": {
+    "root": "0x7ff495280070",
+    "base_parent": "0x7ff49536f040",
+    "root_slot": "0x7ff713406308",
+    "root_getter_hex": "488b056ad5cc07"
+  },
+  "worker": {
+    "job_id": "20261027-180719-rule488-spawn-parameter-instructions-310a73d1",
+    "exact_calls": 18,
+    "exact_branches": 34,
+    "exact_rcx_destination_writes": 1
+  },
+  "tests": {
+    "this_round_offline_cases": 72,
+    "admitted": 34,
+    "rejected": 38,
+    "this_round_simulator_selftest_rerun": false,
+    "previous_selftest_passed": 929,
+    "previous_result_is_historical": true
+  },
+  "implementation": [],
+  "remaining": [
+    "真实ClassConstructor4a7db60→4aba330及其super调用是否改写initializer、早期POD默认填充尚待。",
+    "初始化准备helper15b9a70、UE4SS/全局/class hook、真实底层分配和GC未完整执行。",
+    "条件性构造后链只证明state-preserving边界下的实参，不是所有副本默认字段结果或完整复制认证。",
+    "完整CopyData/全部PvP和单卡仍未认证，完整认证卡数0。"
+  ],
+  "artifacts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule488-spawn-object-headers.py",
+      "bytes": 2345,
+      "sha256": "ec17853e52cfc47b5c8ac84749049942c947e466153f1d4bfc827984eaf5e2ff"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule488-spawn-object-headers-20261027.json",
+      "bytes": 4488093,
+      "sha256": "dac7e56c09b9048303ce813d045b0a78a7af65c6c0a0f566346bd659ce8e1068"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule488-spawn-wrapper.py",
+      "bytes": 2101,
+      "sha256": "73a168371c01623d33ae6d88618e16c32fd76afdfee79e85568ad1d3e1af9f73"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule488-spawn-object-wrapper-20261027.json",
+      "bytes": 8447,
+      "sha256": "ca9d62065c33f654fa7ffda26ae15e68c1eb1b60202ba294a1b3fafaa619292e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule488-spawn-parameters.py",
+      "bytes": 2084,
+      "sha256": "62314506fcaaaa8d7f1d43d4d3d9637edeb259bd0c5eaeb87e6fc1e8f5830ff0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule488-spawn-parameter-bodies-20261027.json",
+      "bytes": 30976,
+      "sha256": "52d180042bb98c90b65125ce846bbac43a12aeda0b6d47124ab326512c38e390"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule488-root-class.py",
+      "bytes": 2066,
+      "sha256": "5cc5b5c0602bfc373e02d4499e8b43a2365df8b4239bcde1deabed957ae25434"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule488-root-class-getter-native-20261027.json",
+      "bytes": 4923,
+      "sha256": "07dbff4b4dc2dd2cc3964e81046481cbd1f6fa37347f1df9d8746328ad2e0f5b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule488-spawn-context.py",
+      "bytes": 1964,
+      "sha256": "7acd7aacaae9dd1109e809479096b01cde7bd2bc066afdb240f3d39a23837827"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule488-spawn-class-context-20261027.json",
+      "bytes": 16673,
+      "sha256": "f05ccd27d6bce1e6f2c7871e9d2517541ff5d1dc0588ea438354809d1d6b2abb"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule488-spawn-argument-chain.py",
+      "bytes": 8298,
+      "sha256": "641be0aae7fb3628136e2b57ca8a6c291c88c5f7aead6bcb81bd035d2c05d809"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule488-spawn-argument-verification-20261027.json",
+      "bytes": 35642,
+      "sha256": "e61d46d7e3e621497f1b9dd3d41a946796b5a62cf6ea58061d1b420e9cef79d4"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule488-worker\\input.json",
+      "bytes": 28268,
+      "sha256": "354ea662256405e74b76362c0292f8550cdb9dd7cedc09104498a5eeec6739ab"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule488-worker\\output.json",
+      "bytes": 6168,
+      "sha256": "e7a2b4e1c7a35899938eff8c738b3d91e4ffcbc2e1025163add724ec368bc18c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule488-worker\\task.txt",
+      "bytes": 513,
+      "sha256": "9c34d325cb9646dd1822fefb49e5f3ed0d233a4ded1da7fbcc6fd390bc67e47f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule488-card-constructor-entry.py",
+      "bytes": 2354,
+      "sha256": "cdbd230adc44a1ba4a8fc13f442cca8115d1ad25f4e1e90fbe1d18c2257de742"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule488-card-constructor-entry-20261027.json",
+      "bytes": 1271,
+      "sha256": "172086d070af25384ab75652000bb49dbe93aefed5e64f4af3c6337859abb6f9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule441-allocation-core-native-20261026.json",
+      "bytes": 33067,
+      "sha256": "84adc6993e35c92a055be998e5c685a67e4ea9b8fdf3207db52452a82bbc8c59"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule441-post-initialization-native-20261026.json",
+      "bytes": 119087,
+      "sha256": "28ddd6c87ded98abc3c7fa5a3aa2e5dd6a29acf89f3f4a0d654a7b4e6b9e7d7b"
+    }
+  ]
+}
