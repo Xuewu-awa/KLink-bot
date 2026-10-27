@@ -748,7 +748,8 @@ public sealed class GameState
     public CardInstance Create(string cardName, Side owner, CardLocation location, int locationNumber,
                                bool isGold = false, bool sequentialId = false,
                                bool isSalvaged = false, string? salvageFaction = null,
-                               int salvagedCardId = 0, bool skipCreationModifiers = false, bool? cardSeenBeforeModifiers = null)
+                               int salvagedCardId = 0, bool skipCreationModifiers = false, bool? cardSeenBeforeModifiers = null,
+                               Action<CardInstance>? beforeCreationModifiers = null)
     {
         CardDefinition def = Database.Require(cardName);
         var card = new CardInstance
@@ -808,6 +809,8 @@ public sealed class GameState
         // CreateCard i=400 follows CreateCardObject's own OnCreateCard, but
         // precedes T35. Null preserves the lower-level creation callers.
         if (cardSeenBeforeModifiers.HasValue) card.CardSeen = cardSeenBeforeModifiers.Value;
+        // CreateCard1004 applies requested veteran promotion before T35/1036.
+        if (!skipCreationModifiers) beforeCreationModifiers?.Invoke(card);
         if (!skipCreationModifiers) CardCreationModifiers?.Invoke(card);
 
         // 游标探针：把"效果生成的卡"也记进流水账 —— 才能把

@@ -3554,7 +3554,8 @@ public sealed partial class CardApi
                                            int locationNumber = -1,
                                            bool newGiveBlitz = false,
                                            bool forceGoldCard = false,
-                                           int salvageFaction = 0)
+                                           int salvageFaction = 0,
+                                           bool makeVeteran = false)
     {
         CardLocation where = frontline ? CardLocation.BoardFrontline : side.HqOf();
         // RULE-450: SpawnCardToBoard i=1468..1650 selects the salvage struct
@@ -3562,7 +3563,8 @@ public sealed partial class CardApi
         int salvage = unchecked((byte)salvageFaction);
         var card = State.Create(cardName, side, where, 0, isGold: forceGoldCard,
             isSalvaged: salvage != 0,
-            salvageFaction: salvage == 0 ? null : salvage.ToString(System.Globalization.CultureInfo.InvariantCulture));
+            salvageFaction: salvage == 0 ? null : salvage.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            beforeCreationModifiers: makeVeteran ? MakeVeteran : null);
         card.EnteredPlayOnTurn = State.Turn;
 
         int slot = locationNumber >= 0
@@ -4778,7 +4780,7 @@ public sealed partial class CardApi
     /// The own hook at2806 is only on the unsuppressed branch, then2842
     /// continues to the T32 query at2463. Both branches reach abilities2782;
     /// the execution-flow stack returns after that observer loop.
-    /// Armor/raw ability changes and the enclosing IsActionProcess boundary remain open.
+    /// Armor, remaining raw fields/guard handling and the enclosing action boundary remain open.
     /// </summary>
     public void MakeVeteran(CardInstance target)
     {
@@ -4789,6 +4791,9 @@ public sealed partial class CardApi
             && FindVeteranDefinition(State.Database, target) is not null
             && (target.IsSuppressed || !target.CustomJson.ContainsKey("veteran")))
         {
+            // RULE-475: capture before numeric callbacks and raw Fury replacement.
+            bool giveAttackIfGainingFury = !(target.HasFury || target.AttacksThisTurn >= 2)
+                && (target.HasAttackLeft || target.AttacksThisTurn == 1);
             target.Keywords.Add(Keyword.Veteran);
             // RULE-452: native MakeVeteran i=724 writes this marker before
             // later effects/notifications query IsVeteran. Armor/raw ability and outer action-mode stages remain open.
@@ -4802,6 +4807,16 @@ public sealed partial class CardApi
             DoChangeAttack(context, null, new object?[] { target, target.CardId, veteran.BaseAttack, 5, false, null });
             DoChangeDefense(context, null, new object?[] { target, target.CardId, veteran.Defense, 5, false, null });
             DoChangeOperationCost(context, null, new object?[] { target, target.CardId, veteran.BaseOperationCost, 5, false, false, false });
+            // Direct raw writes at1264..1516 do not call Give/Remove helpers.
+            // Preserve native attackLeft while changing its derived Fury basis.
+            int attackLeft = target.RemainingAttacks;
+            foreach (string keyword in new[] { Keyword.Ambush, Keyword.Blitz, Keyword.Fury, Keyword.Mobilize, Keyword.Shock })
+            {
+                if (veteran.Keywords.Contains(keyword)) target.Keywords.Add(keyword);
+                else target.Keywords.Remove(keyword);
+            }
+            target.SetRemainingAttacks(veteran.Keywords.Contains(Keyword.Fury) && giveAttackIfGainingFury
+                ? unchecked(attackLeft + 1) : attackLeft);
             _engine.FireSubAction("ZActionMakeVeteran", new[]
             {
                 ActionValue2.Int("cardID", target.CardId),

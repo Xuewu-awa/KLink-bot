@@ -5256,12 +5256,8 @@ public sealed partial class CardApi
             locationNumber: IntArg(a, 6, -1),
             newGiveBlitz: TruthyArg(a, 5),
             forceGoldCard: gold,
-            salvageFaction: IntArg(a, 7));
-
-        if (TruthyArg(a, 8))
-        {
-            MakeVeteran(card);
-        }
+            salvageFaction: IntArg(a, 7),
+            makeVeteran: TruthyArg(a, 8));
 
         return card;
     }
@@ -5390,7 +5386,8 @@ public sealed partial class CardApi
             frontline,
             insertNumber,
             newGiveBlitz: false,
-            forceGoldCard: spawner.IsGold);
+            forceGoldCard: spawner.IsGold,
+            makeVeteran: TruthyArg(a, 7));
 
         // `GameState.Move` normalizes a newly appended card by insertion order.
         // The Blueprint's `SpawnCardToBoard` instead inserts at the requested slot
@@ -5405,12 +5402,6 @@ public sealed partial class CardApi
         }
 
         spawned.LocationNumber = insertNumber;
-
-        // RULE-455: the shared native spawn upgrades before the copy stage.
-        if (TruthyArg(a, 7))
-        {
-            MakeVeteran(spawned);
-        }
 
         if (TruthyArg(a, 4))
         {
@@ -5587,15 +5578,8 @@ public sealed partial class CardApi
             frontline: true,
             locationNumber: IntArg(a, 7, -1),
             newGiveBlitz: TruthyArg(a, 4),
-            forceGoldCard: gold);
-
-        // `makeVeteran`（a[8]）：函数体把它当 `SpawnCardToBoard` 的实参传下去；
-        // 本内核 `SpawnOnBattlefield` 没有这个参数，等价地在生成之后调 `MakeVeteran`
-        // （与 `DoSpawnOnBattlefield` 对 `SpawnCardOnBattlefield` 的处理同构）。
-        if (TruthyArg(a, 8))
-        {
-            MakeVeteran(card);
-        }
+            forceGoldCard: gold,
+            makeVeteran: TruthyArg(a, 8));
 
         return card;
     }

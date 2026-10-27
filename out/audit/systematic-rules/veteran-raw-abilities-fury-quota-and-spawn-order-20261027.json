@@ -1,0 +1,191 @@
+{
+  "rule_id": "RULE-475",
+  "date": "2026-10-27",
+  "base_commit": "545231765a72e226224bff1133a682148ba63bc5",
+  "status": "修复老兵五原始能力标志、奋战额度及生成升级先后；装甲/其余原始字段仍未还原",
+  "findings": [
+    "能力变化广播已在前轮使用正确专用快照，没有重复修改。转而核查MakeVeteran主体已知缺口；复读2924字节并独立重解码，368..705缓存资格，1264..1516写五原始标志，1786..1996调整attackLeft。",
+    "缓存资格为!(getHasFury() || attackCountThisTurn>=2) && (HasAttackLeft() || attackCountThisTurn==1)，早于JSON/数值回调。之后hasAmbush/hasBlitz/hasFury/hasMobilize/hasShock从缓存老兵模板直接覆盖，不走Give/Remove，也不复制模板的来源数组。模板原始hasFury为真且缓存资格真时才对当时attackLeft作int32+1。",
+    "旧MakeVeteran未实现这些写入；现保持现有对象Name/Definition和receivedAbilitiesFromCards，覆盖五原始关键词。由于托管剩余攻击按HasFury推导，先保存当前RemainingAttacks，覆盖raw Fury后用SetRemainingAttacks恢复或加一，避免改变raw标志时隐式改变额度。来源Fury仍影响派生getter，不能用raw旧Fury代替getHasFury。",
+    "加入原始标志覆盖后，已有SpawnCardInFrontline的giveBlitz+makeVeteran测试失败，不能弱化其预期。新采集三个生成函数及复读CreateCard，证明SpawnCardToBoard1650把MakeVeteran传入CreateCard，CreateCard1004升级早于1036查询T35；生成尾段回边734后785才GiveBlitz。旧后置升级会反过来抹掉给予的Blitz。",
+    "新增GameState.Create的beforeCreationModifiers可选钩子，公共SpawnOnBattlefield的makeVeteran参数将升级置于T35前；半场/前线/旁生成包装转发并移除末尾重复升级。默认不请求升级的调用保持。不是完整CreateCard原生语义认证，邻位完整编号/重入等仍按既有边界。",
+    "新增3测试共3024场景：raw五位全部旧/新组合与双方2048；Fury派生来源/次数/负零正及int最大剩余额度、抑制、API和真实Kismet VM960；两生成包装双方×Blitz×Veteran16，检查T35前已升级且最后Blitz正确。原有前线测试保持，未改成接受失去Blitz。",
+    "最终同922项测试旧919通过3失败，修复922全部通过。早期921项旧919通过2失败、修复920通过1失败为发现生成时序问题的诊断记录，保留但不混作最终验证。最终基线临时恢复3个生产文件至HEAD，finally恢复修复后重跑相同最终测试。",
+    "1264组离线AST片段模型：五位raw1024，资格/配额及受控中途变化240；以原条件跳转栈和int32加法执行选定片段。没有执行装甲/守护/烟幕等完整主体；getHasFury/HasAttackLeft为已知逻辑边界。DeepSeek提取9/5/6条原始行，主agent独立全等验证。"
+  ],
+  "verification": {
+    "rule": "RULE-475",
+    "pid": 24220,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "function_bytes": 2924,
+    "function_sha256": "3caec2d19e5f9297b711564f5ec2655d8352314ab5626fcd1b43afac455d2d06",
+    "extra_live_functions": [
+      {
+        "name": "SpawnCardToBoard",
+        "bytes": 1917,
+        "sha256": "0719d50282a7313cbc5431b334393ba01ad8f4d80fdebcfc151c8ed1611c2069"
+      },
+      {
+        "name": "SpawnCardOnBattlefield",
+        "bytes": 566,
+        "sha256": "b359529e02899a37cdc6994ba49fc7b3dd6ae6448e4f875819d9698d8eb3ecea"
+      },
+      {
+        "name": "SpawnCardInFrontline",
+        "bytes": 327,
+        "sha256": "5be63420ab66f872183310a47f935fae56c5915a376c619b4121dbfd475cb342"
+      },
+      {
+        "name": "CreateCard",
+        "bytes": 3115,
+        "sha256": "5c6f1e39f163b4b86a28539d3f12017d4a09322d4ee7695bd8cd3f1be8d61db3"
+      }
+    ],
+    "models": {
+      "raw_flag_profiles": 1024,
+      "quota_profiles": 240,
+      "total": 1264,
+      "sha256": "3c6632949b0d59b050a6dcc9171c3b11a3e9c2b68124c9e2bd737bce725c8e8b"
+    },
+    "worker_exact_rows": {
+      "capture": 9,
+      "writes": 5,
+      "quota": 6
+    },
+    "scope": "Original MakeVeteran AST three segments368..705,1264..1516,1786..1996 with original conditional stack in quota. getHasFury/HasAttackLeft logical boundaries supplied, optional between-segment mutation controlled. No complete MakeVeteran/armor/guard/smokescreen/destruction/EffectType/action routing certification.",
+    "game_writes": 0,
+    "real_game_function_calls": 0,
+    "fully_certified_cards": 0
+  },
+  "tests": {
+    "new_tests": 3,
+    "new_profiles": {
+      "raw": 2048,
+      "fury_quota": 960,
+      "spawn_order": 16,
+      "total": 3024
+    },
+    "baseline": {
+      "total": 922,
+      "passed": 919,
+      "failed": 3
+    },
+    "fixed": {
+      "total": 922,
+      "passed": 922,
+      "failed": 0
+    }
+  },
+  "implementation": [
+    "src/KLink.Bot/Effects/CardApi.cs",
+    "src/KLink.Bot/Effects/CardApiDispatch.cs",
+    "src/KLink.Bot/Engine/GameState.cs",
+    "tools/BotSim/SelfTest.cs"
+  ],
+  "unresolved": [
+    "MakeVeteran1189装甲mode5尚未实现；该缺口可能引入额外回调，不能据本轮宣布完整升级时序等价。",
+    "EffectType、hasDestruction、hasSmokescreen与guard/custom guard分支及相关RemoveSmokescreen/UpdateGuarded仍待。",
+    "非动作完整路径、源模板变化/销毁、全部回调重入与对象生存期。",
+    "触发登记历史、TSet顺序、重置所有权等既有边界仍开放。"
+  ],
+  "game_writes": 0,
+  "real_game_function_calls": 0,
+  "fully_certified_cards": 0,
+  "artifacts": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule475-veteran-raw-abilities-20261027.json",
+      "bytes": 4580175,
+      "sha256": "ffa903cf6f395eebc4d0682e67558e611ed39f998a13b41018dddf04b7cd1eea"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule475-spawn-veteran-order-20261027.json",
+      "bytes": 4585922,
+      "sha256": "ecde78e3ef633c5f2e56dca9f562de5c39c36c6fafb20052201d54dfbb32c08e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule469-conversion-veteran-registration-20261027.json",
+      "bytes": 4861623,
+      "sha256": "a87d1a8a8c8ed9ee2522c5e7b483b2532e1f71e78fc38ee2ba830b4f3e00da0e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule475-veteran-abilities.py",
+      "bytes": 2347,
+      "sha256": "9e414d336c737eb0ab77f94bc5a2dad99b79ee2563f20d808c518d41c996c7e4"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule475-spawn-order.py",
+      "bytes": 2414,
+      "sha256": "30a13855f0c34cb5ae006da11eacae7c5d76ae649d3ead74a02b2ff1f976fc97"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule475-veteran-abilities.py",
+      "bytes": 6783,
+      "sha256": "e3e93b5d1bf541d813f8ef0aefbe98717ae2e18cd5908d005121106c5e31470c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule475-veteran-abilities-verification-20261027.json",
+      "bytes": 1589,
+      "sha256": "03a5bbde88dead1ae328429b1d3bfd41bcfb76de80983b1215f8e3dc07a3b391"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\run-rule475-tests.py",
+      "bytes": 1166,
+      "sha256": "6e6d00f7e074a65c42e10920764d5684720bcf79901ef3a52c7ebdd4ec00745f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule475-worker\\input.json",
+      "bytes": 36626,
+      "sha256": "1fb795702936cb49c7efe929b6b4418fa867040aa7a83aff56c46adca9fdb0fe"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule475-worker\\output.json",
+      "bytes": 11551,
+      "sha256": "496376c11edc81ca13babdbb7d3ffd514bcfb7f7db377e530b154dd4effe8484"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule475-worker\\task.txt",
+      "bytes": 379,
+      "sha256": "cc5e5e04e1180dc491a62435e9e645ebadaf3f0083adfa7f567007cdaf0c3e54"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule475-baseline-selftest.log",
+      "bytes": 80716,
+      "sha256": "5176265407f02c01da29c3c4e229d5558acbae55298a35b06749a9ab04abd3b6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule475-final-selftest.log",
+      "bytes": 80465,
+      "sha256": "5a3a4f404a060b4b496692052ea5faca56d29d2c2b5e647f159f56c7ff00ae35"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule475-baseline-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule475-final-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule475-initial-baseline-selftest.log",
+      "bytes": 80546,
+      "sha256": "3368d7aee8c6c8eced6652585a0052335e9238d5bae9c68d4dfc0d6a839b8547"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule475-initial-final-selftest.log",
+      "bytes": 80490,
+      "sha256": "c69b6ee8491fd879c264921cde5551c6625aa9d8cf182aaedd151c7d6182bb94"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule475-initial-baseline-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule475-initial-final-selftest.exit.txt",
+      "bytes": 3,
+      "sha256": "f1b2f662800122bed0ff255693df89c4487fbdcf453d3524a42d4ec20c3d9c04"
+    }
+  ]
+}

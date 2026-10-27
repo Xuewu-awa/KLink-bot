@@ -859,6 +859,9 @@ internal static class SelfTest
         new("压制揭示重入：缓存判定后按当前ID查替代对象", db => SuppressionTailReplacement(db, false)),
         new("压制揭示重入：真实VM不重判替代对象的Covert", db => SuppressionTailReplacement(db, true)),
         new("RevealCard移动通知：原生ID0主体与观察者载荷", RevealMovementSentinel),
+        new("生成老兵：先升级/T35再授予闪击", SpawnVeteranBeforeCreationObservers),
+        new("老兵原始能力：覆盖五字段且保留来源/身份", VeteranRawAbilityWrites),
+        new("老兵奋战：预捕获资格与独立剩余攻击额度", VeteranFuryQuotaWrites),
         new("老兵观察者：自身包含及查询过滤", VeteranObserverQueryContract),
         new("老兵观察者：持有快照及回调变化", VeteranObserverSnapshotContract),
         new("揭示观察者：自身注册、位置、抑制例外与Method4", RevealObserverQueryContract),
@@ -32529,6 +32532,108 @@ internal static class SelfTest
         }
 
         return null;
+    }
+
+    private static string? SpawnVeteranBeforeCreationObservers(CardDatabase db)
+    {
+        var fixture = VeteranRawFixture(db, 0); int cases = 0;
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (bool frontline in new[] { false, true })
+        foreach (bool blitz in new[] { false, true })
+        foreach (bool veteran in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(fixture);
+            var spawner = state.CreateWithId("card_unit_routed_troops", side, 20, side.HqOf(), 0);
+            bool? seen = null; var prior = state.CardCreationModifiers;
+            state.CardCreationModifiers = card => { if (card.Name == "card_unit_rule475_fixture") seen = card.CustomJson.ContainsKey("veteran"); prior?.Invoke(card); };
+            object?[] args = frontline
+                ? new object?[] { "card_unit_rule475_fixture", (int)side, 20, null, blitz, null, 0, -1, veteran }
+                : new object?[] { (int)side, false, "card_unit_rule475_fixture", 20, null, blitz, -1, 0, veteran, false };
+            var result = engine.Api.InvokeByName(frontline ? "SpawnCardInFrontline" : "SpawnCardOnBattlefield", spawner, args,
+                new EffectContext { Engine = engine, State = state, Self = spawner, Controller = side }, out _);
+            if (result is not CardInstance created || seen != veteran || created.HasBlitz != blitz || created.CustomJson.ContainsKey("veteran") != veteran)
+                return $"spawn veteran order {side}/{frontline}/{blitz}/{veteran}: T35={seen}, result={result}";
+            cases++;
+        }
+        return cases == 16 ? null : $"spawn veteran profiles={cases}";
+    }
+
+    private static CardDatabase VeteranRawFixture(CardDatabase db, int mask)
+    {
+        const string name = "card_unit_rule475_fixture";
+        string[] flags = { Keyword.Ambush, Keyword.Blitz, Keyword.Fury, Keyword.Mobilize, Keyword.Shock };
+        var defs = db.All.ToDictionary(x => x.Name, StringComparer.Ordinal);
+        defs[name] = new CardDefinition { Name = name, Type = "infantry", Attack = 7, Defense = 9 };
+        defs[name + "_vet"] = new CardDefinition { Name = name + "_vet", Type = "infantry", Attack = 7, Defense = 9,
+            Keywords = flags.Where((_, i) => (mask & (1 << i)) != 0).ToArray() };
+        var ctor = typeof(CardDatabase).GetConstructors(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).Single();
+        return (CardDatabase)ctor.Invoke(new object[] { defs, db.DeckCodeIds.ToDictionary(x => x.Key, x => x.Value, StringComparer.Ordinal) });
+    }
+
+    private static string? VeteranRawAbilityWrites(CardDatabase db)
+    {
+        const string name = "card_unit_rule475_fixture";
+        string[] flags = { Keyword.Ambush, Keyword.Blitz, Keyword.Fury, Keyword.Mobilize, Keyword.Shock };
+        int cases = 0;
+        for (int veteranMask = 0; veteranMask < 32; veteranMask++)
+        {
+            var fixture = VeteranRawFixture(db, veteranMask);
+            foreach (Side side in new[] { Side.Left, Side.Right })
+            for (int oldMask = 0; oldMask < 32; oldMask++)
+            {
+                var (engine, state) = EmptyBoard(fixture);
+                var card = state.CreateWithId(name, side, 60, side.HqOf(), 0); var definition = card.Definition;
+                for (int i = 0; i < flags.Length; i++) if ((oldMask & (1 << i)) != 0) card.Keywords.Add(flags[i]);
+                card.Keywords.Add(Keyword.Alpine); card.Keywords.Add(Keyword.Smokescreen);
+                foreach (string source in new[] { "ambush", "blitz", "fury", "mobilize", "shock" }) card.ReceivedAbilitiesFromCards[source] = new List<int> { 20, 0 };
+                card.SetRemainingAttacks(3); int attacked = card.AttacksThisTurn;
+                engine.Api.MakeVeteran(card);
+                for (int i = 0; i < flags.Length; i++) if (card.Keywords.Contains(flags[i]) != ((veteranMask & (1 << i)) != 0))
+                    return $"veteran raw {side}/{oldMask}/{veteranMask}: {flags[i]} mismatch";
+                if (card.Name != name || !ReferenceEquals(card.Definition, definition) || card.RemainingAttacks != 3 || card.AttacksThisTurn != attacked
+                    || !card.Keywords.Contains(Keyword.Alpine) || !card.Keywords.Contains(Keyword.Smokescreen)
+                    || card.ReceivedAbilitiesFromCards.Any(x => !x.Value.SequenceEqual(new[] { 20, 0 })))
+                    return $"veteran raw disturbed independent state {side}/{oldMask}/{veteranMask}";
+                cases++;
+            }
+        }
+        return cases == 2048 ? null : $"veteran raw profiles={cases}";
+    }
+
+    private static string? VeteranFuryQuotaWrites(CardDatabase db)
+    {
+        const string name = "card_unit_rule475_fixture";
+        int cases = 0;
+        foreach (bool upgradedFury in new[] { false, true })
+        {
+            var fixture = VeteranRawFixture(db, upgradedFury ? 4 : 0);
+            foreach (Side side in new[] { Side.Left, Side.Right })
+            foreach (bool oldRaw in new[] { false, true })
+            foreach (bool custom in new[] { false, true })
+            foreach (int attacks in new[] { 0, 1, 2 })
+            foreach (int left in new[] { -2, 0, 1, 3, int.MaxValue })
+            foreach (bool suppressed in new[] { false, true })
+            foreach (bool vm in new[] { false, true })
+            {
+                var (engine, state) = EmptyBoard(fixture);
+                var card = state.CreateWithId(name, side, 60, side.HqOf(), 0);
+                if (oldRaw) card.Keywords.Add(Keyword.Fury);
+                if (custom) card.ReceivedAbilitiesFromCards["fury"] = new List<int> { 20 };
+                if (suppressed) card.Keywords.Add(Keyword.Suppressed);
+                card.AttacksThisTurn = attacks; card.SetRemainingAttacks(left);
+                bool add = upgradedFury && !(oldRaw || custom || attacks >= 2) && (left > 0 || attacks == 1);
+                if (!vm) engine.Api.MakeVeteran(card);
+                else engine.Api.Vm.RunLocalProgramMulti(new KismetProgram(new[] {
+                    new KismetStep(0, "call", "MakeVeteran", new[] { new KismetExpr { Self = true }, KismetExpr.Empty }, new[] { 1 }, null, null, -1, null, null)
+                }, 0), new EffectContext { Engine = engine, State = state, Self = card, Controller = side }, null);
+                int expected = add ? unchecked(left + 1) : left;
+                if (card.RemainingAttacks != expected || card.Keywords.Contains(Keyword.Fury) != upgradedFury || card.HasFury != (upgradedFury || custom)
+                    || card.AttacksThisTurn != attacks || custom && !card.ReceivedAbilitiesFromCards["fury"].SequenceEqual(new[] { 20 }))
+                    return $"veteran fury {side}/{oldRaw}/{custom}/{upgradedFury}/{attacks}/{left}/{suppressed}/dispatch={vm}: left={card.RemainingAttacks}, expected={expected}";
+                cases++;
+            }
+        }
+        return cases == 960 ? null : $"veteran fury profiles={cases}";
     }
 
     private static CardDatabase VeteranObserverFixture(CardDatabase db)
