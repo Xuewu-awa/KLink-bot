@@ -1,0 +1,59 @@
+{
+  "rule_id": "RULE-527",
+  "date": "2026-10-29",
+  "status": "模式4在所核验范围未发现新的规则差异；新增组合及整合回归，未修改生产规则代码",
+  "authority": {
+    "pid": 24220,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "read_only": true,
+    "client_writes": 0,
+    "real_client_function_calls": 0,
+    "historical_replays_used_as_authority": false
+  },
+  "findings": [
+    "重新采集并按原始字节、符号头与FName完整重解码ChangeAttack2713B/104节点、ChangeBuffsFromCards6267B/205节点、ExecuteAfterChangeAttackEvents694B/25节点及NotifyGainAttack103B/3节点；0B声明不计为实现。",
+    "主函数795按模式4进入2415；493已先处理来源账本。2415/2449判断账本输出amountRemoved是否为0，为0时2463置valueChanged=false，跳过数值与通知/after。非零时2475改写局部请求，2543读取原始临时分量，2584将它与amountRemoved作int32加法，再2630写回临时攻击，基础攻击和maxAttack不变。调用者原amount不会决定撤销数额。",
+    "账本2097读取受控tempBuffGive局部枚举0并形成attack_tempBuffGive键；5862/5954查找该键，6032将原数额乘-1、6074赋给localAmountRemoved、6101移除键；缺键时6171输出0。存在零键也必须先移除，不能把零数额当成不做账本清理。临时攻击键缺失时不回退永久Attack或独立SetValue键。",
+    "账本共同尾段同步当前来源反向目标数组。无任何剩余键时删除当前来源记录并移除所有重复目标ID；仍有其他键时保持来源关系，AddUnique不会清理已有重复项；不改变外来来源。当前管理实现的空槽清理、选定临时键移除和同步行为与本轮受控AST结果一致，未改生产代码。",
+    "2880组实际主函数+完整账本+after-helper组合覆盖10位置、六种来源记录状态、三基础/临时/压制状态、来源存在/缺失、action-process/skip及两种无关请求值。六状态为来源不存在、空来源、显式零键、正3、负4且保留永久攻击/防御、INT_MIN且保留临时防御/永久SetValue。核对原始数值/maxAttack、整张目标账本、来源重复ID清理、七参数通知及回调时已更新状态。",
+    "int32取负按回绕供给，INT_MIN取负仍为INT_MIN，随后临时攻击相加也按int32回绕；管理层unchecked减去原值的结果一致。此处不是执行真实客户端函数。零记录无数值/after；非零记录即使总可见攻击因夹断不变也继续after；skip和位置1/2只抑制通知，压制只跳过自身回调。",
+    "C#新增2880组整合覆盖双方、10位置、六来源状态、三原始/临时/压制状态、skip、来源存在/缺失及请求0/1234；验证来源关联、保留永久/防御/外来记录、原始攻击与maxAttack、事件参数和通知先于回调。全量943/943通过，构建0警告0错误；没有产品修复前失败基线，因为本轮未发现需修复差异。",
+    "原生IsLocatedInDeck当前头及17B后端再次稳定复读，并离线验证256个位置字节值，只有1/2为真。DeepSeek仅转录22个指定主函数/账本节点，主agent逐节点对比当前权威AST并独立重解码及验证。"
+  ],
+  "validation": {
+    "remove_composed_ast_cases": 2880,
+    "native_deck_byte_vectors": 256,
+    "new_csharp_cases": 2880,
+    "selftest_passed": 943,
+    "selftest_total": 943,
+    "build_warnings": 0,
+    "build_errors": 0,
+    "worker_exact_current_ast_nodes": 22,
+    "production_rule_files_changed": 0
+  },
+  "remaining": [
+    "优先继续核对ChangeAttack其他UByte模式6..255，尤其未命中数值分支时的账本、局部valueChanged默认状态及尾段；这些模式仍未获得本轮认证。",
+    "tempBuffGive局部枚举控制为0。容器/标量int32原语、枚举名、原生有效性/资格/getter/加密setter/密钥、T5成员及顺序、通知接收体和具体回调体均为供给边界；不宣称所有原生实现、任意帧默认或重入均已认证。",
+    "qqq输出与托管void ABI、默认目标绑定、空上下文异常、对象生命周期、公共便利参数与原生模式绑定仍开放。",
+    "相邻生成缺来源/无效控制方/默认位置、共享满位置/overrideCardID与分配通知等既有边界保留；当前没有任何完整单卡全链获得1比1认证。"
+  ],
+  "fully_certified_cards": 0,
+  "evidence_sha256": {
+    "D:\\Codex Workshop\\kards-install-review\\capture-rule527-change-attack.py": "bcb0407062639d53f70b7e844698aa9ec7e3cc26f3703afc53f88b13ab0730dd",
+    "D:\\Codex Workshop\\kards-install-review\\capture-rule527-attack-after.py": "6ae6d6a3741634502c413ec26a259169a6f1f59986f57a35a139e351bebdde19",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule527-change-attack-functions-20261029.json": "8c55c75a2e0d1c8f46943fb6df2121e0a2a15bd4cc4ce37ba172e99dbbc9f609",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule527-attack-after-notify-functions-20261029.json": "95634d79711473864411a002baee0f38f6def05c79bef1af1e89077d47b3c51a",
+    "D:\\Codex Workshop\\kards-install-review\\verify-rule527-remove.py": "101c143ca5d4afb7b1e8e594dd93ac0fa6b3b887ce69bf18258d3c7791199212",
+    "D:\\Codex Workshop\\kards-install-review\\rule527-remove-verification-20261029.json": "b50a46a1696f0360221fe5fc23d3b8e2c46d5e26abdeeb2ad27f92cbcc083737",
+    "D:\\Codex Workshop\\kards-install-review\\verify-rule525-change-attack.py": "45937aa36b223e1c2c26558b146e65f73e2ee3cfc30c7c923dbf545679424f61",
+    "D:\\Codex Workshop\\kards-install-review\\verify-rule518-ledger.py": "f2aa5f261b10bbac3673f2245ab4201bed4c6a66eb91b4268791ab41c0cc5039",
+    "D:\\Codex Workshop\\kards-install-review\\verify-rule527-deck-native.py": "82efbe716be91d007eafe458e99312cbb429c2822e8024a6de1c455e8d9ca1d7",
+    "D:\\Codex Workshop\\kards-install-review\\rule527-deck-native-verification-20261029.json": "4a08cef82efbc8aefcf8ca2f8784e455efa0cb07618256a6aa117e258dd8d8e6",
+    "D:\\Codex Workshop\\kards-install-review\\verify-rule527-evidence.py": "4ebcda329407cef744408f5de1b9aa79a93c123527a0431c01087c78bf9154e2",
+    "D:\\Codex Workshop\\kards-install-review\\rule527-worker-verification-20261029.json": "9a5e6fac87cb5b43ac97f2660a7fa7f00f6941abc9dc6b8dcae3ade45070b7e9",
+    "D:\\Codex Workshop\\kards-install-review\\rule527-worker\\input.json": "0e390e2e7ec0275f08fed15e6b2a1796fbf458442a01b322b936e4efcaec6359",
+    "D:\\Codex Workshop\\kards-install-review\\rule527-worker\\output.json": "d4ca055673fe3fe7debafc424203271af636dc0188ad74ec6af4e1e581e6c0d8",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-rule527-final-20261029.txt": "d30b8c429bd7f18fa81be164bb7c01cac2e34c53f8bf70531bd1584840094f7b",
+    "D:\\Codex Workshop\\kards-install-review\\build-rule527-final-20261029.txt": "b9a55348b3ff7d5355d722b49d4916a417905df9d198af827e794eb1ae27e95b"
+  }
+}
