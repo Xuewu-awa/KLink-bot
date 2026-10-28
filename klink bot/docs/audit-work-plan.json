@@ -50,7 +50,11 @@
         "五处未匹配字面名均为ConvertCard传None且另有动态ID；运行时正ID选择对象Name分支已定位及做12项局部选择验证，仍须核对实际ID、空对象和完整生命周期。",
         "SCOPE-003重新采集11个入口，6个非空脚本独立反解、5个原生声明单列；IsDeckValid/checkCustomRules与上轮字节完全相同。",
         "三个辅助函数完整脚本及隔离统计块通过稀有度5120、类型限制1680、统计624个受控案例和13项针对性测试；原生查询/实际枚举显示键、JSON/map异常及初始累加器仍为明确边界。",
-        "统计块逐行处理，零数量仍访问标志，重复行未先合并；稀有度未知字节不写输出，负数量在上游检查。这些是输入来源/默认值复核线索，不认定为缺陷。"
+        "统计块逐行处理，零数量仍访问标志，重复行未先合并；稀有度未知字节不写输出，负数量在上游检查。这些是输入来源/默认值复核线索，不认定为缺陷。",
+        "SCOPE-004只读获取ETypeEnum/ERarityEnum实际索引/名称/值表，与SDK逐项一致；显示名及有效值helper语义仍未认证。",
+        "捕获8个原生入口和22个精确pdata边界体；五个静态查询的字段读取指令与SDK字节偏移逐项匹配，共同缓存/回退查询实现仍未完成语义认证。",
+        "checkCustomRules完整AST与已捕获min/max辅助函数串联，通过7372个受控案例及11项新增测试；JSON/map、显示名和文本渲染服务仍明确由fixture提供。",
+        "保留原始standard/limited均比较稀有度2及units显式集合的行为，未按自然语言含义纠正；当前配置及模拟器一致性仍待核对。"
       ],
       "current_deliverables": [
         "out/audit/pvp-scope/README.md",
@@ -65,7 +69,10 @@
         "out/audit/pvp-scope/scope002-followup.json",
         "out/audit/pvp-scope/scope003-README.md",
         "out/audit/pvp-scope/deck-statistics-model.json",
-        "out/audit/pvp-scope/scope003-followup.json"
+        "out/audit/pvp-scope/scope003-followup.json",
+        "out/audit/pvp-scope/scope004-README.md",
+        "out/audit/pvp-scope/custom-rules-model.json",
+        "out/audit/pvp-scope/scope004-followup.json"
       ]
     },
     {

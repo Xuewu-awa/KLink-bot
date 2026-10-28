@@ -1,0 +1,812 @@
+{
+  "scope": "SCOPE-004",
+  "status": "partial; complete custom-rule AST under fixtures, not complete PvP legality",
+  "runtime_enums": [
+    {
+      "name": "ETypeEnum",
+      "entries": [
+        {
+          "index": 0,
+          "name": "ETypeEnum::NotAvailable",
+          "value": 0
+        },
+        {
+          "index": 1,
+          "name": "ETypeEnum::location",
+          "value": 1
+        },
+        {
+          "index": 2,
+          "name": "ETypeEnum::order",
+          "value": 2
+        },
+        {
+          "index": 3,
+          "name": "ETypeEnum::tank",
+          "value": 3
+        },
+        {
+          "index": 4,
+          "name": "ETypeEnum::fighter",
+          "value": 4
+        },
+        {
+          "index": 5,
+          "name": "ETypeEnum::bomber",
+          "value": 5
+        },
+        {
+          "index": 6,
+          "name": "ETypeEnum::infantry",
+          "value": 6
+        },
+        {
+          "index": 7,
+          "name": "ETypeEnum::artillery",
+          "value": 7
+        },
+        {
+          "index": 8,
+          "name": "ETypeEnum::antiair",
+          "value": 8
+        },
+        {
+          "index": 9,
+          "name": "ETypeEnum::antitank",
+          "value": 9
+        },
+        {
+          "index": 10,
+          "name": "ETypeEnum::tankdestroyer",
+          "value": 10
+        },
+        {
+          "index": 11,
+          "name": "ETypeEnum::gotcha",
+          "value": 11
+        },
+        {
+          "index": 12,
+          "name": "ETypeEnum::wildcard",
+          "value": 12
+        },
+        {
+          "index": 13,
+          "name": "ETypeEnum::ETypeEnum_MAX",
+          "value": 13
+        }
+      ],
+      "sdk_name_value_pairs_match": true,
+      "display_names_verified": false
+    },
+    {
+      "name": "ERarityEnum",
+      "entries": [
+        {
+          "index": 0,
+          "name": "ERarityEnum::NotAvailable",
+          "value": 0
+        },
+        {
+          "index": 1,
+          "name": "ERarityEnum::Common",
+          "value": 1
+        },
+        {
+          "index": 2,
+          "name": "ERarityEnum::Uncommon",
+          "value": 2
+        },
+        {
+          "index": 3,
+          "name": "ERarityEnum::Rare",
+          "value": 3
+        },
+        {
+          "index": 4,
+          "name": "ERarityEnum::Unique",
+          "value": 4
+        },
+        {
+          "index": 5,
+          "name": "ERarityEnum::Legendary",
+          "value": 5
+        },
+        {
+          "index": 6,
+          "name": "ERarityEnum::ERarityEnum_MAX",
+          "value": 6
+        }
+      ],
+      "sdk_name_value_pairs_match": true,
+      "display_names_verified": false
+    }
+  ],
+  "native_getter_field_proofs": [
+    {
+      "symbol": "GetStaticCardSet",
+      "thunk_rva": "0x4a8ae90",
+      "implementation_rva": "0x4b2e240",
+      "sdk_field": "cardSet",
+      "byte_offset": "0x130",
+      "shared_lookup_rva": "0x4b2e080",
+      "status": "exact getter instruction shape and SDK byte-field match; shared lookup internals not semantically closed"
+    },
+    {
+      "symbol": "GetStaticExileFaction",
+      "thunk_rva": "0x4a8b100",
+      "implementation_rva": "0x4b2e2c0",
+      "sdk_field": "exileNation",
+      "byte_offset": "0x261",
+      "shared_lookup_rva": "0x4b2e080",
+      "status": "exact getter instruction shape and SDK byte-field match; shared lookup internals not semantically closed"
+    },
+    {
+      "symbol": "GetStaticFaction",
+      "thunk_rva": "0x4a8b370",
+      "implementation_rva": "0x4b2e330",
+      "sdk_field": "faction",
+      "byte_offset": "0x7c",
+      "shared_lookup_rva": "0x4b2e080",
+      "status": "exact getter instruction shape and SDK byte-field match; shared lookup internals not semantically closed"
+    },
+    {
+      "symbol": "GetStaticRarity",
+      "thunk_rva": "0x4a8c000",
+      "implementation_rva": "0x4b2e610",
+      "sdk_field": "rarity",
+      "byte_offset": "0x11c",
+      "shared_lookup_rva": "0x4b2e080",
+      "status": "exact getter instruction shape and SDK byte-field match; shared lookup internals not semantically closed"
+    },
+    {
+      "symbol": "GetStaticType",
+      "thunk_rva": "0x4a8c360",
+      "implementation_rva": "0x4b2e820",
+      "sdk_field": "Type",
+      "byte_offset": "0x68",
+      "shared_lookup_rva": "0x4b2e080",
+      "status": "exact getter instruction shape and SDK byte-field match; shared lookup internals not semantically closed"
+    }
+  ],
+  "native_capture_summary": {
+    "entries": 8,
+    "pe_bounded_bodies": 22,
+    "bytes": 3521,
+    "all_disk_bytes_match": true,
+    "external_direct_target_states": {
+      "pe_bounded_bytes_not_semantic_closure": 13,
+      "no_exact_pdata_start": 5
+    }
+  },
+  "model": {
+    "cases": 7372,
+    "case_digest_sha256": "de3fd4dd5c0ac56d4752c6d8d36e49fe051ba5c1e94f0399ca1055be880847e8",
+    "visited_offsets": [
+      0,
+      5,
+      10,
+      15,
+      20,
+      25,
+      65,
+      75,
+      98,
+      121,
+      169,
+      206,
+      265,
+      303,
+      317,
+      344,
+      349,
+      397,
+      434,
+      493,
+      530,
+      580,
+      581,
+      640,
+      654,
+      655,
+      692,
+      722,
+      751,
+      780,
+      816,
+      848,
+      884,
+      913,
+      950,
+      983,
+      1012,
+      1048,
+      1084,
+      1116,
+      1152,
+      1181,
+      1210,
+      1334,
+      1345,
+      1423,
+      1450,
+      1455,
+      1514,
+      1528,
+      1529,
+      1566,
+      1596,
+      1625,
+      1654,
+      1690,
+      1722,
+      1758,
+      1787,
+      1824,
+      1857,
+      1886,
+      1922,
+      1958,
+      1990,
+      2026,
+      2055,
+      2084,
+      2217,
+      2228,
+      2306,
+      2333,
+      2338,
+      2383,
+      2412,
+      2450,
+      2460,
+      2551,
+      2562,
+      2640,
+      2667,
+      2672,
+      2683,
+      2703,
+      2723,
+      2728,
+      2733,
+      2738,
+      2743,
+      2812,
+      2822,
+      2833,
+      2910,
+      2996,
+      3001,
+      3025,
+      3085,
+      3119,
+      3157,
+      3167,
+      3178,
+      3256,
+      3345,
+      3350,
+      3355,
+      3360,
+      3365,
+      3370,
+      3375,
+      3380,
+      3385,
+      3390,
+      3395,
+      3415,
+      3475,
+      3501,
+      3561,
+      3599,
+      3609,
+      3620,
+      3698,
+      3778,
+      3783,
+      3811,
+      3831,
+      3891,
+      3951,
+      3989,
+      3999,
+      4010,
+      4088,
+      4170,
+      4175,
+      4194,
+      4253,
+      4276,
+      4336,
+      4387,
+      4425,
+      4435,
+      4446,
+      4524,
+      4607,
+      4612,
+      4633,
+      4692,
+      4718,
+      4778,
+      4829,
+      4867,
+      4877,
+      4888,
+      4966,
+      5052,
+      5057,
+      5076,
+      5097,
+      5156,
+      5215,
+      5240,
+      5300,
+      5351,
+      5389,
+      5399,
+      5410,
+      5488,
+      5567,
+      5572,
+      5577,
+      5582,
+      5587,
+      5612,
+      5632,
+      5692,
+      5752,
+      5790,
+      5800,
+      5811,
+      5889,
+      5968,
+      5973,
+      6001,
+      6021,
+      6081,
+      6141,
+      6179,
+      6189,
+      6200,
+      6278,
+      6360,
+      6365,
+      6392,
+      6412,
+      6472,
+      6532,
+      6570,
+      6580,
+      6591,
+      6669,
+      6750,
+      6755,
+      6782,
+      6802,
+      6862,
+      6922,
+      6960,
+      6970,
+      6981,
+      7059,
+      7140,
+      7145,
+      7187,
+      7214,
+      7219,
+      7243,
+      7263,
+      7323,
+      7383,
+      7421,
+      7431,
+      7442,
+      7520,
+      7599,
+      7604,
+      7633,
+      7653,
+      7713,
+      7773,
+      7811,
+      7821,
+      7832,
+      7910,
+      7993,
+      7998,
+      8024,
+      8044,
+      8104,
+      8164,
+      8202,
+      8212,
+      8223,
+      8301,
+      8382,
+      8387,
+      8414,
+      8434,
+      8494,
+      8554,
+      8592,
+      8602,
+      8613,
+      8691,
+      8773,
+      8778,
+      8812,
+      8832,
+      8892,
+      8952,
+      8990,
+      9000,
+      9011,
+      9089,
+      9178
+    ],
+    "helper_visited_offsets": {
+      "Check Custom Rules Max Cards Of Type": [
+        0,
+        5,
+        53,
+        67,
+        90,
+        113,
+        146,
+        184,
+        198,
+        235,
+        281,
+        318,
+        345,
+        350,
+        387,
+        433,
+        460,
+        516,
+        553,
+        599,
+        637,
+        647,
+        703,
+        740,
+        786,
+        855,
+        901,
+        938,
+        976,
+        986,
+        1042,
+        1079,
+        1125,
+        1171,
+        1208,
+        1263,
+        1300,
+        1311,
+        1338,
+        1365,
+        1370,
+        1381,
+        1401,
+        1424,
+        1429,
+        1471,
+        1498,
+        1503
+      ],
+      "skirmishMinCardsOfType": [
+        0,
+        5,
+        53,
+        67,
+        90,
+        113,
+        146,
+        184,
+        198,
+        235,
+        281,
+        318,
+        345,
+        350,
+        387,
+        433,
+        460,
+        516,
+        553,
+        599,
+        637,
+        647,
+        703,
+        740,
+        786,
+        855,
+        901,
+        938,
+        976,
+        986,
+        1042,
+        1079,
+        1125,
+        1171,
+        1208,
+        1263,
+        1300,
+        1311,
+        1338,
+        1365,
+        1370,
+        1381,
+        1401,
+        1424,
+        1429,
+        1440,
+        1460,
+        1483,
+        1488,
+        1530,
+        1557,
+        1562
+      ]
+    },
+    "scope": "Complete checkCustomRules AST composed with captured min/max helpers; actual raw enum order supplied, but enum display/validity, JSON/map and plain source-text formatting are fixtures. No native policy or localized text certification.",
+    "raw_enum_values": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ],
+    "function_sha256": {
+      "checkCustomRules": "7d4a60f3ff5c2fbec327c2d6ef6bd068c915072aff7cef13f394f5cab069cb54",
+      "skirmishMinCardsOfType": "b2c43afc65c1095dd10a0e374b3c23f9d54eec81e6173772910d24cdf454ddb1",
+      "Check Custom Rules Max Cards Of Type": "d5accdd5be56e44164e2a25d8a270d47f0d7ce8bb37eff2c2a08b3ffbd230129"
+    },
+    "bindings": {
+      "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\scope003-deck-helpers-20261029.json": "e9aa31369181dc9101bc367c7915244fc643a744c4c7c2aa549410d6e54cb65f",
+      "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\scope004-enum-native-20261029.json": "fefd366d4b1560c188dc27dc24ab6e408ea062b454c60d68d54ffef1ad8eec12",
+      "D:\\Codex Workshop\\KLink-bot\\tools\\model-custom-deck-rules.py": "8328f4c406069bd83a126d4ee2f806516dfccf46ff1b5cdcf4aab6a9ae1e0baf",
+      "D:\\Codex Workshop\\KLink-bot\\tools\\model-deck-statistics.py": "1371227978a2819c57ef1f54d9bcff697381c323246fc382c85a3887984ccb6a"
+    }
+  },
+  "worker_job": "20261029-040625-scope004-blacklist-constants-ce042608",
+  "worker_constants_independently_verified": [
+    {
+      "statement": 3001,
+      "variable": "Temp_string_Variable_13",
+      "value": "ally"
+    },
+    {
+      "statement": 3395,
+      "variable": "Temp_byte_Variable_10",
+      "value": 2
+    },
+    {
+      "statement": 3475,
+      "variable": "Temp_string_Variable_14",
+      "value": "orders"
+    },
+    {
+      "statement": 3783,
+      "variable": "Temp_string_Variable_3",
+      "value": "infantry"
+    },
+    {
+      "statement": 3811,
+      "variable": "Temp_byte_Variable",
+      "value": 6
+    },
+    {
+      "statement": 4253,
+      "variable": "Temp_string_Variable_2",
+      "value": "air"
+    },
+    {
+      "statement": 4692,
+      "variable": "Temp_string_Variable_1",
+      "value": "ground"
+    },
+    {
+      "statement": 5215,
+      "variable": "Temp_string_Variable",
+      "value": "units"
+    },
+    {
+      "statement": 5587,
+      "variable": "Temp_string_Variable_9",
+      "value": "elite"
+    },
+    {
+      "statement": 5612,
+      "variable": "Temp_byte_Variable_6",
+      "value": 4
+    },
+    {
+      "statement": 5973,
+      "variable": "Temp_string_Variable_12",
+      "value": "standard"
+    },
+    {
+      "statement": 6001,
+      "variable": "Temp_byte_Variable_9",
+      "value": 2
+    },
+    {
+      "statement": 6365,
+      "variable": "Temp_string_Variable_11",
+      "value": "limited"
+    },
+    {
+      "statement": 6392,
+      "variable": "Temp_byte_Variable_8",
+      "value": 2
+    },
+    {
+      "statement": 6755,
+      "variable": "Temp_string_Variable_10",
+      "value": "special"
+    },
+    {
+      "statement": 6782,
+      "variable": "Temp_byte_Variable_7",
+      "value": 3
+    },
+    {
+      "statement": 7219,
+      "variable": "Temp_string_Variable_4",
+      "value": "tank"
+    },
+    {
+      "statement": 7243,
+      "variable": "Temp_byte_Variable_1",
+      "value": 3
+    },
+    {
+      "statement": 7604,
+      "variable": "Temp_string_Variable_5",
+      "value": "artillery"
+    },
+    {
+      "statement": 7633,
+      "variable": "Temp_byte_Variable_2",
+      "value": 7
+    },
+    {
+      "statement": 7998,
+      "variable": "Temp_string_Variable_6",
+      "value": "bomber"
+    },
+    {
+      "statement": 8024,
+      "variable": "Temp_byte_Variable_3",
+      "value": 5
+    },
+    {
+      "statement": 8387,
+      "variable": "Temp_string_Variable_8",
+      "value": "fighter"
+    },
+    {
+      "statement": 8414,
+      "variable": "Temp_byte_Variable_5",
+      "value": 4
+    },
+    {
+      "statement": 8778,
+      "variable": "Temp_string_Variable_7",
+      "value": "countermeasure"
+    },
+    {
+      "statement": 8812,
+      "variable": "Temp_byte_Variable_4",
+      "value": 11
+    }
+  ],
+  "blacklist_priority": [
+    "main nation",
+    "ally",
+    "elite",
+    "special",
+    "limited",
+    "standard",
+    "orders",
+    "units",
+    "ground",
+    "air",
+    "infantry",
+    "tank",
+    "artillery",
+    "bomber",
+    "fighter",
+    "countermeasure",
+    "max_cards_of_type",
+    "min_cards_of_type",
+    "reserved"
+  ],
+  "boundaries": [
+    "The raw enum table matches SDK values; no assertion that raw name is runtime friendly/display configuration key.",
+    "Getters read proved offsets on the shared lookup return pointer; cache/fallback resolution, missing names, null behavior and actual static data remain open.",
+    "Five external direct target addresses lack exact pdata starts in this bounded capture; these are not five inferred rule defects.",
+    "JSON/map/error behavior and helper valid-value/display-name services remain fixtures. FText is rendered as source text, not localization parity.",
+    "Legacy standard and limited blacklist keys both compare rarity 2 in captured script; this is preserved source behavior, not an automatically inferred defect.",
+    "No full integration with actual session config, actual native returns or simulator production parity; PvP denominator still open."
+  ],
+  "evidence_bindings": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\scope004-enum-native-20261029.json",
+      "sha256": "fefd366d4b1560c188dc27dc24ab6e408ea062b454c60d68d54ffef1ad8eec12"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\scope003-deck-helpers-20261029.json",
+      "sha256": "e9aa31369181dc9101bc367c7915244fc643a744c4c7c2aa549410d6e54cb65f"
+    },
+    {
+      "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
+      "sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305"
+    },
+    {
+      "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\ue4ss\\CXXHeaderDump\\KardsCore_enums.hpp",
+      "sha256": "718166b9cbbd2d4cd9ecf761d5a94f1acba7b383dc6faa6f64358601128eb00b"
+    },
+    {
+      "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\ue4ss\\CXXHeaderDump\\kards.hpp",
+      "sha256": "f8039a5583a5db8be8c73470418b5b94f6cc1e856d402ffd75403c0fa8a2ac78"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-scope004-enum-native.py",
+      "sha256": "c789a171a83c6dde69ee84b7f3cf499e7b881b5e658d52aa7c0300ecee4bcfaa"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\export-runtime-native-bodies.py",
+      "sha256": "76fb7baa48ba52d02e15de5fd3d07e868d6c41eeffcb4f9705389026aaec2b9b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime_readonly.py",
+      "sha256": "7a0f670b7f1797013a29813011ea3bc1df20fffc0c884396e605e88cda9c2157"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\build-scope004-report.py",
+      "sha256": "54fe01f2e53fcd9d5608fb332b314952c41d89284c571fda9617e3982a9da8b4"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\model-custom-deck-rules.py",
+      "sha256": "8328f4c406069bd83a126d4ee2f806516dfccf46ff1b5cdcf4aab6a9ae1e0baf"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\test-custom-deck-rules.py",
+      "sha256": "b1a5f321251718b7e5dde61bcb1aa31785a35052ea909e2157de319048888578"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\model-deck-statistics.py",
+      "sha256": "1371227978a2819c57ef1f54d9bcff697381c323246fc382c85a3887984ccb6a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\out\\audit\\pvp-scope\\custom-rules-model.json",
+      "sha256": "57af28447cf2a5f659941808aad7145d5de3247ffbe13f1fc25e668994b8f903"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\scope004-worker\\input.json",
+      "sha256": "054fdb52828bce54ad7ca0ae15b868f5400730e50ec4fde029dfe5a8b50b7254"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\scope004-worker\\output.json",
+      "sha256": "d092c68e29d0f526a6b7b8d38ab71bdee799bf04355d07d910b69b15eb04ba51"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\scope004-worker\\extract.py",
+      "sha256": "e63cf17b1c5899e30f794516947e2215eadc3fcf73d2de4a8492f964d55ed3df"
+    }
+  ]
+}

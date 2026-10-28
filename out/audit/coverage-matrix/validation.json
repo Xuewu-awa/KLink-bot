@@ -25,5 +25,5 @@
   "work_plan_synced": true,
   "validation": "All current matrix input fingerprints checked; work plan equals source registry and acceptance criteria count42. Four existing partial units retain matching bound inputs, no card promotion.",
   "generator_sha256": "3055a9877abe68dcc903393d0e431a2fd0d28006df4938815e9f1797fbcbe1e7",
-  "matrix_sha256": "2c567b93280be7bc4d448d0efc4d7aa61b1a1039fdcc2454a3a9cdf98d05daff"
+  "matrix_sha256": "28603d4db7c499eae56f443eba5627490d6144afffaa2916828958dee0465e6b"
 }
