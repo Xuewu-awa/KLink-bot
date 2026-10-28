@@ -1,0 +1,113 @@
+{
+  "rule_id": "RULE-520",
+  "date": "2026-10-28",
+  "status": "已修复直接手牌出牌入口对动态山地的raw误判；建立当前已加载蓝图五调用点清单，未认证全部入场生命周期",
+  "authority": {
+    "pid": 24220,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "read_only": true,
+    "client_writes": 0,
+    "real_client_function_calls": 0,
+    "historical_replays_used_as_authority": false
+  },
+  "loaded_census": {
+    "function_objects": 30583,
+    "scripted_functions": 18111,
+    "script_bytes": 7922413
+  },
+  "loaded_literal_callers": [
+    {
+      "owner": "BP_CardFunctions_C",
+      "function": "SpawnCardToBoard",
+      "statement": 872,
+      "arguments": [
+        {
+          "Inst": "LocalVariable",
+          "Variable Name": "cardSpawned"
+        }
+      ]
+    },
+    {
+      "owner": "BP_CardFunctions_C",
+      "function": "AfterWaitCardPlayFromHand",
+      "statement": 974,
+      "arguments": [
+        {
+          "Inst": "LocalVariable",
+          "Variable Name": "cardPlayed"
+        }
+      ]
+    },
+    {
+      "owner": "BP_CardFunctions_C",
+      "function": "PlayCardFromHand",
+      "statement": 2207,
+      "arguments": [
+        {
+          "Inst": "LocalVariable",
+          "Variable Name": "tmpCardToPlay"
+        }
+      ]
+    },
+    {
+      "owner": "BP_CardFunctions_C",
+      "function": "SpawnMultipleCardsOnBattlefield",
+      "statement": 2968,
+      "arguments": [
+        {
+          "Inst": "LocalVariable",
+          "Variable Name": "cardSpawned"
+        }
+      ]
+    },
+    {
+      "owner": "BP_CardFunctions_C",
+      "function": "PlayCardDirectlyFromHand",
+      "statement": 3053,
+      "arguments": [
+        {
+          "Inst": "LocalVariable",
+          "Variable Name": "card"
+        }
+      ]
+    }
+  ],
+  "findings": [
+    "使用RULE519 GiveAlpineBonus当前UFunction指针与FName八字节扫描当前已加载脚本，补充五个命名入口；重新验证目标完整UFunction头和采集稳定性。30583个Function对象中18111个脚本共7922413B，发现五个匹配脚本，全部完整AST解码共13352B。两个0B CardFunctionsStub声明单列，不计为实现。此统计只覆盖当前加载对象和直接字面引用，不证明反射、原生或未加载资产不存在其他调用。",
+    "当前五个调用点：SpawnCardToBoard872(cardSpawned)、AfterWaitCardPlayFromHand974(cardPlayed)、PlayCardFromHand2207(tmpCardToPlay)、SpawnMultipleCardsOnBattlefield2968(cardSpawned)、PlayCardDirectlyFromHand3053(card)。精确参数树保存在loaded_literal_callers。",
+    "直接出牌当前尾部2881/2886/2891分别压入3002/3077/3103。JSON_Clear2896可选Persist2955后先3103..3486写回合/基准费用/cardSeen，再3077 ExecuteOnEnterPlayEvents(card,2)，最后3002有效getHasAlpine/3043门/3053加成；不是按语句物理排列顺序执行。原MatchEngine在入场回调后仍读Keywords.Contains，只看raw，动态来源会漏算。现改为HasKeyword，保持回调先于getter与加成。",
+    "128组实际直接出牌尾部AST执行，覆盖raw真假、来源缺/空/含0/重复负源、入场回调供给不变/授予/清源/全清、计时字段和salvaged真假；验证可选持久化、字段更新、method2回调、有效getter、最多一次加成的执行顺序。只从2881执行至3487，前置准入/移动链未执行；加密/静态费用/JSON等helper、原生getter、回调结果及GiveAlpineBonus体供给，不认证密码学或真实回调绑定。",
+    "12组普通PlayCardFromHand尾部2076..2704实际AST执行确认：IsActionProcess=false跳过此段；true时先CardPlayedFromHand，再2147重新读取回调后的GetExecuteWaitPlayFromHand，为false才2207加成。动作流程和等待字段及CardPlayedFromHand体是供给边界；不等于全局等待流程只结算一次的证明。",
+    "新增40组C#直接出牌整合回归覆盖双方、支援/前线、计时字段有无、无山地/raw/预授动态源/入场时授予/入场时撤销。通过受控method2入场探针触发真实GiveAlpine/RemoveAlpine，核对回调时未加成、随后正确+1/+1且只一次、raw保持、回合与计时字段。该探针用于验证引擎接口，不作为Typhoon真实卡牌效果的声明。",
+    "修复前新增回归失败：Left/支援/mode2预授动态山地/无计时，entry1，预期+1/+1实际0/0；修复后933/933通过，构建0警告0错误。",
+    "DeepSeek只做私有窗口的机械提取，主agent逐一验证5行owner/function/index/首参数树、4个谓词和消费节点类型/索引。没有依据窗口缺失推断全函数无谓词或全局可达性；长程控制流和发布由主agent完成。"
+  ],
+  "validation": {
+    "direct_tail_ast_cases": 128,
+    "ordinary_wait_gate_ast_cases": 12,
+    "new_csharp_integration_cases": 40,
+    "selftest_passed": 933,
+    "selftest_total": 933,
+    "build_warnings": 0,
+    "build_errors": 0
+  },
+  "remaining": [
+    "五函数调用点出现一次不等于运行时只调用一次：仍需逐个核对完整调用/循环可达性、取消/停止动作、action-process和等待恢复组合。",
+    "单卡/批量生成的外层有效山地门与当前模拟器直接进入GiveAlpineBonus的严格调用级等价、跨回调对象替换与持有引用仍待逐条认证。",
+    "AfterWaitCardPlayFromHand的全部循环和中断路径、普通出牌完整生命周期与暂停/恢复恰好一次的全局证明仍开放。",
+    "所有未还原卡牌逻辑的穷尽清单尚需全量卡池/函数/原语/动态调用覆盖；完全认证卡牌仍为0。"
+  ],
+  "fully_certified_cards": 0,
+  "evidence_sha256": {
+    "D:\\Codex Workshop\\kards-install-review\\capture-rule520-alpine-callers.py": "97ec029495f998fa0a03b7f7e930b1d6b87b6aa9a6443b22e09be49e6578704e",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule520-alpine-entry-callers-20261028.json": "30a60631ed7493a41633714d7111acda6ad466a9903f3a1a6b361e609b373e2f",
+    "D:\\Codex Workshop\\kards-install-review\\verify-rule520-alpine-callers.py": "2355c1055cdd36ec114762c1174cae1e16140fdc324cd02bb5794b783a51dd11",
+    "D:\\Codex Workshop\\kards-install-review\\rule520-alpine-caller-verification-20261028.json": "7a17cd384304a17d9b847f011def6223e181888f02390bca6fced03f2ef2c2f7",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-rule520-before-20261028.txt": "98f46cd527f972d88d5eca860a6c20c530b89f5977840571b13268494234eab5",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-rule520-after-20261028.txt": "bb15d0e846c3419b299c3e35e6e3c283cd9e75b742b253f1b5c13de340ea950e",
+    "D:\\Codex Workshop\\kards-install-review\\build-rule520-final-20261028.txt": "fdef6babfe95053cfead9b29f4d57e579656403433b432d02e0f0de196eef697",
+    "D:\\Codex Workshop\\kards-install-review\\rule520-worker\\input.json": "2f7b618d6c1c58c4c6f0ef307a592f6f0f7f446b4fee7406cd6bc0f184b70ee5",
+    "D:\\Codex Workshop\\kards-install-review\\rule520-worker\\output.json": "37e9252037fee98f457d56921820b90205d09ccb1cb78ff500a9166ed26ffa13",
+    "D:\\Codex Workshop\\kards-install-review\\rule520-worker-verification-20261028.json": "0767dd3ccbb6e81fe00e0d97a03ded0fd744bb5e07821a1e04ffb32937c0483f"
+  }
+}

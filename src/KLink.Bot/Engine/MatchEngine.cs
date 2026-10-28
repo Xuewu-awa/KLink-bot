@@ -1687,7 +1687,8 @@ public sealed class MatchEngine
             card.BaseKreditCost = card.IsSalvaged ? Math.Min(3, card.Definition.Kredits) : card.Definition.Kredits;
             card.CardSeen = false;
             ExecuteOnEnterPlayEvents(card, 2);
-            if (card.Keywords.Contains(Keyword.Alpine)) Api.GiveAlpineBonus(card);
+            // RULE-520: current i=3002 reads effective Alpine after method-2 entry callbacks.
+            if (card.HasKeyword(Keyword.Alpine)) Api.GiveAlpineBonus(card);
             return true;
         }
         finally { EndEffectResolution(); }

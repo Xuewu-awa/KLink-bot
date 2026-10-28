@@ -1104,6 +1104,7 @@ internal static class SelfTest
         // `GiveAlpineBonus`（39 条语句）：进场时 +N/+N，N = 场上其它同阵营 Alpine 数。
         // `changeType=1` 是加法 ⇒ 一次进场只能加一次（数值恰好等于 +N 就是这条断言）。
         new("RULE-519：山地加成读取有效来源并排除隐藏、死亡和敌方候选", AlpineBonusEffectiveSources),
+        new("RULE-520：直接出牌在入场回调后检查有效山地且只加成一次", DirectEntryAlpineSources),
         new("山地：新部署的 Alpine 单位得到 +N/+N（手牌打出 + 效果生成两条路），且一次部署只加一次",
             AlpineBonusOnEntry),
 
@@ -40511,6 +40512,50 @@ internal static class SelfTest
     /// 与效果生成（`SpawnOnBattlefield` ↔ `SpawnCardToBoard` si=872）。
     /// 「一次部署只加一次」由数值**恰好**等于 +N 保证（加法重复调会变 +2N）。
     /// </summary>
+    private static string? DirectEntryAlpineSources(CardDatabase db)
+    {
+        using var entryProbe = InstallEntryMethodProbe();
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (bool frontline in new[] { false, true })
+        foreach (int mode in Enumerable.Range(0, 5))
+        foreach (bool timer in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db); state.Turn = 7;
+            var source = state.CreateWithId("card_unit_10_5_cm_lefh", side, 9, side.DeckOf(), 0);
+            var peer = state.CreateWithId("card_unit_2nd_parachute", side, 20, side.HqOf(), 1);
+            var card = state.CreateWithId("card_unit_typhoon_mk_ib", side, 60, side.HandOf(), 2);
+            card.Keywords.Clear(); peer.Keywords.Clear();
+            engine.Api.GiveAlpine(peer, source.CardId);
+            if (mode == 1) card.Keywords.Add(Keyword.Alpine);
+            if (mode is 2 or 4) engine.Api.GiveAlpine(card, source.CardId);
+            if (timer) engine.Api.JsonSetInt(card, "countdown_timer", 3);
+            int beforeAttack = card.Attack, beforeDefense = card.Defense, entries = 0;
+            int attackAtEntry = -1;
+            var created = state.CardCreated;
+            state.CardCreated = made => {
+                created?.Invoke(made);
+                if (made.Name != "card_unit_routed_troops") return;
+                entries++; attackAtEntry = card.Attack;
+                if (mode == 3) engine.Api.GiveAlpine(card, source.CardId);
+                if (mode == 4) engine.Api.RemoveAlpine(card, source.CardId);
+            };
+            state.ActionLog.Clear();
+            bool played = engine.PlayCardDirectlyFromHand(card, frontline, source.CardId, 1);
+            int bonus = mode is 1 or 2 or 3 ? 1 : 0;
+            if (!played || entries != 1 || attackAtEntry != beforeAttack
+                || card.Attack != beforeAttack + bonus || card.Defense != beforeDefense + bonus
+                || card.Keywords.Contains(Keyword.Alpine) != (mode == 1)
+                || card.EnteredPlayOnTurn != 7 || card.CustomJson.ContainsKey("countdown_timer"))
+                return $"直接入场山地顺序/次数错误：{side}/{frontline}/{mode}/{timer}，entry={entries}，期望+{bonus}，实际{card.Attack-beforeAttack}/{card.Defense-beforeDefense}";
+            var gains = state.ActionLog.SelectMany(a => a.SubActions)
+                .Where(a => a.Name is "ZActionGainAttack" or "ZActionGainDefense").ToArray();
+            if (gains.Length != bonus * 2 || (bonus > 0
+                && !gains.Select(a => a.Name).SequenceEqual(new[] { "ZActionGainAttack", "ZActionGainDefense" })))
+                return "直接入场山地只执行一次攻击/防御加成";
+        }
+        return null;
+    }
+
     private static string? AlpineBonusEffectiveSources(CardDatabase db)
     {
         foreach (Side side in new[] { Side.Left, Side.Right })
