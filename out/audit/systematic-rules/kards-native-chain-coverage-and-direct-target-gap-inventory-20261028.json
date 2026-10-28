@@ -1,0 +1,3428 @@
+{
+  "rule_id": "RULE-514",
+  "date": "2026-10-28",
+  "status": "当前加载kards UFunction入口及一层直接目标的链式片段结构复核已完成；非全调用图或规则认证",
+  "findings": [
+    "当前进程重新枚举30583个Function对象，取得/Script/kards范围1007个唯一函数路径、656个不同入口地址，全部入口在游戏模块中。677个带FUNC_Native，另330个是该包其他UFunction入口，不能把1007条全称为独立原生实现。仅当前已加载对象元数据范围，不包含未加载或服务器端实现。",
+    "927个函数入口可关联PE.pdata，80个入口只能保留首个ret/jmp或128B窗口；窗口观察不是完整CFG。此次所有入口自身关联组均只有一个片段，没有发现入口包装自身的额外CHAININFO段；这比此前对旧全局边界的泛化担忧更窄，不能据此断言所有入口包装都缺失。",
+    "对每个入口范围/窗口的直接call/jmp候选只追踪一层，196个函数关联到187个不同多片段目标组；以各目标组根首片段为基准，后续片段合计109208B。本轮已按CHAININFO补采这些组；计数不是直接证明过去每份文件实际缺了这些字节，也不是196条未还原PvP规则，更不是所有传递目标穷尽。",
+    "总计捕获1162个展开组、1949个代码段，以及161个无.pdata窗口，共377240B。独立离线验证所有段字节长度/SHA、unwind父链回根和1007个函数路径唯一性；DeepSeek对精简目录另计数，主agent逐字段精确比对。没有执行这些原生函数。",
+    "3个组反汇编未完整：RVA451b690、4b100d0、4b04cc0，原字节完整保留，不能把其直接目标检索称为穷尽。1个组RVA159cf30当前内存前缀ff25...与磁盘48895c...不同，两份字节分别保存；表现类似运行时转发/挂钩，但未证明来源，不能当成规则差异、原始磁盘实现的完整运行验证或丢弃该事实。入口自身不引用这4组为本轮统计结果，直接后继仍可关联它们。",
+    "保留196项函数/目标组清单和80项无边界入口清单。受影响者包含KardsSession、BaseCardObject、MatchControllerV2、FunctionLibrary/CardLibrary、任务/资源等多类，尚未逐项判定PvP规则相关性，不能把登录/任务/UI内容都算作模拟器缺失。下一步应优先验证BaseCardObject等规则依赖，并保留所有排除的证据。",
+    "调用候选扫描按已解码字节线性查找直接call/jmp，未做全CFG可达性证明，可能包含不可达候选；间接/虚调用、跨模块跳转、二层后继、动态反射及异常路径保持开放。旧采集来自其他版本/快照的地址与字节没有自动套到当前客户端，本报告针对当前元数据和磁盘展开信息重算。",
+    "本轮仅结构覆盖审计，不产生产品规则修复，不重跑C#；历史929/929非本轮验证。完整认证卡数0，游戏写入/注入/真实函数调用0。"
+  ],
+  "stats": {
+    "function_objects": 30583,
+    "kards_functions": 1007,
+    "native_flag_functions": 677,
+    "in_module_functions": 1007,
+    "entry_chain_affected_functions": 0,
+    "direct_target_chain_affected_functions": 196,
+    "entry_no_pdata_functions": 80,
+    "captured_chain_groups": 1162,
+    "disk_mismatch_groups": 1,
+    "disk_mismatch_windows": 0,
+    "captured_no_pdata_windows": 161,
+    "incompletely_decoded_groups": 3,
+    "captured_code_bytes": 377240,
+    "distinct_entry_rvas": 656,
+    "distinct_multifragment_direct_target_roots": 187,
+    "extra_bytes_beyond_root_first_fragments": 109208
+  },
+  "structural_verification": {
+    "rule": "RULE-514",
+    "verified_groups": 1162,
+    "verified_segments": 1949,
+    "unique_function_paths": 1007,
+    "stats": {
+      "function_objects": 30583,
+      "kards_functions": 1007,
+      "native_flag_functions": 677,
+      "in_module_functions": 1007,
+      "entry_chain_affected_functions": 0,
+      "direct_target_chain_affected_functions": 196,
+      "entry_no_pdata_functions": 80,
+      "captured_chain_groups": 1162,
+      "disk_mismatch_groups": 1,
+      "disk_mismatch_windows": 0,
+      "captured_no_pdata_windows": 161,
+      "incompletely_decoded_groups": 3,
+      "captured_code_bytes": 377240
+    },
+    "partial_groups": [
+      "0x451b690",
+      "0x4b04cc0",
+      "0x4b100d0"
+    ],
+    "disk_mismatch_groups": [
+      "0x159cf30"
+    ],
+    "scope": "Independent offline hash/size/CHAININFO-parent traversal/path uniqueness checks on current capture; not semantic simulation or completeness beyond declared candidate scope."
+  },
+  "worker_counts": {
+    "functions": 1007,
+    "native_flag_functions": 677,
+    "distinct_entry_rvas": 656,
+    "entry_no_pdata_functions": 80,
+    "entry_chain_affected_functions": 0,
+    "direct_chain_affected_functions": 196,
+    "distinct_direct_chain_groups": 187
+  },
+  "affected_function_candidates": [
+    {
+      "path": "/Script/kards.CampaignScenarioVictory:ScenarioVictory",
+      "rva": "0x4a56fb0",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x11c8c20",
+          "fragments": 3,
+          "bytes": 158,
+          "root_first_fragment_bytes": 17
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.CardLibrary:AddCard",
+      "rva": "0x4a552a0",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4ad6c40",
+          "fragments": 5,
+          "bytes": 669,
+          "root_first_fragment_bytes": 23
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.CardLibrary:CanCreateCard",
+      "rva": "0x4a555c0",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4ad9a20",
+          "fragments": 3,
+          "bytes": 386,
+          "root_first_fragment_bytes": 78
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.CardLibrary:CanOwnMoreOfCard",
+      "rva": "0x4a555c0",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4ad9a20",
+          "fragments": 3,
+          "bytes": 386,
+          "root_first_fragment_bytes": 78
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.CardLibrary:ClaimChest",
+      "rva": "0x4a55660",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4adaa60",
+          "fragments": 5,
+          "bytes": 425,
+          "root_first_fragment_bytes": 36
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.CardLibrary:ConvertCardToGoldCard",
+      "rva": "0x4a55680",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4adc140",
+          "fragments": 5,
+          "bytes": 510,
+          "root_first_fragment_bytes": 45
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.CardLibrary:CopyDeckToClipboard",
+      "rva": "0x4a55710",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x23ddf20",
+          "fragments": 3,
+          "bytes": 53,
+          "root_first_fragment_bytes": 9
+        },
+        {
+          "root_rva": "0x4a52ee0",
+          "fragments": 3,
+          "bytes": 124,
+          "root_first_fragment_bytes": 15
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.CardLibrary:CreateCardFromWildcard",
+      "rva": "0x4a55950",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4addf90",
+          "fragments": 5,
+          "bytes": 586,
+          "root_first_fragment_bytes": 54
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.CardLibrary:GetDeckCode",
+      "rva": "0x4a55d20",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x121c160",
+          "fragments": 3,
+          "bytes": 462,
+          "root_first_fragment_bytes": 223
+        },
+        {
+          "root_rva": "0x1267a90",
+          "fragments": 3,
+          "bytes": 407,
+          "root_first_fragment_bytes": 22
+        },
+        {
+          "root_rva": "0x23ddf20",
+          "fragments": 3,
+          "bytes": 53,
+          "root_first_fragment_bytes": 9
+        },
+        {
+          "root_rva": "0x4a52ee0",
+          "fragments": 3,
+          "bytes": 124,
+          "root_first_fragment_bytes": 15
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.CardLibrary:GetDeckInfoFromString",
+      "rva": "0x4a56210",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x23ddf20",
+          "fragments": 3,
+          "bytes": 53,
+          "root_first_fragment_bytes": 9
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.CardLibrary:GetPlayerLibrary",
+      "rva": "0x4a565a0",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4af6ba0",
+          "fragments": 5,
+          "bytes": 525,
+          "root_first_fragment_bytes": 75
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.CardLibrary:GetPremadeDeckInfo",
+      "rva": "0x4a56810",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4af7670",
+          "fragments": 8,
+          "bytes": 501,
+          "root_first_fragment_bytes": 21
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.CardLibrary:GetSubtypesFromGameplayTags",
+      "rva": "0x4a56920",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4af8050",
+          "fragments": 5,
+          "bytes": 963,
+          "root_first_fragment_bytes": 16
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.CardLibrary:ReceiveReceipt",
+      "rva": "0x4a56c80",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x1221000",
+          "fragments": 3,
+          "bytes": 117,
+          "root_first_fragment_bytes": 9
+        },
+        {
+          "root_rva": "0x4b04e10",
+          "fragments": 3,
+          "bytes": 264,
+          "root_first_fragment_bytes": 43
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.CardLibrary:ReceiveReward",
+      "rva": "0x4a56d50",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x451b690",
+          "fragments": 3,
+          "bytes": 1068,
+          "root_first_fragment_bytes": 41
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.CardLibrary:RecycleCard",
+      "rva": "0x4a56e80",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b05450",
+          "fragments": 7,
+          "bytes": 693,
+          "root_first_fragment_bytes": 54
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.CardLibrary:RecycleSurplusCards",
+      "rva": "0x4a56f90",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b05710",
+          "fragments": 5,
+          "bytes": 425,
+          "root_first_fragment_bytes": 36
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.CardLibrary:SortStaticCards",
+      "rva": "0x4a574c0",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b0cb80",
+          "fragments": 4,
+          "bytes": 2119,
+          "root_first_fragment_bytes": 53
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.CrateSubsystem:ClaimCrate",
+      "rva": "0x4a5c6f0",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4adac10",
+          "fragments": 5,
+          "bytes": 405,
+          "root_first_fragment_bytes": 40
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.DailyMissions:CancelMission",
+      "rva": "0x4a5c350",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4ad9ee0",
+          "fragments": 5,
+          "bytes": 429,
+          "root_first_fragment_bytes": 40
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.DailyMissions:ClaimAchievement",
+      "rva": "0x4a5c530",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4ada860",
+          "fragments": 6,
+          "bytes": 510,
+          "root_first_fragment_bytes": 49
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.DailyMissions:FinishMission",
+      "rva": "0x4a5cc60",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4aed6b0",
+          "fragments": 5,
+          "bytes": 504,
+          "root_first_fragment_bytes": 45
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.DailyMissions:GetAchievements",
+      "rva": "0x4a5ce00",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4aedab0",
+          "fragments": 7,
+          "bytes": 420,
+          "root_first_fragment_bytes": 38
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.DailyMissions:GetDailyMissionsFromServer",
+      "rva": "0x4a5cfb0",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4aee9f0",
+          "fragments": 7,
+          "bytes": 420,
+          "root_first_fragment_bytes": 38
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.DailyMissions:ReceiveReceipt",
+      "rva": "0x4a5dd00",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x1221000",
+          "fragments": 3,
+          "bytes": 117,
+          "root_first_fragment_bytes": 9
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.DailyMissions:SetAchievementCounter",
+      "rva": "0x4a5e790",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b0abf0",
+          "fragments": 5,
+          "bytes": 486,
+          "root_first_fragment_bytes": 54
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.DailyMissions:SetAchievementCounters",
+      "rva": "0x4a5e930",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b0ade0",
+          "fragments": 6,
+          "bytes": 986,
+          "root_first_fragment_bytes": 55
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.DailyMissions:SetMissionCounter",
+      "rva": "0x4a5eab0",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b0b820",
+          "fragments": 3,
+          "bytes": 470,
+          "root_first_fragment_bytes": 54
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.DeckCodeUtilityFunctions:GetDeckIDs_Cards",
+      "rva": "0x4a5d180",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4af02d0",
+          "fragments": 5,
+          "bytes": 816,
+          "root_first_fragment_bytes": 37
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.DeckCodeUtilityFunctions:RemoveDeadCardsFromTable",
+      "rva": "0x4a5e220",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b060e0",
+          "fragments": 7,
+          "bytes": 2813,
+          "root_first_fragment_bytes": 164
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.DeckCodeUtilityFunctions:UpdateDeckIDs_Cards",
+      "rva": "0x4a5efc0",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b0f0a0",
+          "fragments": 5,
+          "bytes": 3820,
+          "root_first_fragment_bytes": 37
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.Decks:AutoFinishDeck",
+      "rva": "0x4a5c0c0",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x23ddf20",
+          "fragments": 3,
+          "bytes": 53,
+          "root_first_fragment_bytes": 9
+        },
+        {
+          "root_rva": "0x4a52ee0",
+          "fragments": 3,
+          "bytes": 124,
+          "root_first_fragment_bytes": 15
+        },
+        {
+          "root_rva": "0x4b1cb60",
+          "fragments": 5,
+          "bytes": 7207,
+          "root_first_fragment_bytes": 130
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.Decks:CreateDeck",
+      "rva": "0x4a5c820",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b23860",
+          "fragments": 11,
+          "bytes": 597,
+          "root_first_fragment_bytes": 10
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.Decks:DeleteDeck",
+      "rva": "0x4a5cb20",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b24720",
+          "fragments": 6,
+          "bytes": 450,
+          "root_first_fragment_bytes": 12
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.Decks:GetDeckCards",
+      "rva": "0x4a5cfd0",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b2b530",
+          "fragments": 7,
+          "bytes": 440,
+          "root_first_fragment_bytes": 17
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.Decks:GetDeckList",
+      "rva": "0x4a5d2e0",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b2b6f0",
+          "fragments": 7,
+          "bytes": 427,
+          "root_first_fragment_bytes": 43
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.Decks:GetIronProvenDeck",
+      "rva": "0x4a5d6e0",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b2c2c0",
+          "fragments": 7,
+          "bytes": 437,
+          "root_first_fragment_bytes": 7
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.Decks:ReceiveReceipt",
+      "rva": "0x4a5ddd0",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x1221000",
+          "fragments": 3,
+          "bytes": 117,
+          "root_first_fragment_bytes": 9
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.Decks:ReceiveReward",
+      "rva": "0x4a5dea0",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x451b690",
+          "fragments": 3,
+          "bytes": 1068,
+          "root_first_fragment_bytes": 41
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.Decks:ReceiveReward_OnDeckListFetched",
+      "rva": "0x4a5dfd0",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4a5a900",
+          "fragments": 3,
+          "bytes": 166,
+          "root_first_fragment_bytes": 13
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.Decks:SaveDeckCards",
+      "rva": "0x4a5e5b0",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b35d00",
+          "fragments": 3,
+          "bytes": 510,
+          "root_first_fragment_bytes": 52
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.KardsPlayerController:RemoveInputBindings",
+      "rva": "0x4a64800",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b35530",
+          "fragments": 7,
+          "bytes": 355,
+          "root_first_fragment_bytes": 177
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.KardsPlayerController:TriggerInputAxisBindings",
+      "rva": "0x4a64b30",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b37dc0",
+          "fragments": 7,
+          "bytes": 362,
+          "root_first_fragment_bytes": 176
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.KardsPlayerController:TriggerInputBindings",
+      "rva": "0x4a64c00",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b37f30",
+          "fragments": 7,
+          "bytes": 354,
+          "root_first_fragment_bytes": 174
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.MorseCodeDetectorComponent:EndSignal",
+      "rva": "0x4a67d30",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b24d00",
+          "fragments": 4,
+          "bytes": 448,
+          "root_first_fragment_bytes": 78
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.MorseCodeDetectorComponent:GetCurrentWordBuffer",
+      "rva": "0x4a67e60",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x11f4b30",
+          "fragments": 4,
+          "bytes": 141,
+          "root_first_fragment_bytes": 22
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.MorseCodeDetectorComponent:GetLastWord",
+      "rva": "0x4a67ec0",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x11f4b30",
+          "fragments": 4,
+          "bytes": 141,
+          "root_first_fragment_bytes": 22
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.Packs:BuyPacks",
+      "rva": "0x4a67b50",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b1eda0",
+          "fragments": 7,
+          "bytes": 677,
+          "root_first_fragment_bytes": 52
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.Packs:GetPackList",
+      "rva": "0x4a68150",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b2d7d0",
+          "fragments": 7,
+          "bytes": 465,
+          "root_first_fragment_bytes": 78
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.Packs:OpenPack",
+      "rva": "0x4a69210",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b33b10",
+          "fragments": 7,
+          "bytes": 404,
+          "root_first_fragment_bytes": 7
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.Packs:ReceiveReceipt",
+      "rva": "0x4a692a0",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x1221000",
+          "fragments": 3,
+          "bytes": 117,
+          "root_first_fragment_bytes": 9
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.Packs:ReceiveReward",
+      "rva": "0x4a69370",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x451b690",
+          "fragments": 3,
+          "bytes": 1068,
+          "root_first_fragment_bytes": 41
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.PlatformControlledBPLibrary:LogAppsflyerAnalyticsEventWithParameters",
+      "rva": "0x4a68170",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x121c160",
+          "fragments": 3,
+          "bytes": 462,
+          "root_first_fragment_bytes": 223
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.PlatformControlledBPLibrary:LogFirebaseAnalyticsEventWithParameters",
+      "rva": "0x4a68170",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x121c160",
+          "fragments": 3,
+          "bytes": 462,
+          "root_first_fragment_bytes": 223
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.PlayerUtilityFunctions:HasPlayerFinishedTutorials",
+      "rva": "0x4a6e730",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b2f540",
+          "fragments": 4,
+          "bytes": 257,
+          "root_first_fragment_bytes": 156
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.ServerConfig:FetchConfig",
+      "rva": "0x4a6dcf0",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b279d0",
+          "fragments": 7,
+          "bytes": 1573,
+          "root_first_fragment_bytes": 15
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.ServerConfig:GetIntFromS3",
+      "rva": "0x4a6dff0",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b2c0b0",
+          "fragments": 3,
+          "bytes": 528,
+          "root_first_fragment_bytes": 166
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.ServerConfig:GetStringFromS3",
+      "rva": "0x4a6e390",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b2e860",
+          "fragments": 3,
+          "bytes": 685,
+          "root_first_fragment_bytes": 170
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.KardsSession:AcceptEULA",
+      "rva": "0x4a73d80",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4ad2f20",
+          "fragments": 5,
+          "bytes": 483,
+          "root_first_fragment_bytes": 9
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.KardsSession:AcceptFriendRequest",
+      "rva": "0x4a73da0",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4ad3110",
+          "fragments": 7,
+          "bytes": 572,
+          "root_first_fragment_bytes": 10
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.KardsSession:AddTutorialFinished",
+      "rva": "0x4a73e30",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4ad7090",
+          "fragments": 8,
+          "bytes": 696,
+          "root_first_fragment_bytes": 10
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.KardsSession:CancelFriendRequest",
+      "rva": "0x4a73f40",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4ad9c10",
+          "fragments": 7,
+          "bytes": 572,
+          "root_first_fragment_bytes": 10
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.KardsSession:CheckChatRestriction",
+      "rva": "0x4a73fd0",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4ada2e0",
+          "fragments": 8,
+          "bytes": 927,
+          "root_first_fragment_bytes": 93
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.KardsSession:CheckMaintenanceMode",
+      "rva": "0x4a73ff0",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4ada680",
+          "fragments": 7,
+          "bytes": 411,
+          "root_first_fragment_bytes": 7
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.KardsSession:ClaimNationalReward",
+      "rva": "0x4a74010",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4adafc0",
+          "fragments": 7,
+          "bytes": 473,
+          "root_first_fragment_bytes": 10
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.KardsSession:ConnectToLinkerAccount",
+      "rva": "0x4a74680",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4adbe90",
+          "fragments": 8,
+          "bytes": 673,
+          "root_first_fragment_bytes": 15
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.KardsSession:CreateLinkerAccount",
+      "rva": "0x4a74830",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4ae3870",
+          "fragments": 8,
+          "bytes": 673,
+          "root_first_fragment_bytes": 15
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.KardsSession:EquipItem",
+      "rva": "0x4a74e20",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4ae7380",
+          "fragments": 5,
+          "bytes": 620,
+          "root_first_fragment_bytes": 59
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.KardsSession:GetEnemyPlayerBoardItem",
+      "rva": "0x4a75040",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4af2760",
+          "fragments": 6,
+          "bytes": 461,
+          "root_first_fragment_bytes": 29
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.KardsSession:GetEnemyPlayerStats",
+      "rva": "0x4a750d0",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4af2930",
+          "fragments": 7,
+          "bytes": 560,
+          "root_first_fragment_bytes": 27
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.KardsSession:GetFreeCard",
+      "rva": "0x4a75160",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4af2e20",
+          "fragments": 8,
+          "bytes": 696,
+          "root_first_fragment_bytes": 10
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.KardsSession:GetKnockoutLeaderboard",
+      "rva": "0x4a75270",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4af3c00",
+          "fragments": 8,
+          "bytes": 565,
+          "root_first_fragment_bytes": 26
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.KardsSession:GetKnockoutTournaments",
+      "rva": "0x4a75380",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4af3e40",
+          "fragments": 7,
+          "bytes": 460,
+          "root_first_fragment_bytes": 17
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.KardsSession:GetLeaders",
+      "rva": "0x4a753a0",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4af4010",
+          "fragments": 7,
+          "bytes": 513,
+          "root_first_fragment_bytes": 14
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.KardsSession:GetOfficers",
+      "rva": "0x4a75430",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4af56a0",
+          "fragments": 9,
+          "bytes": 1414,
+          "root_first_fragment_bytes": 22
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.KardsSession:GetPlayer",
+      "rva": "0x4a75520",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4af6540",
+          "fragments": 7,
+          "bytes": 572,
+          "root_first_fragment_bytes": 15
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.KardsSession:GetPlayerFriends",
+      "rva": "0x4a755b0",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4af6780",
+          "fragments": 7,
+          "bytes": 575,
+          "root_first_fragment_bytes": 40
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.KardsSession:GetPlayerItems",
+      "rva": "0x4a756c0",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4af69d0",
+          "fragments": 7,
+          "bytes": 456,
+          "root_first_fragment_bytes": 37
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.KardsSession:GetPlayerStats",
+      "rva": "0x4a75770",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4af7290",
+          "fragments": 7,
+          "bytes": 456,
+          "root_first_fragment_bytes": 37
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.KardsSession:GetUnrealEditorMultipleUsersUsername",
+      "rva": "0x4a75790",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4af8740",
+          "fragments": 7,
+          "bytes": 771,
+          "root_first_fragment_bytes": 38
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.KardsSession:IncreaseDust",
+      "rva": "0x4a75ac0",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4af9460",
+          "fragments": 7,
+          "bytes": 551,
+          "root_first_fragment_bytes": 10
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.KardsSession:IncreaseGold",
+      "rva": "0x4a75b50",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4af9690",
+          "fragments": 7,
+          "bytes": 551,
+          "root_first_fragment_bytes": 10
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.KardsSession:LogPlayerEvent",
+      "rva": "0x4a76070",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4aff8c0",
+          "fragments": 9,
+          "bytes": 745,
+          "root_first_fragment_bytes": 15
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.KardsSession:OptOutOfMarketing",
+      "rva": "0x4a768a0",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b03480",
+          "fragments": 3,
+          "bytes": 202,
+          "root_first_fragment_bytes": 140
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.KardsSession:OptOutOfProfile",
+      "rva": "0x4a76930",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b03550",
+          "fragments": 3,
+          "bytes": 202,
+          "root_first_fragment_bytes": 140
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.KardsSession:OptOutOfPromotionalContent",
+      "rva": "0x4a769c0",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b03620",
+          "fragments": 3,
+          "bytes": 202,
+          "root_first_fragment_bytes": 140
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.KardsSession:PollPlayerNotifications",
+      "rva": "0x4a76a50",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b04050",
+          "fragments": 7,
+          "bytes": 400,
+          "root_first_fragment_bytes": 39
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.KardsSession:ReceiveItems",
+      "rva": "0x4a76a70",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x1221000",
+          "fragments": 3,
+          "bytes": 117,
+          "root_first_fragment_bytes": 9
+        },
+        {
+          "root_rva": "0x4b04cc0",
+          "fragments": 3,
+          "bytes": 332,
+          "root_first_fragment_bytes": 50
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.KardsSession:ReceiveReceipt",
+      "rva": "0x4a76b30",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x1221000",
+          "fragments": 3,
+          "bytes": 117,
+          "root_first_fragment_bytes": 9
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.KardsSession:ReceiveReward",
+      "rva": "0x4a76c00",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x451b690",
+          "fragments": 3,
+          "bytes": 1068,
+          "root_first_fragment_bytes": 41
+        },
+        {
+          "root_rva": "0x4b05010",
+          "fragments": 3,
+          "bytes": 255,
+          "root_first_fragment_bytes": 187
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.KardsSession:Redeem",
+      "rva": "0x4a76d30",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b058c0",
+          "fragments": 8,
+          "bytes": 536,
+          "root_first_fragment_bytes": 10
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.KardsSession:RemoveNewCards",
+      "rva": "0x4a76e40",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b06e20",
+          "fragments": 8,
+          "bytes": 667,
+          "root_first_fragment_bytes": 10
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.KardsSession:ResetSave",
+      "rva": "0x4a76f90",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b08030",
+          "fragments": 5,
+          "bytes": 499,
+          "root_first_fragment_bytes": 15
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.KardsSession:ResetTutorialFinished",
+      "rva": "0x4a76fb0",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b08240",
+          "fragments": 7,
+          "bytes": 603,
+          "root_first_fragment_bytes": 10
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.KardsSession:SaveTutorialsDone",
+      "rva": "0x4a77050",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b09960",
+          "fragments": 7,
+          "bytes": 551,
+          "root_first_fragment_bytes": 10
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.KardsSession:SendVerifyEmail",
+      "rva": "0x4a77860",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b0a980",
+          "fragments": 8,
+          "bytes": 613,
+          "root_first_fragment_bytes": 14
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.KardsSession:SetFeaturedAchievements",
+      "rva": "0x4a77a00",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x11c8c20",
+          "fragments": 3,
+          "bytes": 158,
+          "root_first_fragment_bytes": 17
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.KardsSession:SetPlayerEmail",
+      "rva": "0x4a77cb0",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b0ba00",
+          "fragments": 8,
+          "bytes": 497,
+          "root_first_fragment_bytes": 14
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.KardsSession:SetPlayerMisc_MobileReviewCompletion",
+      "rva": "0x4a77dc0",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b0bec0",
+          "fragments": 3,
+          "bytes": 197,
+          "root_first_fragment_bytes": 135
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.KardsSession:SetPlayerName",
+      "rva": "0x4a77e50",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b0bf90",
+          "fragments": 8,
+          "bytes": 667,
+          "root_first_fragment_bytes": 10
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.KardsSession:SetTouchedCard",
+      "rva": "0x4a77f60",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b0c510",
+          "fragments": 5,
+          "bytes": 574,
+          "root_first_fragment_bytes": 44
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.KardsSession:SkipTutorials",
+      "rva": "0x4a78070",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b0c920",
+          "fragments": 7,
+          "bytes": 603,
+          "root_first_fragment_bytes": 10
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.KardsSession:UnsetTouchedCard",
+      "rva": "0x4a780f0",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b0e790",
+          "fragments": 3,
+          "bytes": 304,
+          "root_first_fragment_bytes": 42
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.BaseCardObject:ApplyGameplayEffect",
+      "rva": "0x4a7e110",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4ad7900",
+          "fragments": 3,
+          "bytes": 274,
+          "root_first_fragment_bytes": 85
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.BaseCardObject:CopyData",
+      "rva": "0x4a7fc80",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4adc340",
+          "fragments": 5,
+          "bytes": 2397,
+          "root_first_fragment_bytes": 19
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.BaseCardObject:CustomName1HasAttribute",
+      "rva": "0x4a7fe50",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4ae3ef0",
+          "fragments": 4,
+          "bytes": 268,
+          "root_first_fragment_bytes": 68
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.BaseCardObject:CustomName1Remove",
+      "rva": "0x4a7ffb0",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4ae4000",
+          "fragments": 5,
+          "bytes": 613,
+          "root_first_fragment_bytes": 91
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.BaseCardObject:CustomName2HasAttribute",
+      "rva": "0x4a801d0",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4ae4380",
+          "fragments": 4,
+          "bytes": 268,
+          "root_first_fragment_bytes": 68
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.BaseCardObject:CustomName2Remove",
+      "rva": "0x4a80330",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4ae4490",
+          "fragments": 4,
+          "bytes": 629,
+          "root_first_fragment_bytes": 89
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.BaseCardObject:GetAllChildrenGameplayTagsAsStrings",
+      "rva": "0x4a805c0",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4aedc70",
+          "fragments": 3,
+          "bytes": 1024,
+          "root_first_fragment_bytes": 122
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.BaseCardObject:getAndDecryptAttack",
+      "rva": "0x4a84760",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b122a0",
+          "fragments": 3,
+          "bytes": 247,
+          "root_first_fragment_bytes": 154
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.BaseCardObject:getAndDecryptAttackBuff",
+      "rva": "0x4a84800",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b123a0",
+          "fragments": 3,
+          "bytes": 247,
+          "root_first_fragment_bytes": 154
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.BaseCardObject:getAndDecryptDefense",
+      "rva": "0x4a848a0",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b124a0",
+          "fragments": 3,
+          "bytes": 247,
+          "root_first_fragment_bytes": 154
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.BaseCardObject:getAndDecryptKredit",
+      "rva": "0x4a84940",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b125a0",
+          "fragments": 3,
+          "bytes": 247,
+          "root_first_fragment_bytes": 154
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.BaseCardObject:getAndDecryptKreditBuff",
+      "rva": "0x4a849e0",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b126a0",
+          "fragments": 3,
+          "bytes": 247,
+          "root_first_fragment_bytes": 154
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.BaseCardObject:getAttackTempBuffAmount",
+      "rva": "0x4a84a80",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b127a0",
+          "fragments": 3,
+          "bytes": 353,
+          "root_first_fragment_bytes": 131
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.BaseCardObject:getHasAlpine",
+      "rva": "0x4a84d50",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b12a00",
+          "fragments": 5,
+          "bytes": 310,
+          "root_first_fragment_bytes": 4
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.BaseCardObject:getHasAmbush",
+      "rva": "0x4a84df0",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b12b40",
+          "fragments": 5,
+          "bytes": 310,
+          "root_first_fragment_bytes": 4
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.BaseCardObject:getHasBlitz",
+      "rva": "0x4a84e90",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b12c80",
+          "fragments": 5,
+          "bytes": 310,
+          "root_first_fragment_bytes": 4
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.BaseCardObject:getHasFury",
+      "rva": "0x4a84f30",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b12dc0",
+          "fragments": 5,
+          "bytes": 310,
+          "root_first_fragment_bytes": 4
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.BaseCardObject:getHasGameplayTag",
+      "rva": "0x4a84fd0",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b12f00",
+          "fragments": 7,
+          "bytes": 287,
+          "root_first_fragment_bytes": 9
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.BaseCardObject:getHasGuard",
+      "rva": "0x4a850b0",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b13020",
+          "fragments": 5,
+          "bytes": 310,
+          "root_first_fragment_bytes": 4
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.BaseCardObject:getHasImmune",
+      "rva": "0x4a85150",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b13160",
+          "fragments": 5,
+          "bytes": 310,
+          "root_first_fragment_bytes": 4
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.BaseCardObject:getHasShock",
+      "rva": "0x4a851f0",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b132a0",
+          "fragments": 5,
+          "bytes": 310,
+          "root_first_fragment_bytes": 4
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.BaseCardObject:getHasSmokescreen",
+      "rva": "0x4a85290",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b133e0",
+          "fragments": 5,
+          "bytes": 310,
+          "root_first_fragment_bytes": 4
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.BaseCardObject:getKreditTempBuffAmount",
+      "rva": "0x4a85470",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b135f0",
+          "fragments": 3,
+          "bytes": 353,
+          "root_first_fragment_bytes": 131
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.BaseCardObject:GetOnAttackVisuals",
+      "rva": "0x4a80e80",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4af5c30",
+          "fragments": 3,
+          "bytes": 329,
+          "root_first_fragment_bytes": 54
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.BaseCardObject:GetOnChooseOneCardVisuals",
+      "rva": "0x4a80f00",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4af5d80",
+          "fragments": 3,
+          "bytes": 329,
+          "root_first_fragment_bytes": 54
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.BaseCardObject:GetOnPlayedFromHandVisuals",
+      "rva": "0x4a80f80",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4af5ed0",
+          "fragments": 3,
+          "bytes": 329,
+          "root_first_fragment_bytes": 54
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.BaseCardObject:getTotalAttack",
+      "rva": "0x4a85610",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b13810",
+          "fragments": 3,
+          "bytes": 280,
+          "root_first_fragment_bytes": 157
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.BaseCardObject:getTotalKreditCost",
+      "rva": "0x4a857f0",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b139a0",
+          "fragments": 3,
+          "bytes": 474,
+          "root_first_fragment_bytes": 167
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.BaseCardObject:InitializeEncryption",
+      "rva": "0x4a81cb0",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4af9a30",
+          "fragments": 3,
+          "bytes": 740,
+          "root_first_fragment_bytes": 571
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.BaseCardObject:IsForecastCard",
+      "rva": "0x4a82310",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4afaac0",
+          "fragments": 4,
+          "bytes": 551,
+          "root_first_fragment_bytes": 29
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.BaseCardObject:IsWeatherCard",
+      "rva": "0x4a830f0",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4afbbb0",
+          "fragments": 2,
+          "bytes": 1676,
+          "root_first_fragment_bytes": 256
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.BaseCardObject:RemoveGameplayEffectByInstigator",
+      "rva": "0x4a840d0",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b06be0",
+          "fragments": 5,
+          "bytes": 572,
+          "root_first_fragment_bytes": 20
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.BaseCardObject:setAndEncryptCardType",
+      "rva": "0x4a85ea0",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b14180",
+          "fragments": 3,
+          "bytes": 174,
+          "root_first_fragment_bytes": 22
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.BaseCardObject:SetExtraPlayTriggers",
+      "rva": "0x4a84250",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b0b210",
+          "fragments": 3,
+          "bytes": 145,
+          "root_first_fragment_bytes": 83
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.BaseCardObject:ShouldGotchaTrigger",
+      "rva": "0x4a844a0",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b0c750",
+          "fragments": 4,
+          "bytes": 454,
+          "root_first_fragment_bytes": 296
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.FunctionLibrary:CalculateUVScaling",
+      "rva": "0x4a88170",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b1f050",
+          "fragments": 5,
+          "bytes": 348,
+          "root_first_fragment_bytes": 43
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.FunctionLibrary:CheckForSyncError",
+      "rva": "0x4a885a0",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x1ca0940",
+          "fragments": 4,
+          "bytes": 267,
+          "root_first_fragment_bytes": 25
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.FunctionLibrary:ConvertGenericRewardToRewardVariables",
+      "rva": "0x4a88d70",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x1511820",
+          "fragments": 3,
+          "bytes": 53,
+          "root_first_fragment_bytes": 9
+        },
+        {
+          "root_rva": "0x4574a80",
+          "fragments": 3,
+          "bytes": 132,
+          "root_first_fragment_bytes": 9
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.FunctionLibrary:ConvertMapToJsonString",
+      "rva": "0x4a88fa0",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x121c160",
+          "fragments": 3,
+          "bytes": 462,
+          "root_first_fragment_bytes": 223
+        },
+        {
+          "root_rva": "0x1267a90",
+          "fragments": 3,
+          "bytes": 407,
+          "root_first_fragment_bytes": 22
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.FunctionLibrary:ExportAllStaticCards",
+      "rva": "0x4a89370",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b25700",
+          "fragments": 7,
+          "bytes": 8866,
+          "root_first_fragment_bytes": 36
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.FunctionLibrary:GetAllKeysFromConfig",
+      "rva": "0x4a89680",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b28ec0",
+          "fragments": 12,
+          "bytes": 1436,
+          "root_first_fragment_bytes": 35
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.FunctionLibrary:GetAllStaticCards",
+      "rva": "0x4a897f0",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x1268150",
+          "fragments": 3,
+          "bytes": 209,
+          "root_first_fragment_bytes": 28
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.FunctionLibrary:GetDeviceProfileDefaultScalabilityLevel",
+      "rva": "0x4a89de0",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b2bb90",
+          "fragments": 5,
+          "bytes": 596,
+          "root_first_fragment_bytes": 30
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.FunctionLibrary:GetFirstWidgetOfClass",
+      "rva": "0x4a89eb0",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b2be40",
+          "fragments": 5,
+          "bytes": 439,
+          "root_first_fragment_bytes": 138
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.FunctionLibrary:GetMobileContentScaleFactor",
+      "rva": "0x4a8a1d0",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b2cb30",
+          "fragments": 5,
+          "bytes": 513,
+          "root_first_fragment_bytes": 46
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.FunctionLibrary:GetNestedValueFromConfig",
+      "rva": "0x4a8a200",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x11c8c20",
+          "fragments": 3,
+          "bytes": 158,
+          "root_first_fragment_bytes": 17
+        },
+        {
+          "root_rva": "0x4b2d0c0",
+          "fragments": 9,
+          "bytes": 804,
+          "root_first_fragment_bytes": 19
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.FunctionLibrary:GetNestedValueFromLocalConfig",
+      "rva": "0x4a8a420",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x11c8c20",
+          "fragments": 3,
+          "bytes": 158,
+          "root_first_fragment_bytes": 17
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.FunctionLibrary:GetOrSpawnActor",
+      "rva": "0x4a8a670",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b2d670",
+          "fragments": 5,
+          "bytes": 343,
+          "root_first_fragment_bytes": 31
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.FunctionLibrary:GetPlatformTypeCPP",
+      "rva": "0x4a8a750",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b2d9b0",
+          "fragments": 3,
+          "bytes": 410,
+          "root_first_fragment_bytes": 105
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.FunctionLibrary:InsertChildAt",
+      "rva": "0x4a8cb90",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b30ff0",
+          "fragments": 6,
+          "bytes": 278,
+          "root_first_fragment_bytes": 87
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.FunctionLibrary:KardsClearLaunchNotification",
+      "rva": "0x4a8d240",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b31a50",
+          "fragments": 3,
+          "bytes": 87,
+          "root_first_fragment_bytes": 26
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.FunctionLibrary:RemoveAllWidgetsOfClass",
+      "rva": "0x4a8d850",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b35170",
+          "fragments": 3,
+          "bytes": 463,
+          "root_first_fragment_bytes": 113
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.FunctionLibrary:SpawnActorIntoLevel",
+      "rva": "0x4a8e920",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b370f0",
+          "fragments": 3,
+          "bytes": 451,
+          "root_first_fragment_bytes": 162
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.FunctionLibrary:Text_ToFloat",
+      "rva": "0x4a8f5b0",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x11e8c10",
+          "fragments": 3,
+          "bytes": 720,
+          "root_first_fragment_bytes": 142
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.FunctionLibrary:Text_ToInt",
+      "rva": "0x4a8f790",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x11e8c10",
+          "fragments": 3,
+          "bytes": 720,
+          "root_first_fragment_bytes": 142
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.FunctionLibrary:WidgetGetChildrenOfClass",
+      "rva": "0x4a8fa10",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b38580",
+          "fragments": 3,
+          "bytes": 996,
+          "root_first_fragment_bytes": 123
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.FunctionLibrary:WidgetGetChildrenOfClassUWidgetBase",
+      "rva": "0x4a8fba0",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b38970",
+          "fragments": 3,
+          "bytes": 942,
+          "root_first_fragment_bytes": 120
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.FunctionLibrary:WidgetGetParentOfClass",
+      "rva": "0x4a8fd30",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b38d20",
+          "fragments": 5,
+          "bytes": 401,
+          "root_first_fragment_bytes": 33
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.MatchControllerV2:AddAction",
+      "rva": "0x4a94330",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4a707b0",
+          "fragments": 3,
+          "bytes": 112,
+          "root_first_fragment_bytes": 15
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.MatchControllerV2:AddActionWithSub",
+      "rva": "0x4a944f0",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4a707b0",
+          "fragments": 3,
+          "bytes": 112,
+          "root_first_fragment_bytes": 15
+        },
+        {
+          "root_rva": "0x4a70c40",
+          "fragments": 3,
+          "bytes": 195,
+          "root_first_fragment_bytes": 16
+        },
+        {
+          "root_rva": "0x4a71000",
+          "fragments": 3,
+          "bytes": 78,
+          "root_first_fragment_bytes": 9
+        },
+        {
+          "root_rva": "0x4ad63c0",
+          "fragments": 6,
+          "bytes": 765,
+          "root_first_fragment_bytes": 134
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.MatchControllerV2:AddActionWithSubAndState",
+      "rva": "0x4a94760",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4a707b0",
+          "fragments": 3,
+          "bytes": 112,
+          "root_first_fragment_bytes": 15
+        },
+        {
+          "root_rva": "0x4a70c40",
+          "fragments": 3,
+          "bytes": 195,
+          "root_first_fragment_bytes": 16
+        },
+        {
+          "root_rva": "0x4a71000",
+          "fragments": 3,
+          "bytes": 78,
+          "root_first_fragment_bytes": 9
+        },
+        {
+          "root_rva": "0x4ad66c0",
+          "fragments": 5,
+          "bytes": 1402,
+          "root_first_fragment_bytes": 173
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.MatchControllerV2:EndMatch",
+      "rva": "0x4a94d70",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4a707b0",
+          "fragments": 3,
+          "bytes": 112,
+          "root_first_fragment_bytes": 15
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.MatchControllerV2:EnterAILobby",
+      "rva": "0x4a94f30",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x23d8080",
+          "fragments": 3,
+          "bytes": 113,
+          "root_first_fragment_bytes": 15
+        },
+        {
+          "root_rva": "0x4ae6730",
+          "fragments": 3,
+          "bytes": 284,
+          "root_first_fragment_bytes": 119
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.MatchControllerV2:EnterKnockoutTournamentLobby",
+      "rva": "0x4a95100",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4ae6900",
+          "fragments": 9,
+          "bytes": 662,
+          "root_first_fragment_bytes": 10
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.MatchControllerV2:ExitKnockoutLobby",
+      "rva": "0x4a95470",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4aeccc0",
+          "fragments": 8,
+          "bytes": 515,
+          "root_first_fragment_bytes": 10
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.MatchControllerV2:ExitLobby",
+      "rva": "0x4a955d0",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4aeced0",
+          "fragments": 7,
+          "bytes": 660,
+          "root_first_fragment_bytes": 59
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.MatchControllerV2:FindMatchInternal",
+      "rva": "0x4a95610",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4aed4d0",
+          "fragments": 9,
+          "bytes": 480,
+          "root_first_fragment_bytes": 27
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.MatchControllerV2:GetMostRecentAction",
+      "rva": "0x4a95960",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4a71000",
+          "fragments": 3,
+          "bytes": 78,
+          "root_first_fragment_bytes": 9
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.MatchControllerV2:GetMulliganResponseForSide",
+      "rva": "0x4a95b00",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4af4720",
+          "fragments": 6,
+          "bytes": 726,
+          "root_first_fragment_bytes": 50
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.MatchControllerV2:GetNextAction",
+      "rva": "0x4a95c10",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4a71000",
+          "fragments": 3,
+          "bytes": 78,
+          "root_first_fragment_bytes": 9
+        },
+        {
+          "root_rva": "0x4af4a00",
+          "fragments": 3,
+          "bytes": 2235,
+          "root_first_fragment_bytes": 624
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.MatchControllerV2:MatchActionsPollLoop",
+      "rva": "0x4a960f0",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4affe70",
+          "fragments": 7,
+          "bytes": 1042,
+          "root_first_fragment_bytes": 106
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.MatchControllerV2:MatchLoaded",
+      "rva": "0x4a96110",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b00290",
+          "fragments": 3,
+          "bytes": 547,
+          "root_first_fragment_bytes": 81
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.MatchControllerV2:OpponentMulliganTimedOut",
+      "rva": "0x4a96130",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b03270",
+          "fragments": 5,
+          "bytes": 527,
+          "root_first_fragment_bytes": 10
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.MatchControllerV2:PollMatchInternal",
+      "rva": "0x4a96150",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b03d90",
+          "fragments": 5,
+          "bytes": 698,
+          "root_first_fragment_bytes": 81
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.MatchControllerV2:PollTournamentLobbyInternal",
+      "rva": "0x4a96170",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b041e0",
+          "fragments": 9,
+          "bytes": 544,
+          "root_first_fragment_bytes": 10
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.MatchControllerV2:Reconnect",
+      "rva": "0x4a961b0",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b05110",
+          "fragments": 8,
+          "bytes": 441,
+          "root_first_fragment_bytes": 7
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.MatchControllerV2:ReplayMatch",
+      "rva": "0x4a96260",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b07210",
+          "fragments": 8,
+          "bytes": 567,
+          "root_first_fragment_bytes": 10
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.MatchControllerV2:ResetVariables",
+      "rva": "0x4a963b0",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b084d0",
+          "fragments": 5,
+          "bytes": 688,
+          "root_first_fragment_bytes": 19
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.MatchControllerV2:ResetVariablesForResync",
+      "rva": "0x4a96440",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b08780",
+          "fragments": 5,
+          "bytes": 347,
+          "root_first_fragment_bytes": 10
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.MatchControllerV2:SaveCheckpointForDebugGame",
+      "rva": "0x4a96480",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b08c20",
+          "fragments": 3,
+          "bytes": 3392,
+          "root_first_fragment_bytes": 748
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.MatchControllerV2:SwitchToAILobby",
+      "rva": "0x4a96a40",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x23d8080",
+          "fragments": 3,
+          "bytes": 113,
+          "root_first_fragment_bytes": 15
+        },
+        {
+          "root_rva": "0x4b0d630",
+          "fragments": 3,
+          "bytes": 357,
+          "root_first_fragment_bytes": 63
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.MatchControllerV2:TryGetDebugGameCheckpointInfo",
+      "rva": "0x4a96b50",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b0dcc0",
+          "fragments": 5,
+          "bytes": 729,
+          "root_first_fragment_bytes": 200
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.MatchControllerV2:WaitForOtherPlayerLoadingInternal",
+      "rva": "0x4a96c00",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b11b00",
+          "fragments": 9,
+          "bytes": 473,
+          "root_first_fragment_bytes": 27
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.MatchControllerV2:WaitForOtherPlayerReadyInternal",
+      "rva": "0x4a96c20",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b11ce0",
+          "fragments": 9,
+          "bytes": 473,
+          "root_first_fragment_bytes": 27
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.CardBackAsset:GetUniqueMaterial",
+      "rva": "0x4b12050",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4aed8d0",
+          "fragments": 5,
+          "bytes": 237,
+          "root_first_fragment_bytes": 6
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.LoadingWrapper:Cancel",
+      "rva": "0x4b39250",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b1f2e0",
+          "fragments": 6,
+          "bytes": 303,
+          "root_first_fragment_bytes": 19
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.LoadingWrapper:UpdateProgress",
+      "rva": "0x4b3a7b0",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b383c0",
+          "fragments": 5,
+          "bytes": 372,
+          "root_first_fragment_bytes": 35
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.AsyncLoaderBase:ProcessCardsForPSOGeneration",
+      "rva": "0x4b3a460",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b34890",
+          "fragments": 3,
+          "bytes": 755,
+          "root_first_fragment_bytes": 55
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.KardsAssetManager:GetAllCardNames",
+      "rva": "0x4b39480",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b28d00",
+          "fragments": 5,
+          "bytes": 445,
+          "root_first_fragment_bytes": 31
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.KardsAssetManager:GetBoardItemAsset",
+      "rva": "0x4b39500",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b29a50",
+          "fragments": 3,
+          "bytes": 702,
+          "root_first_fragment_bytes": 191
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.KardsAssetManager:GetBoardItemAssets",
+      "rva": "0x4b39590",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b29d10",
+          "fragments": 5,
+          "bytes": 1019,
+          "root_first_fragment_bytes": 35
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.KardsAssetManager:GetCardbackAsset",
+      "rva": "0x4b39890",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x4b2a9c0",
+          "fragments": 5,
+          "bytes": 755,
+          "root_first_fragment_bytes": 24
+        }
+      ]
+    },
+    {
+      "path": "/Script/kards.KardsAssetManager:SetOwnedCardbacks",
+      "rva": "0x4b3a480",
+      "native_flag": true,
+      "target_groups": [
+        {
+          "root_rva": "0x11af9e0",
+          "fragments": 4,
+          "bytes": 192,
+          "root_first_fragment_bytes": 47
+        },
+        {
+          "root_rva": "0x4b2acc0",
+          "fragments": 6,
+          "bytes": 552,
+          "root_first_fragment_bytes": 9
+        }
+      ]
+    }
+  ],
+  "no_pdata_entry_functions": [
+    {
+      "path": "/Script/kards.CardLibrary:ClaimChest",
+      "rva": "0x4a55660",
+      "native_flag": true,
+      "window_bytes": 26,
+      "terminal_observed": true
+    },
+    {
+      "path": "/Script/kards.CardLibrary:RecycleSurplusCards",
+      "rva": "0x4a56f90",
+      "native_flag": true,
+      "window_bytes": 26,
+      "terminal_observed": true
+    },
+    {
+      "path": "/Script/kards.CardLibrary:SortStaticCards",
+      "rva": "0x4a574c0",
+      "native_flag": true,
+      "window_bytes": 26,
+      "terminal_observed": true
+    },
+    {
+      "path": "/Script/kards.CrateSubsystem:ClaimCrate",
+      "rva": "0x4a5c6f0",
+      "native_flag": true,
+      "window_bytes": 26,
+      "terminal_observed": true
+    },
+    {
+      "path": "/Script/kards.DailyMissions:GetAchievements",
+      "rva": "0x4a5ce00",
+      "native_flag": true,
+      "window_bytes": 26,
+      "terminal_observed": true
+    },
+    {
+      "path": "/Script/kards.DailyMissions:GetDailyMissionsFromServer",
+      "rva": "0x4a5cfb0",
+      "native_flag": true,
+      "window_bytes": 26,
+      "terminal_observed": true
+    },
+    {
+      "path": "/Script/kards.Decks:GetDeckList",
+      "rva": "0x4a5d2e0",
+      "native_flag": true,
+      "window_bytes": 26,
+      "terminal_observed": true
+    },
+    {
+      "path": "/Script/kards.Decks:RefreshDeckList",
+      "rva": "0x4a5e200",
+      "native_flag": true,
+      "window_bytes": 26,
+      "terminal_observed": true
+    },
+    {
+      "path": "/Script/kards.DraftAsyncRetireFromDraft:DoSuccess",
+      "rva": "0x4a5cbb0",
+      "native_flag": true,
+      "window_bytes": 26,
+      "terminal_observed": true
+    },
+    {
+      "path": "/Script/kards.KardsCheatManager:GeneratePSOForCards",
+      "rva": "0x4a63cb0",
+      "native_flag": true,
+      "window_bytes": 26,
+      "terminal_observed": true
+    },
+    {
+      "path": "/Script/kards.KardsGameInstance2:DisconnectSession",
+      "rva": "0x4a63b60",
+      "native_flag": true,
+      "window_bytes": 26,
+      "terminal_observed": true
+    },
+    {
+      "path": "/Script/kards.kardsGameMode:GetActiveSide",
+      "rva": "0x4a63d80",
+      "native_flag": true,
+      "window_bytes": 32,
+      "terminal_observed": true
+    },
+    {
+      "path": "/Script/kards.MorseCodeDetectorComponent:EndSignal",
+      "rva": "0x4a67d30",
+      "native_flag": true,
+      "window_bytes": 26,
+      "terminal_observed": true
+    },
+    {
+      "path": "/Script/kards.MorseCodeDetectorComponent:Flush",
+      "rva": "0x4a67e40",
+      "native_flag": true,
+      "window_bytes": 26,
+      "terminal_observed": true
+    },
+    {
+      "path": "/Script/kards.MorseCodeDetectorComponent:GetCurrentWordBuffer",
+      "rva": "0x4a67e60",
+      "native_flag": true,
+      "window_bytes": 36,
+      "terminal_observed": true
+    },
+    {
+      "path": "/Script/kards.MorseCodeDetectorComponent:GetLastWord",
+      "rva": "0x4a67ec0",
+      "native_flag": true,
+      "window_bytes": 36,
+      "terminal_observed": true
+    },
+    {
+      "path": "/Script/kards.MorseCodeDetectorComponent:ResetDetection",
+      "rva": "0x4a694a0",
+      "native_flag": true,
+      "window_bytes": 26,
+      "terminal_observed": true
+    },
+    {
+      "path": "/Script/kards.MorseCodeDetectorComponent:StartSignal",
+      "rva": "0x4a69bf0",
+      "native_flag": true,
+      "window_bytes": 26,
+      "terminal_observed": true
+    },
+    {
+      "path": "/Script/kards.MssdkFunctions:MSSDKEnterGameScene",
+      "rva": "0x3de0480",
+      "native_flag": true,
+      "window_bytes": 24,
+      "terminal_observed": true
+    },
+    {
+      "path": "/Script/kards.MssdkFunctions:MSSDKStartOrderPolling",
+      "rva": "0x3de0480",
+      "native_flag": true,
+      "window_bytes": 24,
+      "terminal_observed": true
+    },
+    {
+      "path": "/Script/kards.MssdkFunctions:MSSDKStopOrderPolling",
+      "rva": "0x3de0480",
+      "native_flag": true,
+      "window_bytes": 24,
+      "terminal_observed": true
+    },
+    {
+      "path": "/Script/kards.MSSDKManager:CheckRemainingGameTime",
+      "rva": "0x456a040",
+      "native_flag": true,
+      "window_bytes": 26,
+      "terminal_observed": true
+    },
+    {
+      "path": "/Script/kards.MSSDKManager:InitSDK",
+      "rva": "0x456a040",
+      "native_flag": true,
+      "window_bytes": 26,
+      "terminal_observed": true
+    },
+    {
+      "path": "/Script/kards.Packs:GetPackList",
+      "rva": "0x4a68150",
+      "native_flag": true,
+      "window_bytes": 26,
+      "terminal_observed": true
+    },
+    {
+      "path": "/Script/kards.PlatformControlledBPLibrary:InitAppsflyer",
+      "rva": "0x3de0480",
+      "native_flag": true,
+      "window_bytes": 24,
+      "terminal_observed": true
+    },
+    {
+      "path": "/Script/kards.PlatformControlledBPLibrary:SendUnsentReports",
+      "rva": "0x3de0480",
+      "native_flag": true,
+      "window_bytes": 24,
+      "terminal_observed": true
+    },
+    {
+      "path": "/Script/kards.SaveGameFunctionLibrary:DeleteAllSettings",
+      "rva": "0x4a6dcd0",
+      "native_flag": true,
+      "window_bytes": 24,
+      "terminal_observed": true
+    },
+    {
+      "path": "/Script/kards.ServerConfig:FetchConfig",
+      "rva": "0x4a6dcf0",
+      "native_flag": true,
+      "window_bytes": 26,
+      "terminal_observed": true
+    },
+    {
+      "path": "/Script/kards.KardsSession:AcceptEULA",
+      "rva": "0x4a73d80",
+      "native_flag": true,
+      "window_bytes": 26,
+      "terminal_observed": true
+    },
+    {
+      "path": "/Script/kards.KardsSession:CheckChatRestriction",
+      "rva": "0x4a73fd0",
+      "native_flag": true,
+      "window_bytes": 26,
+      "terminal_observed": true
+    },
+    {
+      "path": "/Script/kards.KardsSession:CheckMaintenanceMode",
+      "rva": "0x4a73ff0",
+      "native_flag": true,
+      "window_bytes": 26,
+      "terminal_observed": true
+    },
+    {
+      "path": "/Script/kards.KardsSession:ClearRegistryValues",
+      "rva": "0x4a74340",
+      "native_flag": true,
+      "window_bytes": 24,
+      "terminal_observed": true
+    },
+    {
+      "path": "/Script/kards.KardsSession:DeleteUser",
+      "rva": "0x4a749e0",
+      "native_flag": true,
+      "window_bytes": 26,
+      "terminal_observed": true
+    },
+    {
+      "path": "/Script/kards.KardsSession:FatalHeartbeat",
+      "rva": "0x4a75000",
+      "native_flag": true,
+      "window_bytes": 26,
+      "terminal_observed": true
+    },
+    {
+      "path": "/Script/kards.KardsSession:ForcePoll",
+      "rva": "0x4a75020",
+      "native_flag": true,
+      "window_bytes": 30,
+      "terminal_observed": true
+    },
+    {
+      "path": "/Script/kards.KardsSession:GetKnockoutTournaments",
+      "rva": "0x4a75380",
+      "native_flag": true,
+      "window_bytes": 26,
+      "terminal_observed": true
+    },
+    {
+      "path": "/Script/kards.KardsSession:GetPlayerItems",
+      "rva": "0x4a756c0",
+      "native_flag": true,
+      "window_bytes": 26,
+      "terminal_observed": true
+    },
+    {
+      "path": "/Script/kards.KardsSession:GetPlayerStats",
+      "rva": "0x4a75770",
+      "native_flag": true,
+      "window_bytes": 26,
+      "terminal_observed": true
+    },
+    {
+      "path": "/Script/kards.KardsSession:MSSDKAuthenticatePlayer",
+      "rva": "0x456a040",
+      "native_flag": true,
+      "window_bytes": 26,
+      "terminal_observed": true
+    },
+    {
+      "path": "/Script/kards.KardsSession:PollPlayerNotifications",
+      "rva": "0x4a76a50",
+      "native_flag": true,
+      "window_bytes": 26,
+      "terminal_observed": true
+    },
+    {
+      "path": "/Script/kards.KardsSession:Reset",
+      "rva": "0x4a76f50",
+      "native_flag": true,
+      "window_bytes": 31,
+      "terminal_observed": true
+    },
+    {
+      "path": "/Script/kards.KardsSession:ResetMatchVariable",
+      "rva": "0x4a76f70",
+      "native_flag": true,
+      "window_bytes": 26,
+      "terminal_observed": true
+    },
+    {
+      "path": "/Script/kards.KardsSession:ResetSave",
+      "rva": "0x4a76f90",
+      "native_flag": true,
+      "window_bytes": 26,
+      "terminal_observed": true
+    },
+    {
+      "path": "/Script/kards.KardsSession:ResetUser",
+      "rva": "0x4a77030",
+      "native_flag": true,
+      "window_bytes": 26,
+      "terminal_observed": true
+    },
+    {
+      "path": "/Script/kards.BaseCardObject:CardSimulateTampering",
+      "rva": "0x4a7fc60",
+      "native_flag": true,
+      "window_bytes": 26,
+      "terminal_observed": true
+    },
+    {
+      "path": "/Script/kards.BaseCardObject:InitializeEncryption",
+      "rva": "0x4a81cb0",
+      "native_flag": true,
+      "window_bytes": 26,
+      "terminal_observed": true
+    },
+    {
+      "path": "/Script/kards.BaseCardObject:InitStaticGameplayTags",
+      "rva": "0x4a81c90",
+      "native_flag": true,
+      "window_bytes": 26,
+      "terminal_observed": true
+    },
+    {
+      "path": "/Script/kards.BaseCardObject:OnSuppressed",
+      "rva": "0x3a1a2e0",
+      "native_flag": true,
+      "window_bytes": 31,
+      "terminal_observed": true
+    },
+    {
+      "path": "/Script/kards.BaseCardObject:ResetCardAttributes",
+      "rva": "0x4a841a0",
+      "native_flag": true,
+      "window_bytes": 26,
+      "terminal_observed": true
+    },
+    {
+      "path": "/Script/kards.BaseCardObject:setAndEncryptCardType",
+      "rva": "0x4a85ea0",
+      "native_flag": true,
+      "window_bytes": 26,
+      "terminal_observed": true
+    },
+    {
+      "path": "/Script/kards.FunctionLibrary:KardsClearLaunchNotification",
+      "rva": "0x4a8d240",
+      "native_flag": true,
+      "window_bytes": 24,
+      "terminal_observed": true
+    },
+    {
+      "path": "/Script/kards.MatchControllerV2:CanEndTurn",
+      "rva": "0x4a94d20",
+      "native_flag": true,
+      "window_bytes": 35,
+      "terminal_observed": true
+    },
+    {
+      "path": "/Script/kards.MatchControllerV2:CheckPollMatch",
+      "rva": "0x4a94d50",
+      "native_flag": true,
+      "window_bytes": 26,
+      "terminal_observed": true
+    },
+    {
+      "path": "/Script/kards.MatchControllerV2:ExitLobby",
+      "rva": "0x4a955d0",
+      "native_flag": true,
+      "window_bytes": 26,
+      "terminal_observed": true
+    },
+    {
+      "path": "/Script/kards.MatchControllerV2:ExitLobbyInternal",
+      "rva": "0x4a955f0",
+      "native_flag": true,
+      "window_bytes": 26,
+      "terminal_observed": true
+    },
+    {
+      "path": "/Script/kards.MatchControllerV2:FindMatchInternal",
+      "rva": "0x4a95610",
+      "native_flag": true,
+      "window_bytes": 26,
+      "terminal_observed": true
+    },
+    {
+      "path": "/Script/kards.MatchControllerV2:FinishedEvaluatingActionsForReconnect",
+      "rva": "0x4a95630",
+      "native_flag": true,
+      "window_bytes": 26,
+      "terminal_observed": true
+    },
+    {
+      "path": "/Script/kards.MatchControllerV2:inMatch",
+      "rva": "0x4a96c40",
+      "native_flag": true,
+      "window_bytes": 35,
+      "terminal_observed": true
+    },
+    {
+      "path": "/Script/kards.MatchControllerV2:isAIAllowed",
+      "rva": "0x4a96c70",
+      "native_flag": true,
+      "window_bytes": 35,
+      "terminal_observed": true
+    },
+    {
+      "path": "/Script/kards.MatchControllerV2:isAIMatch",
+      "rva": "0x4a96ca0",
+      "native_flag": true,
+      "window_bytes": 35,
+      "terminal_observed": true
+    },
+    {
+      "path": "/Script/kards.MatchControllerV2:isDraftMatch",
+      "rva": "0x4a96cd0",
+      "native_flag": true,
+      "window_bytes": 35,
+      "terminal_observed": true
+    },
+    {
+      "path": "/Script/kards.MatchControllerV2:isFindMatchInProgress",
+      "rva": "0x4a96d00",
+      "native_flag": true,
+      "window_bytes": 44,
+      "terminal_observed": true
+    },
+    {
+      "path": "/Script/kards.MatchControllerV2:MatchActionsPollLoop",
+      "rva": "0x4a960f0",
+      "native_flag": true,
+      "window_bytes": 26,
+      "terminal_observed": true
+    },
+    {
+      "path": "/Script/kards.MatchControllerV2:MatchLoaded",
+      "rva": "0x4a96110",
+      "native_flag": true,
+      "window_bytes": 26,
+      "terminal_observed": true
+    },
+    {
+      "path": "/Script/kards.MatchControllerV2:OpponentMulliganTimedOut",
+      "rva": "0x4a96130",
+      "native_flag": true,
+      "window_bytes": 26,
+      "terminal_observed": true
+    },
+    {
+      "path": "/Script/kards.MatchControllerV2:PollMatchInternal",
+      "rva": "0x4a96150",
+      "native_flag": true,
+      "window_bytes": 26,
+      "terminal_observed": true
+    },
+    {
+      "path": "/Script/kards.MatchControllerV2:PollTournamentLobbyInternal",
+      "rva": "0x4a96170",
+      "native_flag": true,
+      "window_bytes": 26,
+      "terminal_observed": true
+    },
+    {
+      "path": "/Script/kards.MatchControllerV2:ReconnectDoMulligan",
+      "rva": "0x4a96240",
+      "native_flag": true,
+      "window_bytes": 26,
+      "terminal_observed": true
+    },
+    {
+      "path": "/Script/kards.MatchControllerV2:ReEnterLobby",
+      "rva": "0x4a96190",
+      "native_flag": true,
+      "window_bytes": 26,
+      "terminal_observed": true
+    },
+    {
+      "path": "/Script/kards.MatchControllerV2:ResetState",
+      "rva": "0x4a96390",
+      "native_flag": true,
+      "window_bytes": 26,
+      "terminal_observed": true
+    },
+    {
+      "path": "/Script/kards.MatchControllerV2:ResetVariablesForResync",
+      "rva": "0x4a96440",
+      "native_flag": true,
+      "window_bytes": 26,
+      "terminal_observed": true
+    },
+    {
+      "path": "/Script/kards.MatchControllerV2:ResyncMatch",
+      "rva": "0x4a96460",
+      "native_flag": true,
+      "window_bytes": 26,
+      "terminal_observed": true
+    },
+    {
+      "path": "/Script/kards.MatchControllerV2:StartEvaluatingActionsForReconnect",
+      "rva": "0x4a96a20",
+      "native_flag": true,
+      "window_bytes": 26,
+      "terminal_observed": true
+    },
+    {
+      "path": "/Script/kards.MatchControllerV2:WaitForOtherPlayerLoadingInternal",
+      "rva": "0x4a96c00",
+      "native_flag": true,
+      "window_bytes": 26,
+      "terminal_observed": true
+    },
+    {
+      "path": "/Script/kards.MatchControllerV2:WaitForOtherPlayerReadyInternal",
+      "rva": "0x4a96c20",
+      "native_flag": true,
+      "window_bytes": 26,
+      "terminal_observed": true
+    },
+    {
+      "path": "/Script/kards.LoadingWrapper:Cancel",
+      "rva": "0x4b39250",
+      "native_flag": true,
+      "window_bytes": 26,
+      "terminal_observed": true
+    },
+    {
+      "path": "/Script/kards.LoadingWrapper:UpdateProgress",
+      "rva": "0x4b3a7b0",
+      "native_flag": true,
+      "window_bytes": 26,
+      "terminal_observed": true
+    },
+    {
+      "path": "/Script/kards.AsyncLoaderBase:GeneratePSOCacheForCards",
+      "rva": "0x4b393c0",
+      "native_flag": true,
+      "window_bytes": 26,
+      "terminal_observed": true
+    },
+    {
+      "path": "/Script/kards.AsyncLoaderBase:ProcessCardsForPSOGeneration",
+      "rva": "0x4b3a460",
+      "native_flag": true,
+      "window_bytes": 26,
+      "terminal_observed": true
+    },
+    {
+      "path": "/Script/kards.KardsAssetManager:GetKardsAssetManager",
+      "rva": "0x4b39a40",
+      "native_flag": true,
+      "window_bytes": 30,
+      "terminal_observed": true
+    }
+  ],
+  "partial_disassembly_groups": [
+    {
+      "root_rva": "0x451b690",
+      "segments": [
+        {
+          "begin_rva": "0x451ba88",
+          "bytes": 52,
+          "decoded_bytes": 51
+        }
+      ]
+    },
+    {
+      "root_rva": "0x4b100d0",
+      "segments": [
+        {
+          "begin_rva": "0x4b100d0",
+          "bytes": 5684,
+          "decoded_bytes": 5637
+        }
+      ]
+    },
+    {
+      "root_rva": "0x4b04cc0",
+      "segments": [
+        {
+          "begin_rva": "0x4b04dc4",
+          "bytes": 72,
+          "decoded_bytes": 52
+        }
+      ]
+    }
+  ],
+  "runtime_disk_difference_groups": [
+    {
+      "root_rva": "0x159cf30",
+      "segments": [
+        {
+          "begin_rva": "0x159cf30",
+          "live_prefix": "ff25ca30098056574883ec70488b057d",
+          "disk_prefix": "48895c24085556574883ec70488b057d"
+        }
+      ]
+    }
+  ],
+  "owner_counts": {
+    "CampaignScenarioVictory": 1,
+    "CardLibrary": 17,
+    "CrateSubsystem": 1,
+    "DailyMissions": 9,
+    "DeckCodeUtilityFunctions": 3,
+    "Decks": 10,
+    "KardsPlayerController": 3,
+    "MorseCodeDetectorComponent": 3,
+    "Packs": 5,
+    "PlatformControlledBPLibrary": 2,
+    "PlayerUtilityFunctions": 1,
+    "ServerConfig": 3,
+    "KardsSession": 45,
+    "BaseCardObject": 35,
+    "FunctionLibrary": 23,
+    "MatchControllerV2": 26,
+    "CardBackAsset": 1,
+    "LoadingWrapper": 2,
+    "AsyncLoaderBase": 1,
+    "KardsAssetManager": 5
+  },
+  "worker_job": "20261028-161856-rule514-global-coverage-counts-47978e99",
+  "evidence": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule514-native-coverage.py",
+      "bytes": 6729,
+      "sha256": "40e1e874fadb74e9fe999181f5ecd95bde1ea4909b3e64f9c4ecf014a7ec6eab"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule514-kards-native-chain-coverage-20261028.json",
+      "bytes": 6323259,
+      "sha256": "97b1dd9602c202c7af6c2bc58812d2d407873022ceeca1e71b90dd114b11b3c9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule514-coverage.py",
+      "bytes": 1901,
+      "sha256": "c9cb4b5c6598a49b93ebff574139752e6ed3e01bb0d05c97f5517cb6df07b402"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule514-structural-verification-20261028.json",
+      "bytes": 938,
+      "sha256": "bc74c5584a2d9217c48c25796cd645fa55fad45b2dc3733a986741323ed03636"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule514-worker\\input.json",
+      "bytes": 200954,
+      "sha256": "ecdb122c548cec7f9e03bba40b4e8f226682d80a8b3522ff0361ed3c24a6da21"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule514-worker\\task.txt",
+      "bytes": 444,
+      "sha256": "3de562e9db953a9a6b8af585066a06e39cb76549799f6e61526fd6fc66aeba47"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule514-worker\\output.json",
+      "bytes": 240,
+      "sha256": "967d8f16bc2893cca7533a3740540ccd45dbbf4e9aa4bc41de9ba14aae42184e"
+    }
+  ],
+  "remaining": [
+    "196个函数一层直接多片段目标的PvP相关性及语义，优先BaseCardObject等核心依赖。",
+    "3组解码缺口、1组运行时字节差异、80个无.pdata入口，以及二层/间接/跨模块/未加载边界。",
+    "旧native采集逐版本/逐路径回溯；结构补采不等于全规则或单卡实现完成。"
+  ],
+  "game_writes": 0,
+  "real_game_function_calls": 0,
+  "fully_certified_cards": 0
+}
