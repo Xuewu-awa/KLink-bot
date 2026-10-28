@@ -1,0 +1,672 @@
+{
+  "scope": "SCOPE-003",
+  "status": "partial; not complete legality or PvP denominator",
+  "client_exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "runtime_functions": [
+    {
+      "owner": "FunctionLibrary",
+      "name": "GetStaticCardSet",
+      "bytes": 0,
+      "script_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "native_declaration_no_script"
+    },
+    {
+      "owner": "FunctionLibrary",
+      "name": "GetStaticExileFaction",
+      "bytes": 0,
+      "script_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "native_declaration_no_script"
+    },
+    {
+      "owner": "FunctionLibrary",
+      "name": "GetStaticFaction",
+      "bytes": 0,
+      "script_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "native_declaration_no_script"
+    },
+    {
+      "owner": "FunctionLibrary",
+      "name": "GetStaticRarity",
+      "bytes": 0,
+      "script_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "native_declaration_no_script"
+    },
+    {
+      "owner": "FunctionLibrary",
+      "name": "GetStaticType",
+      "bytes": 0,
+      "script_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "native_declaration_no_script"
+    },
+    {
+      "owner": "UtilityFunctions_C",
+      "name": "FactionStringToEnum",
+      "bytes": 1015,
+      "script_sha256": "071ff8aff56ab73bef02ec1958a23f52639fcfd365b98f90e7164ca408a053e8",
+      "status": "redecoded_nonempty_body"
+    },
+    {
+      "owner": "BP_DeckAndCollectionLoader_C",
+      "name": "checkCustomRules",
+      "bytes": 9181,
+      "script_sha256": "7d4a60f3ff5c2fbec327c2d6ef6bd068c915072aff7cef13f394f5cab069cb54",
+      "status": "redecoded_nonempty_body"
+    },
+    {
+      "owner": "BP_DeckAndCollectionLoader_C",
+      "name": "skirmishMinCardsOfType",
+      "bytes": 1565,
+      "script_sha256": "b2c43afc65c1095dd10a0e374b3c23f9d54eec81e6173772910d24cdf454ddb1",
+      "status": "redecoded_nonempty_body"
+    },
+    {
+      "owner": "BP_DeckAndCollectionLoader_C",
+      "name": "Check Custom Rules Max Cards Of Type",
+      "bytes": 1506,
+      "script_sha256": "d5accdd5be56e44164e2a25d8a270d47f0d7ce8bb37eff2c2a08b3ffbd230129",
+      "status": "redecoded_nonempty_body"
+    },
+    {
+      "owner": "BP_DeckAndCollectionLoader_C",
+      "name": "IsRarityOK",
+      "bytes": 1147,
+      "script_sha256": "33d17ce66134079df758a5a248bb49e3683d4042869aa3a90e8a8a0d1ed2897e",
+      "status": "redecoded_nonempty_body"
+    },
+    {
+      "owner": "BP_DeckAndCollectionLoader_C",
+      "name": "IsDeckValid",
+      "bytes": 12008,
+      "script_sha256": "7bf8130ad2aedc57f033b5331ae149a586d1fccce4ba455b344d0b304f816ed5",
+      "status": "redecoded_nonempty_body"
+    }
+  ],
+  "reused_function_bodies_exactly_equal": [
+    "checkCustomRules",
+    "IsDeckValid"
+  ],
+  "model": {
+    "case_counts": {
+      "rarity": 5120,
+      "type_limits": 1680,
+      "aggregation": 624
+    },
+    "case_digest_sha256": "22adf85a8e9a03bb2120122cf0221f8b0ecf1d101d5d239bae6341a26766a5ec",
+    "helper_visited_offsets": {
+      "IsRarityOK": [
+        0,
+        31,
+        45,
+        76,
+        90,
+        121,
+        135,
+        166,
+        180,
+        211,
+        225,
+        256,
+        270,
+        275,
+        312,
+        358,
+        420,
+        462,
+        508,
+        582,
+        593,
+        598,
+        632,
+        646,
+        683,
+        729,
+        791,
+        833,
+        879,
+        953,
+        964,
+        969,
+        980,
+        985,
+        1019,
+        1033,
+        1038,
+        1072,
+        1086,
+        1091,
+        1125,
+        1139,
+        1144
+      ],
+      "skirmishMinCardsOfType": [
+        0,
+        5,
+        53,
+        67,
+        90,
+        113,
+        146,
+        184,
+        198,
+        235,
+        281,
+        318,
+        345,
+        350,
+        387,
+        433,
+        460,
+        516,
+        553,
+        599,
+        637,
+        647,
+        703,
+        740,
+        786,
+        855,
+        901,
+        938,
+        976,
+        986,
+        1042,
+        1079,
+        1125,
+        1171,
+        1208,
+        1263,
+        1300,
+        1311,
+        1338,
+        1365,
+        1370,
+        1381,
+        1401,
+        1424,
+        1429,
+        1440,
+        1460,
+        1483,
+        1488,
+        1530,
+        1557,
+        1562
+      ],
+      "Check Custom Rules Max Cards Of Type": [
+        0,
+        5,
+        53,
+        67,
+        90,
+        113,
+        146,
+        184,
+        198,
+        235,
+        281,
+        318,
+        345,
+        350,
+        387,
+        433,
+        460,
+        516,
+        553,
+        599,
+        637,
+        647,
+        703,
+        740,
+        786,
+        855,
+        901,
+        938,
+        976,
+        986,
+        1042,
+        1079,
+        1125,
+        1171,
+        1208,
+        1263,
+        1300,
+        1311,
+        1338,
+        1365,
+        1370,
+        1381,
+        1401,
+        1424,
+        1429,
+        1471,
+        1498,
+        1503
+      ]
+    },
+    "aggregation_visited_offsets": [
+      6180,
+      6229,
+      6252,
+      6275,
+      6321,
+      6411,
+      6449,
+      6459,
+      6486,
+      6491,
+      6537,
+      6627,
+      6683,
+      6693,
+      6739,
+      6829,
+      6875,
+      6903,
+      6934,
+      6948,
+      6959,
+      7042,
+      7053,
+      7064,
+      7147,
+      7158,
+      7241,
+      7246,
+      7292,
+      7382,
+      7425,
+      7439,
+      7444,
+      7490,
+      7580,
+      7623,
+      7637,
+      7642,
+      7688,
+      7778,
+      7824,
+      7852,
+      7883,
+      7911,
+      7942,
+      7980,
+      7994,
+      8040,
+      8130,
+      8194,
+      8272,
+      8301,
+      8365,
+      8403,
+      8441,
+      8479,
+      8498,
+      8544,
+      8634,
+      8680,
+      8708,
+      8758,
+      8804,
+      8894,
+      8958,
+      9004,
+      9032,
+      9101,
+      9147,
+      9206,
+      9252,
+      9342,
+      9406,
+      9452,
+      9480,
+      9521,
+      9535,
+      9581,
+      9671,
+      9726,
+      9740,
+      9751,
+      9797,
+      9887,
+      9951,
+      9997,
+      10024,
+      10089,
+      10135,
+      10225,
+      10271,
+      10299,
+      10327,
+      10358,
+      10391,
+      10451,
+      10489,
+      10503,
+      10517,
+      10518,
+      10564,
+      10654,
+      10700,
+      10755,
+      10774,
+      10775,
+      10821,
+      10911,
+      10975,
+      11021,
+      11048,
+      11094,
+      11184,
+      11230,
+      11258,
+      11289,
+      11303,
+      11314,
+      11319,
+      11365,
+      11455,
+      11501,
+      11529,
+      11579,
+      11584,
+      11595,
+      11600,
+      11646,
+      11736,
+      11782,
+      11810,
+      11878,
+      11883,
+      11925,
+      11952,
+      12005
+    ],
+    "scope": "Complete helper ASTs and isolated aggregation control flow, under supplied enum/JSON/map/static lookup services and fresh accumulator fixtures. Not complete mode legality or actual native data; unknown rarity preserves supplied output seed.",
+    "function_sha256": {
+      "checkCustomRules": "7d4a60f3ff5c2fbec327c2d6ef6bd068c915072aff7cef13f394f5cab069cb54",
+      "skirmishMinCardsOfType": "b2c43afc65c1095dd10a0e374b3c23f9d54eec81e6173772910d24cdf454ddb1",
+      "Check Custom Rules Max Cards Of Type": "d5accdd5be56e44164e2a25d8a270d47f0d7ce8bb37eff2c2a08b3ffbd230129",
+      "IsRarityOK": "33d17ce66134079df758a5a248bb49e3683d4042869aa3a90e8a8a0d1ed2897e",
+      "IsDeckValid": "7bf8130ad2aedc57f033b5331ae149a586d1fccce4ba455b344d0b304f816ed5"
+    },
+    "capture_sha256": "e9aa31369181dc9101bc367c7915244fc643a744c4c7c2aa549410d6e54cb65f",
+    "generator_sha256": "1371227978a2819c57ef1f54d9bcff697381c323246fc382c85a3887984ccb6a"
+  },
+  "worker_job": "20261029-035314-scope003-helper-comparisons-9f7eb44b",
+  "worker_function_field": "called symbol in worker; enclosing identity independently reconstructed from exact source traversal",
+  "worker_comparison_nodes_independently_verified": [
+    {
+      "function": "skirmishMinCardsOfType",
+      "path": "$/decoded/5/Expression",
+      "node": {
+        "Inst": "CallMath",
+        "Function": "MakeLiteralInt",
+        "Parameters": [
+          {
+            "Inst": "IntConst",
+            "Value": 13
+          }
+        ]
+      }
+    },
+    {
+      "function": "skirmishMinCardsOfType",
+      "path": "$/decoded/6/Expression",
+      "node": {
+        "Inst": "CallMath",
+        "Function": "Less_IntInt",
+        "Parameters": [
+          {
+            "Inst": "LocalVariable",
+            "Variable Name": "Temp_int_Variable_1"
+          },
+          {
+            "Inst": "LocalVariable",
+            "Variable Name": "CallFunc_MakeLiteralInt_ReturnValue"
+          }
+        ]
+      }
+    },
+    {
+      "function": "skirmishMinCardsOfType",
+      "path": "$/decoded/27/Expression",
+      "node": {
+        "Inst": "CallMath",
+        "Function": "Greater_IntInt",
+        "Parameters": [
+          {
+            "Inst": "LocalVariable",
+            "Variable Name": "CallFunc_Conv_JsonValueToInteger_ReturnValue"
+          },
+          {
+            "Inst": "LocalVariable",
+            "Variable Name": "CallFunc_Map_Find_Value"
+          }
+        ]
+      }
+    },
+    {
+      "function": "Check Custom Rules Max Cards Of Type",
+      "path": "$/decoded/5/Expression",
+      "node": {
+        "Inst": "CallMath",
+        "Function": "MakeLiteralInt",
+        "Parameters": [
+          {
+            "Inst": "IntConst",
+            "Value": 13
+          }
+        ]
+      }
+    },
+    {
+      "function": "Check Custom Rules Max Cards Of Type",
+      "path": "$/decoded/6/Expression",
+      "node": {
+        "Inst": "CallMath",
+        "Function": "Less_IntInt",
+        "Parameters": [
+          {
+            "Inst": "LocalVariable",
+            "Variable Name": "Temp_int_Variable_1"
+          },
+          {
+            "Inst": "LocalVariable",
+            "Variable Name": "CallFunc_MakeLiteralInt_ReturnValue"
+          }
+        ]
+      }
+    },
+    {
+      "function": "Check Custom Rules Max Cards Of Type",
+      "path": "$/decoded/27/Expression",
+      "node": {
+        "Inst": "CallMath",
+        "Function": "Greater_IntInt",
+        "Parameters": [
+          {
+            "Inst": "LocalVariable",
+            "Variable Name": "CallFunc_Map_Find_Value"
+          },
+          {
+            "Inst": "LocalVariable",
+            "Variable Name": "CallFunc_Conv_JsonValueToInteger_ReturnValue"
+          }
+        ]
+      }
+    },
+    {
+      "function": "IsRarityOK",
+      "path": "$/decoded/21/Expression",
+      "node": {
+        "Inst": "CallMath",
+        "Function": "Greater_IntInt",
+        "Parameters": [
+          {
+            "Inst": "LocalVariable",
+            "Variable Name": "count"
+          },
+          {
+            "Inst": "IntConst",
+            "Value": 4
+          }
+        ]
+      }
+    },
+    {
+      "function": "IsRarityOK",
+      "path": "$/decoded/33/Expression",
+      "node": {
+        "Inst": "CallMath",
+        "Function": "Greater_IntInt",
+        "Parameters": [
+          {
+            "Inst": "LocalVariable",
+            "Variable Name": "count"
+          },
+          {
+            "Inst": "IntConst",
+            "Value": 3
+          }
+        ]
+      }
+    },
+    {
+      "function": "IsRarityOK",
+      "path": "$/decoded/36/Expression",
+      "node": {
+        "Inst": "CallMath",
+        "Function": "Greater_IntInt",
+        "Parameters": [
+          {
+            "Inst": "LocalVariable",
+            "Variable Name": "count"
+          },
+          {
+            "Inst": "IntConst",
+            "Value": 2
+          }
+        ]
+      }
+    },
+    {
+      "function": "IsRarityOK",
+      "path": "$/decoded/39/Expression",
+      "node": {
+        "Inst": "CallMath",
+        "Function": "Greater_IntInt",
+        "Parameters": [
+          {
+            "Inst": "LocalVariable",
+            "Variable Name": "count"
+          },
+          {
+            "Inst": "IntConst",
+            "Value": 1
+          }
+        ]
+      }
+    }
+  ],
+  "aggregation_call_inventory": {
+    "Add_IntInt": 10,
+    "Array_AddUnique": 1,
+    "Array_Get": 17,
+    "Array_Length": 1,
+    "BooleanOR": 4,
+    "Conv_StringToName": 10,
+    "EqualEqual_ByteByte": 4,
+    "EqualEqual_IntInt": 1,
+    "FactionStringToEnum": 1,
+    "GetBPLevelParameters": 18,
+    "GetStaticCardSet": 1,
+    "GetStaticExileFaction": 2,
+    "GetStaticFaction": 3,
+    "GetStaticRarity": 3,
+    "GetStaticType": 2,
+    "IsCardReserved": 1,
+    "IsRarityOK": 1,
+    "IsValid": 1,
+    "Less_IntInt": 4,
+    "Map_Add": 1,
+    "Map_Find": 2,
+    "NotEqual_ByteByte": 1,
+    "Not_PreBool": 1,
+    "Set_Add": 2,
+    "Set_Contains": 1,
+    "StartsWith": 1
+  },
+  "findings": [
+    "Known rarity values 1/2/3/4 compare row quantity against 4/3/2/1. Values 0/5 set false; other byte values reach return without writing isOK. Test seeds expose this unwritten output, not an asserted client default.",
+    "Min/max helpers enumerate 13 indices via runtime enum services, look up user-friendly labels in JSON, compare supplied Map_Find values, and report the first failing enumerated type. Actual enum display names and missing-map/JSON error behavior remain services, not proven facts.",
+    "Aggregation skips other deck IDs, rejects set 3 or negative regular/gold quantities, then counts each row independently. Zero quantities still visit later metadata/flag checks; rows are not merged inside this block.",
+    "Faction list collection bypasses neutral and nonzero-exile cases. Ally count/elite checks use supplied main/static/exile faction values, with neutral and matching-exile exemptions.",
+    "Ownership compares combined regular/gold quantities per row against supplied collection entry; reservation is sticky after first true. Location detection here uses the card-name prefix, not the supplied Type value.",
+    "These observations are not defects without upstream input normalization and library/native authority. No simulator production code was changed."
+  ],
+  "remaining": [
+    "Native/static query bodies and actual returned card metadata",
+    "Real source array stability, duplicate/zero normalization and accumulator defaults",
+    "Runtime enum index/valid-value/display-name mapping and malformed JSON/map behavior",
+    "Complete checkCustomRules control flow and mode composition with actual session config",
+    "Unsupported platform/starter deck paths, invalid lookup/null inputs, overflow and full PvP recursive scope"
+  ],
+  "evidence_bindings": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\scope003-deck-helpers-20261029.json",
+      "sha256": "e9aa31369181dc9101bc367c7915244fc643a744c4c7c2aa549410d6e54cb65f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\scope001-pool-and-reference-functions-20261029.json",
+      "sha256": "ed4a2cf33b9897377be5f44d9faeb630c114b0923f1a056e29501176418c83c7"
+    },
+    {
+      "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
+      "sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-scope003-functions.py",
+      "sha256": "92c3dfe3d44488fe8da5d673f190b69da06281829aa34f0479309142cfecc1b8"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-498.py",
+      "sha256": "254664d0aa1146756993fda4ac54e58891709c0ec5bcdd2cfa852f874c4e67ef"
+    },
+    {
+      "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\ue4ss\\CXXHeaderDump\\BP_DeckAndCollectionLoader.hpp",
+      "sha256": "d90471acecaeee753f7bd913fdd71fe4163abe7959b6fa400424e6769c975075"
+    },
+    {
+      "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\ue4ss\\CXXHeaderDump\\KardsCore_enums.hpp",
+      "sha256": "718166b9cbbd2d4cd9ecf761d5a94f1acba7b383dc6faa6f64358601128eb00b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\model-deck-statistics.py",
+      "sha256": "1371227978a2819c57ef1f54d9bcff697381c323246fc382c85a3887984ccb6a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\test-deck-statistics.py",
+      "sha256": "430f2afb41c620ef9b5871458a243e83398170cf2c63041ece67b5df47760433"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\out\\audit\\pvp-scope\\deck-statistics-model.json",
+      "sha256": "68dc9279ab89355d4a2dc16dd130ac689144f11ad1bc08581c360f77d4bc4b3a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\scope003-worker\\input.json",
+      "sha256": "1bc5112cf8c510931b2edf11d03446d2fafd84b31fce2bc4382278e5573ec941"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\scope003-worker\\output.json",
+      "sha256": "53ff26aa9a8bd7767b9cdd1dc34c709b77477eb96ee312aef52d484045fe429e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\scope003-worker\\extract.py",
+      "sha256": "e323bab55ad15401ec07e05009a9fcdbf9504c58864afd80dff7b9495907da07"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\build-scope003-report.py",
+      "sha256": "9e31d254848c6cd0a79291285e6fb7cbfcdfdbe08047f8bf7cf10485826a25a6"
+    }
+  ]
+}

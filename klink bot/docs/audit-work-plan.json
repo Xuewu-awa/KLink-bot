@@ -47,7 +47,10 @@
         "牌组及特殊模式合法性、当前导出版本、动态卡池、继承/原生和隐式总部根仍未闭合；全部资产scope仍为unreviewed，未建立最终分母。",
         "SCOPE-002执行IsDeckValid外围判定链1856个受控案例；卡牌统计块、特殊模式自定义规则和查询服务显式替代，不认证完整牌组合法性。",
         "38处动态名称细分为32处对象名称投影、5处实例值、1处局部值；赋值/参数出现位置仅作来源候选，未证明到达定义。",
-        "五处未匹配字面名均为ConvertCard传None且另有动态ID；运行时正ID选择对象Name分支已定位及做12项局部选择验证，仍须核对实际ID、空对象和完整生命周期。"
+        "五处未匹配字面名均为ConvertCard传None且另有动态ID；运行时正ID选择对象Name分支已定位及做12项局部选择验证，仍须核对实际ID、空对象和完整生命周期。",
+        "SCOPE-003重新采集11个入口，6个非空脚本独立反解、5个原生声明单列；IsDeckValid/checkCustomRules与上轮字节完全相同。",
+        "三个辅助函数完整脚本及隔离统计块通过稀有度5120、类型限制1680、统计624个受控案例和13项针对性测试；原生查询/实际枚举显示键、JSON/map异常及初始累加器仍为明确边界。",
+        "统计块逐行处理，零数量仍访问标志，重复行未先合并；稀有度未知字节不写输出，负数量在上游检查。这些是输入来源/默认值复核线索，不认定为缺陷。"
       ],
       "current_deliverables": [
         "out/audit/pvp-scope/README.md",
@@ -59,7 +62,10 @@
         "out/audit/pvp-scope/runtime_functions.tsv",
         "out/audit/pvp-scope/scope002-README.md",
         "out/audit/pvp-scope/deck-validation-phase.json",
-        "out/audit/pvp-scope/scope002-followup.json"
+        "out/audit/pvp-scope/scope002-followup.json",
+        "out/audit/pvp-scope/scope003-README.md",
+        "out/audit/pvp-scope/deck-statistics-model.json",
+        "out/audit/pvp-scope/scope003-followup.json"
       ]
     },
     {
