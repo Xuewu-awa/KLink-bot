@@ -1,0 +1,2612 @@
+{
+  "rule_id": "RULE-511",
+  "date": "2026-10-28",
+  "status": "DoNext自动出牌优先/动态列表/队列排空及强制结束分支已受控验证；原生游戏效果与计时器开放",
+  "findings": [
+    "当前PlayerMoves13890B完整AST和18B DoNextInQueue、Resolve wrapper复读。DoNext转11741；本轮离线执行保留ubergraph入口0的PushExecutionFlow及5的ComputedJump，而非省略入口栈。七并行队列仍按此前置一致长度供给，未认证损坏列表状态。",
+    "11741清理waitingForActionsTimer后11761取自动出牌列表，非空进入循环；11917/11962每轮重取长度，12209发起单卡动作开始(location枚举8、位置号0、目标0)，12266/12311在Start之后再次取ID，12416 PlayCardFromHand(id,id,0,0,0,true)，12486结束回执，再推进索引。12597在整个循环后才ClearAutoPlayCards。",
+    "12633检查玩家actionTypeQueue，非空12740立即Resolve下一队首；所测队首均为手牌答复，实际Resolve/8671答复分支/DoNext递归控制流执行。没有先复位queueIsRunning就递归处理，追加请求仍需区分忙碌状态。非手牌动作及潜伏分支未执行。",
+    "当玩家动作也排空，12755置queueIsRunning=false，12766置Logic.makeEndTurnWait=false，12799调试记录后检查ForceEndTurn；为真12833先清自身标志，再12844 EndTurnFromLogic(\"forced\")。强制结束服务仅记录，实际结束回合和潜伏计时器语义未执行。",
+    "72组覆盖自动列表空/1/2项、无变更/Play回调追加33/Start回执替换首项为41、0/2已有手牌动作、强制结束真假和答复目标0/101。所有自动项先于已有玩家动作处理；动态追加项被后续长度复读捕获，Start替换项的实际PlayID来自第二次读取，原Start回执ID可与PlayID不同。替换/追加是明确供给的边界试验，不证明实际客户端某张卡必然这样修改列表。",
+    "供给原生自动列表getter/clear、Play卡体、Start/End回执、时间/调试/对象查找、手牌回调/额外触发/AfterWait/自动出牌内部服务和EndTurn。从实际AST控制流确认相对顺序，不认证具体卡牌数值效果、真实Timer/GC/接口或全部事件循环。",
+    "只读对照MatchEngine.ExecuteQueuedAutoPlayActions现有代码：每轮重新GetAutoPlayCards、Start记录后重读ID、每卡回执后推进、循环末清列表，与本轮控制流要点相符；这不是该C#方法全部规则语义或调用时机认证。本轮无需产品修改，未重跑C#；历史929/929非本轮验证。",
+    "DeepSeek机械提取11741..12888调用与实例写入，主agent独立递归精确核对。完整认证卡数0，游戏写入/注入/真实函数调用0。"
+  ],
+  "verification": {
+    "rule": "RULE-511",
+    "next_queue_cases": 72,
+    "scope": "Actual18B DoNext wrapper -> ubergraph ENTRY0 PushFlow/ComputedJump ->11741 autoplay live-list loop -> optional actual Resolve/hand reply/DoNext recursion ->12755 reset/forced-end branch. Containers/time/debug/card lookup/hand callbacks/native autoplay getter-clear/body and action receipts/forced-EndTurn service supplied. PlayCard body may append33 once or Start receipt may replace first ID with41 as explicit fixtures, verifying live length and post-Start re-read; no native gameplay effects/real timer/reentry/world binding certification. No queue corruption or unrelated action types tested.",
+    "game_writes": 0,
+    "real_game_function_calls": 0,
+    "fully_certified_cards": 0,
+    "case_sha256": "8a166116df56c5208cde7d68ad6ea4ed7ba87cdb030b247be19d874780aed23f",
+    "profile_summaries": [
+      {
+        "initial_auto": [],
+        "mutation": "none",
+        "queued_count": 0,
+        "forced": false,
+        "target": 0,
+        "played": [],
+        "event_names": [
+          "K2_ClearAndInvalidateTimerHandle",
+          "DebugSetQueueRunning"
+        ],
+        "autoplay_start_ids": []
+      },
+      {
+        "initial_auto": [],
+        "mutation": "none",
+        "queued_count": 0,
+        "forced": false,
+        "target": 101,
+        "played": [],
+        "event_names": [
+          "K2_ClearAndInvalidateTimerHandle",
+          "DebugSetQueueRunning"
+        ],
+        "autoplay_start_ids": []
+      },
+      {
+        "initial_auto": [],
+        "mutation": "none",
+        "queued_count": 0,
+        "forced": true,
+        "target": 0,
+        "played": [],
+        "event_names": [
+          "K2_ClearAndInvalidateTimerHandle",
+          "DebugSetQueueRunning",
+          "EndTurnFromLogic"
+        ],
+        "autoplay_start_ids": []
+      },
+      {
+        "initial_auto": [],
+        "mutation": "none",
+        "queued_count": 0,
+        "forced": true,
+        "target": 101,
+        "played": [],
+        "event_names": [
+          "K2_ClearAndInvalidateTimerHandle",
+          "DebugSetQueueRunning",
+          "EndTurnFromLogic"
+        ],
+        "autoplay_start_ids": []
+      },
+      {
+        "initial_auto": [],
+        "mutation": "none",
+        "queued_count": 2,
+        "forced": false,
+        "target": 0,
+        "played": [],
+        "event_names": [
+          "K2_ClearAndInvalidateTimerHandle",
+          "ResolvePlayerMoveQueue",
+          "DebugSetQueueRunning",
+          "DebugDoNextInQueue",
+          "CreateAction_HandTargetSelected_Start",
+          "OnHandTargetSelected",
+          "HandleExtraPlayTriggersAfterSelectHandCard",
+          "ExecuteAutoPlayCards",
+          "CreateAction_HandTargetSelected_End",
+          "DoNextInQueue",
+          "K2_ClearAndInvalidateTimerHandle",
+          "ResolvePlayerMoveQueue",
+          "DebugSetQueueRunning",
+          "DebugDoNextInQueue",
+          "CreateAction_HandTargetSelected_Start",
+          "OnHandTargetSelected",
+          "HandleExtraPlayTriggersAfterSelectHandCard",
+          "ExecuteAutoPlayCards",
+          "CreateAction_HandTargetSelected_End",
+          "DoNextInQueue",
+          "K2_ClearAndInvalidateTimerHandle",
+          "DebugSetQueueRunning"
+        ],
+        "autoplay_start_ids": []
+      },
+      {
+        "initial_auto": [],
+        "mutation": "none",
+        "queued_count": 2,
+        "forced": false,
+        "target": 101,
+        "played": [],
+        "event_names": [
+          "K2_ClearAndInvalidateTimerHandle",
+          "ResolvePlayerMoveQueue",
+          "DebugSetQueueRunning",
+          "DebugDoNextInQueue",
+          "CreateAction_HandTargetSelected_Start",
+          "OnHandTargetSelected",
+          "HandleExtraPlayTriggersAfterSelectHandCard",
+          "ExecuteAutoPlayCards",
+          "CreateAction_HandTargetSelected_End",
+          "DoNextInQueue",
+          "K2_ClearAndInvalidateTimerHandle",
+          "ResolvePlayerMoveQueue",
+          "DebugSetQueueRunning",
+          "DebugDoNextInQueue",
+          "CreateAction_HandTargetSelected_Start",
+          "OnHandTargetSelected",
+          "HandleExtraPlayTriggersAfterSelectHandCard",
+          "ExecuteAutoPlayCards",
+          "CreateAction_HandTargetSelected_End",
+          "DoNextInQueue",
+          "K2_ClearAndInvalidateTimerHandle",
+          "DebugSetQueueRunning"
+        ],
+        "autoplay_start_ids": []
+      },
+      {
+        "initial_auto": [],
+        "mutation": "none",
+        "queued_count": 2,
+        "forced": true,
+        "target": 0,
+        "played": [],
+        "event_names": [
+          "K2_ClearAndInvalidateTimerHandle",
+          "ResolvePlayerMoveQueue",
+          "DebugSetQueueRunning",
+          "DebugDoNextInQueue",
+          "CreateAction_HandTargetSelected_Start",
+          "OnHandTargetSelected",
+          "HandleExtraPlayTriggersAfterSelectHandCard",
+          "ExecuteAutoPlayCards",
+          "CreateAction_HandTargetSelected_End",
+          "DoNextInQueue",
+          "K2_ClearAndInvalidateTimerHandle",
+          "ResolvePlayerMoveQueue",
+          "DebugSetQueueRunning",
+          "DebugDoNextInQueue",
+          "CreateAction_HandTargetSelected_Start",
+          "OnHandTargetSelected",
+          "HandleExtraPlayTriggersAfterSelectHandCard",
+          "ExecuteAutoPlayCards",
+          "CreateAction_HandTargetSelected_End",
+          "DoNextInQueue",
+          "K2_ClearAndInvalidateTimerHandle",
+          "DebugSetQueueRunning",
+          "EndTurnFromLogic"
+        ],
+        "autoplay_start_ids": []
+      },
+      {
+        "initial_auto": [],
+        "mutation": "none",
+        "queued_count": 2,
+        "forced": true,
+        "target": 101,
+        "played": [],
+        "event_names": [
+          "K2_ClearAndInvalidateTimerHandle",
+          "ResolvePlayerMoveQueue",
+          "DebugSetQueueRunning",
+          "DebugDoNextInQueue",
+          "CreateAction_HandTargetSelected_Start",
+          "OnHandTargetSelected",
+          "HandleExtraPlayTriggersAfterSelectHandCard",
+          "ExecuteAutoPlayCards",
+          "CreateAction_HandTargetSelected_End",
+          "DoNextInQueue",
+          "K2_ClearAndInvalidateTimerHandle",
+          "ResolvePlayerMoveQueue",
+          "DebugSetQueueRunning",
+          "DebugDoNextInQueue",
+          "CreateAction_HandTargetSelected_Start",
+          "OnHandTargetSelected",
+          "HandleExtraPlayTriggersAfterSelectHandCard",
+          "ExecuteAutoPlayCards",
+          "CreateAction_HandTargetSelected_End",
+          "DoNextInQueue",
+          "K2_ClearAndInvalidateTimerHandle",
+          "DebugSetQueueRunning",
+          "EndTurnFromLogic"
+        ],
+        "autoplay_start_ids": []
+      },
+      {
+        "initial_auto": [],
+        "mutation": "append-body",
+        "queued_count": 0,
+        "forced": false,
+        "target": 0,
+        "played": [],
+        "event_names": [
+          "K2_ClearAndInvalidateTimerHandle",
+          "DebugSetQueueRunning"
+        ],
+        "autoplay_start_ids": []
+      },
+      {
+        "initial_auto": [],
+        "mutation": "append-body",
+        "queued_count": 0,
+        "forced": false,
+        "target": 101,
+        "played": [],
+        "event_names": [
+          "K2_ClearAndInvalidateTimerHandle",
+          "DebugSetQueueRunning"
+        ],
+        "autoplay_start_ids": []
+      },
+      {
+        "initial_auto": [],
+        "mutation": "append-body",
+        "queued_count": 0,
+        "forced": true,
+        "target": 0,
+        "played": [],
+        "event_names": [
+          "K2_ClearAndInvalidateTimerHandle",
+          "DebugSetQueueRunning",
+          "EndTurnFromLogic"
+        ],
+        "autoplay_start_ids": []
+      },
+      {
+        "initial_auto": [],
+        "mutation": "append-body",
+        "queued_count": 0,
+        "forced": true,
+        "target": 101,
+        "played": [],
+        "event_names": [
+          "K2_ClearAndInvalidateTimerHandle",
+          "DebugSetQueueRunning",
+          "EndTurnFromLogic"
+        ],
+        "autoplay_start_ids": []
+      },
+      {
+        "initial_auto": [],
+        "mutation": "append-body",
+        "queued_count": 2,
+        "forced": false,
+        "target": 0,
+        "played": [],
+        "event_names": [
+          "K2_ClearAndInvalidateTimerHandle",
+          "ResolvePlayerMoveQueue",
+          "DebugSetQueueRunning",
+          "DebugDoNextInQueue",
+          "CreateAction_HandTargetSelected_Start",
+          "OnHandTargetSelected",
+          "HandleExtraPlayTriggersAfterSelectHandCard",
+          "ExecuteAutoPlayCards",
+          "CreateAction_HandTargetSelected_End",
+          "DoNextInQueue",
+          "K2_ClearAndInvalidateTimerHandle",
+          "ResolvePlayerMoveQueue",
+          "DebugSetQueueRunning",
+          "DebugDoNextInQueue",
+          "CreateAction_HandTargetSelected_Start",
+          "OnHandTargetSelected",
+          "HandleExtraPlayTriggersAfterSelectHandCard",
+          "ExecuteAutoPlayCards",
+          "CreateAction_HandTargetSelected_End",
+          "DoNextInQueue",
+          "K2_ClearAndInvalidateTimerHandle",
+          "DebugSetQueueRunning"
+        ],
+        "autoplay_start_ids": []
+      },
+      {
+        "initial_auto": [],
+        "mutation": "append-body",
+        "queued_count": 2,
+        "forced": false,
+        "target": 101,
+        "played": [],
+        "event_names": [
+          "K2_ClearAndInvalidateTimerHandle",
+          "ResolvePlayerMoveQueue",
+          "DebugSetQueueRunning",
+          "DebugDoNextInQueue",
+          "CreateAction_HandTargetSelected_Start",
+          "OnHandTargetSelected",
+          "HandleExtraPlayTriggersAfterSelectHandCard",
+          "ExecuteAutoPlayCards",
+          "CreateAction_HandTargetSelected_End",
+          "DoNextInQueue",
+          "K2_ClearAndInvalidateTimerHandle",
+          "ResolvePlayerMoveQueue",
+          "DebugSetQueueRunning",
+          "DebugDoNextInQueue",
+          "CreateAction_HandTargetSelected_Start",
+          "OnHandTargetSelected",
+          "HandleExtraPlayTriggersAfterSelectHandCard",
+          "ExecuteAutoPlayCards",
+          "CreateAction_HandTargetSelected_End",
+          "DoNextInQueue",
+          "K2_ClearAndInvalidateTimerHandle",
+          "DebugSetQueueRunning"
+        ],
+        "autoplay_start_ids": []
+      },
+      {
+        "initial_auto": [],
+        "mutation": "append-body",
+        "queued_count": 2,
+        "forced": true,
+        "target": 0,
+        "played": [],
+        "event_names": [
+          "K2_ClearAndInvalidateTimerHandle",
+          "ResolvePlayerMoveQueue",
+          "DebugSetQueueRunning",
+          "DebugDoNextInQueue",
+          "CreateAction_HandTargetSelected_Start",
+          "OnHandTargetSelected",
+          "HandleExtraPlayTriggersAfterSelectHandCard",
+          "ExecuteAutoPlayCards",
+          "CreateAction_HandTargetSelected_End",
+          "DoNextInQueue",
+          "K2_ClearAndInvalidateTimerHandle",
+          "ResolvePlayerMoveQueue",
+          "DebugSetQueueRunning",
+          "DebugDoNextInQueue",
+          "CreateAction_HandTargetSelected_Start",
+          "OnHandTargetSelected",
+          "HandleExtraPlayTriggersAfterSelectHandCard",
+          "ExecuteAutoPlayCards",
+          "CreateAction_HandTargetSelected_End",
+          "DoNextInQueue",
+          "K2_ClearAndInvalidateTimerHandle",
+          "DebugSetQueueRunning",
+          "EndTurnFromLogic"
+        ],
+        "autoplay_start_ids": []
+      },
+      {
+        "initial_auto": [],
+        "mutation": "append-body",
+        "queued_count": 2,
+        "forced": true,
+        "target": 101,
+        "played": [],
+        "event_names": [
+          "K2_ClearAndInvalidateTimerHandle",
+          "ResolvePlayerMoveQueue",
+          "DebugSetQueueRunning",
+          "DebugDoNextInQueue",
+          "CreateAction_HandTargetSelected_Start",
+          "OnHandTargetSelected",
+          "HandleExtraPlayTriggersAfterSelectHandCard",
+          "ExecuteAutoPlayCards",
+          "CreateAction_HandTargetSelected_End",
+          "DoNextInQueue",
+          "K2_ClearAndInvalidateTimerHandle",
+          "ResolvePlayerMoveQueue",
+          "DebugSetQueueRunning",
+          "DebugDoNextInQueue",
+          "CreateAction_HandTargetSelected_Start",
+          "OnHandTargetSelected",
+          "HandleExtraPlayTriggersAfterSelectHandCard",
+          "ExecuteAutoPlayCards",
+          "CreateAction_HandTargetSelected_End",
+          "DoNextInQueue",
+          "K2_ClearAndInvalidateTimerHandle",
+          "DebugSetQueueRunning",
+          "EndTurnFromLogic"
+        ],
+        "autoplay_start_ids": []
+      },
+      {
+        "initial_auto": [],
+        "mutation": "replace-on-start",
+        "queued_count": 0,
+        "forced": false,
+        "target": 0,
+        "played": [],
+        "event_names": [
+          "K2_ClearAndInvalidateTimerHandle",
+          "DebugSetQueueRunning"
+        ],
+        "autoplay_start_ids": []
+      },
+      {
+        "initial_auto": [],
+        "mutation": "replace-on-start",
+        "queued_count": 0,
+        "forced": false,
+        "target": 101,
+        "played": [],
+        "event_names": [
+          "K2_ClearAndInvalidateTimerHandle",
+          "DebugSetQueueRunning"
+        ],
+        "autoplay_start_ids": []
+      },
+      {
+        "initial_auto": [],
+        "mutation": "replace-on-start",
+        "queued_count": 0,
+        "forced": true,
+        "target": 0,
+        "played": [],
+        "event_names": [
+          "K2_ClearAndInvalidateTimerHandle",
+          "DebugSetQueueRunning",
+          "EndTurnFromLogic"
+        ],
+        "autoplay_start_ids": []
+      },
+      {
+        "initial_auto": [],
+        "mutation": "replace-on-start",
+        "queued_count": 0,
+        "forced": true,
+        "target": 101,
+        "played": [],
+        "event_names": [
+          "K2_ClearAndInvalidateTimerHandle",
+          "DebugSetQueueRunning",
+          "EndTurnFromLogic"
+        ],
+        "autoplay_start_ids": []
+      },
+      {
+        "initial_auto": [],
+        "mutation": "replace-on-start",
+        "queued_count": 2,
+        "forced": false,
+        "target": 0,
+        "played": [],
+        "event_names": [
+          "K2_ClearAndInvalidateTimerHandle",
+          "ResolvePlayerMoveQueue",
+          "DebugSetQueueRunning",
+          "DebugDoNextInQueue",
+          "CreateAction_HandTargetSelected_Start",
+          "OnHandTargetSelected",
+          "HandleExtraPlayTriggersAfterSelectHandCard",
+          "ExecuteAutoPlayCards",
+          "CreateAction_HandTargetSelected_End",
+          "DoNextInQueue",
+          "K2_ClearAndInvalidateTimerHandle",
+          "ResolvePlayerMoveQueue",
+          "DebugSetQueueRunning",
+          "DebugDoNextInQueue",
+          "CreateAction_HandTargetSelected_Start",
+          "OnHandTargetSelected",
+          "HandleExtraPlayTriggersAfterSelectHandCard",
+          "ExecuteAutoPlayCards",
+          "CreateAction_HandTargetSelected_End",
+          "DoNextInQueue",
+          "K2_ClearAndInvalidateTimerHandle",
+          "DebugSetQueueRunning"
+        ],
+        "autoplay_start_ids": []
+      },
+      {
+        "initial_auto": [],
+        "mutation": "replace-on-start",
+        "queued_count": 2,
+        "forced": false,
+        "target": 101,
+        "played": [],
+        "event_names": [
+          "K2_ClearAndInvalidateTimerHandle",
+          "ResolvePlayerMoveQueue",
+          "DebugSetQueueRunning",
+          "DebugDoNextInQueue",
+          "CreateAction_HandTargetSelected_Start",
+          "OnHandTargetSelected",
+          "HandleExtraPlayTriggersAfterSelectHandCard",
+          "ExecuteAutoPlayCards",
+          "CreateAction_HandTargetSelected_End",
+          "DoNextInQueue",
+          "K2_ClearAndInvalidateTimerHandle",
+          "ResolvePlayerMoveQueue",
+          "DebugSetQueueRunning",
+          "DebugDoNextInQueue",
+          "CreateAction_HandTargetSelected_Start",
+          "OnHandTargetSelected",
+          "HandleExtraPlayTriggersAfterSelectHandCard",
+          "ExecuteAutoPlayCards",
+          "CreateAction_HandTargetSelected_End",
+          "DoNextInQueue",
+          "K2_ClearAndInvalidateTimerHandle",
+          "DebugSetQueueRunning"
+        ],
+        "autoplay_start_ids": []
+      },
+      {
+        "initial_auto": [],
+        "mutation": "replace-on-start",
+        "queued_count": 2,
+        "forced": true,
+        "target": 0,
+        "played": [],
+        "event_names": [
+          "K2_ClearAndInvalidateTimerHandle",
+          "ResolvePlayerMoveQueue",
+          "DebugSetQueueRunning",
+          "DebugDoNextInQueue",
+          "CreateAction_HandTargetSelected_Start",
+          "OnHandTargetSelected",
+          "HandleExtraPlayTriggersAfterSelectHandCard",
+          "ExecuteAutoPlayCards",
+          "CreateAction_HandTargetSelected_End",
+          "DoNextInQueue",
+          "K2_ClearAndInvalidateTimerHandle",
+          "ResolvePlayerMoveQueue",
+          "DebugSetQueueRunning",
+          "DebugDoNextInQueue",
+          "CreateAction_HandTargetSelected_Start",
+          "OnHandTargetSelected",
+          "HandleExtraPlayTriggersAfterSelectHandCard",
+          "ExecuteAutoPlayCards",
+          "CreateAction_HandTargetSelected_End",
+          "DoNextInQueue",
+          "K2_ClearAndInvalidateTimerHandle",
+          "DebugSetQueueRunning",
+          "EndTurnFromLogic"
+        ],
+        "autoplay_start_ids": []
+      },
+      {
+        "initial_auto": [],
+        "mutation": "replace-on-start",
+        "queued_count": 2,
+        "forced": true,
+        "target": 101,
+        "played": [],
+        "event_names": [
+          "K2_ClearAndInvalidateTimerHandle",
+          "ResolvePlayerMoveQueue",
+          "DebugSetQueueRunning",
+          "DebugDoNextInQueue",
+          "CreateAction_HandTargetSelected_Start",
+          "OnHandTargetSelected",
+          "HandleExtraPlayTriggersAfterSelectHandCard",
+          "ExecuteAutoPlayCards",
+          "CreateAction_HandTargetSelected_End",
+          "DoNextInQueue",
+          "K2_ClearAndInvalidateTimerHandle",
+          "ResolvePlayerMoveQueue",
+          "DebugSetQueueRunning",
+          "DebugDoNextInQueue",
+          "CreateAction_HandTargetSelected_Start",
+          "OnHandTargetSelected",
+          "HandleExtraPlayTriggersAfterSelectHandCard",
+          "ExecuteAutoPlayCards",
+          "CreateAction_HandTargetSelected_End",
+          "DoNextInQueue",
+          "K2_ClearAndInvalidateTimerHandle",
+          "DebugSetQueueRunning",
+          "EndTurnFromLogic"
+        ],
+        "autoplay_start_ids": []
+      },
+      {
+        "initial_auto": [
+          31
+        ],
+        "mutation": "none",
+        "queued_count": 0,
+        "forced": false,
+        "target": 0,
+        "played": [
+          31
+        ],
+        "event_names": [
+          "K2_ClearAndInvalidateTimerHandle",
+          "CreateAction_PlayCardFromHand_Start",
+          "PlayCardFromHand",
+          "CreateAction_PlayCardFromHand_End",
+          "ClearAutoPlayCards",
+          "DebugSetQueueRunning"
+        ],
+        "autoplay_start_ids": [
+          31
+        ]
+      },
+      {
+        "initial_auto": [
+          31
+        ],
+        "mutation": "none",
+        "queued_count": 0,
+        "forced": false,
+        "target": 101,
+        "played": [
+          31
+        ],
+        "event_names": [
+          "K2_ClearAndInvalidateTimerHandle",
+          "CreateAction_PlayCardFromHand_Start",
+          "PlayCardFromHand",
+          "CreateAction_PlayCardFromHand_End",
+          "ClearAutoPlayCards",
+          "DebugSetQueueRunning"
+        ],
+        "autoplay_start_ids": [
+          31
+        ]
+      },
+      {
+        "initial_auto": [
+          31
+        ],
+        "mutation": "none",
+        "queued_count": 0,
+        "forced": true,
+        "target": 0,
+        "played": [
+          31
+        ],
+        "event_names": [
+          "K2_ClearAndInvalidateTimerHandle",
+          "CreateAction_PlayCardFromHand_Start",
+          "PlayCardFromHand",
+          "CreateAction_PlayCardFromHand_End",
+          "ClearAutoPlayCards",
+          "DebugSetQueueRunning",
+          "EndTurnFromLogic"
+        ],
+        "autoplay_start_ids": [
+          31
+        ]
+      },
+      {
+        "initial_auto": [
+          31
+        ],
+        "mutation": "none",
+        "queued_count": 0,
+        "forced": true,
+        "target": 101,
+        "played": [
+          31
+        ],
+        "event_names": [
+          "K2_ClearAndInvalidateTimerHandle",
+          "CreateAction_PlayCardFromHand_Start",
+          "PlayCardFromHand",
+          "CreateAction_PlayCardFromHand_End",
+          "ClearAutoPlayCards",
+          "DebugSetQueueRunning",
+          "EndTurnFromLogic"
+        ],
+        "autoplay_start_ids": [
+          31
+        ]
+      },
+      {
+        "initial_auto": [
+          31
+        ],
+        "mutation": "none",
+        "queued_count": 2,
+        "forced": false,
+        "target": 0,
+        "played": [
+          31
+        ],
+        "event_names": [
+          "K2_ClearAndInvalidateTimerHandle",
+          "CreateAction_PlayCardFromHand_Start",
+          "PlayCardFromHand",
+          "CreateAction_PlayCardFromHand_End",
+          "ClearAutoPlayCards",
+          "ResolvePlayerMoveQueue",
+          "DebugSetQueueRunning",
+          "DebugDoNextInQueue",
+          "CreateAction_HandTargetSelected_Start",
+          "OnHandTargetSelected",
+          "HandleExtraPlayTriggersAfterSelectHandCard",
+          "ExecuteAutoPlayCards",
+          "CreateAction_HandTargetSelected_End",
+          "DoNextInQueue",
+          "K2_ClearAndInvalidateTimerHandle",
+          "ResolvePlayerMoveQueue",
+          "DebugSetQueueRunning",
+          "DebugDoNextInQueue",
+          "CreateAction_HandTargetSelected_Start",
+          "OnHandTargetSelected",
+          "HandleExtraPlayTriggersAfterSelectHandCard",
+          "ExecuteAutoPlayCards",
+          "CreateAction_HandTargetSelected_End",
+          "DoNextInQueue",
+          "K2_ClearAndInvalidateTimerHandle",
+          "DebugSetQueueRunning"
+        ],
+        "autoplay_start_ids": [
+          31
+        ]
+      },
+      {
+        "initial_auto": [
+          31
+        ],
+        "mutation": "none",
+        "queued_count": 2,
+        "forced": false,
+        "target": 101,
+        "played": [
+          31
+        ],
+        "event_names": [
+          "K2_ClearAndInvalidateTimerHandle",
+          "CreateAction_PlayCardFromHand_Start",
+          "PlayCardFromHand",
+          "CreateAction_PlayCardFromHand_End",
+          "ClearAutoPlayCards",
+          "ResolvePlayerMoveQueue",
+          "DebugSetQueueRunning",
+          "DebugDoNextInQueue",
+          "CreateAction_HandTargetSelected_Start",
+          "OnHandTargetSelected",
+          "HandleExtraPlayTriggersAfterSelectHandCard",
+          "ExecuteAutoPlayCards",
+          "CreateAction_HandTargetSelected_End",
+          "DoNextInQueue",
+          "K2_ClearAndInvalidateTimerHandle",
+          "ResolvePlayerMoveQueue",
+          "DebugSetQueueRunning",
+          "DebugDoNextInQueue",
+          "CreateAction_HandTargetSelected_Start",
+          "OnHandTargetSelected",
+          "HandleExtraPlayTriggersAfterSelectHandCard",
+          "ExecuteAutoPlayCards",
+          "CreateAction_HandTargetSelected_End",
+          "DoNextInQueue",
+          "K2_ClearAndInvalidateTimerHandle",
+          "DebugSetQueueRunning"
+        ],
+        "autoplay_start_ids": [
+          31
+        ]
+      },
+      {
+        "initial_auto": [
+          31
+        ],
+        "mutation": "none",
+        "queued_count": 2,
+        "forced": true,
+        "target": 0,
+        "played": [
+          31
+        ],
+        "event_names": [
+          "K2_ClearAndInvalidateTimerHandle",
+          "CreateAction_PlayCardFromHand_Start",
+          "PlayCardFromHand",
+          "CreateAction_PlayCardFromHand_End",
+          "ClearAutoPlayCards",
+          "ResolvePlayerMoveQueue",
+          "DebugSetQueueRunning",
+          "DebugDoNextInQueue",
+          "CreateAction_HandTargetSelected_Start",
+          "OnHandTargetSelected",
+          "HandleExtraPlayTriggersAfterSelectHandCard",
+          "ExecuteAutoPlayCards",
+          "CreateAction_HandTargetSelected_End",
+          "DoNextInQueue",
+          "K2_ClearAndInvalidateTimerHandle",
+          "ResolvePlayerMoveQueue",
+          "DebugSetQueueRunning",
+          "DebugDoNextInQueue",
+          "CreateAction_HandTargetSelected_Start",
+          "OnHandTargetSelected",
+          "HandleExtraPlayTriggersAfterSelectHandCard",
+          "ExecuteAutoPlayCards",
+          "CreateAction_HandTargetSelected_End",
+          "DoNextInQueue",
+          "K2_ClearAndInvalidateTimerHandle",
+          "DebugSetQueueRunning",
+          "EndTurnFromLogic"
+        ],
+        "autoplay_start_ids": [
+          31
+        ]
+      },
+      {
+        "initial_auto": [
+          31
+        ],
+        "mutation": "none",
+        "queued_count": 2,
+        "forced": true,
+        "target": 101,
+        "played": [
+          31
+        ],
+        "event_names": [
+          "K2_ClearAndInvalidateTimerHandle",
+          "CreateAction_PlayCardFromHand_Start",
+          "PlayCardFromHand",
+          "CreateAction_PlayCardFromHand_End",
+          "ClearAutoPlayCards",
+          "ResolvePlayerMoveQueue",
+          "DebugSetQueueRunning",
+          "DebugDoNextInQueue",
+          "CreateAction_HandTargetSelected_Start",
+          "OnHandTargetSelected",
+          "HandleExtraPlayTriggersAfterSelectHandCard",
+          "ExecuteAutoPlayCards",
+          "CreateAction_HandTargetSelected_End",
+          "DoNextInQueue",
+          "K2_ClearAndInvalidateTimerHandle",
+          "ResolvePlayerMoveQueue",
+          "DebugSetQueueRunning",
+          "DebugDoNextInQueue",
+          "CreateAction_HandTargetSelected_Start",
+          "OnHandTargetSelected",
+          "HandleExtraPlayTriggersAfterSelectHandCard",
+          "ExecuteAutoPlayCards",
+          "CreateAction_HandTargetSelected_End",
+          "DoNextInQueue",
+          "K2_ClearAndInvalidateTimerHandle",
+          "DebugSetQueueRunning",
+          "EndTurnFromLogic"
+        ],
+        "autoplay_start_ids": [
+          31
+        ]
+      },
+      {
+        "initial_auto": [
+          31
+        ],
+        "mutation": "append-body",
+        "queued_count": 0,
+        "forced": false,
+        "target": 0,
+        "played": [
+          31,
+          33
+        ],
+        "event_names": [
+          "K2_ClearAndInvalidateTimerHandle",
+          "CreateAction_PlayCardFromHand_Start",
+          "PlayCardFromHand",
+          "CreateAction_PlayCardFromHand_End",
+          "CreateAction_PlayCardFromHand_Start",
+          "PlayCardFromHand",
+          "CreateAction_PlayCardFromHand_End",
+          "ClearAutoPlayCards",
+          "DebugSetQueueRunning"
+        ],
+        "autoplay_start_ids": [
+          31,
+          33
+        ]
+      },
+      {
+        "initial_auto": [
+          31
+        ],
+        "mutation": "append-body",
+        "queued_count": 0,
+        "forced": false,
+        "target": 101,
+        "played": [
+          31,
+          33
+        ],
+        "event_names": [
+          "K2_ClearAndInvalidateTimerHandle",
+          "CreateAction_PlayCardFromHand_Start",
+          "PlayCardFromHand",
+          "CreateAction_PlayCardFromHand_End",
+          "CreateAction_PlayCardFromHand_Start",
+          "PlayCardFromHand",
+          "CreateAction_PlayCardFromHand_End",
+          "ClearAutoPlayCards",
+          "DebugSetQueueRunning"
+        ],
+        "autoplay_start_ids": [
+          31,
+          33
+        ]
+      },
+      {
+        "initial_auto": [
+          31
+        ],
+        "mutation": "append-body",
+        "queued_count": 0,
+        "forced": true,
+        "target": 0,
+        "played": [
+          31,
+          33
+        ],
+        "event_names": [
+          "K2_ClearAndInvalidateTimerHandle",
+          "CreateAction_PlayCardFromHand_Start",
+          "PlayCardFromHand",
+          "CreateAction_PlayCardFromHand_End",
+          "CreateAction_PlayCardFromHand_Start",
+          "PlayCardFromHand",
+          "CreateAction_PlayCardFromHand_End",
+          "ClearAutoPlayCards",
+          "DebugSetQueueRunning",
+          "EndTurnFromLogic"
+        ],
+        "autoplay_start_ids": [
+          31,
+          33
+        ]
+      },
+      {
+        "initial_auto": [
+          31
+        ],
+        "mutation": "append-body",
+        "queued_count": 0,
+        "forced": true,
+        "target": 101,
+        "played": [
+          31,
+          33
+        ],
+        "event_names": [
+          "K2_ClearAndInvalidateTimerHandle",
+          "CreateAction_PlayCardFromHand_Start",
+          "PlayCardFromHand",
+          "CreateAction_PlayCardFromHand_End",
+          "CreateAction_PlayCardFromHand_Start",
+          "PlayCardFromHand",
+          "CreateAction_PlayCardFromHand_End",
+          "ClearAutoPlayCards",
+          "DebugSetQueueRunning",
+          "EndTurnFromLogic"
+        ],
+        "autoplay_start_ids": [
+          31,
+          33
+        ]
+      },
+      {
+        "initial_auto": [
+          31
+        ],
+        "mutation": "append-body",
+        "queued_count": 2,
+        "forced": false,
+        "target": 0,
+        "played": [
+          31,
+          33
+        ],
+        "event_names": [
+          "K2_ClearAndInvalidateTimerHandle",
+          "CreateAction_PlayCardFromHand_Start",
+          "PlayCardFromHand",
+          "CreateAction_PlayCardFromHand_End",
+          "CreateAction_PlayCardFromHand_Start",
+          "PlayCardFromHand",
+          "CreateAction_PlayCardFromHand_End",
+          "ClearAutoPlayCards",
+          "ResolvePlayerMoveQueue",
+          "DebugSetQueueRunning",
+          "DebugDoNextInQueue",
+          "CreateAction_HandTargetSelected_Start",
+          "OnHandTargetSelected",
+          "HandleExtraPlayTriggersAfterSelectHandCard",
+          "ExecuteAutoPlayCards",
+          "CreateAction_HandTargetSelected_End",
+          "DoNextInQueue",
+          "K2_ClearAndInvalidateTimerHandle",
+          "ResolvePlayerMoveQueue",
+          "DebugSetQueueRunning",
+          "DebugDoNextInQueue",
+          "CreateAction_HandTargetSelected_Start",
+          "OnHandTargetSelected",
+          "HandleExtraPlayTriggersAfterSelectHandCard",
+          "ExecuteAutoPlayCards",
+          "CreateAction_HandTargetSelected_End",
+          "DoNextInQueue",
+          "K2_ClearAndInvalidateTimerHandle",
+          "DebugSetQueueRunning"
+        ],
+        "autoplay_start_ids": [
+          31,
+          33
+        ]
+      },
+      {
+        "initial_auto": [
+          31
+        ],
+        "mutation": "append-body",
+        "queued_count": 2,
+        "forced": false,
+        "target": 101,
+        "played": [
+          31,
+          33
+        ],
+        "event_names": [
+          "K2_ClearAndInvalidateTimerHandle",
+          "CreateAction_PlayCardFromHand_Start",
+          "PlayCardFromHand",
+          "CreateAction_PlayCardFromHand_End",
+          "CreateAction_PlayCardFromHand_Start",
+          "PlayCardFromHand",
+          "CreateAction_PlayCardFromHand_End",
+          "ClearAutoPlayCards",
+          "ResolvePlayerMoveQueue",
+          "DebugSetQueueRunning",
+          "DebugDoNextInQueue",
+          "CreateAction_HandTargetSelected_Start",
+          "OnHandTargetSelected",
+          "HandleExtraPlayTriggersAfterSelectHandCard",
+          "ExecuteAutoPlayCards",
+          "CreateAction_HandTargetSelected_End",
+          "DoNextInQueue",
+          "K2_ClearAndInvalidateTimerHandle",
+          "ResolvePlayerMoveQueue",
+          "DebugSetQueueRunning",
+          "DebugDoNextInQueue",
+          "CreateAction_HandTargetSelected_Start",
+          "OnHandTargetSelected",
+          "HandleExtraPlayTriggersAfterSelectHandCard",
+          "ExecuteAutoPlayCards",
+          "CreateAction_HandTargetSelected_End",
+          "DoNextInQueue",
+          "K2_ClearAndInvalidateTimerHandle",
+          "DebugSetQueueRunning"
+        ],
+        "autoplay_start_ids": [
+          31,
+          33
+        ]
+      },
+      {
+        "initial_auto": [
+          31
+        ],
+        "mutation": "append-body",
+        "queued_count": 2,
+        "forced": true,
+        "target": 0,
+        "played": [
+          31,
+          33
+        ],
+        "event_names": [
+          "K2_ClearAndInvalidateTimerHandle",
+          "CreateAction_PlayCardFromHand_Start",
+          "PlayCardFromHand",
+          "CreateAction_PlayCardFromHand_End",
+          "CreateAction_PlayCardFromHand_Start",
+          "PlayCardFromHand",
+          "CreateAction_PlayCardFromHand_End",
+          "ClearAutoPlayCards",
+          "ResolvePlayerMoveQueue",
+          "DebugSetQueueRunning",
+          "DebugDoNextInQueue",
+          "CreateAction_HandTargetSelected_Start",
+          "OnHandTargetSelected",
+          "HandleExtraPlayTriggersAfterSelectHandCard",
+          "ExecuteAutoPlayCards",
+          "CreateAction_HandTargetSelected_End",
+          "DoNextInQueue",
+          "K2_ClearAndInvalidateTimerHandle",
+          "ResolvePlayerMoveQueue",
+          "DebugSetQueueRunning",
+          "DebugDoNextInQueue",
+          "CreateAction_HandTargetSelected_Start",
+          "OnHandTargetSelected",
+          "HandleExtraPlayTriggersAfterSelectHandCard",
+          "ExecuteAutoPlayCards",
+          "CreateAction_HandTargetSelected_End",
+          "DoNextInQueue",
+          "K2_ClearAndInvalidateTimerHandle",
+          "DebugSetQueueRunning",
+          "EndTurnFromLogic"
+        ],
+        "autoplay_start_ids": [
+          31,
+          33
+        ]
+      },
+      {
+        "initial_auto": [
+          31
+        ],
+        "mutation": "append-body",
+        "queued_count": 2,
+        "forced": true,
+        "target": 101,
+        "played": [
+          31,
+          33
+        ],
+        "event_names": [
+          "K2_ClearAndInvalidateTimerHandle",
+          "CreateAction_PlayCardFromHand_Start",
+          "PlayCardFromHand",
+          "CreateAction_PlayCardFromHand_End",
+          "CreateAction_PlayCardFromHand_Start",
+          "PlayCardFromHand",
+          "CreateAction_PlayCardFromHand_End",
+          "ClearAutoPlayCards",
+          "ResolvePlayerMoveQueue",
+          "DebugSetQueueRunning",
+          "DebugDoNextInQueue",
+          "CreateAction_HandTargetSelected_Start",
+          "OnHandTargetSelected",
+          "HandleExtraPlayTriggersAfterSelectHandCard",
+          "ExecuteAutoPlayCards",
+          "CreateAction_HandTargetSelected_End",
+          "DoNextInQueue",
+          "K2_ClearAndInvalidateTimerHandle",
+          "ResolvePlayerMoveQueue",
+          "DebugSetQueueRunning",
+          "DebugDoNextInQueue",
+          "CreateAction_HandTargetSelected_Start",
+          "OnHandTargetSelected",
+          "HandleExtraPlayTriggersAfterSelectHandCard",
+          "ExecuteAutoPlayCards",
+          "CreateAction_HandTargetSelected_End",
+          "DoNextInQueue",
+          "K2_ClearAndInvalidateTimerHandle",
+          "DebugSetQueueRunning",
+          "EndTurnFromLogic"
+        ],
+        "autoplay_start_ids": [
+          31,
+          33
+        ]
+      },
+      {
+        "initial_auto": [
+          31
+        ],
+        "mutation": "replace-on-start",
+        "queued_count": 0,
+        "forced": false,
+        "target": 0,
+        "played": [
+          41
+        ],
+        "event_names": [
+          "K2_ClearAndInvalidateTimerHandle",
+          "CreateAction_PlayCardFromHand_Start",
+          "PlayCardFromHand",
+          "CreateAction_PlayCardFromHand_End",
+          "ClearAutoPlayCards",
+          "DebugSetQueueRunning"
+        ],
+        "autoplay_start_ids": [
+          31
+        ]
+      },
+      {
+        "initial_auto": [
+          31
+        ],
+        "mutation": "replace-on-start",
+        "queued_count": 0,
+        "forced": false,
+        "target": 101,
+        "played": [
+          41
+        ],
+        "event_names": [
+          "K2_ClearAndInvalidateTimerHandle",
+          "CreateAction_PlayCardFromHand_Start",
+          "PlayCardFromHand",
+          "CreateAction_PlayCardFromHand_End",
+          "ClearAutoPlayCards",
+          "DebugSetQueueRunning"
+        ],
+        "autoplay_start_ids": [
+          31
+        ]
+      },
+      {
+        "initial_auto": [
+          31
+        ],
+        "mutation": "replace-on-start",
+        "queued_count": 0,
+        "forced": true,
+        "target": 0,
+        "played": [
+          41
+        ],
+        "event_names": [
+          "K2_ClearAndInvalidateTimerHandle",
+          "CreateAction_PlayCardFromHand_Start",
+          "PlayCardFromHand",
+          "CreateAction_PlayCardFromHand_End",
+          "ClearAutoPlayCards",
+          "DebugSetQueueRunning",
+          "EndTurnFromLogic"
+        ],
+        "autoplay_start_ids": [
+          31
+        ]
+      },
+      {
+        "initial_auto": [
+          31
+        ],
+        "mutation": "replace-on-start",
+        "queued_count": 0,
+        "forced": true,
+        "target": 101,
+        "played": [
+          41
+        ],
+        "event_names": [
+          "K2_ClearAndInvalidateTimerHandle",
+          "CreateAction_PlayCardFromHand_Start",
+          "PlayCardFromHand",
+          "CreateAction_PlayCardFromHand_End",
+          "ClearAutoPlayCards",
+          "DebugSetQueueRunning",
+          "EndTurnFromLogic"
+        ],
+        "autoplay_start_ids": [
+          31
+        ]
+      },
+      {
+        "initial_auto": [
+          31
+        ],
+        "mutation": "replace-on-start",
+        "queued_count": 2,
+        "forced": false,
+        "target": 0,
+        "played": [
+          41
+        ],
+        "event_names": [
+          "K2_ClearAndInvalidateTimerHandle",
+          "CreateAction_PlayCardFromHand_Start",
+          "PlayCardFromHand",
+          "CreateAction_PlayCardFromHand_End",
+          "ClearAutoPlayCards",
+          "ResolvePlayerMoveQueue",
+          "DebugSetQueueRunning",
+          "DebugDoNextInQueue",
+          "CreateAction_HandTargetSelected_Start",
+          "OnHandTargetSelected",
+          "HandleExtraPlayTriggersAfterSelectHandCard",
+          "ExecuteAutoPlayCards",
+          "CreateAction_HandTargetSelected_End",
+          "DoNextInQueue",
+          "K2_ClearAndInvalidateTimerHandle",
+          "ResolvePlayerMoveQueue",
+          "DebugSetQueueRunning",
+          "DebugDoNextInQueue",
+          "CreateAction_HandTargetSelected_Start",
+          "OnHandTargetSelected",
+          "HandleExtraPlayTriggersAfterSelectHandCard",
+          "ExecuteAutoPlayCards",
+          "CreateAction_HandTargetSelected_End",
+          "DoNextInQueue",
+          "K2_ClearAndInvalidateTimerHandle",
+          "DebugSetQueueRunning"
+        ],
+        "autoplay_start_ids": [
+          31
+        ]
+      },
+      {
+        "initial_auto": [
+          31
+        ],
+        "mutation": "replace-on-start",
+        "queued_count": 2,
+        "forced": false,
+        "target": 101,
+        "played": [
+          41
+        ],
+        "event_names": [
+          "K2_ClearAndInvalidateTimerHandle",
+          "CreateAction_PlayCardFromHand_Start",
+          "PlayCardFromHand",
+          "CreateAction_PlayCardFromHand_End",
+          "ClearAutoPlayCards",
+          "ResolvePlayerMoveQueue",
+          "DebugSetQueueRunning",
+          "DebugDoNextInQueue",
+          "CreateAction_HandTargetSelected_Start",
+          "OnHandTargetSelected",
+          "HandleExtraPlayTriggersAfterSelectHandCard",
+          "ExecuteAutoPlayCards",
+          "CreateAction_HandTargetSelected_End",
+          "DoNextInQueue",
+          "K2_ClearAndInvalidateTimerHandle",
+          "ResolvePlayerMoveQueue",
+          "DebugSetQueueRunning",
+          "DebugDoNextInQueue",
+          "CreateAction_HandTargetSelected_Start",
+          "OnHandTargetSelected",
+          "HandleExtraPlayTriggersAfterSelectHandCard",
+          "ExecuteAutoPlayCards",
+          "CreateAction_HandTargetSelected_End",
+          "DoNextInQueue",
+          "K2_ClearAndInvalidateTimerHandle",
+          "DebugSetQueueRunning"
+        ],
+        "autoplay_start_ids": [
+          31
+        ]
+      },
+      {
+        "initial_auto": [
+          31
+        ],
+        "mutation": "replace-on-start",
+        "queued_count": 2,
+        "forced": true,
+        "target": 0,
+        "played": [
+          41
+        ],
+        "event_names": [
+          "K2_ClearAndInvalidateTimerHandle",
+          "CreateAction_PlayCardFromHand_Start",
+          "PlayCardFromHand",
+          "CreateAction_PlayCardFromHand_End",
+          "ClearAutoPlayCards",
+          "ResolvePlayerMoveQueue",
+          "DebugSetQueueRunning",
+          "DebugDoNextInQueue",
+          "CreateAction_HandTargetSelected_Start",
+          "OnHandTargetSelected",
+          "HandleExtraPlayTriggersAfterSelectHandCard",
+          "ExecuteAutoPlayCards",
+          "CreateAction_HandTargetSelected_End",
+          "DoNextInQueue",
+          "K2_ClearAndInvalidateTimerHandle",
+          "ResolvePlayerMoveQueue",
+          "DebugSetQueueRunning",
+          "DebugDoNextInQueue",
+          "CreateAction_HandTargetSelected_Start",
+          "OnHandTargetSelected",
+          "HandleExtraPlayTriggersAfterSelectHandCard",
+          "ExecuteAutoPlayCards",
+          "CreateAction_HandTargetSelected_End",
+          "DoNextInQueue",
+          "K2_ClearAndInvalidateTimerHandle",
+          "DebugSetQueueRunning",
+          "EndTurnFromLogic"
+        ],
+        "autoplay_start_ids": [
+          31
+        ]
+      },
+      {
+        "initial_auto": [
+          31
+        ],
+        "mutation": "replace-on-start",
+        "queued_count": 2,
+        "forced": true,
+        "target": 101,
+        "played": [
+          41
+        ],
+        "event_names": [
+          "K2_ClearAndInvalidateTimerHandle",
+          "CreateAction_PlayCardFromHand_Start",
+          "PlayCardFromHand",
+          "CreateAction_PlayCardFromHand_End",
+          "ClearAutoPlayCards",
+          "ResolvePlayerMoveQueue",
+          "DebugSetQueueRunning",
+          "DebugDoNextInQueue",
+          "CreateAction_HandTargetSelected_Start",
+          "OnHandTargetSelected",
+          "HandleExtraPlayTriggersAfterSelectHandCard",
+          "ExecuteAutoPlayCards",
+          "CreateAction_HandTargetSelected_End",
+          "DoNextInQueue",
+          "K2_ClearAndInvalidateTimerHandle",
+          "ResolvePlayerMoveQueue",
+          "DebugSetQueueRunning",
+          "DebugDoNextInQueue",
+          "CreateAction_HandTargetSelected_Start",
+          "OnHandTargetSelected",
+          "HandleExtraPlayTriggersAfterSelectHandCard",
+          "ExecuteAutoPlayCards",
+          "CreateAction_HandTargetSelected_End",
+          "DoNextInQueue",
+          "K2_ClearAndInvalidateTimerHandle",
+          "DebugSetQueueRunning",
+          "EndTurnFromLogic"
+        ],
+        "autoplay_start_ids": [
+          31
+        ]
+      },
+      {
+        "initial_auto": [
+          31,
+          32
+        ],
+        "mutation": "none",
+        "queued_count": 0,
+        "forced": false,
+        "target": 0,
+        "played": [
+          31,
+          32
+        ],
+        "event_names": [
+          "K2_ClearAndInvalidateTimerHandle",
+          "CreateAction_PlayCardFromHand_Start",
+          "PlayCardFromHand",
+          "CreateAction_PlayCardFromHand_End",
+          "CreateAction_PlayCardFromHand_Start",
+          "PlayCardFromHand",
+          "CreateAction_PlayCardFromHand_End",
+          "ClearAutoPlayCards",
+          "DebugSetQueueRunning"
+        ],
+        "autoplay_start_ids": [
+          31,
+          32
+        ]
+      },
+      {
+        "initial_auto": [
+          31,
+          32
+        ],
+        "mutation": "none",
+        "queued_count": 0,
+        "forced": false,
+        "target": 101,
+        "played": [
+          31,
+          32
+        ],
+        "event_names": [
+          "K2_ClearAndInvalidateTimerHandle",
+          "CreateAction_PlayCardFromHand_Start",
+          "PlayCardFromHand",
+          "CreateAction_PlayCardFromHand_End",
+          "CreateAction_PlayCardFromHand_Start",
+          "PlayCardFromHand",
+          "CreateAction_PlayCardFromHand_End",
+          "ClearAutoPlayCards",
+          "DebugSetQueueRunning"
+        ],
+        "autoplay_start_ids": [
+          31,
+          32
+        ]
+      },
+      {
+        "initial_auto": [
+          31,
+          32
+        ],
+        "mutation": "none",
+        "queued_count": 0,
+        "forced": true,
+        "target": 0,
+        "played": [
+          31,
+          32
+        ],
+        "event_names": [
+          "K2_ClearAndInvalidateTimerHandle",
+          "CreateAction_PlayCardFromHand_Start",
+          "PlayCardFromHand",
+          "CreateAction_PlayCardFromHand_End",
+          "CreateAction_PlayCardFromHand_Start",
+          "PlayCardFromHand",
+          "CreateAction_PlayCardFromHand_End",
+          "ClearAutoPlayCards",
+          "DebugSetQueueRunning",
+          "EndTurnFromLogic"
+        ],
+        "autoplay_start_ids": [
+          31,
+          32
+        ]
+      },
+      {
+        "initial_auto": [
+          31,
+          32
+        ],
+        "mutation": "none",
+        "queued_count": 0,
+        "forced": true,
+        "target": 101,
+        "played": [
+          31,
+          32
+        ],
+        "event_names": [
+          "K2_ClearAndInvalidateTimerHandle",
+          "CreateAction_PlayCardFromHand_Start",
+          "PlayCardFromHand",
+          "CreateAction_PlayCardFromHand_End",
+          "CreateAction_PlayCardFromHand_Start",
+          "PlayCardFromHand",
+          "CreateAction_PlayCardFromHand_End",
+          "ClearAutoPlayCards",
+          "DebugSetQueueRunning",
+          "EndTurnFromLogic"
+        ],
+        "autoplay_start_ids": [
+          31,
+          32
+        ]
+      },
+      {
+        "initial_auto": [
+          31,
+          32
+        ],
+        "mutation": "none",
+        "queued_count": 2,
+        "forced": false,
+        "target": 0,
+        "played": [
+          31,
+          32
+        ],
+        "event_names": [
+          "K2_ClearAndInvalidateTimerHandle",
+          "CreateAction_PlayCardFromHand_Start",
+          "PlayCardFromHand",
+          "CreateAction_PlayCardFromHand_End",
+          "CreateAction_PlayCardFromHand_Start",
+          "PlayCardFromHand",
+          "CreateAction_PlayCardFromHand_End",
+          "ClearAutoPlayCards",
+          "ResolvePlayerMoveQueue",
+          "DebugSetQueueRunning",
+          "DebugDoNextInQueue",
+          "CreateAction_HandTargetSelected_Start",
+          "OnHandTargetSelected",
+          "HandleExtraPlayTriggersAfterSelectHandCard",
+          "ExecuteAutoPlayCards",
+          "CreateAction_HandTargetSelected_End",
+          "DoNextInQueue",
+          "K2_ClearAndInvalidateTimerHandle",
+          "ResolvePlayerMoveQueue",
+          "DebugSetQueueRunning",
+          "DebugDoNextInQueue",
+          "CreateAction_HandTargetSelected_Start",
+          "OnHandTargetSelected",
+          "HandleExtraPlayTriggersAfterSelectHandCard",
+          "ExecuteAutoPlayCards",
+          "CreateAction_HandTargetSelected_End",
+          "DoNextInQueue",
+          "K2_ClearAndInvalidateTimerHandle",
+          "DebugSetQueueRunning"
+        ],
+        "autoplay_start_ids": [
+          31,
+          32
+        ]
+      },
+      {
+        "initial_auto": [
+          31,
+          32
+        ],
+        "mutation": "none",
+        "queued_count": 2,
+        "forced": false,
+        "target": 101,
+        "played": [
+          31,
+          32
+        ],
+        "event_names": [
+          "K2_ClearAndInvalidateTimerHandle",
+          "CreateAction_PlayCardFromHand_Start",
+          "PlayCardFromHand",
+          "CreateAction_PlayCardFromHand_End",
+          "CreateAction_PlayCardFromHand_Start",
+          "PlayCardFromHand",
+          "CreateAction_PlayCardFromHand_End",
+          "ClearAutoPlayCards",
+          "ResolvePlayerMoveQueue",
+          "DebugSetQueueRunning",
+          "DebugDoNextInQueue",
+          "CreateAction_HandTargetSelected_Start",
+          "OnHandTargetSelected",
+          "HandleExtraPlayTriggersAfterSelectHandCard",
+          "ExecuteAutoPlayCards",
+          "CreateAction_HandTargetSelected_End",
+          "DoNextInQueue",
+          "K2_ClearAndInvalidateTimerHandle",
+          "ResolvePlayerMoveQueue",
+          "DebugSetQueueRunning",
+          "DebugDoNextInQueue",
+          "CreateAction_HandTargetSelected_Start",
+          "OnHandTargetSelected",
+          "HandleExtraPlayTriggersAfterSelectHandCard",
+          "ExecuteAutoPlayCards",
+          "CreateAction_HandTargetSelected_End",
+          "DoNextInQueue",
+          "K2_ClearAndInvalidateTimerHandle",
+          "DebugSetQueueRunning"
+        ],
+        "autoplay_start_ids": [
+          31,
+          32
+        ]
+      },
+      {
+        "initial_auto": [
+          31,
+          32
+        ],
+        "mutation": "none",
+        "queued_count": 2,
+        "forced": true,
+        "target": 0,
+        "played": [
+          31,
+          32
+        ],
+        "event_names": [
+          "K2_ClearAndInvalidateTimerHandle",
+          "CreateAction_PlayCardFromHand_Start",
+          "PlayCardFromHand",
+          "CreateAction_PlayCardFromHand_End",
+          "CreateAction_PlayCardFromHand_Start",
+          "PlayCardFromHand",
+          "CreateAction_PlayCardFromHand_End",
+          "ClearAutoPlayCards",
+          "ResolvePlayerMoveQueue",
+          "DebugSetQueueRunning",
+          "DebugDoNextInQueue",
+          "CreateAction_HandTargetSelected_Start",
+          "OnHandTargetSelected",
+          "HandleExtraPlayTriggersAfterSelectHandCard",
+          "ExecuteAutoPlayCards",
+          "CreateAction_HandTargetSelected_End",
+          "DoNextInQueue",
+          "K2_ClearAndInvalidateTimerHandle",
+          "ResolvePlayerMoveQueue",
+          "DebugSetQueueRunning",
+          "DebugDoNextInQueue",
+          "CreateAction_HandTargetSelected_Start",
+          "OnHandTargetSelected",
+          "HandleExtraPlayTriggersAfterSelectHandCard",
+          "ExecuteAutoPlayCards",
+          "CreateAction_HandTargetSelected_End",
+          "DoNextInQueue",
+          "K2_ClearAndInvalidateTimerHandle",
+          "DebugSetQueueRunning",
+          "EndTurnFromLogic"
+        ],
+        "autoplay_start_ids": [
+          31,
+          32
+        ]
+      },
+      {
+        "initial_auto": [
+          31,
+          32
+        ],
+        "mutation": "none",
+        "queued_count": 2,
+        "forced": true,
+        "target": 101,
+        "played": [
+          31,
+          32
+        ],
+        "event_names": [
+          "K2_ClearAndInvalidateTimerHandle",
+          "CreateAction_PlayCardFromHand_Start",
+          "PlayCardFromHand",
+          "CreateAction_PlayCardFromHand_End",
+          "CreateAction_PlayCardFromHand_Start",
+          "PlayCardFromHand",
+          "CreateAction_PlayCardFromHand_End",
+          "ClearAutoPlayCards",
+          "ResolvePlayerMoveQueue",
+          "DebugSetQueueRunning",
+          "DebugDoNextInQueue",
+          "CreateAction_HandTargetSelected_Start",
+          "OnHandTargetSelected",
+          "HandleExtraPlayTriggersAfterSelectHandCard",
+          "ExecuteAutoPlayCards",
+          "CreateAction_HandTargetSelected_End",
+          "DoNextInQueue",
+          "K2_ClearAndInvalidateTimerHandle",
+          "ResolvePlayerMoveQueue",
+          "DebugSetQueueRunning",
+          "DebugDoNextInQueue",
+          "CreateAction_HandTargetSelected_Start",
+          "OnHandTargetSelected",
+          "HandleExtraPlayTriggersAfterSelectHandCard",
+          "ExecuteAutoPlayCards",
+          "CreateAction_HandTargetSelected_End",
+          "DoNextInQueue",
+          "K2_ClearAndInvalidateTimerHandle",
+          "DebugSetQueueRunning",
+          "EndTurnFromLogic"
+        ],
+        "autoplay_start_ids": [
+          31,
+          32
+        ]
+      },
+      {
+        "initial_auto": [
+          31,
+          32
+        ],
+        "mutation": "append-body",
+        "queued_count": 0,
+        "forced": false,
+        "target": 0,
+        "played": [
+          31,
+          32,
+          33
+        ],
+        "event_names": [
+          "K2_ClearAndInvalidateTimerHandle",
+          "CreateAction_PlayCardFromHand_Start",
+          "PlayCardFromHand",
+          "CreateAction_PlayCardFromHand_End",
+          "CreateAction_PlayCardFromHand_Start",
+          "PlayCardFromHand",
+          "CreateAction_PlayCardFromHand_End",
+          "CreateAction_PlayCardFromHand_Start",
+          "PlayCardFromHand",
+          "CreateAction_PlayCardFromHand_End",
+          "ClearAutoPlayCards",
+          "DebugSetQueueRunning"
+        ],
+        "autoplay_start_ids": [
+          31,
+          32,
+          33
+        ]
+      },
+      {
+        "initial_auto": [
+          31,
+          32
+        ],
+        "mutation": "append-body",
+        "queued_count": 0,
+        "forced": false,
+        "target": 101,
+        "played": [
+          31,
+          32,
+          33
+        ],
+        "event_names": [
+          "K2_ClearAndInvalidateTimerHandle",
+          "CreateAction_PlayCardFromHand_Start",
+          "PlayCardFromHand",
+          "CreateAction_PlayCardFromHand_End",
+          "CreateAction_PlayCardFromHand_Start",
+          "PlayCardFromHand",
+          "CreateAction_PlayCardFromHand_End",
+          "CreateAction_PlayCardFromHand_Start",
+          "PlayCardFromHand",
+          "CreateAction_PlayCardFromHand_End",
+          "ClearAutoPlayCards",
+          "DebugSetQueueRunning"
+        ],
+        "autoplay_start_ids": [
+          31,
+          32,
+          33
+        ]
+      },
+      {
+        "initial_auto": [
+          31,
+          32
+        ],
+        "mutation": "append-body",
+        "queued_count": 0,
+        "forced": true,
+        "target": 0,
+        "played": [
+          31,
+          32,
+          33
+        ],
+        "event_names": [
+          "K2_ClearAndInvalidateTimerHandle",
+          "CreateAction_PlayCardFromHand_Start",
+          "PlayCardFromHand",
+          "CreateAction_PlayCardFromHand_End",
+          "CreateAction_PlayCardFromHand_Start",
+          "PlayCardFromHand",
+          "CreateAction_PlayCardFromHand_End",
+          "CreateAction_PlayCardFromHand_Start",
+          "PlayCardFromHand",
+          "CreateAction_PlayCardFromHand_End",
+          "ClearAutoPlayCards",
+          "DebugSetQueueRunning",
+          "EndTurnFromLogic"
+        ],
+        "autoplay_start_ids": [
+          31,
+          32,
+          33
+        ]
+      },
+      {
+        "initial_auto": [
+          31,
+          32
+        ],
+        "mutation": "append-body",
+        "queued_count": 0,
+        "forced": true,
+        "target": 101,
+        "played": [
+          31,
+          32,
+          33
+        ],
+        "event_names": [
+          "K2_ClearAndInvalidateTimerHandle",
+          "CreateAction_PlayCardFromHand_Start",
+          "PlayCardFromHand",
+          "CreateAction_PlayCardFromHand_End",
+          "CreateAction_PlayCardFromHand_Start",
+          "PlayCardFromHand",
+          "CreateAction_PlayCardFromHand_End",
+          "CreateAction_PlayCardFromHand_Start",
+          "PlayCardFromHand",
+          "CreateAction_PlayCardFromHand_End",
+          "ClearAutoPlayCards",
+          "DebugSetQueueRunning",
+          "EndTurnFromLogic"
+        ],
+        "autoplay_start_ids": [
+          31,
+          32,
+          33
+        ]
+      },
+      {
+        "initial_auto": [
+          31,
+          32
+        ],
+        "mutation": "append-body",
+        "queued_count": 2,
+        "forced": false,
+        "target": 0,
+        "played": [
+          31,
+          32,
+          33
+        ],
+        "event_names": [
+          "K2_ClearAndInvalidateTimerHandle",
+          "CreateAction_PlayCardFromHand_Start",
+          "PlayCardFromHand",
+          "CreateAction_PlayCardFromHand_End",
+          "CreateAction_PlayCardFromHand_Start",
+          "PlayCardFromHand",
+          "CreateAction_PlayCardFromHand_End",
+          "CreateAction_PlayCardFromHand_Start",
+          "PlayCardFromHand",
+          "CreateAction_PlayCardFromHand_End",
+          "ClearAutoPlayCards",
+          "ResolvePlayerMoveQueue",
+          "DebugSetQueueRunning",
+          "DebugDoNextInQueue",
+          "CreateAction_HandTargetSelected_Start",
+          "OnHandTargetSelected",
+          "HandleExtraPlayTriggersAfterSelectHandCard",
+          "ExecuteAutoPlayCards",
+          "CreateAction_HandTargetSelected_End",
+          "DoNextInQueue",
+          "K2_ClearAndInvalidateTimerHandle",
+          "ResolvePlayerMoveQueue",
+          "DebugSetQueueRunning",
+          "DebugDoNextInQueue",
+          "CreateAction_HandTargetSelected_Start",
+          "OnHandTargetSelected",
+          "HandleExtraPlayTriggersAfterSelectHandCard",
+          "ExecuteAutoPlayCards",
+          "CreateAction_HandTargetSelected_End",
+          "DoNextInQueue",
+          "K2_ClearAndInvalidateTimerHandle",
+          "DebugSetQueueRunning"
+        ],
+        "autoplay_start_ids": [
+          31,
+          32,
+          33
+        ]
+      },
+      {
+        "initial_auto": [
+          31,
+          32
+        ],
+        "mutation": "append-body",
+        "queued_count": 2,
+        "forced": false,
+        "target": 101,
+        "played": [
+          31,
+          32,
+          33
+        ],
+        "event_names": [
+          "K2_ClearAndInvalidateTimerHandle",
+          "CreateAction_PlayCardFromHand_Start",
+          "PlayCardFromHand",
+          "CreateAction_PlayCardFromHand_End",
+          "CreateAction_PlayCardFromHand_Start",
+          "PlayCardFromHand",
+          "CreateAction_PlayCardFromHand_End",
+          "CreateAction_PlayCardFromHand_Start",
+          "PlayCardFromHand",
+          "CreateAction_PlayCardFromHand_End",
+          "ClearAutoPlayCards",
+          "ResolvePlayerMoveQueue",
+          "DebugSetQueueRunning",
+          "DebugDoNextInQueue",
+          "CreateAction_HandTargetSelected_Start",
+          "OnHandTargetSelected",
+          "HandleExtraPlayTriggersAfterSelectHandCard",
+          "ExecuteAutoPlayCards",
+          "CreateAction_HandTargetSelected_End",
+          "DoNextInQueue",
+          "K2_ClearAndInvalidateTimerHandle",
+          "ResolvePlayerMoveQueue",
+          "DebugSetQueueRunning",
+          "DebugDoNextInQueue",
+          "CreateAction_HandTargetSelected_Start",
+          "OnHandTargetSelected",
+          "HandleExtraPlayTriggersAfterSelectHandCard",
+          "ExecuteAutoPlayCards",
+          "CreateAction_HandTargetSelected_End",
+          "DoNextInQueue",
+          "K2_ClearAndInvalidateTimerHandle",
+          "DebugSetQueueRunning"
+        ],
+        "autoplay_start_ids": [
+          31,
+          32,
+          33
+        ]
+      },
+      {
+        "initial_auto": [
+          31,
+          32
+        ],
+        "mutation": "append-body",
+        "queued_count": 2,
+        "forced": true,
+        "target": 0,
+        "played": [
+          31,
+          32,
+          33
+        ],
+        "event_names": [
+          "K2_ClearAndInvalidateTimerHandle",
+          "CreateAction_PlayCardFromHand_Start",
+          "PlayCardFromHand",
+          "CreateAction_PlayCardFromHand_End",
+          "CreateAction_PlayCardFromHand_Start",
+          "PlayCardFromHand",
+          "CreateAction_PlayCardFromHand_End",
+          "CreateAction_PlayCardFromHand_Start",
+          "PlayCardFromHand",
+          "CreateAction_PlayCardFromHand_End",
+          "ClearAutoPlayCards",
+          "ResolvePlayerMoveQueue",
+          "DebugSetQueueRunning",
+          "DebugDoNextInQueue",
+          "CreateAction_HandTargetSelected_Start",
+          "OnHandTargetSelected",
+          "HandleExtraPlayTriggersAfterSelectHandCard",
+          "ExecuteAutoPlayCards",
+          "CreateAction_HandTargetSelected_End",
+          "DoNextInQueue",
+          "K2_ClearAndInvalidateTimerHandle",
+          "ResolvePlayerMoveQueue",
+          "DebugSetQueueRunning",
+          "DebugDoNextInQueue",
+          "CreateAction_HandTargetSelected_Start",
+          "OnHandTargetSelected",
+          "HandleExtraPlayTriggersAfterSelectHandCard",
+          "ExecuteAutoPlayCards",
+          "CreateAction_HandTargetSelected_End",
+          "DoNextInQueue",
+          "K2_ClearAndInvalidateTimerHandle",
+          "DebugSetQueueRunning",
+          "EndTurnFromLogic"
+        ],
+        "autoplay_start_ids": [
+          31,
+          32,
+          33
+        ]
+      },
+      {
+        "initial_auto": [
+          31,
+          32
+        ],
+        "mutation": "append-body",
+        "queued_count": 2,
+        "forced": true,
+        "target": 101,
+        "played": [
+          31,
+          32,
+          33
+        ],
+        "event_names": [
+          "K2_ClearAndInvalidateTimerHandle",
+          "CreateAction_PlayCardFromHand_Start",
+          "PlayCardFromHand",
+          "CreateAction_PlayCardFromHand_End",
+          "CreateAction_PlayCardFromHand_Start",
+          "PlayCardFromHand",
+          "CreateAction_PlayCardFromHand_End",
+          "CreateAction_PlayCardFromHand_Start",
+          "PlayCardFromHand",
+          "CreateAction_PlayCardFromHand_End",
+          "ClearAutoPlayCards",
+          "ResolvePlayerMoveQueue",
+          "DebugSetQueueRunning",
+          "DebugDoNextInQueue",
+          "CreateAction_HandTargetSelected_Start",
+          "OnHandTargetSelected",
+          "HandleExtraPlayTriggersAfterSelectHandCard",
+          "ExecuteAutoPlayCards",
+          "CreateAction_HandTargetSelected_End",
+          "DoNextInQueue",
+          "K2_ClearAndInvalidateTimerHandle",
+          "ResolvePlayerMoveQueue",
+          "DebugSetQueueRunning",
+          "DebugDoNextInQueue",
+          "CreateAction_HandTargetSelected_Start",
+          "OnHandTargetSelected",
+          "HandleExtraPlayTriggersAfterSelectHandCard",
+          "ExecuteAutoPlayCards",
+          "CreateAction_HandTargetSelected_End",
+          "DoNextInQueue",
+          "K2_ClearAndInvalidateTimerHandle",
+          "DebugSetQueueRunning",
+          "EndTurnFromLogic"
+        ],
+        "autoplay_start_ids": [
+          31,
+          32,
+          33
+        ]
+      },
+      {
+        "initial_auto": [
+          31,
+          32
+        ],
+        "mutation": "replace-on-start",
+        "queued_count": 0,
+        "forced": false,
+        "target": 0,
+        "played": [
+          41,
+          32
+        ],
+        "event_names": [
+          "K2_ClearAndInvalidateTimerHandle",
+          "CreateAction_PlayCardFromHand_Start",
+          "PlayCardFromHand",
+          "CreateAction_PlayCardFromHand_End",
+          "CreateAction_PlayCardFromHand_Start",
+          "PlayCardFromHand",
+          "CreateAction_PlayCardFromHand_End",
+          "ClearAutoPlayCards",
+          "DebugSetQueueRunning"
+        ],
+        "autoplay_start_ids": [
+          31,
+          32
+        ]
+      },
+      {
+        "initial_auto": [
+          31,
+          32
+        ],
+        "mutation": "replace-on-start",
+        "queued_count": 0,
+        "forced": false,
+        "target": 101,
+        "played": [
+          41,
+          32
+        ],
+        "event_names": [
+          "K2_ClearAndInvalidateTimerHandle",
+          "CreateAction_PlayCardFromHand_Start",
+          "PlayCardFromHand",
+          "CreateAction_PlayCardFromHand_End",
+          "CreateAction_PlayCardFromHand_Start",
+          "PlayCardFromHand",
+          "CreateAction_PlayCardFromHand_End",
+          "ClearAutoPlayCards",
+          "DebugSetQueueRunning"
+        ],
+        "autoplay_start_ids": [
+          31,
+          32
+        ]
+      },
+      {
+        "initial_auto": [
+          31,
+          32
+        ],
+        "mutation": "replace-on-start",
+        "queued_count": 0,
+        "forced": true,
+        "target": 0,
+        "played": [
+          41,
+          32
+        ],
+        "event_names": [
+          "K2_ClearAndInvalidateTimerHandle",
+          "CreateAction_PlayCardFromHand_Start",
+          "PlayCardFromHand",
+          "CreateAction_PlayCardFromHand_End",
+          "CreateAction_PlayCardFromHand_Start",
+          "PlayCardFromHand",
+          "CreateAction_PlayCardFromHand_End",
+          "ClearAutoPlayCards",
+          "DebugSetQueueRunning",
+          "EndTurnFromLogic"
+        ],
+        "autoplay_start_ids": [
+          31,
+          32
+        ]
+      },
+      {
+        "initial_auto": [
+          31,
+          32
+        ],
+        "mutation": "replace-on-start",
+        "queued_count": 0,
+        "forced": true,
+        "target": 101,
+        "played": [
+          41,
+          32
+        ],
+        "event_names": [
+          "K2_ClearAndInvalidateTimerHandle",
+          "CreateAction_PlayCardFromHand_Start",
+          "PlayCardFromHand",
+          "CreateAction_PlayCardFromHand_End",
+          "CreateAction_PlayCardFromHand_Start",
+          "PlayCardFromHand",
+          "CreateAction_PlayCardFromHand_End",
+          "ClearAutoPlayCards",
+          "DebugSetQueueRunning",
+          "EndTurnFromLogic"
+        ],
+        "autoplay_start_ids": [
+          31,
+          32
+        ]
+      },
+      {
+        "initial_auto": [
+          31,
+          32
+        ],
+        "mutation": "replace-on-start",
+        "queued_count": 2,
+        "forced": false,
+        "target": 0,
+        "played": [
+          41,
+          32
+        ],
+        "event_names": [
+          "K2_ClearAndInvalidateTimerHandle",
+          "CreateAction_PlayCardFromHand_Start",
+          "PlayCardFromHand",
+          "CreateAction_PlayCardFromHand_End",
+          "CreateAction_PlayCardFromHand_Start",
+          "PlayCardFromHand",
+          "CreateAction_PlayCardFromHand_End",
+          "ClearAutoPlayCards",
+          "ResolvePlayerMoveQueue",
+          "DebugSetQueueRunning",
+          "DebugDoNextInQueue",
+          "CreateAction_HandTargetSelected_Start",
+          "OnHandTargetSelected",
+          "HandleExtraPlayTriggersAfterSelectHandCard",
+          "ExecuteAutoPlayCards",
+          "CreateAction_HandTargetSelected_End",
+          "DoNextInQueue",
+          "K2_ClearAndInvalidateTimerHandle",
+          "ResolvePlayerMoveQueue",
+          "DebugSetQueueRunning",
+          "DebugDoNextInQueue",
+          "CreateAction_HandTargetSelected_Start",
+          "OnHandTargetSelected",
+          "HandleExtraPlayTriggersAfterSelectHandCard",
+          "ExecuteAutoPlayCards",
+          "CreateAction_HandTargetSelected_End",
+          "DoNextInQueue",
+          "K2_ClearAndInvalidateTimerHandle",
+          "DebugSetQueueRunning"
+        ],
+        "autoplay_start_ids": [
+          31,
+          32
+        ]
+      },
+      {
+        "initial_auto": [
+          31,
+          32
+        ],
+        "mutation": "replace-on-start",
+        "queued_count": 2,
+        "forced": false,
+        "target": 101,
+        "played": [
+          41,
+          32
+        ],
+        "event_names": [
+          "K2_ClearAndInvalidateTimerHandle",
+          "CreateAction_PlayCardFromHand_Start",
+          "PlayCardFromHand",
+          "CreateAction_PlayCardFromHand_End",
+          "CreateAction_PlayCardFromHand_Start",
+          "PlayCardFromHand",
+          "CreateAction_PlayCardFromHand_End",
+          "ClearAutoPlayCards",
+          "ResolvePlayerMoveQueue",
+          "DebugSetQueueRunning",
+          "DebugDoNextInQueue",
+          "CreateAction_HandTargetSelected_Start",
+          "OnHandTargetSelected",
+          "HandleExtraPlayTriggersAfterSelectHandCard",
+          "ExecuteAutoPlayCards",
+          "CreateAction_HandTargetSelected_End",
+          "DoNextInQueue",
+          "K2_ClearAndInvalidateTimerHandle",
+          "ResolvePlayerMoveQueue",
+          "DebugSetQueueRunning",
+          "DebugDoNextInQueue",
+          "CreateAction_HandTargetSelected_Start",
+          "OnHandTargetSelected",
+          "HandleExtraPlayTriggersAfterSelectHandCard",
+          "ExecuteAutoPlayCards",
+          "CreateAction_HandTargetSelected_End",
+          "DoNextInQueue",
+          "K2_ClearAndInvalidateTimerHandle",
+          "DebugSetQueueRunning"
+        ],
+        "autoplay_start_ids": [
+          31,
+          32
+        ]
+      },
+      {
+        "initial_auto": [
+          31,
+          32
+        ],
+        "mutation": "replace-on-start",
+        "queued_count": 2,
+        "forced": true,
+        "target": 0,
+        "played": [
+          41,
+          32
+        ],
+        "event_names": [
+          "K2_ClearAndInvalidateTimerHandle",
+          "CreateAction_PlayCardFromHand_Start",
+          "PlayCardFromHand",
+          "CreateAction_PlayCardFromHand_End",
+          "CreateAction_PlayCardFromHand_Start",
+          "PlayCardFromHand",
+          "CreateAction_PlayCardFromHand_End",
+          "ClearAutoPlayCards",
+          "ResolvePlayerMoveQueue",
+          "DebugSetQueueRunning",
+          "DebugDoNextInQueue",
+          "CreateAction_HandTargetSelected_Start",
+          "OnHandTargetSelected",
+          "HandleExtraPlayTriggersAfterSelectHandCard",
+          "ExecuteAutoPlayCards",
+          "CreateAction_HandTargetSelected_End",
+          "DoNextInQueue",
+          "K2_ClearAndInvalidateTimerHandle",
+          "ResolvePlayerMoveQueue",
+          "DebugSetQueueRunning",
+          "DebugDoNextInQueue",
+          "CreateAction_HandTargetSelected_Start",
+          "OnHandTargetSelected",
+          "HandleExtraPlayTriggersAfterSelectHandCard",
+          "ExecuteAutoPlayCards",
+          "CreateAction_HandTargetSelected_End",
+          "DoNextInQueue",
+          "K2_ClearAndInvalidateTimerHandle",
+          "DebugSetQueueRunning",
+          "EndTurnFromLogic"
+        ],
+        "autoplay_start_ids": [
+          31,
+          32
+        ]
+      },
+      {
+        "initial_auto": [
+          31,
+          32
+        ],
+        "mutation": "replace-on-start",
+        "queued_count": 2,
+        "forced": true,
+        "target": 101,
+        "played": [
+          41,
+          32
+        ],
+        "event_names": [
+          "K2_ClearAndInvalidateTimerHandle",
+          "CreateAction_PlayCardFromHand_Start",
+          "PlayCardFromHand",
+          "CreateAction_PlayCardFromHand_End",
+          "CreateAction_PlayCardFromHand_Start",
+          "PlayCardFromHand",
+          "CreateAction_PlayCardFromHand_End",
+          "ClearAutoPlayCards",
+          "ResolvePlayerMoveQueue",
+          "DebugSetQueueRunning",
+          "DebugDoNextInQueue",
+          "CreateAction_HandTargetSelected_Start",
+          "OnHandTargetSelected",
+          "HandleExtraPlayTriggersAfterSelectHandCard",
+          "ExecuteAutoPlayCards",
+          "CreateAction_HandTargetSelected_End",
+          "DoNextInQueue",
+          "K2_ClearAndInvalidateTimerHandle",
+          "ResolvePlayerMoveQueue",
+          "DebugSetQueueRunning",
+          "DebugDoNextInQueue",
+          "CreateAction_HandTargetSelected_Start",
+          "OnHandTargetSelected",
+          "HandleExtraPlayTriggersAfterSelectHandCard",
+          "ExecuteAutoPlayCards",
+          "CreateAction_HandTargetSelected_End",
+          "DoNextInQueue",
+          "K2_ClearAndInvalidateTimerHandle",
+          "DebugSetQueueRunning",
+          "EndTurnFromLogic"
+        ],
+        "autoplay_start_ids": [
+          31,
+          32
+        ]
+      }
+    ]
+  },
+  "worker_index": {
+    "calls": [
+      {
+        "index": 11741,
+        "name": "K2_ClearAndInvalidateTimerHandle"
+      },
+      {
+        "index": 11761,
+        "name": "GetAutoPlayCards"
+      },
+      {
+        "index": 11806,
+        "name": "Array_IsNotEmpty"
+      },
+      {
+        "index": 11917,
+        "name": "GetAutoPlayCards"
+      },
+      {
+        "index": 11962,
+        "name": "Array_Length"
+      },
+      {
+        "index": 12021,
+        "name": "Less_IntInt"
+      },
+      {
+        "index": 12105,
+        "name": "GetAutoPlayCards"
+      },
+      {
+        "index": 12150,
+        "name": "Array_Get"
+      },
+      {
+        "index": 12209,
+        "name": "CreateAction_PlayCardFromHand_Start"
+      },
+      {
+        "index": 12266,
+        "name": "GetAutoPlayCards"
+      },
+      {
+        "index": 12311,
+        "name": "Array_Get"
+      },
+      {
+        "index": 12370,
+        "name": "GetCardFunctions"
+      },
+      {
+        "index": 12416,
+        "name": "PlayCardFromHand"
+      },
+      {
+        "index": 12486,
+        "name": "CreateAction_PlayCardFromHand_End"
+      },
+      {
+        "index": 12523,
+        "name": "Add_IntInt"
+      },
+      {
+        "index": 12597,
+        "name": "ClearAutoPlayCards"
+      },
+      {
+        "index": 12633,
+        "name": "Array_Length"
+      },
+      {
+        "index": 12692,
+        "name": "Greater_IntInt"
+      },
+      {
+        "index": 12740,
+        "name": "ResolvePlayerMoveQueue"
+      },
+      {
+        "index": 12799,
+        "name": "DebugSetQueueRunning"
+      },
+      {
+        "index": 12844,
+        "name": "EndTurnFromLogic"
+      }
+    ],
+    "instance_writes": [
+      {
+        "index": 12755,
+        "field": "queueIsRunning"
+      },
+      {
+        "index": 12766,
+        "field": "makeEndTurnWait"
+      },
+      {
+        "index": 12833,
+        "field": "ForceEndTurn"
+      }
+    ]
+  },
+  "captured_functions": [
+    {
+      "owner": "BP_PlayerMoves_C",
+      "name": "ExecuteUbergraph_BP_PlayerMoves",
+      "script_size": 13890,
+      "decode_complete": true,
+      "script_sha256": "cbe61ba857d7770c70af3eb11593ba6c1b9688288ede4c323e4833664bc59ff7"
+    },
+    {
+      "owner": "BP_PlayerMoves_C",
+      "name": "AddMoveToPlayerMoveQueue",
+      "script_size": 144,
+      "decode_complete": true,
+      "script_sha256": "289e91260b6b797a2d6ebf395f86a76fd04c713ee19739c0d2769c16b069a370"
+    },
+    {
+      "owner": "BP_PlayerMoves_C",
+      "name": "ResolvePlayerMoveQueue",
+      "script_size": 18,
+      "decode_complete": true,
+      "script_sha256": "ee3e6eee003b75323ef7717db43d6bcc99a148ef1d4133ad27ea5711784b9c1d"
+    },
+    {
+      "owner": "BP_PlayerMoves_C",
+      "name": "DoNextInQueue",
+      "script_size": 18,
+      "decode_complete": true,
+      "script_sha256": "953579d3647d6020919a198877561b2ed063b48010009897aed86edb23030f25"
+    },
+    {
+      "owner": "ConfirmHandTargetButton_Widget_C",
+      "name": "doNext",
+      "script_size": 18,
+      "decode_complete": true,
+      "script_sha256": "63d91a52d144af733b412715cdf64eed13910d7d906b446d5f33d8dfee81e899"
+    }
+  ],
+  "worker_job": "20261028-154200-rule511-next-index-dcd462db",
+  "evidence": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule511-next.py",
+      "bytes": 347,
+      "sha256": "4042bca9e246d3650533ed1e859539a2f955992755c54e29de109e982717d2f3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule511-player-move-next-functions-20261028.json",
+      "bytes": 5049313,
+      "sha256": "03802158f67171402dcaa2eb3185b9ddd9b74b71c3f8cc8c06f262c993769b39"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule511-next.py",
+      "bytes": 14849,
+      "sha256": "91a372334cd7e46423cbc619579480a25fe4e89e74a5aa9a2b4526e6769e969c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule511-next-verification-20261028.json",
+      "bytes": 223461,
+      "sha256": "83fe19857c3315e0d6f604495f4705e0203786030edda4337129a5cb319c7cbe"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule511-worker\\input.json",
+      "bytes": 10216,
+      "sha256": "d80e15ca8f6d3ced0ca5806176992530e83a132184dc37409f8715ec7eee0692"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule511-worker\\task.txt",
+      "bytes": 436,
+      "sha256": "4eba92c8b33a368d2a92974fb4290ecc851c7ee7b403c4d7ca19c577ddfd4ea2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule511-worker\\output.json",
+      "bytes": 1806,
+      "sha256": "c78ee76b8571aec5147e30992b3b146ed862599b0d46f22a3401b519f9595ef7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\MatchEngine.cs",
+      "bytes": 199427,
+      "sha256": "d2cafdcf3f4de9481e13f4b4423f91a33c3868bc1562d55b615ea972688e199f"
+    }
+  ],
+  "remaining": [
+    "实际自动列表native getter/clear及单卡Play/Start/End副作用，非手牌玩家动作的潜伏续行。",
+    "Timer清理/强制结束真实实现、自动阶段与普通策略队列的完整调用映射。",
+    "跨方候选来源、单卡谓词和全部PvP规则仍未认证。"
+  ],
+  "game_writes": 0,
+  "real_game_function_calls": 0,
+  "fully_certified_cards": 0
+}
