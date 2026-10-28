@@ -1,0 +1,544 @@
+{
+  "rule_id": "RULE-515",
+  "date": "2026-10-28",
+  "status": "攻击/费用总值多片段原生读取已受控执行；加密初始化/哈希/报告链及更新器仍开放",
+  "findings": [
+    "从RULE514核心卡对象候选中选择当前getTotalAttack280B、getTotalKreditCost474B及前者实际调用的getAndDecryptAttack247B。重新按CHAININFO各3片段采集，代码与展开信息内存==磁盘且稳定复读；共9片段1001B。不凭函数名或单首段判断输出。",
+    "getTotalAttack先调用实际攻击基础解码，再内联临时攻击组解码；getTotalKreditCost内联基础/临时费用组解码。执行实际xor/sub/idiv算术与32位相加，末尾按符号将负结果改0、超过99改99，然后写输出。被调用基础攻击解码也执行实际原生，不是直接供给一个解码结果。",
+    "576正常分组组合覆盖两类总值、基础-100/-1/0/1/98/99/100/1000、临时-101/-1/0/1/99/100、乘数1/3与3种哈希/报告状态；24组有效/无效基础和临时乘数组合，以及8组int32极值组合，总608组通过。实际结果与独立signed32求和后clamp模型逐项一致，所测卡对象字节保持不变（报告指针为空或已标记）。",
+    "无效乘数0不是普通除0崩溃：攻击分量回退-100，费用分量回退100，再按合计限幅。该分支反映当前原生异常/未初始化状态；尚未证实它在正常PvP已初始化对象中可达，不能因此给无头模型加入加密损坏状态或宣称一条卡牌效果不一致。",
+    "显式供给仅哈希函数返回和security-cookie检查；报告对象置空或已报告，未执行真实字符串/安全报告回调。加密材料由夹具按所读算术构造，未执行InitializeEncryption或更新器。真实哈希/初始化、非空报告服务副作用、符号除法INT_MIN/-1异常和对象生命周期仍未认证；没有真实游戏调用或写入。",
+    "只读对照CardInstance.Attack=Math.Clamp(unchecked(BaseAttack+TemporaryAttack),0,99)，KreditCost=unchecked(BaseKreditCost+TemporaryKreditCost)、TotalKreditCost=Math.Clamp(KreditCost,0,99)及API接收者映射，结构与正常读取结果相符。没有把此结论扩展为所有增减益源账本、临时到期、字段刷新或单卡效果正确。",
+    "DeepSeek机械提取片段/字节及idiv/cmovs/cmovg位置，主agent独立逐字段核对。本轮未改产品/C#未重跑；历史929/929非本轮验证。完整认证卡数0，游戏写入/注入/真实函数调用0。"
+  ],
+  "verification": {
+    "rule": "RULE-515",
+    "normal_total_cases": 576,
+    "invalid_group_profiles": 24,
+    "int32_boundary_cases": 8,
+    "scope": "Offline Unicorn of actual chained getTotalAttack280B + called getAndDecryptAttack247B and getTotalKreditCost474B. Actual xor/sub/idiv, 32-bit sum, sign/max clamp and invalid multiplier sentinel paths. Hash return/security-cookie checker supplied, reporter pointer null or already-reported; real hash/encryption setup/reporting/anti-tamper integration not certified. Synthetic fields/object memory only; no C# runtime or card updater/ledger certification.",
+    "game_writes": 0,
+    "real_game_function_calls": 0,
+    "fully_certified_cards": 0,
+    "case_sha256": "2970dc0152da15af043ed09f4f0925dcde3491d0e86905971dcf0675a5617b94",
+    "normal_result_counts": {
+      "attack": {
+        "0": 108,
+        "98": 18,
+        "99": 138,
+        "1": 12,
+        "2": 6,
+        "97": 6
+      },
+      "kredit": {
+        "0": 108,
+        "98": 18,
+        "99": 138,
+        "1": 12,
+        "2": 6,
+        "97": 6
+      }
+    },
+    "invalid_profiles": [
+      {
+        "kind": "attack",
+        "invalid_base": false,
+        "invalid_buff": false,
+        "mode": "valid",
+        "result": 3,
+        "expected": 3,
+        "calls": [
+          "supplied-hash",
+          "supplied-security-cookie",
+          "supplied-hash",
+          "supplied-security-cookie"
+        ]
+      },
+      {
+        "kind": "attack",
+        "invalid_base": false,
+        "invalid_buff": false,
+        "mode": "hash-mismatch-null-reporter",
+        "result": 3,
+        "expected": 3,
+        "calls": [
+          "supplied-hash",
+          "supplied-security-cookie",
+          "supplied-hash",
+          "supplied-security-cookie"
+        ]
+      },
+      {
+        "kind": "attack",
+        "invalid_base": false,
+        "invalid_buff": false,
+        "mode": "already-reported",
+        "result": 3,
+        "expected": 3,
+        "calls": [
+          "supplied-hash",
+          "supplied-security-cookie",
+          "supplied-hash",
+          "supplied-security-cookie"
+        ]
+      },
+      {
+        "kind": "attack",
+        "invalid_base": false,
+        "invalid_buff": true,
+        "mode": "valid",
+        "result": 0,
+        "expected": 0,
+        "calls": [
+          "supplied-hash",
+          "supplied-security-cookie",
+          "supplied-security-cookie"
+        ]
+      },
+      {
+        "kind": "attack",
+        "invalid_base": false,
+        "invalid_buff": true,
+        "mode": "hash-mismatch-null-reporter",
+        "result": 0,
+        "expected": 0,
+        "calls": [
+          "supplied-hash",
+          "supplied-security-cookie",
+          "supplied-security-cookie"
+        ]
+      },
+      {
+        "kind": "attack",
+        "invalid_base": false,
+        "invalid_buff": true,
+        "mode": "already-reported",
+        "result": 0,
+        "expected": 0,
+        "calls": [
+          "supplied-hash",
+          "supplied-security-cookie",
+          "supplied-security-cookie"
+        ]
+      },
+      {
+        "kind": "attack",
+        "invalid_base": true,
+        "invalid_buff": false,
+        "mode": "valid",
+        "result": 0,
+        "expected": 0,
+        "calls": [
+          "supplied-security-cookie",
+          "supplied-hash",
+          "supplied-security-cookie"
+        ]
+      },
+      {
+        "kind": "attack",
+        "invalid_base": true,
+        "invalid_buff": false,
+        "mode": "hash-mismatch-null-reporter",
+        "result": 0,
+        "expected": 0,
+        "calls": [
+          "supplied-security-cookie",
+          "supplied-hash",
+          "supplied-security-cookie"
+        ]
+      },
+      {
+        "kind": "attack",
+        "invalid_base": true,
+        "invalid_buff": false,
+        "mode": "already-reported",
+        "result": 0,
+        "expected": 0,
+        "calls": [
+          "supplied-security-cookie",
+          "supplied-hash",
+          "supplied-security-cookie"
+        ]
+      },
+      {
+        "kind": "attack",
+        "invalid_base": true,
+        "invalid_buff": true,
+        "mode": "valid",
+        "result": 0,
+        "expected": 0,
+        "calls": [
+          "supplied-security-cookie",
+          "supplied-security-cookie"
+        ]
+      },
+      {
+        "kind": "attack",
+        "invalid_base": true,
+        "invalid_buff": true,
+        "mode": "hash-mismatch-null-reporter",
+        "result": 0,
+        "expected": 0,
+        "calls": [
+          "supplied-security-cookie",
+          "supplied-security-cookie"
+        ]
+      },
+      {
+        "kind": "attack",
+        "invalid_base": true,
+        "invalid_buff": true,
+        "mode": "already-reported",
+        "result": 0,
+        "expected": 0,
+        "calls": [
+          "supplied-security-cookie",
+          "supplied-security-cookie"
+        ]
+      },
+      {
+        "kind": "kredit",
+        "invalid_base": false,
+        "invalid_buff": false,
+        "mode": "valid",
+        "result": 3,
+        "expected": 3,
+        "calls": [
+          "supplied-hash",
+          "supplied-hash",
+          "supplied-security-cookie"
+        ]
+      },
+      {
+        "kind": "kredit",
+        "invalid_base": false,
+        "invalid_buff": false,
+        "mode": "hash-mismatch-null-reporter",
+        "result": 3,
+        "expected": 3,
+        "calls": [
+          "supplied-hash",
+          "supplied-hash",
+          "supplied-security-cookie"
+        ]
+      },
+      {
+        "kind": "kredit",
+        "invalid_base": false,
+        "invalid_buff": false,
+        "mode": "already-reported",
+        "result": 3,
+        "expected": 3,
+        "calls": [
+          "supplied-hash",
+          "supplied-hash",
+          "supplied-security-cookie"
+        ]
+      },
+      {
+        "kind": "kredit",
+        "invalid_base": false,
+        "invalid_buff": true,
+        "mode": "valid",
+        "result": 99,
+        "expected": 99,
+        "calls": [
+          "supplied-hash",
+          "supplied-security-cookie"
+        ]
+      },
+      {
+        "kind": "kredit",
+        "invalid_base": false,
+        "invalid_buff": true,
+        "mode": "hash-mismatch-null-reporter",
+        "result": 99,
+        "expected": 99,
+        "calls": [
+          "supplied-hash",
+          "supplied-security-cookie"
+        ]
+      },
+      {
+        "kind": "kredit",
+        "invalid_base": false,
+        "invalid_buff": true,
+        "mode": "already-reported",
+        "result": 99,
+        "expected": 99,
+        "calls": [
+          "supplied-hash",
+          "supplied-security-cookie"
+        ]
+      },
+      {
+        "kind": "kredit",
+        "invalid_base": true,
+        "invalid_buff": false,
+        "mode": "valid",
+        "result": 98,
+        "expected": 98,
+        "calls": [
+          "supplied-hash",
+          "supplied-security-cookie"
+        ]
+      },
+      {
+        "kind": "kredit",
+        "invalid_base": true,
+        "invalid_buff": false,
+        "mode": "hash-mismatch-null-reporter",
+        "result": 98,
+        "expected": 98,
+        "calls": [
+          "supplied-hash",
+          "supplied-security-cookie"
+        ]
+      },
+      {
+        "kind": "kredit",
+        "invalid_base": true,
+        "invalid_buff": false,
+        "mode": "already-reported",
+        "result": 98,
+        "expected": 98,
+        "calls": [
+          "supplied-hash",
+          "supplied-security-cookie"
+        ]
+      },
+      {
+        "kind": "kredit",
+        "invalid_base": true,
+        "invalid_buff": true,
+        "mode": "valid",
+        "result": 99,
+        "expected": 99,
+        "calls": [
+          "supplied-security-cookie"
+        ]
+      },
+      {
+        "kind": "kredit",
+        "invalid_base": true,
+        "invalid_buff": true,
+        "mode": "hash-mismatch-null-reporter",
+        "result": 99,
+        "expected": 99,
+        "calls": [
+          "supplied-security-cookie"
+        ]
+      },
+      {
+        "kind": "kredit",
+        "invalid_base": true,
+        "invalid_buff": true,
+        "mode": "already-reported",
+        "result": 99,
+        "expected": 99,
+        "calls": [
+          "supplied-security-cookie"
+        ]
+      }
+    ],
+    "boundary_profiles": [
+      {
+        "kind": "attack",
+        "a": 2147483647,
+        "b": 1,
+        "result": 0,
+        "expected": 0,
+        "calls": [
+          "supplied-hash",
+          "supplied-security-cookie",
+          "supplied-hash",
+          "supplied-security-cookie"
+        ]
+      },
+      {
+        "kind": "attack",
+        "a": 2147483647,
+        "b": -1,
+        "result": 99,
+        "expected": 99,
+        "calls": [
+          "supplied-hash",
+          "supplied-security-cookie",
+          "supplied-hash",
+          "supplied-security-cookie"
+        ]
+      },
+      {
+        "kind": "attack",
+        "a": -2147483648,
+        "b": 1,
+        "result": 0,
+        "expected": 0,
+        "calls": [
+          "supplied-hash",
+          "supplied-security-cookie",
+          "supplied-hash",
+          "supplied-security-cookie"
+        ]
+      },
+      {
+        "kind": "attack",
+        "a": -2147483648,
+        "b": -1,
+        "result": 99,
+        "expected": 99,
+        "calls": [
+          "supplied-hash",
+          "supplied-security-cookie",
+          "supplied-hash",
+          "supplied-security-cookie"
+        ]
+      },
+      {
+        "kind": "kredit",
+        "a": 2147483647,
+        "b": 1,
+        "result": 0,
+        "expected": 0,
+        "calls": [
+          "supplied-hash",
+          "supplied-hash",
+          "supplied-security-cookie"
+        ]
+      },
+      {
+        "kind": "kredit",
+        "a": 2147483647,
+        "b": -1,
+        "result": 99,
+        "expected": 99,
+        "calls": [
+          "supplied-hash",
+          "supplied-hash",
+          "supplied-security-cookie"
+        ]
+      },
+      {
+        "kind": "kredit",
+        "a": -2147483648,
+        "b": 1,
+        "result": 0,
+        "expected": 0,
+        "calls": [
+          "supplied-hash",
+          "supplied-hash",
+          "supplied-security-cookie"
+        ]
+      },
+      {
+        "kind": "kredit",
+        "a": -2147483648,
+        "b": -1,
+        "result": 99,
+        "expected": 99,
+        "calls": [
+          "supplied-hash",
+          "supplied-hash",
+          "supplied-security-cookie"
+        ]
+      }
+    ]
+  },
+  "worker_index": [
+    {
+      "name": "getTotalAttack",
+      "segment_count": 3,
+      "bytes": 280,
+      "cmovs_rvas": [
+        "0x4b13902"
+      ],
+      "cmovg_rvas": [
+        "0x4b13907"
+      ],
+      "idiv_rvas": [
+        "0x4b13873"
+      ]
+    },
+    {
+      "name": "getTotalKreditCost",
+      "segment_count": 3,
+      "bytes": 474,
+      "cmovs_rvas": [
+        "0x4b13b51"
+      ],
+      "cmovg_rvas": [
+        "0x4b13b5b"
+      ],
+      "idiv_rvas": [
+        "0x4b139ff",
+        "0x4b13ace"
+      ]
+    },
+    {
+      "name": "getAndDecryptAttack",
+      "segment_count": 3,
+      "bytes": 247,
+      "cmovs_rvas": [],
+      "cmovg_rvas": [],
+      "idiv_rvas": [
+        "0x4b122f1"
+      ]
+    }
+  ],
+  "worker_job": "20261028-162627-rule515-stat-clamps-f6553594",
+  "evidence": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule515-totals.py",
+      "bytes": 641,
+      "sha256": "45b44e511c58805fca2b9ca7631b876c9f5bf94d469d67617a533bdaa36c1b39"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule515-total-stat-chain-groups-20261028.json",
+      "bytes": 47914,
+      "sha256": "d4108a68a4d1c8fac9fa3e078a9debc27745b03b4c96cdb77de40e1cd0647aa2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule515-totals.py",
+      "bytes": 5168,
+      "sha256": "39415d2d63af54414c72d314cb1c32eff9abed08cde2861d42c8ef1e072c3ec3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule515-total-verification-20261028.json",
+      "bytes": 183768,
+      "sha256": "e8959dd7d182d107851a51051b8ed4f5f033da7fd92e69ff5959a816411b1668"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule515-worker\\input.json",
+      "bytes": 25120,
+      "sha256": "053a319b38e75d3703b1e01da4524c1d82db0cef3cf83c39a115be3199b54fc7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule515-worker\\task.txt",
+      "bytes": 348,
+      "sha256": "e1c31493b7f157b0ba7a2abd69a00c6be2ef1e6e06ce752a9e375bd9e731ba99"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule515-worker\\output.json",
+      "bytes": 666,
+      "sha256": "1590975698b33fd8b4e30450b5d4e452f9b498ddaa49673aae408c0eeee1c05f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\CardInstance.cs",
+      "bytes": 78893,
+      "sha256": "39a103eb5edaf8a09f538c387225e00b3fb2e38122df655342c53b7056deaa6a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs",
+      "bytes": 402458,
+      "sha256": "97e5d5efac6a97b575c4f74267ea13d898178fb250edcaf9fe0e756e9db67c9f"
+    }
+  ],
+  "remaining": [
+    "正常PvP对象初始化/加密材料与无效组哨兵分支的可达关系，非空报告服务链。",
+    "BaseCardObject其他多片段规则目标，特别是关键词/GameplayEffect/临时值查询与状态更新器。",
+    "更新器/来源账本/临时到期和全卡池逻辑尚未全面认证。"
+  ],
+  "game_writes": 0,
+  "real_game_function_calls": 0,
+  "fully_certified_cards": 0
+}
