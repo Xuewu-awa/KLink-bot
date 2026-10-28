@@ -319,8 +319,18 @@ public sealed class CardInstance
     public bool HasGuard => Keywords.Contains(Keyword.Guard)
         || (ReceivedAbilitiesFromCards.TryGetValue("guard", out var sources) && sources.Count > 0);
     public bool HasKeyword(string keyword) => keyword switch {
-        Keyword.Fury => HasFury, Keyword.Blitz => HasBlitz, Keyword.Smokescreen => HasSmokescreen, Keyword.Guard => HasGuard, _ => Keywords.Contains(keyword),
+        Keyword.Fury => HasFury, Keyword.Blitz => HasBlitz, Keyword.Smokescreen => HasSmokescreen, Keyword.Guard => HasGuard,
+        Keyword.Alpine => HasSourcedKeyword(keyword, "alpine"),
+        Keyword.Ambush => HasSourcedKeyword(keyword, "ambush"),
+        Keyword.Shock => HasSourcedKeyword(keyword, "shock"),
+        Keyword.Immune => HasSourcedKeyword(keyword, "immune"),
+        _ => Keywords.Contains(keyword),
     };
+    // Native getters use source-array presence, independent of the raw flag.
+    private bool HasSourcedKeyword(string keyword, string ability)
+        => Keywords.Contains(keyword)
+            || (ReceivedAbilitiesFromCards.TryGetValue(ability, out var sources) && sources.Count > 0);
+
     public int MaxAttacksThisTurn => HasFury ? 2 : 1;
 
     /// <summary>

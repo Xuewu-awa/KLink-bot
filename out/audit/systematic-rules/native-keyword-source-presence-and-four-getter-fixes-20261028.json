@@ -1,0 +1,180 @@
+{
+  "rule_id": "RULE-516",
+  "date": "2026-10-28",
+  "status": "已修复山地/伏击/冲击/免疫仅来源记录时的getter漏判；授予/移除/压制更新链仍待完整核对",
+  "findings": [
+    "当前八个getHasAlpine/Ambush/Blitz/Fury/Guard/Immune/Shock/Smokescreen原生getter重新按CHAININFO采集，各5片段310B，共40片段2480B。标志偏移和来源键分别从实际指令及ASCII字面量恢复，字符串内存与磁盘一致；不是按中文卡牌描述推断。",
+    "八个getter均先检查自己的原始bool，为真立即输出true；否则查receivedAbilitiesFromCards(+0x208)对应键，缺键false，存在则读取来源数组Num(+0x18)是否>0。此处没有将来源ID相加或要求正ID，也不直接读取isSuppressed(+0x33a)。这只是getter合同，不证明压制操作不会改变原始flag或来源数组。",
+    "320组离线实际原生执行覆盖8关键词、raw真假、map有无、空/[0]/[-7]/[11,12]/[1,-1]来源及独立压制标志真假；结果符合raw OR nonempty sources，raw真不调用字符串/Map服务，卡对象字节不变。FString构造/哈希/Map查找/释放供给，未认证原生TMap生命周期、真实压制或非法ID状态可达性。",
+    "发现产品CardInstance.HasKeyword只有Fury/Blitz/Smokescreen/Guard读取ReceivedAbilitiesFromCards，另四个只看Keywords。因而raw=false且对应数组非空时，原生true而适配器false。当前修复新增alpine/ambush/shock/immune四个精确来源键分支，通过HasSourcedKeyword执行同一raw或count>0合同，API绑定随之读到正确结果。",
+    "新增NativeKeywordSourcePresence回归同时核查模型getter与InvokeByName的8个原生API，在两侧共640状态组合；包括无关来源键、零/负/抵消ID及独立压制flag，不把读取变成压制更新操作。修复前新增用例在Left/getHasAlpine/raw=false/map=true/sources=[0]复现，完整自测仅该用例失败（1/930）；修复后全部930项通过。",
+    "最终换行清理后重新build成功，0警告/0错误。全量自测仅作为兼容性回归，本轮规则权威来自当前原生代码/内存，不把旧回放或已有测试断言视作权威。旧929/929已不作为本轮结果，当前明确为930/930。",
+    "DeepSeek机械合并键/标志偏移/片段字节目录，主agent独立逐字段复核。修复范围是getter映射；来源授予/撤回、legacy alpineGivers私有JSON与receivedAbilities模型对齐、其他直接读Keywords的消费者仍需继续审计，不能称四类关键词所有机制已完整还原。",
+    "完整认证卡数仍0；本轮无游戏进程写入/注入/真实函数调用，离线原生与本地C#回归执行分别记录。"
+  ],
+  "fixed_source_keys": [
+    "alpine",
+    "ambush",
+    "shock",
+    "immune"
+  ],
+  "native_index": [
+    {
+      "name": "getHasAlpine",
+      "key": "alpine",
+      "raw_flag_offset": 486,
+      "segment_count": 5,
+      "bytes": 310
+    },
+    {
+      "name": "getHasAmbush",
+      "key": "ambush",
+      "raw_flag_offset": 475,
+      "segment_count": 5,
+      "bytes": 310
+    },
+    {
+      "name": "getHasBlitz",
+      "key": "blitz",
+      "raw_flag_offset": 474,
+      "segment_count": 5,
+      "bytes": 310
+    },
+    {
+      "name": "getHasFury",
+      "key": "fury",
+      "raw_flag_offset": 487,
+      "segment_count": 5,
+      "bytes": 310
+    },
+    {
+      "name": "getHasGuard",
+      "key": "guard",
+      "raw_flag_offset": 488,
+      "segment_count": 5,
+      "bytes": 310
+    },
+    {
+      "name": "getHasImmune",
+      "key": "immune",
+      "raw_flag_offset": 649,
+      "segment_count": 5,
+      "bytes": 310
+    },
+    {
+      "name": "getHasShock",
+      "key": "shock",
+      "raw_flag_offset": 489,
+      "segment_count": 5,
+      "bytes": 310
+    },
+    {
+      "name": "getHasSmokescreen",
+      "key": "smokescreen",
+      "raw_flag_offset": 484,
+      "segment_count": 5,
+      "bytes": 310
+    }
+  ],
+  "verification": {
+    "native_cases": 320,
+    "native_case_sha256": "162e44d8b29f40c36322cd702b23339dfee9fe46211e6690f5c40768b0b52cdd",
+    "native_scope": "Offline Unicorn of eight310B chained native getters. Actual raw-flag short circuit, map presence branch, array count>0 and output. FString construction/hash/map lookup/free supplied with verified literal keys; no native TMap/FString lifecycle or granting/suppression mutation semantics. Suppression flag0x33a varied independently as a direct-getter branch fixture, not proof such combined game states are reachable.",
+    "csharp_regression_state_profiles": 640,
+    "before_selftest": {
+      "total": 930,
+      "failed": 1,
+      "first_failure": "Left getHasAlpine: raw=False map=True sources=[0] suppressed=False, expected=True, actual=False"
+    },
+    "after_selftest": {
+      "total": 930,
+      "failed": 0
+    },
+    "final_build": {
+      "success": true,
+      "warnings": 0,
+      "errors": 0
+    }
+  },
+  "worker_job": "20261028-163635-rule516-keyword-source-index-6a0d74a4",
+  "evidence": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule516-keywords.py",
+      "bytes": 845,
+      "sha256": "800e81a621569df56809ff9b5d9eb510410e241860fa4c3273797051872adffb"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule516-keyword-chain-groups-20261028.json",
+      "bytes": 133775,
+      "sha256": "80e7ec094f88a67fb87d7f8212b8a8f876561c13f6dcbdcc1d0595b513dd7adb"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule516-key-metadata.py",
+      "bytes": 1845,
+      "sha256": "91f5cf4846bb602f3686f0f56242398a6319169388091d7329b1100838a57234"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule516-keyword-metadata-20261028.json",
+      "bytes": 1541,
+      "sha256": "f7cf5ad318d32d04a83848d1df660fb5e4bf3db396d2089aa648f48ff6634c73"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule516-keywords.py",
+      "bytes": 4201,
+      "sha256": "a7c9a01bd6aea5b4b480d0a270fd7402a2bf41e7758d42227773c1836d958767"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule516-keyword-verification-20261028.json",
+      "bytes": 108317,
+      "sha256": "55de4acaf7ed1e27faa7b03ce9da18e8028ecee06f11ed4c7a8570037fa587ad"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule516-worker\\input.json",
+      "bytes": 70842,
+      "sha256": "fe67489fd025c9c37597eb0bbcc500c9df8232dfc9ebe085d38472109b17e902"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule516-worker\\task.txt",
+      "bytes": 338,
+      "sha256": "96b7f63e6313b04dffd0808979f8adf9a2a8a4dcc7964104aa0bd629ce7235aa"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule516-worker\\output.json",
+      "bytes": 1075,
+      "sha256": "af46df5488209ba5db3528fbd25dff9e8bf2b09cfd65916a561fe644f9de681e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\selftest-rule516-before-20261028.txt",
+      "bytes": 81111,
+      "sha256": "651a9509dc676faaf8336527687d49d72f205cbf37b0945927f0f304c329304d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\selftest-rule516-after-20261028.txt",
+      "bytes": 81012,
+      "sha256": "a589ff20bff51b54eb8fb4d4eac44b6caa9b61c31759829582c43d857b4153ed"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\build-rule516-final-20261028.txt",
+      "bytes": 257,
+      "sha256": "8dcd17edceab1b9f6dfab22a9cd9f8ba669921d824771f90709a3d3aa5c83db9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\CardInstance.cs",
+      "bytes": 79443,
+      "sha256": "fd697726ba8caae2079183860a832b33d491726a2f4a0403c62812ffe213ac37"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "bytes": 3022405,
+      "sha256": "1f4974002c1a05e7911d122fd9f5a83b1b93e682dc57f99dc37f1ea2deacadac"
+    }
+  ],
+  "remaining": [
+    "四类关键词的授予/撤回/压制更新与来源数组、旧JSON存储之间的对齐。",
+    "其他直接读Keywords的规则消费者及原生TMap/FString生命周期。",
+    "GameplayTag泛型查询、其余BaseCardObject多片段规则和全卡池语义认证。"
+  ],
+  "game_writes": 0,
+  "real_game_function_calls": 0,
+  "fully_certified_cards": 0
+}

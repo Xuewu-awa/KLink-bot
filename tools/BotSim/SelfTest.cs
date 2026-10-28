@@ -22,6 +22,7 @@ internal static class SelfTest
     {
         new("卡库只包含当前 pak 的 2019 张卡资产，不包含 UI 辅助蓝图", CardPoolContainsOnlyLiveBattleCards),
         new("当前 CDO 的固有能力、情报、抑制例外与目标额外费用在建卡时加载", LiveNativeDefaults),
+        new("原生关键词读取保留基础标志或非空来源数组，不按来源值求和", NativeKeywordSourcePresence),
         new("创建回调在全局入表之后，重入创建保留入表顺序", CardConstructionPublicationOrder),
         new("原生在场谓词：全部字节位置、HQ/单位、抑制及非正防御与派发绑定", NativeBoardLocationPredicate),
         new("GetAllCards 与同位置编号重排保持 AllCardsInBattle 入表顺序", BattleMapAndLocationOrder),
@@ -1397,6 +1398,42 @@ internal static class SelfTest
         new("★ Intel：`SetCardsSeenByCipher` 只翻**对手**手牌里 min(n, 未见面数) 张，并消耗一次洗牌",
             SetCardsSeenByCipherRevealsOpponentUnseen),
     };
+
+    private static string? NativeKeywordSourcePresence(CardDatabase db)
+    {
+        var getters = new[] {
+            (Keyword.Alpine, "alpine", "getHasAlpine"), (Keyword.Ambush, "ambush", "getHasAmbush"),
+            (Keyword.Blitz, "blitz", "getHasBlitz"), (Keyword.Fury, "fury", "getHasFury"),
+            (Keyword.Guard, "guard", "getHasGuard"), (Keyword.Immune, "immune", "getHasImmune"),
+            (Keyword.Shock, "shock", "getHasShock"), (Keyword.Smokescreen, "smokescreen", "getHasSmokescreen"),
+        };
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var card = MakeActionQuotaProbe(state, side, "infantry");
+            var ctx = new EffectContext { Engine = engine, State = state, Self = card, Controller = side };
+            foreach (var (keyword, sourceKey, getter) in getters)
+            foreach (bool raw in new[] { false, true })
+            foreach (bool present in new[] { false, true })
+            foreach (int[] sources in new[] { Array.Empty<int>(), new[] { 0 }, new[] { -7 }, new[] { 11, 12 }, new[] { 1, -1 } })
+            foreach (bool suppressed in new[] { false, true })
+            {
+                card.Keywords.Clear(); card.ReceivedAbilitiesFromCards.Clear();
+                if (raw) card.Keywords.Add(keyword);
+                if (suppressed) card.Keywords.Add(Keyword.Suppressed);
+                card.ReceivedAbilitiesFromCards["unrelated-source"] = new List<int> { 99 };
+                if (present) card.ReceivedAbilitiesFromCards[sourceKey] = sources.ToList();
+                bool expected = raw || present && sources.Length > 0;
+                object? actual = engine.Api.InvokeByName(getter, card, Array.Empty<object?>(), ctx, out bool handled);
+                if (card.HasKeyword(keyword) != expected || !handled || actual is not bool answer || answer != expected)
+                    return $"{side} {getter}: raw={raw} map={present} sources=[{string.Join(",", sources)}] suppressed={suppressed}, expected={expected}, actual={actual}";
+                if (card.Keywords.Contains(keyword) != raw || card.IsSuppressed != suppressed
+                    || card.ReceivedAbilitiesFromCards.ContainsKey(sourceKey) != present)
+                    return $"{getter} changed its source state";
+            }
+        }
+        return null;
+    }
 
     public static int Run(CardDatabase db)
     {
