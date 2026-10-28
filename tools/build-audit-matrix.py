@@ -344,7 +344,7 @@ def write_outputs(result, output):
         'python tools/test-audit-matrix.py', '```', '',
         '更新 `klink bot/docs/audit-matrix-reviews.json` 维护局部证据、当前待办及有证据的PvP范围判定。',
         '绑定报告或源码改变、未检查EXE或EXE不匹配时，局部证据显示失效/未检查；不自动继承绿色状态。',
-        '当前三条ChangeAttack局部单元只是首批人工关联；其他旧审计成果为待整理，不表示全部重做。',
+        f"当前{len(result['partial_evidence'])}条局部单元已人工关联；其他旧审计成果为待整理，不表示全部重做。",
         '完整单卡认证需要另行完成：当前版本资产、PvP范围、全部自定义/继承/原生路径、分支及联动验证。',
         '第一版不允许以手填百分比或局部共享测试自动认证整卡；完整认证准入尚待独立闭合。', '']
     (output / 'README.md').write_bytes(('\n'.join(lines)).encode('utf8'))

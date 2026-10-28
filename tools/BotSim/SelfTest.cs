@@ -1115,6 +1115,8 @@ internal static class SelfTest
         new("RULE-525：有效攻击对象不按区域拒绝，零请求与零可见变化分开", OrdinaryAttackZoneAndZero),
         new("RULE-526：绝对攻击设置接受所有有效区域，原始相等仍先更新账本", AbsoluteAttackZones),
         new("RULE-527：撤销攻击只清指定临时键，零键/空来源及整数边界", RemoveAttackSourceMatrix),
+        new("RULE-528：攻击6/7/8只操作独立attack_记录，含零和整数边界", AttackCustomDetailModes),
+        new("RULE-528：攻击9至255不改数值、账本、来源关系或通知", AttackDefaultByteModes),
         new("山地：新部署的 Alpine 单位得到 +N/+N（手牌打出 + 效果生成两条路），且一次部署只加一次",
             AlpineBonusOnEntry),
 
@@ -40851,6 +40853,101 @@ internal static class SelfTest
                 if (saved[hook] is { } prior) programs[hook] = prior; else programs.Remove(hook);
             }
         }
+    }
+
+    private static string? AttackCustomDetailModes(CardDatabase db)
+    {
+        using var probes = InstallAttackChangeProbes();
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (int mode in new[] { 6, 7, 8 })
+        foreach (int location in Enumerable.Range(0, 10))
+        foreach (int? initial in new int?[] { null, 0, -3, 4, int.MaxValue, int.MinValue })
+        foreach (int amount in new[] { -4, 0, 3, int.MaxValue, int.MinValue })
+        foreach (bool other in new[] { false, true })
+        foreach (int sourceId in new[] { 9, 99 })
+        foreach (bool skip in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId(PlainUnit, side, 9, CardLocation.Discard, 0);
+            var target = state.CreateWithId("card_unit_arado_ar_196", side, 60, (CardLocation)location, 0);
+            var watcher = state.CreateWithId("card_unit_arado_ar_196", side, 70, CardLocation.Discard, 0);
+            foreach (var card in new[] { target, watcher }) { card.Definition = new CardDefinition { Name = card.Name, Type = "fighter", UsedTriggers = new[] { "OnAfterOtherCardChangeAttack" } }; card.Keywords.Clear(); }
+            target.BaseAttack = 5; target.TemporaryAttack = 3; target.MaxAttack = 123;
+            target.BuffsBySource[(sourceId, false)] = new CardBuff { SourceCardId = sourceId, AttackEmptyDetail = initial, Attack = other ? 3 : 0, Defense = other ? 2 : 0 };
+            target.BuffsBySource[(30, false)] = new CardBuff { SourceCardId = 30, AttackEmptyDetail = 7 };
+            source.CardsBuffedByThisCard.AddRange(new[] { 60, 60, 99 });
+            int sum = unchecked((initial ?? 0) + amount);
+            int? expected = mode == 6 ? 0 : mode == 7 || sum == 0 ? null : sum;
+            bool relation = expected.HasValue || other;
+            var trace = new List<string>(); engine.Api.TriggerTrace = trace;
+            // Exercise both the native dispatcher and public typed entry.
+            bool viaDispatch = ((mode + location + (initial ?? 0)) & 1) == 0;
+            if (viaDispatch)
+                engine.Api.InvokeByName("ChangeAttack", null, new object?[] { target, sourceId, amount, mode, skip, null },
+                    new EffectContext { Engine = engine, State = state, Self = source, Controller = side }, out _);
+            else engine.Api.ChangeAttack(target, amount, source, changeType: mode, skipAction: skip, instigatorId: sourceId);
+            target.BuffsBySource.TryGetValue((sourceId, false), out var buff);
+            var snapshot = target.Snapshot(); string key = $"{sourceId}/False";
+            if (target.BaseAttack != 5 || target.TemporaryAttack != 3 || target.MaxAttack != 123
+                || state.ActionLog.Count != 0 || trace.Count != 0
+                || target.BuffsBySource.Count != (relation ? 2 : 1)
+                || (buff is not null) != relation || buff?.AttackEmptyDetail != expected
+                || (other && (buff?.Attack != 3 || buff?.Defense != 2))
+                || target.BuffsBySource[(30, false)].AttackEmptyDetail != 7
+                || (sourceId == 9 && !source.CardsBuffedByThisCard.SequenceEqual(relation ? new[] { 60, 60, 99 } : new[] { 99 }))
+                || (sourceId == 99 && !source.CardsBuffedByThisCard.SequenceEqual(new[] { 60, 60, 99 }))
+                || snapshot.AttackEmptyDetailsBySource.ContainsKey(key) != expected.HasValue
+                || (expected.HasValue && snapshot.AttackEmptyDetailsBySource[key] != expected.Value)
+                || (buff is not null && buff.Clone().AttackEmptyDetail != expected))
+                return $"攻击自定义明细错误：{side}/{mode}/{location}/{initial}/{amount}/{other}/{sourceId}/{skip}, actual={target.BaseAttack}/{target.TemporaryAttack}/{buff?.AttackEmptyDetail}";
+        }
+        foreach (int mode in Enumerable.Range(0, 6))
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId(PlainUnit, Side.Left, 9, CardLocation.Discard, 0);
+            var target = state.CreateWithId(PlainUnit, Side.Left, 60, CardLocation.BoardHqLeft, 0);
+            target.Keywords.Clear(); target.BaseAttack = 5; target.TemporaryAttack = 3;
+            target.BuffsBySource[(9, false)] = new CardBuff { SourceCardId = 9, AttackEmptyDetail = 0 };
+            target.BuffsBySource[(9, true)] = new CardBuff { SourceCardId = 9, Temporary = true, Attack = 2 };
+            target.BuffsBySource[(30, false)] = new CardBuff { SourceCardId = 30, AttackEmptyDetail = 4 };
+            engine.Api.InvokeByName("ChangeAttack", null, new object?[] { target, 9, 1, mode, false, null },
+                new EffectContext { Engine = engine, State = state, Self = source, Controller = Side.Left }, out _);
+            if (!target.BuffsBySource.TryGetValue((9, false), out var own) || own.AttackEmptyDetail != 0
+                || target.BuffsBySource[(30, false)].AttackEmptyDetail != 4)
+                return $"旧攻击模式不得误清独立attack_键：{mode}";
+        }
+        var zero = new CardBuff { SourceCardId = 9, AttackEmptyDetail = 0 };
+        if (zero.IsEmpty || zero.Clone().IsEmpty) return "attack_显式零键必须保留来源关系及克隆";
+        return null;
+    }
+
+    private static string? AttackDefaultByteModes(CardDatabase db)
+    {
+        using var probes = InstallAttackChangeProbes();
+        foreach (int mode in Enumerable.Range(9, 247))
+        foreach (int location in new[] { 0, 5, 8 })
+        foreach (int sourceId in new[] { 9, 99 })
+        foreach (bool populated in new[] { false, true })
+        foreach (int amount in new[] { 0, 4 })
+        foreach (bool skip in new[] { false, true })
+        foreach (bool viaDispatch in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId(PlainUnit, Side.Left, 9, CardLocation.Discard, 0);
+            var target = state.CreateWithId("card_unit_arado_ar_196", Side.Left, 60, (CardLocation)location, 0);
+            target.Keywords.Clear(); target.BaseAttack = 5; target.TemporaryAttack = 3; target.MaxAttack = 123;
+            target.BuffsBySource[(sourceId, false)] = new CardBuff { SourceCardId = sourceId, AttackEmptyDetail = populated ? 0 : null };
+            source.CardsBuffedByThisCard.AddRange(new[] { 60, 60, 99 });
+            string before = state.SnapshotJson(); var trace = new List<string>(); engine.Api.TriggerTrace = trace;
+            if (viaDispatch)
+                engine.Api.InvokeByName("ChangeAttack", null, new object?[] { target, sourceId, amount, mode, skip, null },
+                    new EffectContext { Engine = engine, State = state, Self = source, Controller = Side.Left }, out _);
+            else engine.Api.ChangeAttack(target, amount, source, changeType: mode, skipAction: skip, instigatorId: sourceId);
+            if (before != state.SnapshotJson() || trace.Count != 0 || state.ActionLog.Count != 0
+                || !target.BuffsBySource.ContainsKey((sourceId, false)))
+                return $"攻击默认字节模式必须不改数值/账本/通知：{mode}/{location}/{sourceId}/{populated}/{amount}/{skip}/{viaDispatch}";
+        }
+        return null;
     }
 
     private static string? NeighborSpawnCallbackReferences(CardDatabase db)

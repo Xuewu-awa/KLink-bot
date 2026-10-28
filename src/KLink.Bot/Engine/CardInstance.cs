@@ -1031,6 +1031,9 @@ public sealed class CardInstance
             AttackSetValuesBySource = BuffsBySource.Where(kv => kv.Value.AttackSetValue.HasValue)
                 .OrderBy(kv => kv.Key.SourceCardId).ThenBy(kv => kv.Key.Temporary)
                 .ToDictionary(kv => $"{kv.Key.SourceCardId}/{kv.Key.Temporary}", kv => kv.Value.AttackSetValue!.Value),
+            AttackEmptyDetailsBySource = BuffsBySource.Where(kv => kv.Value.AttackEmptyDetail.HasValue)
+                .OrderBy(kv => kv.Key.SourceCardId).ThenBy(kv => kv.Key.Temporary)
+                .ToDictionary(kv => $"{kv.Key.SourceCardId}/{kv.Key.Temporary}", kv => kv.Value.AttackEmptyDetail!.Value),
             DefenseZeroEntrySources = BuffsBySource.Where(kv => kv.Value.HasZeroDefenseEntry && kv.Value.Defense == 0)
                 .OrderBy(kv => kv.Key.SourceCardId).ThenBy(kv => kv.Key.Temporary)
                 .Select(kv => $"{kv.Key.SourceCardId}/{kv.Key.Temporary}").ToArray(),
@@ -1141,6 +1144,8 @@ public sealed class CardBuff
     // RULE-330: native attack_SetValue is an independent key. Null means
     // absent; zero is a present entry and must retain the source relation.
     public int? AttackSetValue { get; set; }
+    // RULE-528: independent attack_ key; null is absent and zero is present.
+    public int? AttackEmptyDetail { get; set; }
     // Unqualified native BuffMap key "Suppress". Presence only: independent of
     // Keyword.Suppressed and not a certification of its frame-derived payload.
     public bool HasSuppressLedgerEntry { get; set; }
@@ -1222,7 +1227,7 @@ public sealed class CardBuff
     /// </summary>
     public bool Temporary { get; set; }
 
-    public bool IsEmpty => Attack == 0 && !AttackSetValue.HasValue && !HasSuppressLedgerEntry && Defense == 0 && !DefenseSetValue.HasValue && !DefenseEmptyDetail.HasValue && !HasNonOrdinaryDefenseEntry && KreditCost == 0
+    public bool IsEmpty => Attack == 0 && !AttackSetValue.HasValue && !AttackEmptyDetail.HasValue && !HasSuppressLedgerEntry && Defense == 0 && !DefenseSetValue.HasValue && !DefenseEmptyDetail.HasValue && !HasNonOrdinaryDefenseEntry && KreditCost == 0
                            && OperationCost == 0 && HeavyArmor == 0 && TemporaryHeavyArmorGive == 0 && !HeavyArmorSetValue.HasValue && !HeavyArmorEmptyDetail.HasValue && Fury == 0 && Blitz == 0 && Smokescreen == 0 && Guard == 0 && Alpine == 0 && Destruction == 0 && Pinned == 0
                            && CustomAbilityDetails.Count == 0 && !KreditCostSetsAbsoluteValue
                            && !OperationCostSetsAbsoluteValue && !OperationCostSetValue.HasValue && !KreditCostSetValue.HasValue && !KreditCostEmptyDetail.HasValue && !HasZeroKreditCostEntry && !HasZeroAttackEntry && !HasZeroOperationCostEntry && !HasZeroDefenseEntry;
@@ -1237,6 +1242,7 @@ public sealed class CardBuff
         SourceCardId = SourceCardId,
         Attack = Attack,
         AttackSetValue = AttackSetValue,
+        AttackEmptyDetail = AttackEmptyDetail,
         HasZeroAttackEntry = HasZeroAttackEntry,
         HasSuppressLedgerEntry = HasSuppressLedgerEntry,
         Defense = Defense,
@@ -1316,6 +1322,7 @@ public sealed record CardSnapshot(
     public bool IntrinsicSmokescreen { get; init; }
     public string[] SuppressLedgerSources { get; init; } = [];
     public Dictionary<string, int> AttackSetValuesBySource { get; init; } = new(StringComparer.Ordinal);
+    public Dictionary<string, int> AttackEmptyDetailsBySource { get; init; } = new(StringComparer.Ordinal);
     public Dictionary<string, int> DefenseSetValuesBySource { get; init; } = new(StringComparer.Ordinal);
     public Dictionary<string, int> KreditCostSetValuesBySource { get; init; } = new(StringComparer.Ordinal);
     public Dictionary<string, int> KreditCostEmptyDetailsBySource { get; init; } = new(StringComparer.Ordinal);

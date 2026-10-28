@@ -2631,6 +2631,14 @@ public sealed partial class CardApi
     public void ChangeAttack(CardInstance target, int delta, CardInstance? source, int duration = -1,
                              bool temporary = false, int changeType = 1, bool skipAction = false, int? instigatorId = null)
     {
+        // RULE-528: custom modes update only attack_; remaining UByte modes
+        // never enter a numerical attack branch in a fresh ordinary frame.
+        if (changeType is 6 or 7 or 8)
+        {
+            RecordAttackEmptyDetail(target, instigatorId ?? source?.CardId ?? target.CardId, changeType, delta);
+            return;
+        }
+        if (changeType is >= 9 and <= byte.MaxValue) return;
         // Explicit native absolute modes also accept zero as a requested value.
         if (changeType is 2 or 3 or 5)
         {
@@ -2867,6 +2875,24 @@ public sealed partial class CardApi
             TriggerTrace?.Add($"{other} → {observer.Name}#{observer.CardId}（eventCard={target.Name}#{target.CardId}）");
             RunTriggerProgram(library, observer, observer.Name, other, target, eventArgs: args, namedArgs: named);
         }
+    }
+
+    // Main supplies an empty customDetail, producing an independent attack_
+    // key. Zero requests still clean keys and synchronize source relations.
+    private void RecordAttackEmptyDetail(CardInstance target, int sourceId, int changeType, int amount)
+    {
+        if (sourceId <= 0 || !CanCardBeBuffed(target)) return;
+        PruneEmptySourceBuffSlots(target, sourceId);
+        var buff = GetOrCreateBuff(target, sourceId);
+        if (changeType == 6) buff.AttackEmptyDetail = 0;
+        else if (changeType == 7) buff.AttackEmptyDetail = null;
+        else
+        {
+            int sum = unchecked((buff.AttackEmptyDetail ?? 0) + amount);
+            buff.AttackEmptyDetail = sum == 0 ? null : sum;
+        }
+        if (buff.IsEmpty) RemoveBuffEntry(target, (sourceId, false));
+        else SynchronizeBuffTarget(target, sourceId);
     }
 
     // RULE-377: customAdd writes fresh-frame0, customRemove deletes defense_.

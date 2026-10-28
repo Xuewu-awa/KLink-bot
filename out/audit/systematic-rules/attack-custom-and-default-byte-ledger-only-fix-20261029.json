@@ -1,0 +1,60 @@
+{
+  "rule_id": "RULE-528",
+  "date": "2026-10-29",
+  "status": "已修复攻击6/7/8误改数值与9..255错误普通加攻；新独立attack_记录、克隆/快照及矩阵重新核验同步",
+  "authority": {
+    "pid": 24220,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "read_only": true,
+    "client_writes": 0,
+    "real_client_function_calls": 0,
+    "historical_replays_used_as_authority": false
+  },
+  "findings": [
+    "重新采集并完整重解码主函数2713B、通用账本6267B、after-helper694B和Notifier103B，0B声明排除。主函数只为0/1/2/3/4/5设置数值改变；809/840仅比较5，854其余模式弹栈后1990读取valueChanged。普通新调用帧控制valueChanged=false时，6..255无数值/通知/after，接受路径不改qqq。不同于防御的9特例，攻击主函数没有针对9的额外日志/false分支。",
+    "主函数493先对任意模式调用账本，customDetail为空；6在6195写attack_为新帧Temp_int_Variable_1受控0，7在5862..6170查找并删除attack_，8在3025..3528对同键作int32累加/零和删除。7的负旧量输出不会进入主函数mode4数值路径。9..255在账本591默认弹栈，不修改空来源、任何键或反向数组。",
+    "旧通用适配器把6..255送入普通ChangeAttack加法；在有效战场对象上错误改变原始基础攻击及来源Attack，且可能错误通知/after。6..8还漏记独立attack_键，零请求被旧普通早退吞掉。现公共入口在普通零/区域门之前分派6/7/8至独立账本helper，9..255直接不做状态变更；非字节兼容参数保持原路径。",
+    "新增CardBuff.AttackEmptyDetail可空整数字段，区分不存在与显式零，独立于普通Attack/临时攻击/SetValue。加入IsEmpty、Clone及CardSnapshot.AttackEmptyDetailsBySource，保证只剩零键的来源仍有关系，清本键后仅在整来源无任何键时删除。本键不参与当前数值攻击计算，原始/临时/maxAttack保持。",
+    "28800组完整主函数+账本组合核对6/7/8：10位置、五请求含INT_MIN/MAX、六初值含不存在/零/正负/边界、无关键保留、来源存在/缺失、skip、action-process及两种原qqq。另106704组覆盖9..255所有247字节，含有效战场、NotAvailable/Discard、空来源/零键/非空记录、来源缺失、两原输出与skip。总135504组通过；局部默认false/0、容器、标量和原生接口明确受控。",
+    "以旧捕获仅作定位线索，在当前PE找到唯一分配器前缀，完整982B/262指令pdata片段两次只读复读且与当前磁盘相符；规范化指令形状与定位线索一致。当前指令可见调用帧分配及清零调用序列，未据此认证传递memset、持久帧选择或完整调用ABI；模型默认值仍明确作为普通新帧边界。",
+    "新增C#14400组custom明细整合及23712组9..255整合，交替覆盖native派发与公共入口，验证账本、来源重复ID保留/删除、完整快照无变化、无通知/after、显式零与Clone/快照。另6组旧模式0..5验证自身和外来attack_键不被误清。基线在加入新表示而派发尚未修复时两新增项失败；修复后及补充6组交叉检查后945/945，构建0警告0错误。",
+    "DeepSeek22节点与主审当前AST逐项一致。RULE525/526/527四个函数的原始字节与当前新捕获逐项匹配，先前模型1920+96/2880/2880重新通过，全量C#仍通过；保留旧绑定与重新核验记录后更新矩阵源码指纹，并纳入CardInstance依赖，不静默重置失效状态。"
+  ],
+  "validation": {
+    "custom_ast_cases": 28800,
+    "default_ast_cases": 106704,
+    "total_ast_cases": 135504,
+    "new_csharp_custom_cases": 14400,
+    "new_csharp_default_cases": 23712,
+    "old_mode_independent_key_cases": 6,
+    "selftest_passed": 945,
+    "selftest_total": 945,
+    "build_warnings": 0,
+    "build_errors": 0,
+    "worker_exact_nodes": 22
+  },
+  "remaining": [
+    "qqq的原生出参/拒绝路径与托管void派发、默认目标绑定、非字节强转和完整执行帧ABI仍未闭合。局部模型以valueChanged=false、Temp_int_Variable_1=0为普通新帧条件，不认证任意持久帧或异常初始化。",
+    "通用自定义明细（非空customDetail）、原生容器全局顺序、实际通知接收体、对象生命周期、加密失败路径及回调重入仍为边界；覆盖6..255的数据路径不等于完整ChangeAttack认证。",
+    "相邻与共享生成的无效来源/控制方/默认位置、满位置、overrideCardID及分配通知等既有待办保留；PvP资格分母及其余旧报告映射仍待整理。"
+  ],
+  "fully_certified_cards": 0,
+  "evidence_sha256": {
+    "D:\\Codex Workshop\\kards-install-review\\capture-rule528-change-attack.py": "41322eadd26c11beaa03d88c6f3a3931c2c4256ad585c0112d4da58084181d48",
+    "D:\\Codex Workshop\\kards-install-review\\capture-rule528-attack-after.py": "d7d961237be570bc3173e94206dedf5062883d525ea8c127203b24bdc7bf8220",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule528-change-attack-functions-20261029.json": "25822a9955f9a50497abc775db59231aea09a7de45c10a5a96fa7cad1f95dac0",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule528-attack-after-notify-functions-20261029.json": "d602c4f59f7f5eabe26cefefb83d137e0de0823197b6881206f633e68851e2a7",
+    "D:\\Codex Workshop\\kards-install-review\\verify-rule528-custom.py": "bad319be6f8a5eae47b8c984baae74d303db2e8d500bcc8ee06cc081e5ee7859",
+    "D:\\Codex Workshop\\kards-install-review\\rule528-custom-verification-20261029.json": "c8aee7d11293056b93b83987a1874a82f59c99eb8a30c3678c494908df32d6d5",
+    "D:\\Codex Workshop\\kards-install-review\\capture-rule528-frame.py": "ac8ac1a687cc72a22428af491f796dce7ce179eb945044e7f8382d879f768e11",
+    "D:\\Codex Workshop\\kards-install-review\\rule528-current-frame-allocation-20261029.json": "ce2c619648aae2fdc3e7356267d8e487220ad45db524a8b7e004dee56f95686c",
+    "D:\\Codex Workshop\\kards-install-review\\verify-rule528-evidence.py": "4b9c26ff7272afc51877e77fed3422c82594323bd20de308758812b93919bb7b",
+    "D:\\Codex Workshop\\kards-install-review\\rule528-worker-verification-20261029.json": "f2d09ba056e8bc8c09a43c98728b7e1165143c5b77217d3d860902a36a74495e",
+    "D:\\Codex Workshop\\kards-install-review\\rule528-worker\\input.json": "26d672166d38b4c6beee0b1ace28e8e45a1be4c2f46a5bca1b4c6926829423c2",
+    "D:\\Codex Workshop\\kards-install-review\\rule528-worker\\output.json": "3d65ba69aff77e8aab924ccf36912945e59661ff4d4a8bd8c3051f0050480df9",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-rule528-before-20261029.txt": "07c550b66f4b0fceada44ac8f148691b96aca2fd28504bdf9d21b2ad6647ace0",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-rule528-final-20261029.txt": "74ca157dfe21365742c17e51fe62c4562b57304daaf6cddf13245db6b42b655d",
+    "D:\\Codex Workshop\\kards-install-review\\build-rule528-final-20261029.txt": "c52df9322e6370ba5046a85bec7b7f22dd5300fefaae92ddf4fdb42267cc9a8d",
+    "D:\\Codex Workshop\\kards-install-review\\rule528-prior-units-revalidation-20261029.json": "e8ac8f9c9f0235ca1ab8e62c7efa18cde81fe65cb5ff248006bce716a839a091"
+  }
+}
