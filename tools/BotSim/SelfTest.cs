@@ -1105,6 +1105,8 @@ internal static class SelfTest
         // `changeType=1` 是加法 ⇒ 一次进场只能加一次（数值恰好等于 +N 就是这条断言）。
         new("RULE-519：山地加成读取有效来源并排除隐藏、死亡和敌方候选", AlpineBonusEffectiveSources),
         new("RULE-520：直接出牌在入场回调后检查有效山地且只加成一次", DirectEntryAlpineSources),
+        new("RULE-521：单卡生成传递闪击来源并登记账本", SingleSpawnBlitzSource),
+        new("RULE-521：单卡生成区分隐藏入场并先事件后闪击与山地", SingleSpawnEntryLifecycle),
         new("山地：新部署的 Alpine 单位得到 +N/+N（手牌打出 + 效果生成两条路），且一次部署只加一次",
             AlpineBonusOnEntry),
 
@@ -40512,6 +40514,156 @@ internal static class SelfTest
     /// 与效果生成（`SpawnOnBattlefield` ↔ `SpawnCardToBoard` si=872）。
     /// 「一次部署只加一次」由数值**恰好**等于 +N 保证（加法重复调会变 +2N）。
     /// </summary>
+    private static string? SingleSpawnBlitzSource(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (bool frontline in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId("card_unit_10_5_cm_lefh", side, 9, side.DeckOf(), 0);
+            var result = engine.Api.InvokeByName("SpawnCardOnBattlefield", null,
+                new object?[] { (int)side, frontline, "card_unit_typhoon_mk_ib", 9, null, true, -1, 0, false, false },
+                new EffectContext { Engine = engine, State = state, Self = source, Controller = side }, out bool handled);
+            if (!handled || result is not CardInstance made || made.Keywords.Contains(Keyword.Blitz)
+                || !made.HasBlitz || !made.ReceivedAbilitiesFromCards.GetValueOrDefault("blitz", new()).SequenceEqual(new[] { 9 })
+                || made.BuffsBySource.GetValueOrDefault((9, false))?.Blitz != 1
+                || !source.CardsBuffedByThisCard.Contains(made.CardId)) return "单卡生成闪击必须保存显式来源及独立账本，不能置raw";
+            var actions = state.ActionLog.SelectMany(a => a.SubActions).Where(a => a.Name == "ZActionGiveBlitz").ToArray();
+            if (actions.Length != 1 || actions[0].Values.Single(v => v.Name == "giverID").Value != 9)
+                return "单卡生成闪击必须经过正式通知";
+        }
+        return null;
+    }
+
+    private static string? SingleSpawnEntryLifecycle(CardDatabase db)
+    {
+        using var entry = InstallEntryMethodProbe();
+        using var abilities = InstallAbilitiesChangedProbes();
+        const string watcher = "card_event_honorifics", covert = "OnOtherCovertCardSpawned";
+        if (KismetLibrary.Default?.Find(watcher)?.Locals is not IDictionary<string, IReadOnlyList<KismetStep>> locals
+            || KismetLibrary.Default.FindProgram(watcher, covert) is not null) return "无法安全安装隐藏生成探针";
+        locals.Add(covert, new[] {
+            new KismetStep(0, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(),
+                new KismetExpr { Var = "cardSpawned", Scope = "local" }, null, -1, "_auditCovertSubject", null) { DestinationScope = "instance" },
+            new KismetStep(1, "call", "SpawnCardInDeckBySide", new[] {
+                new KismetExpr { Int = (int)Side.Right }, new KismetExpr { Str = "card_unit_routed_troops" },
+                new KismetExpr { Int = 30 }, new KismetExpr { Int = 1 }
+            }, Array.Empty<int>(), null, null, -1, null, null),
+            new KismetStep(2, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null) });
+        try
+        {
+            foreach (Side side in new[] { Side.Left, Side.Right })
+            foreach (bool frontlineWrapper in new[] { false, true })
+            foreach (bool giveBlitz in new[] { false, true })
+            foreach (int profile in Enumerable.Range(0, 4))
+            foreach (int sourceId in new[] { 9, 99 })
+            {
+                var (engine, state) = EmptyBoard(db); state.Turn = 8;
+                var source = state.CreateWithId("card_unit_10_5_cm_lefh", side, 9, side.DeckOf(), 0);
+                var peer = state.CreateWithId("card_unit_2nd_parachute", side, 20, side.HqOf(), 0);
+                peer.Keywords.Clear(); peer.Keywords.Add(Keyword.Alpine);
+                var observer = state.CreateWithId(watcher, side, 90, side.DeckOf(), 0);
+                observer.Definition = new CardDefinition { Name = watcher, UsedTriggers = new[] { covert, "OnOtherCardAbilitiesChanged" } };
+                observer.BlueprintVariables["_auditT29Count"] = 0;
+                CardInstance? spawned = null; var order = new List<string>(); int t29 = 0;
+                var created = state.CardCreated;
+                state.CardCreated = made => {
+                    created?.Invoke(made);
+                    if (made.Name == "card_unit_typhoon_mk_ib" && spawned is null)
+                    {
+                        spawned = made; made.Keywords.Clear(); made.Attack = 2; made.Defense = made.MaxDefense = 3;
+                        if (profile != 0) made.Keywords.Add(Keyword.Covert);
+                        made.IsRevealed = profile == 2;
+                    }
+                    else if (made.Name == "card_unit_routed_troops" && spawned is not null)
+                    {
+                        int now = Convert.ToInt32(observer.BlueprintVariables.GetValueOrDefault("_auditT29Count") ?? 0);
+                        if (now > t29)
+                        {
+                            t29 = now; order.Add("T29");
+                            if (now == 1) engine.Api.GiveAlpine(spawned, 9);
+                        }
+                        else if (ReferenceEquals(observer.BlueprintVariables.GetValueOrDefault("_auditCovertSubject"), spawned))
+                        {
+                            order.Add("covert");
+                            if (profile == 3) { spawned.IsRevealed = true; engine.Api.GiveAlpine(spawned, 9); }
+                        }
+                        else order.Add("entry");
+                    }
+                };
+                state.ActionLog.Clear();
+                object? result = engine.Api.InvokeByName(frontlineWrapper ? "SpawnCardInFrontline" : "SpawnCardOnBattlefield", null,
+                    frontlineWrapper
+                        ? new object?[] { "card_unit_typhoon_mk_ib", (int)side, sourceId, false, giveBlitz, null, false, -1, false }
+                        : new object?[] { (int)side, false, "card_unit_typhoon_mk_ib", sourceId, null, giveBlitz, -1, 0, false, false },
+                    new EffectContext { Engine = engine, State = state, Self = source, Controller = side }, out bool handled);
+                bool hiddenAtStart = profile is 1 or 3, acceptedBlitz = giveBlitz && profile != 1;
+                string[] expectedOrder = new[] { hiddenAtStart ? "covert" : "entry" }
+                    .Concat(acceptedBlitz ? new[] { "T29", "T29" } : Array.Empty<string>()).ToArray();
+                int bonus = profile == 3 || acceptedBlitz ? 1 : 0;
+                if (!handled || spawned is null || !ReferenceEquals(result, spawned) || !order.SequenceEqual(expectedOrder)
+                    || spawned.Attack != 2 + bonus || spawned.Defense != 3 + bonus || spawned.EnteredPlayOnTurn != 8
+                    || spawned.Keywords.Contains(Keyword.Blitz) || spawned.HasBlitz != acceptedBlitz)
+                    return $"生成阶段顺序/状态错误：{side}/{frontlineWrapper}/{giveBlitz}/{profile}/{sourceId}，events={string.Join(',', order)}";
+                bool registered = spawned.ReceivedAbilitiesFromCards.TryGetValue("blitz", out var sources);
+                if (registered != acceptedBlitz || (acceptedBlitz && !sources!.SequenceEqual(new[] { sourceId })))
+                    return "战场/前线包装必须向闪击原语传递同一显式来源";
+                if (!hiddenAtStart && Convert.ToInt32(spawned.BlueprintVariables.GetValueOrDefault("_auditEntryMethod") ?? -1) != 3)
+                    return "普通生成入场必须传Method3";
+                if (hiddenAtStart && spawned.BlueprintVariables.ContainsKey("_auditEntryMethod"))
+                    return "隐藏专用生成事件后即便揭示，也不能补跑普通入场";
+            }
+            // T65 uses saved receivers: later suppression, unregistration or
+            // a location change must not refilter an already captured receiver.
+            var secondLocals = (IDictionary<string, IReadOnlyList<KismetStep>>)KismetLibrary.Default!.Find("card_unit_51e_regiment")!.Locals;
+            var ownLocals = (IDictionary<string, IReadOnlyList<KismetStep>>)KismetLibrary.Default.Find("card_unit_typhoon_mk_ib")!.Locals;
+            if (secondLocals.ContainsKey(covert) || ownLocals.ContainsKey(covert)) return "隐藏快照探针目标已占用";
+            secondLocals.Add(covert, locals[covert]); ownLocals.Add(covert, locals[covert]);
+            try
+            {
+                foreach (Side side in new[] { Side.Left, Side.Right })
+                foreach (int mutation in Enumerable.Range(0, 4))
+                {
+                    var (engine, state) = EmptyBoard(db);
+                    var first = state.CreateWithId(watcher, side, 90, side.DeckOf(), 0);
+                    var second = state.CreateWithId("card_unit_51e_regiment", side, 91, side.DeckOf(), 1);
+                    first.Definition = new CardDefinition { Name = first.Name, UsedTriggers = new[] { covert } };
+                    second.Definition = new CardDefinition { Name = second.Name, UsedTriggers = new[] { covert } };
+                    CardInstance? spawned = null; var seen = new List<int>(); var created = state.CardCreated;
+                    state.CardCreated = made => {
+                        created?.Invoke(made);
+                        if (made.Name == "card_unit_typhoon_mk_ib" && spawned is null)
+                        {
+                            spawned = made;
+                            made.Definition = new CardDefinition { Name = made.Name, Type = "fighter", UsedTriggers = new[] { covert } };
+                            made.Keywords.Clear(); made.Keywords.Add(Keyword.Covert); made.IsRevealed = false;
+                        }
+                        else if (made.Name == "card_unit_routed_troops" && spawned is not null)
+                        {
+                            if (ReferenceEquals(second.BlueprintVariables.GetValueOrDefault("_auditCovertSubject"), spawned)
+                                && !seen.Contains(91)) seen.Add(91);
+                            else if (ReferenceEquals(first.BlueprintVariables.GetValueOrDefault("_auditCovertSubject"), spawned)
+                                && !seen.Contains(90))
+                            {
+                                seen.Add(90);
+                                if (mutation == 1) second.Keywords.Add(Keyword.Suppressed);
+                                if (mutation == 2) second.Definition = new CardDefinition { Name = second.Name };
+                                if (mutation == 3) second.Location = CardLocation.NotAvailable;
+                            }
+                        }
+                    };
+                    engine.Api.SpawnOnBattlefield(side, "card_unit_typhoon_mk_ib", frontline: false);
+                    if (spawned is null || !seen.SequenceEqual(new[] { 90, 91 })
+                        || spawned.BlueprintVariables.ContainsKey("_auditCovertSubject"))
+                        return "隐藏生成T65须排除自身，并保留查询后发生压制/注销/位置变化的接收者";
+                }
+            }
+            finally { secondLocals.Remove(covert); ownLocals.Remove(covert); }
+            return null;
+        }
+        finally { locals.Remove(covert); }
+    }
+
     private static string? DirectEntryAlpineSources(CardDatabase db)
     {
         using var entryProbe = InstallEntryMethodProbe();

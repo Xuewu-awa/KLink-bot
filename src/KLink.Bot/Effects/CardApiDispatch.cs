@@ -5277,7 +5277,8 @@ public sealed partial class CardApi
             newGiveBlitz: TruthyArg(a, 5),
             forceGoldCard: gold,
             salvageFaction: IntArg(a, 7),
-            makeVeteran: TruthyArg(a, 8));
+            makeVeteran: TruthyArg(a, 8),
+            spawnerId: spawnerId);
 
         return card;
     }
@@ -5356,7 +5357,7 @@ public sealed partial class CardApi
             // T35/entry may have changed the ID map; Alpine still uses the held object.
             if (giveBlitz && c.State.ById(card.CardId) is { } blitzTarget)
                 GiveBlitz(blitzTarget, spawnerId);
-            GiveAlpineBonus(card);
+            if (card.HasKeyword(Keyword.Alpine)) GiveAlpineBonus(card);
             RefreshLocationStatus(new[] { location });
             // ExecuteOnCardLocationMoved i=38 independently resolves the ID after
             // Blitz/Alpine callbacks. Do not reuse either prior object lookup.
@@ -5599,7 +5600,8 @@ public sealed partial class CardApi
             locationNumber: IntArg(a, 7, -1),
             newGiveBlitz: TruthyArg(a, 4),
             forceGoldCard: gold,
-            makeVeteran: TruthyArg(a, 8));
+            makeVeteran: TruthyArg(a, 8),
+            spawnerId: IntArg(a, 2));
 
         return card;
     }

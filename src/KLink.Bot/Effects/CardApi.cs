@@ -3498,6 +3498,24 @@ public sealed partial class CardApi
         }
     }
 
+    // Current ExecuteOnCovertCardSpawned: query T65 once, then invoke the
+    // retained receivers without a second suppression/location query.
+    internal void ExecuteOnCovertCardSpawned(CardInstance spawned)
+    {
+        const string trigger = "OnOtherCovertCardSpawned";
+        var recipients = CaptureRegisteredTriggerSnapshot(trigger);
+        var library = Blueprint.KismetLibrary.Default;
+        if (library is null) return;
+        var args = new object?[] { spawned };
+        var named = new Dictionary<string, object?> { ["cardSpawned"] = spawned };
+        foreach (var observer in recipients)
+        {
+            if (observer.CardId == spawned.CardId || library.FindProgram(observer.Name, trigger) is null) continue;
+            TriggerTrace?.Add($"{trigger} → {observer.Name}#{observer.CardId}（eventCard={spawned.Name}#{spawned.CardId}）");
+            RunTriggerProgram(library, observer, observer.Name, trigger, spawned, eventArgs: args, namedArgs: named);
+        }
+    }
+
     /// <summary>把一张卡生成到战场（对应 `SpawnCardOnBattlefield`）。</summary>
     /// <param name="frontline">
     /// 落在**前线**（true）还是**半场**（false）—— 就是蓝图签名的第 2 个参数 `bool Frontline`
@@ -3513,7 +3531,8 @@ public sealed partial class CardApi
                                            bool newGiveBlitz = false,
                                            bool forceGoldCard = false,
                                            int salvageFaction = 0,
-                                           bool makeVeteran = false)
+                                           bool makeVeteran = false,
+                                           int spawnerId = 0)
     {
         CardLocation where = frontline ? CardLocation.BoardFrontline : side.HqOf();
         // RULE-450: SpawnCardToBoard i=1468..1650 selects the salvage struct
@@ -3530,44 +3549,17 @@ public sealed partial class CardApi
             : State.Cards(side, where).Where(c => c != card).Select(c => c.LocationNumber).DefaultIfEmpty(-1).Max() + 1;
         State.Move(card, where, slot);
 
-        // ★★ 直接生成到**前线**时必须**显式**重算前线归属（2026-10-02 补）。
-        //
-        // 为什么这里必须显式写一句：`State.Create` 已经把 `Location` 设成 `where` 了，
-        // 紧接着的 `State.Move(card, where, slot)` 是**同区移动** ⇒ `GameState.Move`
-        // 里 `moved == false` ⇒ **换区钩子（`MatchEngine.FireLocationMoved`）不发**
-        // ⇒ `FrontlineOwner` 不会更新。
-        //
-        // 后果：一张卡把单位**直接生成到空前线**之后，我们这边 `FrontlineOwner`
-        // 仍是 `NotAvailable` ⇒ 对面随后可以推进到一个**已经被占**的前线
-        // （互斥门形同虚设）。`SpawnCardInFrontline`（108 调用点 / 29 张卡）
-        // 走的正是这条路。
-        //
-        // 蓝图也是**显式**补这一句的，不是靠换区钩子 ——
-        // 出处 `ref/kards-sim/KardsSim/Generated/BP_CardFunctions.g.cs`
-        // → `SpawnCardToBoard`（本文件 `SpawnOnBattlefield` 对应物）：
-        // <code>
-        //   L_03AE  ExecuteOnCardLocationMoved(spawnedID, 0, location, False, 12)
-        //   L_03D3  EqualEqual_ByteByte(location, 7)
-        //   L_03F2  JumpIfNot L_0417                 ; 不是前线 ⇒ 跳过
-        //   L_0400  UpdateFrontlineIfNeeded(spawnedID)   ← ★ 就是这一句
-        // </code>
-        // `SpawnMultipleCardsOnBattlefield`（同文件 L_0AD6）也有一句同样的调用。
-        if (newGiveBlitz)
-        {
-            card.Keywords.Add(Keyword.Blitz);
-        }
+        // RULE-521: current i=619..734 chooses one entry path before Blitz.
+        // A hidden spawn dispatches T65; even if its callbacks reveal the card,
+        // control resumes at i=734 without running ordinary method-3 entry.
+        if (IsUnrevealedCovertCard(card)) ExecuteOnCovertCardSpawned(card);
+        else _engine.ExecuteOnEnterPlayEvents(card, 3);
 
-        // ---- 山地加成 ----
-        // 出处 `out/bp-cardfn.json` → `SpawnCardToBoard`：
-        //   si=734 IsActionProcess → si=757 JumpIfNot 895        ; 不是动作流程 ⇒ 整段跳过
-        //   si=785 GiveBlitz
-        //   si=817 cardSpawned.getHasAlpine → si=858 JumpIfNot 895 ; 没有 Alpine ⇒ 跳过
-        //   si=872 GiveAlpineBonus(cardSpawned)
-        //   si=895 SetSet / si=919 RefreshLocationStatus / si=942 ExecuteOnCardLocationMoved
-        // 位置在 si=1838 `InjectCardIntoLocation`（→ `SetCardLocationAndLocNumber` si=94
-        // `tmpCardToSet.location = Location`）里就已经设好，且 si=1838 在 si=872 之前可达 ——
-        // 所以这里放在 `State.Move` **之后**，与蓝图同序（详见 `GiveAlpineBonus` 的注释）。
-        GiveAlpineBonus(card);
+        // i=785 passes spawnedID and spawnerID to the formal primitive. Keep
+        // the held card for Alpine after GiveBlitz callbacks (i=817..872).
+        if (newGiveBlitz && State.ById(card.CardId) is { } blitzTarget)
+            GiveBlitz(blitzTarget, spawnerId);
+        if (card.HasKeyword(Keyword.Alpine)) GiveAlpineBonus(card);
         RefreshLocationStatus(new[] { where });
 
         _engine.ExecuteOnCardLocationMoved(card, CardLocation.NotAvailable, where);

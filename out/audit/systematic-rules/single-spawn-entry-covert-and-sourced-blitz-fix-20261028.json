@@ -1,0 +1,118 @@
+{
+  "rule_id": "RULE-521",
+  "date": "2026-10-28",
+  "status": "已接通单卡生成普通/隐藏入场分支、正式来源闪击及单/批生成外层有效山地门；未认证完整生成对象身份与生命周期",
+  "authority": {
+    "pid": 24220,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "read_only": true,
+    "client_writes": 0,
+    "real_client_function_calls": 0,
+    "historical_replays_used_as_authority": false
+  },
+  "captured_functions": [
+    {
+      "owner": "CardFunctionsStub",
+      "name": "SpawnCardInFrontline",
+      "script_size": 0,
+      "decode_complete": false
+    },
+    {
+      "owner": "CardFunctionsStub",
+      "name": "SpawnCardOnBattlefield",
+      "script_size": 0,
+      "decode_complete": false
+    },
+    {
+      "owner": "CardFunctionsStub",
+      "name": "SpawnMultipleCardsOnBattlefield",
+      "script_size": 0,
+      "decode_complete": false
+    },
+    {
+      "owner": "BP_CardFunctions_C",
+      "name": "SpawnCardToBoard",
+      "script_size": 1917,
+      "decode_complete": true
+    },
+    {
+      "owner": "BP_CardFunctions_C",
+      "name": "SpawnMultipleCardsOnBattlefield",
+      "script_size": 3073,
+      "decode_complete": true
+    },
+    {
+      "owner": "BP_CardFunctions_C",
+      "name": "SpawnCardOnBattlefield",
+      "script_size": 566,
+      "decode_complete": true
+    },
+    {
+      "owner": "BP_CardFunctions_C",
+      "name": "SpawnCardInFrontline",
+      "script_size": 327,
+      "decode_complete": true
+    },
+    {
+      "owner": "CardFunctionsStub",
+      "name": "GiveBlitz",
+      "script_size": 0,
+      "decode_complete": false
+    },
+    {
+      "owner": "BP_CardFunctions_C",
+      "name": "ExecuteOnCovertCardSpawned",
+      "script_size": 581,
+      "decode_complete": true
+    },
+    {
+      "owner": "BP_CardFunctions_C",
+      "name": "GiveBlitz",
+      "script_size": 1335,
+      "decode_complete": true
+    }
+  ],
+  "findings": [
+    "当前只读复获SpawnCardToBoard1917B、批量3073B、战场包装566B、前线包装327B，以及ExecuteOnCovertCardSpawned581B和GiveBlitz1335B完整AST；各0B CardFunctionsStub声明另列，不计为已解析实现。",
+    "单卡生成原实现State.Create及移动后未调用普通/隐藏入场分支，newGiveBlitz直接Keywords.Add且未保留包装的spawnerID。当前BP619/642在action-process中检查未揭示Covert656：隐藏711调用ExecuteOnCovertCardSpawned，否则697跳1884 ExecuteOnEnterPlayEvents(cardSpawned,3)，1909回734。随后734/757再次读action-process，771可选785 GiveBlitz(spawnedID,spawnerID)，817/858有效山地门后872加成。原来的直接raw写入丢失类型6来源账本、正式通知与T29回调，亦未能让入场/T29授予的山地进入同一阶段。",
+    "已在SpawnOnBattlefield接入互斥隐藏T65/普通Method3入场，然后走正式GiveBlitz，最后按有效山地进入加成；沿用无头action-process=true模型。新增可选spawnerId参数，战场包装a[3]、前线包装a[2]显式传递，原无来源内部调用默认0。单/批生成均在外层读取有效山地；批量其余顺序未改写。",
+    "ExecuteOnCovertCardSpawned581B：5/28动作流程门，38查询T65一次；307比较当前observer.CardID与cardSpawned.CardID，389自我排除，458对保存接收者调用OnOtherCovertCardSpawned(cardSpawned)。没有二次压制、位置或注册筛选。新helper使用保存接收者直接运行对应程序，保留精确cardSpawned载荷；隐藏回调即便揭示主体也不会回跳普通入场。",
+    "384组实际SpawnCardToBoard619..895与实际隐藏事件体组合，覆盖action-process、隐藏、GiveBlitz开关、山地初值、入场授予/清除/揭示结果、闪击回调授予山地、回调改变action-process和来源9/99；10组完整隐藏事件体执行覆盖自身排除、后续接收者压制/移除/新增、主体ID变化。原生getter、触发查询/顺序/容器、回调、GiveBlitz和GiveAlpineBonus体为供给，未操作游戏或证明整个原生查询链。",
+    "新增C#4组来源/账本整合、64组双包装/双方/闪击开关/普通隐藏已揭示及隐藏后揭示/存在或缺失来源对象场景，检查Method3、先事件再闪击T29再山地、来源登记、数值结果与raw独立；另8组实际生成T65快照用例排除自身并核对后续接收者被压制/注销/移位仍执行。使用临时Kismet探针，未据此宣称探针宿主卡的真实效果。",
+    "修复前两项新回归分别复现：显式来源闪击未登记且raw误置、普通单卡生成入场事件完全缺失。修复后首次及补验最终935/935通过，构建0警告0错误。历史自测只作兼容性验证，不作为游戏权威。",
+    "DeepSeek仅机械提取私有窗口；两包装参数数组及来源位置、785两个参数、T65常量、当前ID自我排除、458回调载荷及656/711隐藏分支均由主agent逐项比对。未根据部分节点声称全局可达性或全部生成流程一致。"
+  ],
+  "validation": {
+    "spawn_phase_ast_cases": 384,
+    "covert_body_ast_cases": 10,
+    "new_csharp_source_cases": 4,
+    "new_csharp_lifecycle_cases": 64,
+    "new_csharp_covert_snapshot_cases": 8,
+    "selftest_passed": 935,
+    "selftest_total": 935,
+    "build_warnings": 0,
+    "build_errors": 0
+  },
+  "remaining": [
+    "优先核对单卡生成GetCardFromID496的缓存对象、保存spawnedID与State.Create返回对象之间，在OnCreate/T35重建ID映射或替换对象后是否一致。当前修复没有认证该边界；GiveBlitz接入使用当前托管对象ID查询，不能据正常场景认定所有ID替换等价。",
+    "ExecuteOnCardLocationMoved942/前线更新及最终生成通知的完整参数、ID重新解析、初始化/注入/编号与所有取消/位置满分支仍需逐项核查。",
+    "T65原生触发集合的全局顺序与模拟器确定性顺序未获完全等价证明，保存数组下的回调语义验证不消除该问题。",
+    "批量生成全部生命周期、等待恢复全局恰好一次、GetAllUnits及数值原语长链仍在审计队列；没有任何卡获全部规则认证。"
+  ],
+  "fully_certified_cards": 0,
+  "evidence_sha256": {
+    "D:\\Codex Workshop\\kards-install-review\\capture-rule521-spawn.py": "9265aff23fb49e7e730f7e66f8a5bca488c92471315a00352a0c280ce28784ac",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule521-spawn-alpine-blitz-functions-20261028.json": "2ba0815a951ec30769794d4754dbfccd7fe2648d0397a36dc238b1e2ab642a10",
+    "D:\\Codex Workshop\\kards-install-review\\capture-rule521-dependencies.py": "95ed51eac31cb362cbfe747506f04a2a3a5a8fbd0b2480db7cfcc250008002e9",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule521-spawn-covert-blitz-dependencies-20261028.json": "838243f5378301726ca86899109c3f5b947dd920da8ee9771a61883dfcf5fc15",
+    "D:\\Codex Workshop\\kards-install-review\\verify-rule521-spawn-phase.py": "0824f883e8bf93afeeffe07d4b7cd43edb7026cfc3bc00e7153e699647e42358",
+    "D:\\Codex Workshop\\kards-install-review\\rule521-spawn-phase-verification-20261028.json": "509b27d8797fba9ce096b568bf1f5e218908a34e0e46b0a4bbf62540373c41d1",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-rule521-before-20261028.txt": "ecce5f16c62b4226783489852ec50f689fd34d4b87e3f1005eb4e66a47d0b0f3",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-rule521-after-20261028.txt": "421d271453280b0dd549cd8aaa9a6891075dde19fa206d1242a92213ff535ca6",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-rule521-final-20261028.txt": "421d271453280b0dd549cd8aaa9a6891075dde19fa206d1242a92213ff535ca6",
+    "D:\\Codex Workshop\\kards-install-review\\build-rule521-final-20261028.txt": "95010f787815f574c138cb0c6f2aa5c773013cb00ce6c2746982e2450ee806e9",
+    "D:\\Codex Workshop\\kards-install-review\\rule521-worker\\input.json": "e593184aba47282a7f722f591664f96fcf0d82867637a61ffee97e0a31805f81",
+    "D:\\Codex Workshop\\kards-install-review\\rule521-worker\\output.json": "f7670f75c0e81f033d73f346cb0298b061793c2cbfc8224802a510c05e845238",
+    "D:\\Codex Workshop\\kards-install-review\\rule521-worker-verification-20261028.json": "5cfa18b3a81ea80b921c682c18be2ef25a76e8e6d4206138dab82a3e9eb520fd"
+  }
+}
