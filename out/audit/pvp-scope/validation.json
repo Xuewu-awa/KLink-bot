@@ -1,0 +1,41 @@
+{
+  "scope": "SCOPE-001",
+  "checks": "All candidate edges and call argument slots independently resolved to original source JSON paths; all asset decisions unreviewed; all declared input hashes recomputed.",
+  "assets": 2019,
+  "edges": 1325,
+  "calls": 731,
+  "artifacts": [
+    {
+      "path": "out\\audit\\pvp-scope\\assets.tsv",
+      "sha256": "b268344e143e2e977085eb0b45ecc13524212fa5324d28d3c4b39d9676f64512"
+    },
+    {
+      "path": "out\\audit\\pvp-scope\\candidate_references.tsv",
+      "sha256": "fd0566da7d703a27a732bf711b162ad8b3c629b1bf54632fee98cf6edf611e72"
+    },
+    {
+      "path": "out\\audit\\pvp-scope\\creation_calls.tsv",
+      "sha256": "4917ed02ed68021e52630349c6f27e1ff78f9e7fa736792ed4190880dce73ac3"
+    },
+    {
+      "path": "out\\audit\\pvp-scope\\evidence-summary.json",
+      "sha256": "5d2847566f877a4c859471a3e1225dacaa21949191612386e8f6fade6a4befc1"
+    },
+    {
+      "path": "out\\audit\\pvp-scope\\manifest.json",
+      "sha256": "4ccd17011888db7f48477603efdf386c49c688771ab23030ab21c571d9793ae9"
+    },
+    {
+      "path": "out\\audit\\pvp-scope\\README.md",
+      "sha256": "b5118652fa00a4ee8b853df203f89892c315f47ad6f2783ceffc73e17f164838"
+    },
+    {
+      "path": "out\\audit\\pvp-scope\\runtime_functions.tsv",
+      "sha256": "c1d2480f5c33bf1909e08d4a1762306cbdbf615841713bf622967f42a7f05e1c"
+    }
+  ],
+  "verifier": {
+    "path": "D:\\Codex Workshop\\kards-install-review\\verify-scope001-graph.py",
+    "sha256": "832c8cfa7b5187c19b85eb2566d0bcc3ba12049133bcc80705fad383291f2b53"
+  }
+}

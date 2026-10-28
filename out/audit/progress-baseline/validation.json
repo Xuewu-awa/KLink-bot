@@ -25,8 +25,8 @@
   "files_sha256": {
     "tools/build-audit-baseline.py": "794ae3efcf8fb8028ab313b427d606155d276745b74dccec6f76200da724ebc7",
     "tools/test-audit-baseline.py": "0ee2b904f32e167ab9cf170264823c06ec096cc5e5c7b276050aa02a4e8fc4a7",
-    "klink bot/docs/audit-work-plan.json": "d22494e0d7c8efaaa99952bc65b8ccd19885b4e89453aeb456cdd84ccb83c894",
-    "out/audit/progress-baseline/baseline.json": "f72d864b7a3c6b3860d7590248806f61efe29da3054d659e5c9b3850ee0e258e"
+    "klink bot/docs/audit-work-plan.json": "841125f6fa1fbaf1e510aaa6ba05d550da240710cafde63540e389f17399eef2",
+    "out/audit/progress-baseline/baseline.json": "6d0de05d6dcc031edf516d3b5d72c40913df1c9c062b5f32c43d564ba58057ee"
   },
   "worker_files_sha256": {
     "D:\\Codex Workshop\\kards-install-review\\audit-baseline-worker\\input.json": "f486dd0b8baf1fb241c20df8d3b3eed8ad3659309289dcb2e7ff762bba466733",

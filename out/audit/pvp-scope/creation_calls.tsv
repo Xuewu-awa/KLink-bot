@@ -1,0 +1,732 @@
+source	function	path	symbol	name_slot	argument	candidate_targets	status	receiver_and_reachability_verified
+card_brawl_test1	ExecuteUbergraph_card_brawl_test1	$/12/Expression	doOnSpawnCardSelected			[]	unmapped_symbol	False
+card_brawl_test1	ExecuteUbergraph_card_brawl_test1	$/49/Expression	doOnCardSpawnInHand			[]	unmapped_symbol	False
+card_brawl_test1	GetChooseSpawnCards	$/1/Expression	Get Start Of Turn Spawn Cards			[]	unmapped_symbol	False
+card_brawl_test1	getSkirmishBP	$/4/Expression	GetOrSpawnActor			[]	unmapped_symbol	False
+card_event_espionage_skirm	ExecuteUbergraph_card_event_espionage_skirm	$/11/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""Context"", ""Context"": {""Inst"": ""LocalVariable"", ""Variable Outer"": {""PinCategory"": ""Object"", ""PinSubCategory"": ""Object"", ""PinSubCategoryObject"": ""/Script/kards.BaseCardObject""}, ""Variable Name"": ""CallFunc_GetRandomCard_randomCard""}, ""SkipOffsetForNull"": 9, ""RValuePropertyOuter"": ""##NOT SERIALIZED##"", ""RValuePropertyName"": ""name"", ""Expression"": {""Inst"": ""InstanceVariable"", ""Variable Outer"": ""##NOT SERIALIZED##"", ""Variable Name"": ""name""}}"	[]	dynamic_or_missing_argument	False
+card_event_foreign_support_skirm	ExecuteUbergraph_card_event_foreign_support_skirm	$/6/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_event_foreign_support_skirm	ExecuteUbergraph_card_event_foreign_support_skirm	$/29	RandomChooseCards			[]	unmapped_symbol	False
+card_unit_coldstream_guards	ExecuteUbergraph_card_unit_coldstream_guards	$/1/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_naval_support""}"	"[""card_event_naval_support""]"	literal_resolved_receiver_unverified	False
+card_unit_manchester_ia	ExecuteUbergraph_card_unit_manchester_ia	$/1/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_for_precision_bombing""}"	"[""card_event_for_precision_bombing""]"	literal_resolved_receiver_unverified	False
+card_unit_qf_40mm_mk_iii	ExecuteUbergraph_card_unit_qf_40mm_mk_iii	$/5/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_event_atlantic_convoy	ExecuteUbergraph_card_event_atlantic_convoy	$/21/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_event_atlantic_convoy	ExecuteUbergraph_card_event_atlantic_convoy	$/26/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""Context"", ""Context"": {""Inst"": ""LocalVariable"", ""Variable Outer"": {""PinCategory"": ""Object"", ""PinSubCategory"": ""Object"", ""PinSubCategoryObject"": ""/Script/kards.BaseCardObject""}, ""Variable Name"": ""CallFunc_GetRandomCard_randomCard_1""}, ""SkipOffsetForNull"": 9, ""RValuePropertyOuter"": ""##NOT SERIALIZED##"", ""RValuePropertyName"": ""name"", ""Expression"": {""Inst"": ""InstanceVariable"", ""Variable Outer"": ""##NOT SERIALIZED##"", ""Variable Name"": ""name""}}"	[]	dynamic_or_missing_argument	False
+card_event_hms_illustrious	ExecuteUbergraph_card_event_hms_illustrious	$/1/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_event_hms_illustrious	ExecuteUbergraph_card_event_hms_illustrious	$/2/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_event_night_raid	ExecuteUbergraph_card_event_night_raid	$/39/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""Context"", ""Context"": {""Inst"": ""LocalVariable"", ""Variable Outer"": {""PinCategory"": ""Object"", ""PinSubCategory"": ""Object"", ""PinSubCategoryObject"": ""/Script/kards.BaseCardObject""}, ""Variable Name"": ""CallFunc_GetRandomCard_randomCard""}, ""SkipOffsetForNull"": 9, ""RValuePropertyOuter"": ""##NOT SERIALIZED##"", ""RValuePropertyName"": ""name"", ""Expression"": {""Inst"": ""InstanceVariable"", ""Variable Outer"": ""##NOT SERIALIZED##"", ""Variable Name"": ""name""}}"	[]	dynamic_or_missing_argument	False
+card_event_night_raid	ExecuteUbergraph_card_event_night_raid	$/47/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_event_radar_alert	ExecuteUbergraph_card_event_radar_alert	$/15/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_event_rescue_mission	ExecuteUbergraph_card_event_rescue_mission	$/10/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""Context"", ""Context"": {""Inst"": ""LocalVariable"", ""Variable Outer"": {""PinCategory"": ""Object"", ""PinSubCategory"": ""Object"", ""PinSubCategoryObject"": ""/Script/kards.BaseCardObject""}, ""Variable Name"": ""K2Node_Event_cardDestroyed""}, ""SkipOffsetForNull"": 9, ""RValuePropertyOuter"": ""##NOT SERIALIZED##"", ""RValuePropertyName"": ""name"", ""Expression"": {""Inst"": ""InstanceVariable"", ""Variable Outer"": ""##NOT SERIALIZED##"", ""Variable Name"": ""name""}}"	[]	dynamic_or_missing_argument	False
+card_event_rescue_mission	ExecuteUbergraph_card_event_rescue_mission	$/11/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""Context"", ""Context"": {""Inst"": ""LocalVariable"", ""Variable Outer"": {""PinCategory"": ""Object"", ""PinSubCategory"": ""Object"", ""PinSubCategoryObject"": ""/Script/kards.BaseCardObject""}, ""Variable Name"": ""K2Node_Event_cardDestroyed""}, ""SkipOffsetForNull"": 9, ""RValuePropertyOuter"": ""##NOT SERIALIZED##"", ""RValuePropertyName"": ""name"", ""Expression"": {""Inst"": ""InstanceVariable"", ""Variable Outer"": ""##NOT SERIALIZED##"", ""Variable Name"": ""name""}}"	[]	dynamic_or_missing_argument	False
+card_unit_stirling	ExecuteUbergraph_card_unit_stirling	$/6/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_event_desert_dust	ExecuteUbergraph_card_event_desert_dust	$/4/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_event_desert_dust	ExecuteUbergraph_card_event_desert_dust	$/7/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_event_entanglement	OnOtherCardAttacks	$/10/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_unit_frontier_force	ExecuteUbergraph_card_unit_frontier_force	$/1/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_unit_garrison""}"	"[""card_unit_garrison""]"	literal_resolved_receiver_unverified	False
+card_unit_slashers	ExecuteUbergraph_card_unit_slashers	$/3/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_unit_slashers	ExecuteUbergraph_card_unit_slashers	$/11/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_event_advanced_royal_research	ExecuteUbergraph_card_event_advanced_royal_research	$/1	WhichChooseOne			[]	unmapped_symbol	False
+card_event_advanced_royal_research	ExecuteUbergraph_card_event_advanced_royal_research	$/7/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_active_sonar""}"	"[""card_event_active_sonar""]"	literal_resolved_receiver_unverified	False
+card_event_advanced_royal_research	ExecuteUbergraph_card_event_advanced_royal_research	$/9/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_bletchley_park""}"	"[""card_event_bletchley_park""]"	literal_resolved_receiver_unverified	False
+card_event_airdrop	ExecuteUbergraph_card_event_airdrop	$/9/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_event_airdrop	ExecuteUbergraph_card_event_airdrop	$/10/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_event_expanded_royal_research	ExecuteUbergraph_card_event_expanded_royal_research	$/1	WhichChooseOne			[]	unmapped_symbol	False
+card_event_expanded_royal_research	ExecuteUbergraph_card_event_expanded_royal_research	$/7/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_synthetic_rubber""}"	"[""card_event_synthetic_rubber""]"	literal_resolved_receiver_unverified	False
+card_event_expanded_royal_research	ExecuteUbergraph_card_event_expanded_royal_research	$/9/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_advanced_royal_research""}"	"[""card_event_advanced_royal_research""]"	literal_resolved_receiver_unverified	False
+card_event_fog_of_war	ExecuteUbergraph_card_event_fog_of_war	$/2/Expression	SpawnCardInDeckBySide	1	"{""Inst"": ""Context"", ""Context"": {""Inst"": ""LocalVariable"", ""Variable Outer"": {""PinCategory"": ""Object"", ""PinSubCategory"": ""Object"", ""PinSubCategoryObject"": ""/Script/kards.BaseCardObject""}, ""Variable Name"": ""K2Node_Event_targetCard""}, ""SkipOffsetForNull"": 9, ""RValuePropertyOuter"": ""##NOT SERIALIZED##"", ""RValuePropertyName"": ""name"", ""Expression"": {""Inst"": ""InstanceVariable"", ""Variable Outer"": ""##NOT SERIALIZED##"", ""Variable Name"": ""name""}}"	[]	dynamic_or_missing_argument	False
+card_event_royal_research	ExecuteUbergraph_card_event_royal_research	$/1	WhichChooseOne			[]	unmapped_symbol	False
+card_event_royal_research	ExecuteUbergraph_card_event_royal_research	$/7/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_radar""}"	"[""card_event_radar""]"	literal_resolved_receiver_unverified	False
+card_event_royal_research	ExecuteUbergraph_card_event_royal_research	$/9/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_expanded_royal_research""}"	"[""card_event_expanded_royal_research""]"	literal_resolved_receiver_unverified	False
+card_event_escort_group	ExecuteUbergraph_card_event_escort_group	$/1	WhichChooseOne			[]	unmapped_symbol	False
+card_event_escort_group	ExecuteUbergraph_card_event_escort_group	$/7/Expression	SpawnCardInDeckBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_materials_eg""}"	"[""card_event_materials_eg""]"	literal_resolved_receiver_unverified	False
+card_event_escort_group	ExecuteUbergraph_card_event_escort_group	$/12/Expression	SpawnCardInDeckBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_armaments_eg""}"	"[""card_event_armaments_eg""]"	literal_resolved_receiver_unverified	False
+card_event_hms_hermes	ExecuteUbergraph_card_event_hms_hermes	$/17/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_event_partnership	ExecuteUbergraph_card_event_partnership	$/23/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_event_refit_bia	CanPlayFromHand	$/0	WhichChooseOne			[]	unmapped_symbol	False
+card_event_refit_bia	ExecuteUbergraph_card_event_refit_bia	$/32	WhichChooseOne			[]	unmapped_symbol	False
+card_event_strong_bond	ExecuteUbergraph_card_event_strong_bond	$/34/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_event_commando_raid	ExecuteUbergraph_card_event_commando_raid	$/3/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_event_commando_raid	ExecuteUbergraph_card_event_commando_raid	$/4/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_event_first_responders	ExecuteUbergraph_card_event_first_responders	$/33/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_event_home_guard	ExecuteUbergraph_card_event_home_guard	$/3/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_unit_garrison""}"	"[""card_unit_garrison""]"	literal_resolved_receiver_unverified	False
+card_unit_middlesex_regiment	ExecuteUbergraph_card_unit_middlesex_regiment	$/1/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_unit_garrison""}"	"[""card_unit_garrison""]"	literal_resolved_receiver_unverified	False
+card_event_double_strength	ExecuteUbergraph_card_event_double_strength	$/26/Expression	SpawnCardInDeckBySide	1	"{""Inst"": ""Context"", ""Context"": {""Inst"": ""LocalVariable"", ""Variable Outer"": {""PinCategory"": ""Object"", ""PinSubCategory"": ""Object"", ""PinSubCategoryObject"": ""/Script/kards.BaseCardObject""}, ""Variable Name"": ""CallFunc_GetRandomCard_randomCard""}, ""SkipOffsetForNull"": 9, ""RValuePropertyOuter"": ""##NOT SERIALIZED##"", ""RValuePropertyName"": ""name"", ""Expression"": {""Inst"": ""InstanceVariable"", ""Variable Outer"": ""##NOT SERIALIZED##"", ""Variable Name"": ""name""}}"	[]	dynamic_or_missing_argument	False
+card_event_emergency_measures	ExecuteUbergraph_card_event_emergency_measures	$/6/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_event_hms_spectre	ExecuteUbergraph_card_event_hms_spectre	$/10/Expression	ConvertCard	2	"{""Inst"": ""NameConst"", ""Value"": ""card_event_plan""}"	"[""card_event_plan""]"	literal_resolved_receiver_unverified	False
+card_event_protected_convoy	ExecuteUbergraph_card_event_protected_convoy	$/1/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_production""}"	"[""card_event_production""]"	literal_resolved_receiver_unverified	False
+card_event_protected_convoy	ExecuteUbergraph_card_event_protected_convoy	$/2/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_plan""}"	"[""card_event_plan""]"	literal_resolved_receiver_unverified	False
+card_unit_mosquito_bomber	ExecuteUbergraph_card_unit_mosquito_bomber	$/4/Expression	ConvertCard	2	"{""Inst"": ""NameConst"", ""Value"": ""card_unit_mosquito_fighter""}"	"[""card_unit_mosquito_fighter""]"	literal_resolved_receiver_unverified	False
+card_unit_mosquito_fighter	ExecuteUbergraph_card_unit_mosquito_fighter	$/4/Expression	ConvertCard	2	"{""Inst"": ""NameConst"", ""Value"": ""card_unit_mosquito_bomber""}"	"[""card_unit_mosquito_bomber""]"	literal_resolved_receiver_unverified	False
+card_unit_sherwood_foresters	ExecuteUbergraph_card_unit_sherwood_foresters	$/3/Expression	SpawnCardInDeckBySide	1	"{""Inst"": ""Context"", ""Context"": {""Inst"": ""LocalVariable"", ""Variable Outer"": {""PinCategory"": ""Object"", ""PinSubCategory"": ""Object"", ""PinSubCategoryObject"": ""/Script/kards.BaseCardObject""}, ""Variable Name"": ""K2Node_Event_targetCard""}, ""SkipOffsetForNull"": 9, ""RValuePropertyOuter"": ""##NOT SERIALIZED##"", ""RValuePropertyName"": ""name"", ""Expression"": {""Inst"": ""InstanceVariable"", ""Variable Outer"": ""##NOT SERIALIZED##"", ""Variable Name"": ""name""}}"	[]	dynamic_or_missing_argument	False
+card_event_area_bombardment	ExecuteUbergraph_card_event_area_bombardment	$/11/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_event_colossus	ExecuteUbergraph_card_event_colossus	$/9/Expression	SpawnCardInDeckBySide	1	"{""Inst"": ""Context"", ""Context"": {""Inst"": ""LocalVariable"", ""Variable Outer"": {""PinCategory"": ""Object"", ""PinSubCategory"": ""Object"", ""PinSubCategoryObject"": ""/Script/kards.BaseCardObject""}, ""Variable Name"": ""CallFunc_GetRandomCard_randomCard""}, ""SkipOffsetForNull"": 9, ""RValuePropertyOuter"": ""##NOT SERIALIZED##"", ""RValuePropertyName"": ""name"", ""Expression"": {""Inst"": ""InstanceVariable"", ""Variable Outer"": ""##NOT SERIALIZED##"", ""Variable Name"": ""name""}}"	[]	dynamic_or_missing_argument	False
+card_event_planned_attack	CanPlayFromHand	$/0	WhichChooseOne			[]	unmapped_symbol	False
+card_event_planned_attack	ExecuteUbergraph_card_event_planned_attack	$/1	WhichChooseOne			[]	unmapped_symbol	False
+card_event_planned_attack	ExecuteUbergraph_card_event_planned_attack	$/9/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_plan""}"	"[""card_event_plan""]"	literal_resolved_receiver_unverified	False
+card_event_planned_attack	ExecuteUbergraph_card_event_planned_attack	$/12/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_blast""}"	"[""card_event_blast""]"	literal_resolved_receiver_unverified	False
+card_event_planned_attack	GetPlayFromHandDamage	$/0	WhichChooseOne			[]	unmapped_symbol	False
+card_event_seac	ExecuteUbergraph_card_event_seac	$/24/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""Context"", ""Context"": {""Inst"": ""LocalVariable"", ""Variable Outer"": {""PinCategory"": ""Object"", ""PinSubCategory"": ""Object"", ""PinSubCategoryObject"": ""/Script/kards.BaseCardObject""}, ""Variable Name"": ""CallFunc_GetRandomCard_randomCard""}, ""SkipOffsetForNull"": 9, ""RValuePropertyOuter"": ""##NOT SERIALIZED##"", ""RValuePropertyName"": ""name"", ""Expression"": {""Inst"": ""InstanceVariable"", ""Variable Outer"": ""##NOT SERIALIZED##"", ""Variable Name"": ""name""}}"	[]	dynamic_or_missing_argument	False
+card_unit_meteor	ExecuteUbergraph_card_unit_meteor	$/30/Expression	SpawnCardInDeckBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_unit_meteor""}"	"[""card_unit_meteor""]"	literal_resolved_receiver_unverified	False
+card_unit_no_46_commando	ExecuteUbergraph_card_unit_no_46_commando	$/1/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_blast""}"	"[""card_event_blast""]"	literal_resolved_receiver_unverified	False
+card_unit_no_46_commando	ExecuteUbergraph_card_unit_no_46_commando	$/2/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_plan""}"	"[""card_event_plan""]"	literal_resolved_receiver_unverified	False
+card_unit_stirling_mk_iii	ExecuteUbergraph_card_unit_stirling_mk_iii	$/1/Expression	SpawnCardInDeckBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_carpet_bombing""}"	"[""card_event_carpet_bombing""]"	literal_resolved_receiver_unverified	False
+card_unit_universal_carrier	ExecuteUbergraph_card_unit_universal_carrier	$/76/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_blast""}"	"[""card_event_blast""]"	literal_resolved_receiver_unverified	False
+card_event_air_power	CanPlayFromHand	$/0	WhichChooseOne			[]	unmapped_symbol	False
+card_event_air_power	ExecuteUbergraph_card_event_air_power	$/1	WhichChooseOne			[]	unmapped_symbol	False
+card_event_air_power	GetPlayFromHandDamage	$/0	WhichChooseOne			[]	unmapped_symbol	False
+card_location_british_scen1	ExecuteUbergraph_card_location_british_scen1	$/14/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_campaign_tunis1_commando_raid""}"	"[""card_event_campaign_tunis1_commando_raid""]"	literal_resolved_receiver_unverified	False
+card_location_british_scen1	ExecuteUbergraph_card_location_british_scen1	$/18/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_campaign_tunis1_french_reinforcement""}"	"[""card_event_campaign_tunis1_french_reinforcement""]"	literal_resolved_receiver_unverified	False
+card_location_british_scen1	ExecuteUbergraph_card_location_british_scen1	$/22/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_campaign_tunis1_blade_force_arrives""}"	"[""card_event_campaign_tunis1_blade_force_arrives""]"	literal_resolved_receiver_unverified	False
+card_location_british_scen1	ExecuteUbergraph_card_location_british_scen1	$/40/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_british_scen1	ExecuteUbergraph_card_location_british_scen1	$/42/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_british_scen2	ExecuteUbergraph_card_location_british_scen2	$/38/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_british_scen2	ExecuteUbergraph_card_location_british_scen2	$/41/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_british_scen2	ExecuteUbergraph_card_location_british_scen2	$/45/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_british_scen2	ExecuteUbergraph_card_location_british_scen2	$/49/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_british_scen2	ExecuteUbergraph_card_location_british_scen2	$/60/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_delaying_tactics""}"	"[""card_event_delaying_tactics""]"	literal_resolved_receiver_unverified	False
+card_location_british_scen2	ExecuteUbergraph_card_location_british_scen2	$/67/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_fortification""}"	"[""card_event_fortification""]"	literal_resolved_receiver_unverified	False
+card_location_british_scen2	ExecuteUbergraph_card_location_british_scen2	$/74/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_fortification""}"	"[""card_event_fortification""]"	literal_resolved_receiver_unverified	False
+card_location_british_scen2	ExecuteUbergraph_card_location_british_scen2	$/95/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_unit_m16_halftrack""}"	"[""card_unit_m16_halftrack""]"	literal_resolved_receiver_unverified	False
+card_location_british_scen2	ExecuteUbergraph_card_location_british_scen2	$/99/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_fortification""}"	"[""card_event_fortification""]"	literal_resolved_receiver_unverified	False
+card_location_british_scen2	ExecuteUbergraph_card_location_british_scen2	$/103/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_naval_power""}"	"[""card_event_naval_power""]"	literal_resolved_receiver_unverified	False
+card_location_british_scen2	ExecuteUbergraph_card_location_british_scen2	$/144/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_british_scen2	ExecuteUbergraph_card_location_british_scen2	$/151/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_british_scen3	ExecuteUbergraph_card_location_british_scen3	$/21/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_british_scen3	ExecuteUbergraph_card_location_british_scen3	$/25/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_campaign_tunis3_supply_intercepted""}"	"[""card_event_campaign_tunis3_supply_intercepted""]"	literal_resolved_receiver_unverified	False
+card_location_british_scen3	ExecuteUbergraph_card_location_british_scen3	$/29/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_campaign_tunis3_french_artillery""}"	"[""card_event_campaign_tunis3_french_artillery""]"	literal_resolved_receiver_unverified	False
+card_location_british_scen3	ExecuteUbergraph_card_location_british_scen3	$/33/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_campaign_tunis3_counterattack""}"	"[""card_event_campaign_tunis3_counterattack""]"	literal_resolved_receiver_unverified	False
+card_location_british_scen3	ExecuteUbergraph_card_location_british_scen3	$/41/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_british_scen3	ExecuteUbergraph_card_location_british_scen3	$/43/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_british_scen3	ExecuteUbergraph_card_location_british_scen3	$/45/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_british_scen3	ExecuteUbergraph_card_location_british_scen3	$/49/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_british_scen3	ExecuteUbergraph_card_location_british_scen3	$/50/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_british_scen3	ExecuteUbergraph_card_location_british_scen3	$/52/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_british_scen3	ExecuteUbergraph_card_location_british_scen3	$/54/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_british_scen3	ExecuteUbergraph_card_location_british_scen3	$/57/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_british_scen3	ExecuteUbergraph_card_location_british_scen3	$/58/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_british_scen3	ExecuteUbergraph_card_location_british_scen3	$/60/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_british_scen3	ExecuteUbergraph_card_location_british_scen3	$/62/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_british_scen3	ExecuteUbergraph_card_location_british_scen3	$/82/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_british_scen4	ExecuteUbergraph_card_location_british_scen4	$/65/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_british_scen4	ExecuteUbergraph_card_location_british_scen4	$/67/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_british_scen4	ExecuteUbergraph_card_location_british_scen4	$/70/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_british_scen4	ExecuteUbergraph_card_location_british_scen4	$/73/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_british_scen4	ExecuteUbergraph_card_location_british_scen4	$/74/Expression	SpawnCardInDeckBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_air_power""}"	"[""card_event_air_power""]"	literal_resolved_receiver_unverified	False
+card_location_british_scen4	ExecuteUbergraph_card_location_british_scen4	$/84/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_unit_2e_brigade""}"	"[""card_unit_2e_brigade""]"	literal_resolved_receiver_unverified	False
+card_location_british_scen4	ExecuteUbergraph_card_location_british_scen4	$/88/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_unit_churchill""}"	"[""card_unit_churchill""]"	literal_resolved_receiver_unverified	False
+card_location_british_scen4	ExecuteUbergraph_card_location_british_scen4	$/89/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_naval_support""}"	"[""card_event_naval_support""]"	literal_resolved_receiver_unverified	False
+card_location_british_scen4	ExecuteUbergraph_card_location_british_scen4	$/93/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_death_from_above""}"	"[""card_event_death_from_above""]"	literal_resolved_receiver_unverified	False
+card_location_british_scen4	ExecuteUbergraph_card_location_british_scen4	$/132/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_his_majesty_chosen""}"	"[""card_event_his_majesty_chosen""]"	literal_resolved_receiver_unverified	False
+card_location_british_scen4	ExecuteUbergraph_card_location_british_scen4	$/144/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_tactical_strike""}"	"[""card_event_tactical_strike""]"	literal_resolved_receiver_unverified	False
+card_location_british_scen5	ExecuteUbergraph_card_location_british_scen5	$/17/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_british_scen5	ExecuteUbergraph_card_location_british_scen5	$/19/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_british_scen5	ExecuteUbergraph_card_location_british_scen5	$/23/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_british_scen5	ExecuteUbergraph_card_location_british_scen5	$/26/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_british_scen5	ExecuteUbergraph_card_location_british_scen5	$/32/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_british_scen5	ExecuteUbergraph_card_location_british_scen5	$/35/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_british_scen5	ExecuteUbergraph_card_location_british_scen5	$/38/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_unit_mathilda_mk_ii""}"	"[""card_unit_mathilda_mk_ii""]"	literal_resolved_receiver_unverified	False
+card_location_british_scen5	ExecuteUbergraph_card_location_british_scen5	$/88/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_british_scen5	ExecuteUbergraph_card_location_british_scen5	$/91/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_british_scen5	ExecuteUbergraph_card_location_british_scen5	$/108/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_unit_m3a3_honey_desert""}"	"[""card_unit_m3a3_honey_desert""]"	literal_resolved_receiver_unverified	False
+card_location_british_scen5	ExecuteUbergraph_card_location_british_scen5	$/114/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_unit_1er_regiment_etranger""}"	"[""card_unit_1er_regiment_etranger""]"	literal_resolved_receiver_unverified	False
+card_location_british_scen5	ExecuteUbergraph_card_location_british_scen5	$/132/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_unit_no1_commando""}"	"[""card_unit_no1_commando""]"	literal_resolved_receiver_unverified	False
+card_location_british_scen5	ExecuteUbergraph_card_location_british_scen5	$/172/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_british_scen5	ExecuteUbergraph_card_location_british_scen5	$/174/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_tactical_strike""}"	"[""card_event_tactical_strike""]"	literal_resolved_receiver_unverified	False
+card_location_british_scen5	ExecuteUbergraph_card_location_british_scen5	$/177/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_event_cold_trap	OnOtherCardAttackSwitchTarget	$/13/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_event_dark_deeds	ExecuteUbergraph_card_event_dark_deeds	$/3/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_event_depot_raid	ExecuteUbergraph_card_event_depot_raid	$/2/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""Context"", ""Context"": {""Inst"": ""LocalVariable"", ""Variable Outer"": {""PinCategory"": ""Object"", ""PinSubCategory"": ""Object"", ""PinSubCategoryObject"": ""/Script/kards.BaseCardObject""}, ""Variable Name"": ""K2Node_Event_targetCard""}, ""SkipOffsetForNull"": 9, ""RValuePropertyOuter"": ""##NOT SERIALIZED##"", ""RValuePropertyName"": ""name"", ""Expression"": {""Inst"": ""InstanceVariable"", ""Variable Outer"": ""##NOT SERIALIZED##"", ""Variable Name"": ""name""}}"	[]	dynamic_or_missing_argument	False
+card_event_frozen_assets	ExecuteUbergraph_card_event_frozen_assets	$/9/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_event_heartland_defense	ExecuteUbergraph_card_event_heartland_defense	$/1/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_event_motti_tactic	ExecuteUbergraph_card_event_motti_tactic	$/4/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""Context"", ""Context"": {""Inst"": ""LocalVariable"", ""Variable Outer"": {""PinCategory"": ""Object"", ""PinSubCategory"": ""Object"", ""PinSubCategoryObject"": ""/Script/kards.BaseCardObject""}, ""Variable Name"": ""K2Node_Event_targetCard""}, ""SkipOffsetForNull"": 9, ""RValuePropertyOuter"": ""##NOT SERIALIZED##"", ""RValuePropertyName"": ""name"", ""Expression"": {""Inst"": ""InstanceVariable"", ""Variable Outer"": ""##NOT SERIALIZED##"", ""Variable Name"": ""name""}}"	[]	dynamic_or_missing_argument	False
+card_event_order_of_the_day	ExecuteUbergraph_card_event_order_of_the_day	$/22/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_event_order_of_the_day	ExecuteUbergraph_card_event_order_of_the_day	$/23/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_event_salpa_line	ExecuteUbergraph_card_event_salpa_line	$/22/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_event_ski_troops	ExecuteUbergraph_card_event_ski_troops	$/15/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_event_strike_from_the_forest	ExecuteUbergraph_card_event_strike_from_the_forest	$/4/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_event_white_death	ExecuteUbergraph_card_event_white_death	$/14/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_unit_infantry_regiment_56	ExecuteUbergraph_card_unit_infantry_regiment_56	$/23/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_unit_jager_battalion_2	ExecuteUbergraph_card_unit_jager_battalion_2	$/1/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_unit_uusimaa_regiment	ExecuteUbergraph_card_unit_uusimaa_regiment	$/13/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_event_arming_resistance	ExecuteUbergraph_card_event_arming_resistance	$/13/Expression	SpawnCardInDeckBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_resistance_new""}"	"[""card_event_resistance_new""]"	literal_resolved_receiver_unverified	False
+card_event_call_to_the_colonies	ExecuteUbergraph_card_event_call_to_the_colonies	$/1	WhichChooseOne			[]	unmapped_symbol	False
+card_event_compromise	ExecuteUbergraph_card_event_compromise	$/17	WhichChooseOne			[]	unmapped_symbol	False
+card_event_french_alliance	ExecuteUbergraph_card_event_french_alliance	$/36/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_event_liberation	ExecuteUbergraph_card_event_liberation	$/4/Expression	SpawnCardInDeckBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_resistance_new""}"	"[""card_event_resistance_new""]"	literal_resolved_receiver_unverified	False
+card_event_national_resistance_council	ExecuteUbergraph_card_event_national_resistance_council	$/6/Expression	SpawnCardInDeckBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_resistance_new""}"	"[""card_event_resistance_new""]"	literal_resolved_receiver_unverified	False
+card_event_plan_d	ExecuteUbergraph_card_event_plan_d	$/29	WhichChooseOne			[]	unmapped_symbol	False
+card_event_rally_caledonia	ExecuteUbergraph_card_event_rally_caledonia	$/25/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_event_resistance	ExecuteUbergraph_card_event_resistance	$/1	WhichChooseOne			[]	unmapped_symbol	False
+card_event_saar_probe	ExecuteUbergraph_card_event_saar_probe	$/21/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_cross_of_lorraine""}"	"[""card_event_cross_of_lorraine""]"	literal_resolved_receiver_unverified	False
+card_event_sortie	CanPlayFromHand	$/0	WhichChooseOne			[]	unmapped_symbol	False
+card_event_sortie	ExecuteUbergraph_card_event_sortie	$/1	WhichChooseOne			[]	unmapped_symbol	False
+card_event_sortie	ExecuteUbergraph_card_event_sortie	$/9/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_frappe""}"	"[""card_event_frappe""]"	literal_resolved_receiver_unverified	False
+card_event_test_resistance2	ExecuteUbergraph_card_event_test_resistance2	$/2/Expression	SpawnCardInDeckBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_resistance_new""}"	"[""card_event_resistance_new""]"	literal_resolved_receiver_unverified	False
+card_event_campaign_tunis1_french_reinforcement	ExecuteUbergraph_card_event_campaign_tunis1_french_reinforcement	$/1/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_unit_ii_rmt""}"	"[""card_unit_ii_rmt""]"	literal_resolved_receiver_unverified	False
+card_event_campaign_tunis3_french_artillery	ExecuteUbergraph_card_event_campaign_tunis3_french_artillery	$/1/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_unit_1er_regiment_etranger	ExecuteUbergraph_card_unit_1er_regiment_etranger	$/1	WhichChooseOne			[]	unmapped_symbol	False
+card_unit_51e_regiment	ExecuteUbergraph_card_unit_51e_regiment	$/1	WhichChooseOne			[]	unmapped_symbol	False
+card_unit_5e_cuirassier	ExecuteUbergraph_card_unit_5e_cuirassier	$/30/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_unit_18e_regiment""}"	"[""card_unit_18e_regiment""]"	literal_resolved_receiver_unverified	False
+card_unit_french_expedition	ExecuteUbergraph_card_unit_french_expedition	$/2/Expression	SpawnCardInDeckBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_resistance_new""}"	"[""card_event_resistance_new""]"	literal_resolved_receiver_unverified	False
+card_unit_ju_87_b2	ExecuteUbergraph_card_unit_ju_87_b2	$/1/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_dive_bombing""}"	"[""card_event_dive_bombing""]"	literal_resolved_receiver_unverified	False
+card_event_encirclement	ExecuteUbergraph_card_event_encirclement	$/1/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_unit_panzerzug_6	ExecuteUbergraph_card_unit_panzerzug_6	$/3/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_event_aunt_frieda	ExecuteUbergraph_card_event_aunt_frieda	$/5/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_tank_frieda""}"	"[""card_event_tank_frieda""]"	literal_resolved_receiver_unverified	False
+card_event_tank_frieda	ExecuteUbergraph_card_event_tank_frieda	$/5/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_fighter_frieda""}"	"[""card_event_fighter_frieda""]"	literal_resolved_receiver_unverified	False
+card_event_advanced_reich_research	ExecuteUbergraph_card_event_advanced_reich_research	$/1	WhichChooseOne			[]	unmapped_symbol	False
+card_event_advanced_reich_research	ExecuteUbergraph_card_event_advanced_reich_research	$/7/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_type_xxi_boat""}"	"[""card_event_type_xxi_boat""]"	literal_resolved_receiver_unverified	False
+card_event_advanced_reich_research	ExecuteUbergraph_card_event_advanced_reich_research	$/9/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_uranium_club""}"	"[""card_event_uranium_club""]"	literal_resolved_receiver_unverified	False
+card_event_expanded_reich_research	ExecuteUbergraph_card_event_expanded_reich_research	$/1	WhichChooseOne			[]	unmapped_symbol	False
+card_event_expanded_reich_research	ExecuteUbergraph_card_event_expanded_reich_research	$/7/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_synthetic_oil""}"	"[""card_event_synthetic_oil""]"	literal_resolved_receiver_unverified	False
+card_event_expanded_reich_research	ExecuteUbergraph_card_event_expanded_reich_research	$/9/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_advanced_reich_research""}"	"[""card_event_advanced_reich_research""]"	literal_resolved_receiver_unverified	False
+card_event_rapid_engagement	ExecuteUbergraph_card_event_rapid_engagement	$/12/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_event_reich_research	ExecuteUbergraph_card_event_reich_research	$/1	WhichChooseOne			[]	unmapped_symbol	False
+card_event_reich_research	ExecuteUbergraph_card_event_reich_research	$/7/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_v1_flying_bomb""}"	"[""card_event_v1_flying_bomb""]"	literal_resolved_receiver_unverified	False
+card_event_reich_research	ExecuteUbergraph_card_event_reich_research	$/9/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_expanded_reich_research""}"	"[""card_event_expanded_reich_research""]"	literal_resolved_receiver_unverified	False
+card_event_momentum	ExecuteUbergraph_card_event_momentum	$/5/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_event_momentum	ExecuteUbergraph_card_event_momentum	$/6/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_event_rout	ExecuteUbergraph_card_event_rout	$/2/Expression	ConvertCard	2	"{""Inst"": ""NameConst"", ""Value"": ""card_unit_routed_troops""}"	"[""card_unit_routed_troops""]"	literal_resolved_receiver_unverified	False
+card_unit_panzer_i_brothers	ExecuteUbergraph_card_unit_panzer_i_brothers	$/1/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_unit_panzer_i_brothers""}"	"[""card_unit_panzer_i_brothers""]"	literal_resolved_receiver_unverified	False
+card_event_blitz_doctrine	ExecuteUbergraph_card_event_blitz_doctrine	$/3/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_contest_doctrine""}"	"[""card_event_contest_doctrine""]"	literal_resolved_receiver_unverified	False
+card_event_bridge_too_far	ExecuteUbergraph_card_event_bridge_too_far	$/31/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_event_night_attack	ExecuteUbergraph_card_event_night_attack	$/37/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_event_second_front	ExecuteUbergraph_card_event_second_front	$/26/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_event_second_front	ExecuteUbergraph_card_event_second_front	$/32/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_event_second_front	ExecuteUbergraph_card_event_second_front	$/46/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_event_second_front	ExecuteUbergraph_card_event_second_front	$/53/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_unit_heinkel_he_115_inv	ExecuteUbergraph_card_unit_heinkel_he_115_inv	$/1/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_spoils_of_war""}"	"[""card_event_spoils_of_war""]"	literal_resolved_receiver_unverified	False
+card_unit_ju_88_g6	ExecuteUbergraph_card_unit_ju_88_g6	$/7/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""Context"", ""Context"": {""Inst"": ""LocalVariable"", ""Variable Outer"": {""PinCategory"": ""Object"", ""PinSubCategory"": ""Object"", ""PinSubCategoryObject"": ""/Script/kards.BaseCardObject""}, ""Variable Name"": ""K2Node_Event_cardDestroyed""}, ""SkipOffsetForNull"": 9, ""RValuePropertyOuter"": ""##NOT SERIALIZED##"", ""RValuePropertyName"": ""name"", ""Expression"": {""Inst"": ""InstanceVariable"", ""Variable Outer"": ""##NOT SERIALIZED##"", ""Variable Name"": ""name""}}"	[]	dynamic_or_missing_argument	False
+card_unit_ju_88_g6	OnCardDealDamage	$/9/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""InstanceVariable"", ""Variable Outer"": ""##NOT SERIALIZED##"", ""Variable Name"": ""name""}"	[]	dynamic_or_missing_argument	False
+card_event_capitulation	ExecuteUbergraph_card_event_capitulation	$/19/Expression	ConvertCard	2	"{""Inst"": ""NameConst"", ""Value"": ""card_unit_routed_troops""}"	"[""card_unit_routed_troops""]"	literal_resolved_receiver_unverified	False
+card_event_happy_time	ExecuteUbergraph_card_event_happy_time	$/20/Expression	ConvertCard	2	"{""Inst"": ""NameConst"", ""Value"": ""card_event_plan""}"	"[""card_event_plan""]"	literal_resolved_receiver_unverified	False
+card_event_prinz_eugen	ExecuteUbergraph_card_event_prinz_eugen	$/3/Expression	ConvertCard	2	"{""Inst"": ""NameConst"", ""Value"": ""card_event_production""}"	"[""card_event_production""]"	literal_resolved_receiver_unverified	False
+card_unit_108_panzergrenadier	ExecuteUbergraph_card_unit_108_panzergrenadier	$/4/Expression	ConvertCard	2	"{""Inst"": ""NameConst"", ""Value"": ""card_unit_routed_troops""}"	"[""card_unit_routed_troops""]"	literal_resolved_receiver_unverified	False
+card_unit_957_volksgrenadier	ExecuteUbergraph_card_unit_957_volksgrenadier	$/1/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_production""}"	"[""card_event_production""]"	literal_resolved_receiver_unverified	False
+card_unit_fw189	ExecuteUbergraph_card_unit_fw189	$/22/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_production""}"	"[""card_event_production""]"	literal_resolved_receiver_unverified	False
+card_unit_fw189	OnCounterMeasureTriggered	$/8/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_production""}"	"[""card_event_production""]"	literal_resolved_receiver_unverified	False
+card_unit_jagdpanzer_iv	ExecuteUbergraph_card_unit_jagdpanzer_iv	$/7/Expression	ConvertCard	2	"{""Inst"": ""NameConst"", ""Value"": ""card_event_production""}"	"[""card_event_production""]"	literal_resolved_receiver_unverified	False
+card_event_mountain_offense	ExecuteUbergraph_card_event_mountain_offense	$/25/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_event_mountain_offense	ExecuteUbergraph_card_event_mountain_offense	$/30/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_event_mountain_offense	ExecuteUbergraph_card_event_mountain_offense	$/45/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_unit_20_panzergrenadier	ExecuteUbergraph_card_unit_20_panzergrenadier	$/1/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_unit_panzer_35_t""}"	"[""card_unit_panzer_35_t""]"	literal_resolved_receiver_unverified	False
+card_unit_20_panzergrenadier	ExecuteUbergraph_card_unit_20_panzergrenadier	$/2/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_combined_arms""}"	"[""card_event_combined_arms""]"	literal_resolved_receiver_unverified	False
+card_event_harass	ExecuteUbergraph_card_event_harass	$/28/Expression	ConvertCard	2	"{""Inst"": ""InstanceVariable"", ""Variable Outer"": {""PinCategory"": ""Name"", ""PinSubCategory"": ""Name""}, ""Variable Name"": ""cardToConvertTo""}"	[]	dynamic_or_missing_argument	False
+card_unit_salamander	ExecuteUbergraph_card_unit_salamander	$/11/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_berlin_unlock7_tut	ExecuteUbergraph_card_location_berlin_unlock7_tut	$/7/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_unexpected_resistance""}"	"[""card_event_unexpected_resistance""]"	literal_resolved_receiver_unverified	False
+card_location_berlin_unlock7_tut	ExecuteUbergraph_card_location_berlin_unlock7_tut	$/12/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_unit_daimler_mk_ii""}"	"[""card_unit_daimler_mk_ii""]"	literal_resolved_receiver_unverified	False
+card_location_british_scen1_ai	ExecuteUbergraph_card_location_british_scen1_ai	$/1/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_german_scen1	ExecuteUbergraph_card_location_german_scen1	$/28/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_german_scen1	ExecuteUbergraph_card_location_german_scen1	$/31/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_german_scen1	ExecuteUbergraph_card_location_german_scen1	$/33/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_german_scen1	ExecuteUbergraph_card_location_german_scen1	$/37/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_german_scen1	ExecuteUbergraph_card_location_german_scen1	$/54/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_german_scen1	ExecuteUbergraph_card_location_german_scen1	$/66/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_campaign_alamein1_flanking_maneuver""}"	"[""card_event_campaign_alamein1_flanking_maneuver""]"	literal_resolved_receiver_unverified	False
+card_location_german_scen1	ExecuteUbergraph_card_location_german_scen1	$/70/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_campaign_alamein1_through_the_wire""}"	"[""card_event_campaign_alamein1_through_the_wire""]"	literal_resolved_receiver_unverified	False
+card_location_german_scen1	ExecuteUbergraph_card_location_german_scen1	$/74/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_campaign_alamein1_iron_fist""}"	"[""card_event_campaign_alamein1_iron_fist""]"	literal_resolved_receiver_unverified	False
+card_location_german_scen2	ExecuteUbergraph_card_location_german_scen2	$/29/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_german_scen2	ExecuteUbergraph_card_location_german_scen2	$/31/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_german_scen2	ExecuteUbergraph_card_location_german_scen2	$/38/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_german_scen2	ExecuteUbergraph_card_location_german_scen2	$/45/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_german_scen2	ExecuteUbergraph_card_location_german_scen2	$/53/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_pursuit""}"	"[""card_event_pursuit""]"	literal_resolved_receiver_unverified	False
+card_location_german_scen2	ExecuteUbergraph_card_location_german_scen2	$/98/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_tactical_withdrawal""}"	"[""card_event_tactical_withdrawal""]"	literal_resolved_receiver_unverified	False
+card_location_german_scen2	ExecuteUbergraph_card_location_german_scen2	$/120/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_german_scen3	ExecuteUbergraph_card_location_german_scen3	$/200/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_german_scen3	ExecuteUbergraph_card_location_german_scen3	$/257/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_campaign_alamein3_spring_the_reserves""}"	"[""card_event_campaign_alamein3_spring_the_reserves""]"	literal_resolved_receiver_unverified	False
+card_location_german_scen3	ExecuteUbergraph_card_location_german_scen3	$/264/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_unit_m13_40""}"	"[""card_unit_m13_40""]"	literal_resolved_receiver_unverified	False
+card_location_german_scen3	ExecuteUbergraph_card_location_german_scen3	$/268/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_unit_wespe_desert""}"	"[""card_unit_wespe_desert""]"	literal_resolved_receiver_unverified	False
+card_location_german_scen3	ExecuteUbergraph_card_location_german_scen3	$/272/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_unit_panzer_iii_g_desert""}"	"[""card_unit_panzer_iii_g_desert""]"	literal_resolved_receiver_unverified	False
+card_location_german_scen3	ExecuteUbergraph_card_location_german_scen3	$/276/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_campaign_alamein3_riding_the_storm""}"	"[""card_event_campaign_alamein3_riding_the_storm""]"	literal_resolved_receiver_unverified	False
+card_location_german_scen3	ExecuteUbergraph_card_location_german_scen3	$/280/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_campaign_alamein3_head_to_head""}"	"[""card_event_campaign_alamein3_head_to_head""]"	literal_resolved_receiver_unverified	False
+card_location_german_scen3	ExecuteUbergraph_card_location_german_scen3	$/310/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_german_scen3	ExecuteUbergraph_card_location_german_scen3	$/352/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_german_scen3	ExecuteUbergraph_card_location_german_scen3	$/360/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_german_scen3	ExecuteUbergraph_card_location_german_scen3	$/417/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_german_scen4	ExecuteUbergraph_card_location_german_scen4	$/11/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_german_scen4	ExecuteUbergraph_card_location_german_scen4	$/13/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_german_scen4	ExecuteUbergraph_card_location_german_scen4	$/16/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_german_scen4	ExecuteUbergraph_card_location_german_scen4	$/18/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_german_scen4	ExecuteUbergraph_card_location_german_scen4	$/23/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_root_out_the_enemy""}"	"[""card_event_root_out_the_enemy""]"	literal_resolved_receiver_unverified	False
+card_location_german_scen4	ExecuteUbergraph_card_location_german_scen4	$/29/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_tactical_strike""}"	"[""card_event_tactical_strike""]"	literal_resolved_receiver_unverified	False
+card_location_german_scen4	ExecuteUbergraph_card_location_german_scen4	$/64/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_german_scen4	ExecuteUbergraph_card_location_german_scen4	$/66/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_german_scen5	ExecuteUbergraph_card_location_german_scen5	$/53/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_german_scen5	ExecuteUbergraph_card_location_german_scen5	$/56/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_german_scen5	ExecuteUbergraph_card_location_german_scen5	$/59/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_german_scen5	ExecuteUbergraph_card_location_german_scen5	$/62/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_german_scen5	ExecuteUbergraph_card_location_german_scen5	$/63/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_german_scen5	ExecuteUbergraph_card_location_german_scen5	$/65/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_german_scen5	ExecuteUbergraph_card_location_german_scen5	$/67/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_german_scen5	ExecuteUbergraph_card_location_german_scen5	$/68/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_german_scen5	ExecuteUbergraph_card_location_german_scen5	$/70/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_german_scen5	ExecuteUbergraph_card_location_german_scen5	$/113/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_german_scen5	ExecuteUbergraph_card_location_german_scen5	$/115/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_german_scen5	ExecuteUbergraph_card_location_german_scen5	$/122/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_german_scen5	ExecuteUbergraph_card_location_german_scen5	$/125/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_german_scen5	ExecuteUbergraph_card_location_german_scen5	$/142/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_reich_defenders""}"	"[""card_event_reich_defenders""]"	literal_resolved_receiver_unverified	False
+card_event_air_strips	ExecuteUbergraph_card_event_air_strips	$/1/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_unit_breda_ba_65""}"	"[""card_unit_breda_ba_65""]"	literal_resolved_receiver_unverified	False
+card_event_air_strips	ExecuteUbergraph_card_event_air_strips	$/2/Expression	SpawnCardInDeckBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_rm_roma""}"	"[""card_event_rm_roma""]"	literal_resolved_receiver_unverified	False
+card_event_decisive_defense	OnOtherCardAttackSwitchTarget	$/12/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_event_desert_push_cam1	ExecuteUbergraph_card_event_desert_push_cam1	$/29/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""Context"", ""Context"": {""Inst"": ""InstanceVariable"", ""Variable Outer"": {""PinCategory"": ""Object"", ""PinSubCategory"": ""Object"", ""PinSubCategoryObject"": ""/Script/kards.BaseCardObject""}, ""Variable Name"": ""tempCard""}, ""SkipOffsetForNull"": 9, ""RValuePropertyOuter"": ""##NOT SERIALIZED##"", ""RValuePropertyName"": ""name"", ""Expression"": {""Inst"": ""InstanceVariable"", ""Variable Outer"": ""##NOT SERIALIZED##"", ""Variable Name"": ""name""}}"	[]	dynamic_or_missing_argument	False
+card_unit_18th_bersaglieri	ExecuteUbergraph_card_unit_18th_bersaglieri	$/1/Expression	SpawnCardInDeckBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_unit_9th_bersaglieri""}"	"[""card_unit_9th_bersaglieri""]"	literal_resolved_receiver_unverified	False
+card_unit_4th_alpini_regiment	ExecuteUbergraph_card_unit_4th_alpini_regiment	$/5/Expression	SpawnCardInDeckBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_unit_4th_alpini_regiment""}"	"[""card_unit_4th_alpini_regiment""]"	literal_resolved_receiver_unverified	False
+card_unit_5th_bersaglieri	ExecuteUbergraph_card_unit_5th_bersaglieri	$/1/Expression	SpawnCardInDeckBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_unit_18th_bersaglieri""}"	"[""card_unit_18th_bersaglieri""]"	literal_resolved_receiver_unverified	False
+card_unit_9th_bersaglieri	ExecuteUbergraph_card_unit_9th_bersaglieri	$/1/Expression	SpawnCardInDeckBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_unit_18th_bersaglieri""}"	"[""card_unit_18th_bersaglieri""]"	literal_resolved_receiver_unverified	False
+card_unit_fiat_br_20	ExecuteUbergraph_card_unit_fiat_br_20	$/1/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_unit_fiat_br_20	ExecuteUbergraph_card_unit_fiat_br_20	$/2/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_event_gunboat_hit	ExecuteUbergraph_card_event_gunboat_hit	$/3/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_gunboat_run""}"	"[""card_event_gunboat_run""]"	literal_resolved_receiver_unverified	False
+card_event_gunboat_raid	ExecuteUbergraph_card_event_gunboat_raid	$/3/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_gunboat_hit""}"	"[""card_event_gunboat_hit""]"	literal_resolved_receiver_unverified	False
+card_event_isolation	ExecuteUbergraph_card_event_isolation	$/22/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_unit_type94_tk	ExecuteUbergraph_card_unit_type94_tk	$/1/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_surprise_attack""}"	"[""card_event_surprise_attack""]"	literal_resolved_receiver_unverified	False
+card_event_home_defense	ExecuteUbergraph_card_event_home_defense	$/47/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_event_home_defense	ExecuteUbergraph_card_event_home_defense	$/49/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_event_last_rites	ExecuteUbergraph_card_event_last_rites	$/1/Expression	SpawnCardInDeckBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_kamikaze""}"	"[""card_event_kamikaze""]"	literal_resolved_receiver_unverified	False
+card_unit_ki_27_nate	ExecuteUbergraph_card_unit_ki_27_nate	$/16/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""Context"", ""Context"": {""Inst"": ""LocalVariable"", ""Variable Outer"": {""PinCategory"": ""Object"", ""PinSubCategory"": ""Object"", ""PinSubCategoryObject"": ""/Script/kards.BaseCardObject""}, ""Variable Name"": ""CallFunc_GetRandomCard_randomCard""}, ""SkipOffsetForNull"": 9, ""RValuePropertyOuter"": ""##NOT SERIALIZED##"", ""RValuePropertyName"": ""name"", ""Expression"": {""Inst"": ""InstanceVariable"", ""Variable Outer"": ""##NOT SERIALIZED##"", ""Variable Name"": ""name""}}"	[]	dynamic_or_missing_argument	False
+card_unit_sendai_regiment	ExecuteUbergraph_card_unit_sendai_regiment	$/33/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_unit_sonia	ExecuteUbergraph_card_unit_sonia	$/4/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_unit_77th_regiment	ExecuteUbergraph_card_unit_77th_regiment	$/7/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_event_experimental_flight	ExecuteUbergraph_card_event_experimental_flight	$/21/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""Context"", ""Context"": {""Inst"": ""LocalVariable"", ""Variable Outer"": {""PinCategory"": ""Object"", ""PinSubCategory"": ""Object"", ""PinSubCategoryObject"": ""/Script/kards.BaseCardObject""}, ""Variable Name"": ""CallFunc_GetRandomCard_randomCard""}, ""SkipOffsetForNull"": 9, ""RValuePropertyOuter"": ""##NOT SERIALIZED##"", ""RValuePropertyName"": ""name"", ""Expression"": {""Inst"": ""InstanceVariable"", ""Variable Outer"": ""##NOT SERIALIZED##"", ""Variable Name"": ""name""}}"	[]	dynamic_or_missing_argument	False
+card_event_seize_the_initiative	ExecuteUbergraph_card_event_seize_the_initiative	$/25/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_seize_the_initiative""}"	"[""card_event_seize_the_initiative""]"	literal_resolved_receiver_unverified	False
+card_unit_kokuras_sword	ExecuteUbergraph_card_unit_kokuras_sword	$/31/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_event_carrier_battle	ExecuteUbergraph_card_event_carrier_battle	$/25/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_carrier_battle""}"	"[""card_event_carrier_battle""]"	literal_resolved_receiver_unverified	False
+card_event_drive_into_the_sea	ExecuteUbergraph_card_event_drive_into_the_sea	$/22/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_event_volunteer_corps_home	ExecuteUbergraph_card_event_volunteer_corps_home	$/9/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_unit_106th_infantry_regiment	ExecuteUbergraph_card_unit_106th_infantry_regiment	$/7/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_unit_106th_infantry_regiment""}"	"[""card_unit_106th_infantry_regiment""]"	literal_resolved_receiver_unverified	False
+card_unit_kikka_jet	ExecuteUbergraph_card_unit_kikka_jet	$/1/Expression	SpawnCardInDeckBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_kamikaze""}"	"[""card_event_kamikaze""]"	literal_resolved_receiver_unverified	False
+card_event_dug_in	ExecuteUbergraph_card_event_dug_in	$/3/Expression	SpawnCardInDeckBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_shifting_doctrine""}"	"[""card_event_shifting_doctrine""]"	literal_resolved_receiver_unverified	False
+card_event_engage_range	ExecuteUbergraph_card_event_engage_range	$/2/Expression	ConvertCard	2	"{""Inst"": ""NameConst"", ""Value"": ""card_event_engage_close""}"	"[""card_event_engage_close""]"	literal_resolved_receiver_unverified	False
+card_unit_kyoto_regiment	ExecuteUbergraph_card_unit_kyoto_regiment	$/33/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_event_7075_aluminium	ExecuteUbergraph_card_event_7075_aluminium	$/3/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_unit_zero""}"	"[""card_unit_zero""]"	literal_resolved_receiver_unverified	False
+card_event_7075_aluminium	ExecuteUbergraph_card_event_7075_aluminium	$/19/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_unit_zero""}"	"[""card_unit_zero""]"	literal_resolved_receiver_unverified	False
+card_event_advanced_imperial_rnd	ExecuteUbergraph_card_event_advanced_imperial_rnd	$/1	WhichChooseOne			[]	unmapped_symbol	False
+card_event_advanced_imperial_rnd	ExecuteUbergraph_card_event_advanced_imperial_rnd	$/7/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_7075_aluminium""}"	"[""card_event_7075_aluminium""]"	literal_resolved_receiver_unverified	False
+card_event_advanced_imperial_rnd	ExecuteUbergraph_card_event_advanced_imperial_rnd	$/9/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_imperial_weapon_no_2""}"	"[""card_event_imperial_weapon_no_2""]"	literal_resolved_receiver_unverified	False
+card_event_expanded_imperial_rnd	ExecuteUbergraph_card_event_expanded_imperial_rnd	$/1	WhichChooseOne			[]	unmapped_symbol	False
+card_event_expanded_imperial_rnd	ExecuteUbergraph_card_event_expanded_imperial_rnd	$/7/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_long_lance""}"	"[""card_event_long_lance""]"	literal_resolved_receiver_unverified	False
+card_event_expanded_imperial_rnd	ExecuteUbergraph_card_event_expanded_imperial_rnd	$/9/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_advanced_imperial_rnd""}"	"[""card_event_advanced_imperial_rnd""]"	literal_resolved_receiver_unverified	False
+card_event_imperial_research	ExecuteUbergraph_card_event_imperial_research	$/1	WhichChooseOne			[]	unmapped_symbol	False
+card_event_imperial_research	ExecuteUbergraph_card_event_imperial_research	$/7/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_balloon_bombs""}"	"[""card_event_balloon_bombs""]"	literal_resolved_receiver_unverified	False
+card_event_imperial_research	ExecuteUbergraph_card_event_imperial_research	$/9/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_expanded_imperial_rnd""}"	"[""card_event_expanded_imperial_rnd""]"	literal_resolved_receiver_unverified	False
+card_event_imperial_weapon_no_2	ExecuteUbergraph_card_event_imperial_weapon_no_2	$/21/Expression	SpawnCardInDeckBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_unit_kikka_jet""}"	"[""card_unit_kikka_jet""]"	literal_resolved_receiver_unverified	False
+card_unit_38th_independent	ExecuteUbergraph_card_unit_38th_independent	$/104/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_event_scouting_party	ExecuteUbergraph_card_event_scouting_party	$/3/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_event_distant_front	ExecuteUbergraph_card_event_distant_front	$/22/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_event_audacity	ExecuteUbergraph_card_event_audacity	$/36/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_unit_n1k1_kyofu	ExecuteUbergraph_card_unit_n1k1_kyofu	$/1/Expression	SpawnCardInDeckBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_mikura""}"	"[""card_event_mikura""]"	literal_resolved_receiver_unverified	False
+card_location_japan_scen1	ExecuteUbergraph_card_location_japan_scen1	$/29/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_japan_scen1	ExecuteUbergraph_card_location_japan_scen1	$/31/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_japan_scen1	ExecuteUbergraph_card_location_japan_scen1	$/34/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_japan_scen1	ExecuteUbergraph_card_location_japan_scen1	$/36/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_japan_scen1	ExecuteUbergraph_card_location_japan_scen1	$/54/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_air_superiority""}"	"[""card_event_air_superiority""]"	literal_resolved_receiver_unverified	False
+card_location_japan_scen1	ExecuteUbergraph_card_location_japan_scen1	$/58/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_rising_sun""}"	"[""card_event_rising_sun""]"	literal_resolved_receiver_unverified	False
+card_location_japan_scen1	ExecuteUbergraph_card_location_japan_scen1	$/62/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_amphibious_assault""}"	"[""card_event_amphibious_assault""]"	literal_resolved_receiver_unverified	False
+card_location_japan_scen1	ExecuteUbergraph_card_location_japan_scen1	$/78/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_japan_scen1	ExecuteUbergraph_card_location_japan_scen1	$/144/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_japan_scen2	ExecuteUbergraph_card_location_japan_scen2	$/48/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_japan_scen2	ExecuteUbergraph_card_location_japan_scen2	$/51/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_japan_scen2	ExecuteUbergraph_card_location_japan_scen2	$/54/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_japan_scen2	ExecuteUbergraph_card_location_japan_scen2	$/57/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_japan_scen2	ExecuteUbergraph_card_location_japan_scen2	$/60/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_japan_scen2	ExecuteUbergraph_card_location_japan_scen2	$/62/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_japan_scen2	ExecuteUbergraph_card_location_japan_scen2	$/91/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_target_acquired""}"	"[""card_event_target_acquired""]"	literal_resolved_receiver_unverified	False
+card_location_japan_scen2	ExecuteUbergraph_card_location_japan_scen2	$/106/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_campaign_philippines2_strafe_the_roads""}"	"[""card_event_campaign_philippines2_strafe_the_roads""]"	literal_resolved_receiver_unverified	False
+card_location_japan_scen2	ExecuteUbergraph_card_location_japan_scen2	$/110/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_campaign_philippines2_the_hunt""}"	"[""card_event_campaign_philippines2_the_hunt""]"	literal_resolved_receiver_unverified	False
+card_location_japan_scen2	ExecuteUbergraph_card_location_japan_scen2	$/114/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_campaign_philippines2_chase_them_down""}"	"[""card_event_campaign_philippines2_chase_them_down""]"	literal_resolved_receiver_unverified	False
+card_location_japan_scen3	ExecuteUbergraph_card_location_japan_scen3	$/32/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_japan_scen3	ExecuteUbergraph_card_location_japan_scen3	$/34/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_japan_scen3	ExecuteUbergraph_card_location_japan_scen3	$/37/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_japan_scen3	ExecuteUbergraph_card_location_japan_scen3	$/39/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_japan_scen3	ExecuteUbergraph_card_location_japan_scen3	$/65/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_japan_scen3	ExecuteUbergraph_card_location_japan_scen3	$/67/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_japan_scen3	ExecuteUbergraph_card_location_japan_scen3	$/114/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_scouting_party""}"	"[""card_event_scouting_party""]"	literal_resolved_receiver_unverified	False
+card_location_japan_scen4	ExecuteUbergraph_card_location_japan_scen4	$/66/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_japan_scen4	ExecuteUbergraph_card_location_japan_scen4	$/70/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_japan_scen4	ExecuteUbergraph_card_location_japan_scen4	$/72/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_japan_scen4	ExecuteUbergraph_card_location_japan_scen4	$/74/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_japan_scen4	ExecuteUbergraph_card_location_japan_scen4	$/76/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_japan_scen4	ExecuteUbergraph_card_location_japan_scen4	$/77/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_japan_scen4	ExecuteUbergraph_card_location_japan_scen4	$/82/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_japan_scen4	ExecuteUbergraph_card_location_japan_scen4	$/84/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_japan_scen4	ExecuteUbergraph_card_location_japan_scen4	$/86/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_japan_scen4	ExecuteUbergraph_card_location_japan_scen4	$/88/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_japan_scen4	ExecuteUbergraph_card_location_japan_scen4	$/89/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_japan_scen4	ExecuteUbergraph_card_location_japan_scen4	$/99/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_campaign_philippines4_aerial_assault""}"	"[""card_event_campaign_philippines4_aerial_assault""]"	literal_resolved_receiver_unverified	False
+card_location_japan_scen4	ExecuteUbergraph_card_location_japan_scen4	$/103/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_campaign_philippines4_infiltration""}"	"[""card_event_campaign_philippines4_infiltration""]"	literal_resolved_receiver_unverified	False
+card_location_japan_scen4	ExecuteUbergraph_card_location_japan_scen4	$/107/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_campaign_philippines4_smash_the_defenses""}"	"[""card_event_campaign_philippines4_smash_the_defenses""]"	literal_resolved_receiver_unverified	False
+card_location_japan_scen5	ExecuteUbergraph_card_location_japan_scen5	$/26/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_japan_scen5	ExecuteUbergraph_card_location_japan_scen5	$/30/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_japan_scen5	ExecuteUbergraph_card_location_japan_scen5	$/32/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_japan_scen5	ExecuteUbergraph_card_location_japan_scen5	$/35/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_japan_scen5	ExecuteUbergraph_card_location_japan_scen5	$/37/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_japan_scen5	ExecuteUbergraph_card_location_japan_scen5	$/42/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_unit_61st_infantry_regiment""}"	"[""card_unit_61st_infantry_regiment""]"	literal_resolved_receiver_unverified	False
+card_location_japan_scen5	ExecuteUbergraph_card_location_japan_scen5	$/49/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_soul_of_old_japan""}"	"[""card_event_soul_of_old_japan""]"	literal_resolved_receiver_unverified	False
+card_location_japan_scen5	ExecuteUbergraph_card_location_japan_scen5	$/78/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_outflank""}"	"[""card_event_outflank""]"	literal_resolved_receiver_unverified	False
+card_unit_type94_tk_cam1	ExecuteUbergraph_card_unit_type94_tk_cam1	$/44/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_surprise_attack""}"	"[""card_event_surprise_attack""]"	literal_resolved_receiver_unverified	False
+card_unit_type94_tk_cam1	ExecuteUbergraph_card_unit_type94_tk_cam1	$/47/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_surprise_attack""}"	"[""card_event_surprise_attack""]"	literal_resolved_receiver_unverified	False
+card_event_rain1_mist	ExecuteUbergraph_card_event_rain1_mist	$/10/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""Context"", ""Context"": {""Inst"": ""InstanceVariable"", ""Variable Outer"": {""PinCategory"": ""Object"", ""PinSubCategory"": ""Object"", ""PinSubCategoryObject"": ""/Script/kards.BaseCardObject""}, ""Variable Name"": ""weatherCardChosen""}, ""SkipOffsetForNull"": 9, ""RValuePropertyOuter"": ""##NOT SERIALIZED##"", ""RValuePropertyName"": ""name"", ""Expression"": {""Inst"": ""InstanceVariable"", ""Variable Outer"": ""##NOT SERIALIZED##"", ""Variable Name"": ""name""}}"	[]	dynamic_or_missing_argument	False
+card_event_storm1_gale	ExecuteUbergraph_card_event_storm1_gale	$/10/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""Context"", ""Context"": {""Inst"": ""InstanceVariable"", ""Variable Outer"": {""PinCategory"": ""Object"", ""PinSubCategory"": ""Object"", ""PinSubCategoryObject"": ""/Script/kards.BaseCardObject""}, ""Variable Name"": ""weatherCardChosen""}, ""SkipOffsetForNull"": 9, ""RValuePropertyOuter"": ""##NOT SERIALIZED##"", ""RValuePropertyName"": ""name"", ""Expression"": {""Inst"": ""InstanceVariable"", ""Variable Outer"": ""##NOT SERIALIZED##"", ""Variable Name"": ""name""}}"	[]	dynamic_or_missing_argument	False
+card_event_sunny1_blue_sky	ExecuteUbergraph_card_event_sunny1_blue_sky	$/10/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""Context"", ""Context"": {""Inst"": ""InstanceVariable"", ""Variable Outer"": {""PinCategory"": ""Object"", ""PinSubCategory"": ""Object"", ""PinSubCategoryObject"": ""/Script/kards.BaseCardObject""}, ""Variable Name"": ""weatherCardChosen""}, ""SkipOffsetForNull"": 9, ""RValuePropertyOuter"": ""##NOT SERIALIZED##"", ""RValuePropertyName"": ""name"", ""Expression"": {""Inst"": ""InstanceVariable"", ""Variable Outer"": ""##NOT SERIALIZED##"", ""Variable Name"": ""name""}}"	[]	dynamic_or_missing_argument	False
+card_event_sunny3_jungle_fever2	ExecuteUbergraph_card_event_sunny3_jungle_fever2	$/1/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_event_agency_africa	ExecuteUbergraph_card_event_agency_africa	$/18/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""Context"", ""Context"": {""Inst"": ""LocalVariable"", ""Variable Outer"": {""PinCategory"": ""Object"", ""PinSubCategory"": ""Object"", ""PinSubCategoryObject"": ""/Script/kards.BaseCardObject""}, ""Variable Name"": ""CallFunc_GetRandomCard_randomCard""}, ""SkipOffsetForNull"": 9, ""RValuePropertyOuter"": ""##NOT SERIALIZED##"", ""RValuePropertyName"": ""name"", ""Expression"": {""Inst"": ""InstanceVariable"", ""Variable Outer"": ""##NOT SERIALIZED##"", ""Variable Name"": ""name""}}"	[]	dynamic_or_missing_argument	False
+card_event_exiled_forces	ExecuteUbergraph_card_event_exiled_forces	$/35/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_event_first_to_fight	ExecuteUbergraph_card_event_first_to_fight	$/6/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_event_hammer_home	ExecuteUbergraph_card_event_hammer_home	$/12/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_event_orp_blyskawica	ExecuteUbergraph_card_event_orp_blyskawica	$/37/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""Context"", ""Context"": {""Inst"": ""LocalVariable"", ""Variable Outer"": {""PinCategory"": ""Object"", ""PinSubCategory"": ""Object"", ""PinSubCategoryObject"": ""/Script/kards.BaseCardObject""}, ""Variable Name"": ""CallFunc_GetRandomCard_randomCard""}, ""SkipOffsetForNull"": 9, ""RValuePropertyOuter"": ""##NOT SERIALIZED##"", ""RValuePropertyName"": ""name"", ""Expression"": {""Inst"": ""InstanceVariable"", ""Variable Outer"": ""##NOT SERIALIZED##"", ""Variable Name"": ""name""}}"	[]	dynamic_or_missing_argument	False
+card_event_orp_general_haller	ExecuteUbergraph_card_event_orp_general_haller	$/17/Expression	ConvertCard	2	"{""Inst"": ""NameConst"", ""Value"": ""card_unit_routed_troops""}"	"[""card_unit_routed_troops""]"	literal_resolved_receiver_unverified	False
+card_event_plan_west	ExecuteUbergraph_card_event_plan_west	$/3/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_event_plan_west	ExecuteUbergraph_card_event_plan_west	$/6/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_event_rapid_response	ExecuteUbergraph_card_event_rapid_response	$/5/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_event_stretch_the_line	ExecuteUbergraph_card_event_stretch_the_line	$/27/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_event_underground_state	ExecuteUbergraph_card_event_underground_state	$/5/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_unit_15th_wolves_regiment	ExecuteUbergraph_card_unit_15th_wolves_regiment	$/5/Expression	ConvertCard	2	"{""Inst"": ""NameConst"", ""Value"": ""card_unit_routed_troops""}"	"[""card_unit_routed_troops""]"	literal_resolved_receiver_unverified	False
+card_unit_16th_tarnow_regiment	ExecuteUbergraph_card_unit_16th_tarnow_regiment	$/16/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_unit_3rd_carpathian	ExecuteUbergraph_card_unit_3rd_carpathian	$/5/Expression	ConvertCard	2	"{""Inst"": ""NameConst"", ""Value"": ""card_unit_24th_uhlan""}"	"[""card_unit_24th_uhlan""]"	literal_resolved_receiver_unverified	False
+card_unit_5th_wilno_regiment	ExecuteUbergraph_card_unit_5th_wilno_regiment	$/4/Expression	ConvertCard	2	"{""Inst"": ""NameConst"", ""Value"": ""None""}"	[]	literal_unresolved	False
+card_unit_danuta	ExecuteUbergraph_card_unit_danuta	$/1/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_unit_p37los	ExecuteUbergraph_card_unit_p37los	$/45/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""Context"", ""Context"": {""Inst"": ""LocalVariable"", ""Variable Outer"": {""PinCategory"": ""Object"", ""PinSubCategory"": ""Object"", ""PinSubCategoryObject"": ""/Script/kards.BaseCardObject""}, ""Variable Name"": ""CallFunc_GetRandomCard_randomCard""}, ""SkipOffsetForNull"": 9, ""RValuePropertyOuter"": ""##NOT SERIALIZED##"", ""RValuePropertyName"": ""name"", ""Expression"": {""Inst"": ""InstanceVariable"", ""Variable Outer"": ""##NOT SERIALIZED##"", ""Variable Name"": ""name""}}"	[]	dynamic_or_missing_argument	False
+card_unit_pzl_23_karas	ExecuteUbergraph_card_unit_pzl_23_karas	$/5/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_section_ii""}"	"[""card_event_section_ii""]"	literal_resolved_receiver_unverified	False
+card_event_dogfight_usa	ExecuteUbergraph_card_event_dogfight_usa	$/4	WhichChooseOne			[]	unmapped_symbol	False
+card_event_dogfight_usa	GetPlayFromHandDamage	$/0	WhichChooseOne			[]	unmapped_symbol	False
+card_event_flank_attack_sov	ExecuteUbergraph_card_event_flank_attack_sov	$/1	WhichChooseOne			[]	unmapped_symbol	False
+card_event_flank_attack_sov	ExecuteUbergraph_card_event_flank_attack_sov	$/7/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_event_flank_attack_sov	ExecuteUbergraph_card_event_flank_attack_sov	$/9/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_event_inspired_tactics	ExecuteUbergraph_card_event_inspired_tactics	$/26/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_event_soviet_promo3	ExecuteUbergraph_card_event_soviet_promo3	$/7/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_event_soviet_promo3	ExecuteUbergraph_card_event_soviet_promo3	$/35	WhichChooseOne			[]	unmapped_symbol	False
+card_unit_usa_promo1	ExecuteUbergraph_card_unit_usa_promo1	$/1/Expression	SpawnCardInDeckBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_unit_32nd_infantry_regiment""}"	"[""card_unit_32nd_infantry_regiment""]"	literal_resolved_receiver_unverified	False
+card_event_barrage	CanPlayFromHand	$/0	WhichChooseOne			[]	unmapped_symbol	False
+card_event_barrage	ExecuteUbergraph_card_event_barrage	$/22	WhichChooseOne			[]	unmapped_symbol	False
+card_event_barrage	GetPlayFromHandDamage	$/0	WhichChooseOne			[]	unmapped_symbol	False
+card_event_men_of_steel	ExecuteUbergraph_card_event_men_of_steel	$/17	WhichChooseOne			[]	unmapped_symbol	False
+card_event_men_of_steel	ExecuteUbergraph_card_event_men_of_steel	$/25/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_the_hammer""}"	"[""card_event_the_hammer""]"	literal_resolved_receiver_unverified	False
+card_event_mobile_defense	ExecuteUbergraph_card_event_mobile_defense	$/10/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_event_mobile_defense	ExecuteUbergraph_card_event_mobile_defense	$/13/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_event_night_witches	ExecuteUbergraph_card_event_night_witches	$/3/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_unit_polikarpov_po_2_ii""}"	"[""card_unit_polikarpov_po_2_ii""]"	literal_resolved_receiver_unverified	False
+card_event_parade	ExecuteUbergraph_card_event_parade	$/29/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""Context"", ""Context"": {""Inst"": ""InstanceVariable"", ""Variable Outer"": {""PinCategory"": ""Object"", ""PinSubCategory"": ""Object"", ""PinSubCategoryObject"": ""/Script/kards.BaseCardObject""}, ""Variable Name"": ""Unit_ToBeDrawn""}, ""SkipOffsetForNull"": 9, ""RValuePropertyOuter"": ""##NOT SERIALIZED##"", ""RValuePropertyName"": ""name"", ""Expression"": {""Inst"": ""InstanceVariable"", ""Variable Outer"": ""##NOT SERIALIZED##"", ""Variable Name"": ""name""}}"	[]	dynamic_or_missing_argument	False
+card_event_veteran_pilots	CanPlayFromHand	$/0	WhichChooseOne			[]	unmapped_symbol	False
+card_event_veteran_pilots	ExecuteUbergraph_card_event_veteran_pilots	$/12	WhichChooseOne			[]	unmapped_symbol	False
+card_unit_1271st_rifles	ExecuteUbergraph_card_unit_1271st_rifles	$/1/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_reserves""}"	"[""card_event_reserves""]"	literal_resolved_receiver_unverified	False
+card_unit_polikarpov_po_2_ii	ExecuteUbergraph_card_unit_polikarpov_po_2_ii	$/1/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_from_the_people""}"	"[""card_event_from_the_people""]"	literal_resolved_receiver_unverified	False
+card_event_assault	ExecuteUbergraph_card_event_assault	$/29/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_unit_light_infantry""}"	"[""card_unit_light_infantry""]"	literal_resolved_receiver_unverified	False
+card_event_mother_russia	ExecuteUbergraph_card_event_mother_russia	$/5/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""Context"", ""Context"": {""Inst"": ""LocalVariable"", ""Variable Outer"": {""PinCategory"": ""Object"", ""PinSubCategory"": ""Object"", ""PinSubCategoryObject"": ""/Script/kards.BaseCardObject""}, ""Variable Name"": ""CallFunc_GetCardFromID_card""}, ""SkipOffsetForNull"": 9, ""RValuePropertyOuter"": ""##NOT SERIALIZED##"", ""RValuePropertyName"": ""name"", ""Expression"": {""Inst"": ""InstanceVariable"", ""Variable Outer"": ""##NOT SERIALIZED##"", ""Variable Name"": ""name""}}"	[]	dynamic_or_missing_argument	False
+card_event_no_surrender	ExecuteUbergraph_card_event_no_surrender	$/8/Expression	SpawnMultipleCardsOnBattlefield			[]	unmapped_symbol	False
+card_event_red_banner	CanPlayFromHand	$/28	CheckHasUnitToSpawn			[]	unmapped_symbol	False
+card_event_red_banner	ExecuteUbergraph_card_event_red_banner	$/10/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_event_reserves	ExecuteUbergraph_card_event_reserves	$/3/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_unit_light_infantry""}"	"[""card_unit_light_infantry""]"	literal_resolved_receiver_unverified	False
+card_event_siberian_transfer	ExecuteUbergraph_card_event_siberian_transfer	$/1/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_event_ural_factories	CanPlayFromHand	$/28	CheckHasUnitToSpawn			[]	unmapped_symbol	False
+card_event_ural_factories	ExecuteUbergraph_card_event_ural_factories	$/10/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_unit_13th_rifle_regiment	ExecuteUbergraph_card_unit_13th_rifle_regiment	$/18/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""Context"", ""Context"": {""Inst"": ""LocalVariable"", ""Variable Outer"": {""PinCategory"": ""Object"", ""PinSubCategory"": ""Object"", ""PinSubCategoryObject"": ""/Script/kards.BaseCardObject""}, ""Variable Name"": ""CallFunc_GetRandomCard_randomCard""}, ""SkipOffsetForNull"": 9, ""RValuePropertyOuter"": ""##NOT SERIALIZED##"", ""RValuePropertyName"": ""name"", ""Expression"": {""Inst"": ""InstanceVariable"", ""Variable Outer"": ""##NOT SERIALIZED##"", ""Variable Name"": ""name""}}"	[]	dynamic_or_missing_argument	False
+card_unit_321st_rifles	ExecuteUbergraph_card_unit_321st_rifles	$/3/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_unit_6th_airborne	ExecuteUbergraph_card_unit_6th_airborne	$/1/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_unit_93rd_guards	ExecuteUbergraph_card_unit_93rd_guards	$/3/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_unit_armored_train	ExecuteUbergraph_card_unit_armored_train	$/13/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_unit_i_15_chaika	ExecuteUbergraph_card_unit_i_15_chaika	$/1/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_unit_is_i	ExecuteUbergraph_card_unit_is_i	$/9/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_event_front_formation	ExecuteUbergraph_card_event_front_formation	$/5/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_event_iron_victory	ExecuteUbergraph_card_event_iron_victory	$/27/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_unit_t_34""}"	"[""card_unit_t_34""]"	literal_resolved_receiver_unverified	False
+card_event_shock_tactics	CanPlayFromHand	$/0	WhichChooseOne			[]	unmapped_symbol	False
+card_event_shock_tactics	ExecuteUbergraph_card_event_shock_tactics	$/1	WhichChooseOne			[]	unmapped_symbol	False
+card_unit_654_rifles	ExecuteUbergraph_card_unit_654_rifles	$/3/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_event_spy_ring	ExecuteUbergraph_card_event_spy_ring	$/24/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""InstanceVariable"", ""Variable Outer"": {""PinCategory"": ""Name"", ""PinSubCategory"": ""Name""}, ""Variable Name"": ""card to spawn""}"	[]	dynamic_or_missing_argument	False
+card_unit_25th_infantry_regiment	ExecuteUbergraph_card_unit_25th_infantry_regiment	$/13/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_unit_35th_mountain_rifles	OnAttemptedDiscard	$/2/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_unit_t_60	ExecuteUbergraph_card_unit_t_60	$/1/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_unit_t_34""}"	"[""card_unit_t_34""]"	literal_resolved_receiver_unverified	False
+card_event_stand_together_brothers	CanPlayFromHand	$/30	CheckHasUnitToSpawn			[]	unmapped_symbol	False
+card_event_stand_together_brothers	ExecuteUbergraph_card_event_stand_together_brothers	$/7	RandomlyChooseTank			[]	unmapped_symbol	False
+card_event_stand_together_brothers	ExecuteUbergraph_card_event_stand_together_brothers	$/10/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_event_covert_operation	ExecuteUbergraph_card_event_covert_operation	$/13/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_event_covert_operation	ExecuteUbergraph_card_event_covert_operation	$/17/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_event_strategic_focus	ExecuteUbergraph_card_event_strategic_focus	$/27	WhichChooseOne			[]	unmapped_symbol	False
+card_unit_36th_cavalry	ExecuteUbergraph_card_unit_36th_cavalry	$/5/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_unit_36th_cavalry	ExecuteUbergraph_card_unit_36th_cavalry	$/7/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_unit_38th_guards_rifles	ExecuteUbergraph_card_unit_38th_guards_rifles	$/8/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_unit_97th_rifles	ExecuteUbergraph_card_unit_97th_rifles	$/1/Expression	SpawnCardInDeckBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_unit_414th_rifles""}"	"[""card_unit_414th_rifles""]"	literal_resolved_receiver_unverified	False
+card_event_motherland_calls	ExecuteUbergraph_card_event_motherland_calls	$/37/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_event_the_peoples_army	ExecuteUbergraph_card_event_the_peoples_army	$/11/Expression	SpawnMultipleCardsOnBattlefield			[]	unmapped_symbol	False
+card_event_the_peoples_army	ExecuteUbergraph_card_event_the_peoples_army	$/14/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_unit_light_infantry""}"	"[""card_unit_light_infantry""]"	literal_resolved_receiver_unverified	False
+card_unit_178th_guard_rifles	ExecuteUbergraph_card_unit_178th_guard_rifles	$/3/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_unit_573rd_rifles	ExecuteUbergraph_card_unit_573rd_rifles	$/3/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_unit_573rd_rifles	ExecuteUbergraph_card_unit_573rd_rifles	$/6/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_unit_iosef_stalin_ii_1944	ExecuteUbergraph_card_unit_iosef_stalin_ii_1944	$/5/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_unit_iosef_stalin_ii_1944	ExecuteUbergraph_card_unit_iosef_stalin_ii_1944	$/10/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_unit_tupolev_tb_3	ExecuteUbergraph_card_unit_tupolev_tb_3	$/2/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_unit_tupolev_tb_3	ExecuteUbergraph_card_unit_tupolev_tb_3	$/3/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_event_deep_operation	ExecuteUbergraph_card_event_deep_operation	$/24/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_unit_light_infantry""}"	"[""card_unit_light_infantry""]"	literal_resolved_receiver_unverified	False
+card_event_deep_operation	ExecuteUbergraph_card_event_deep_operation	$/25/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_unit_light_infantry""}"	"[""card_unit_light_infantry""]"	literal_resolved_receiver_unverified	False
+card_event_red_dawn	CanPlayFromHand	$/0	WhichChooseOne			[]	unmapped_symbol	False
+card_event_red_dawn	ExecuteUbergraph_card_event_red_dawn	$/1	WhichChooseOne			[]	unmapped_symbol	False
+card_event_red_dawn	ExecuteUbergraph_card_event_red_dawn	$/13/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_from_the_people""}"	"[""card_event_from_the_people""]"	literal_resolved_receiver_unverified	False
+card_event_red_dawn	GetPlayFromHandDamage	$/0	WhichChooseOne			[]	unmapped_symbol	False
+card_event_refit	CanPlayFromHand	$/30	CheckHasUnitToSpawn			[]	unmapped_symbol	False
+card_event_refit	ExecuteUbergraph_card_event_refit	$/7	RandomChooseA_Tank			[]	unmapped_symbol	False
+card_event_refit	ExecuteUbergraph_card_event_refit	$/10/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_unit_272nd_guards	ExecuteUbergraph_card_unit_272nd_guards	$/3/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_event_honorifics	ExecuteUbergraph_card_event_honorifics	$/33/Expression	ConvertCard	2	"{""Inst"": ""NameConst"", ""Value"": ""None""}"	[]	literal_unresolved	False
+card_event_surveil	ExecuteUbergraph_card_event_surveil	$/4/Expression	ConvertCard	2	"{""Inst"": ""NameConst"", ""Value"": ""None""}"	[]	literal_unresolved	False
+card_event_victory_banners	ExecuteUbergraph_card_event_victory_banners	$/15/Expression	ConvertCard	2	"{""Inst"": ""Context"", ""Context"": {""Inst"": ""InstanceVariable"", ""Variable Outer"": {""PinCategory"": ""Object"", ""PinSubCategory"": ""Object"", ""PinSubCategoryObject"": ""/Script/kards.BaseCardObject""}, ""Variable Name"": ""tmpCard""}, ""SkipOffsetForNull"": 9, ""RValuePropertyOuter"": ""##NOT SERIALIZED##"", ""RValuePropertyName"": ""name"", ""Expression"": {""Inst"": ""InstanceVariable"", ""Variable Outer"": ""##NOT SERIALIZED##"", ""Variable Name"": ""name""}}"	[]	dynamic_or_missing_argument	False
+card_unit_312th_novgorod	ExecuteUbergraph_card_unit_312th_novgorod	$/8/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_unit_336th_guards_naval	ExecuteUbergraph_card_unit_336th_guards_naval	$/5/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_unit_6th_motor_rifles_sov	ExecuteUbergraph_card_unit_6th_motor_rifles_sov	$/30/Expression	ConvertCard	2	"{""Inst"": ""NameConst"", ""Value"": ""card_unit_6th_motor_rifles_sov""}"	"[""card_unit_6th_motor_rifles_sov""]"	literal_resolved_receiver_unverified	False
+card_unit_kv_85	ExecuteUbergraph_card_unit_kv_85	$/59/Expression	ConvertCard	2	"{""Inst"": ""NameConst"", ""Value"": ""None""}"	[]	literal_unresolved	False
+card_event_advanced_soviet_research	ExecuteUbergraph_card_event_advanced_soviet_research	$/3/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_stalin_organ""}"	"[""card_event_stalin_organ""]"	literal_resolved_receiver_unverified	False
+card_event_advanced_soviet_research	ExecuteUbergraph_card_event_advanced_soviet_research	$/12	WhichChooseOne			[]	unmapped_symbol	False
+card_event_advanced_soviet_research	ExecuteUbergraph_card_event_advanced_soviet_research	$/18/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_sloped_armor""}"	"[""card_event_sloped_armor""]"	literal_resolved_receiver_unverified	False
+card_event_do_or_die	ExecuteUbergraph_card_event_do_or_die	$/10/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_blast""}"	"[""card_event_blast""]"	literal_resolved_receiver_unverified	False
+card_event_do_or_die	ExecuteUbergraph_card_event_do_or_die	$/11/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_production""}"	"[""card_event_production""]"	literal_resolved_receiver_unverified	False
+card_event_expanded_soviet_research	ExecuteUbergraph_card_event_expanded_soviet_research	$/1	WhichChooseOne			[]	unmapped_symbol	False
+card_event_expanded_soviet_research	ExecuteUbergraph_card_event_expanded_soviet_research	$/7/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_standard_ammo""}"	"[""card_event_standard_ammo""]"	literal_resolved_receiver_unverified	False
+card_event_expanded_soviet_research	ExecuteUbergraph_card_event_expanded_soviet_research	$/9/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_advanced_soviet_research""}"	"[""card_event_advanced_soviet_research""]"	literal_resolved_receiver_unverified	False
+card_event_form_battle_line	ExecuteUbergraph_card_event_form_battle_line	$/11	WhichChooseOne			[]	unmapped_symbol	False
+card_event_form_battle_line	ExecuteUbergraph_card_event_form_battle_line	$/17/Expression	SpawnMultipleCardsOnBattlefield			[]	unmapped_symbol	False
+card_event_form_battle_line	ExecuteUbergraph_card_event_form_battle_line	$/19/Expression	SpawnMultipleCardsOnBattlefield			[]	unmapped_symbol	False
+card_event_irregular_recruits	ExecuteUbergraph_card_event_irregular_recruits	$/6/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_unit_light_infantry""}"	"[""card_unit_light_infantry""]"	literal_resolved_receiver_unverified	False
+card_event_irregular_recruits	ExecuteUbergraph_card_event_irregular_recruits	$/13/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_blast""}"	"[""card_event_blast""]"	literal_resolved_receiver_unverified	False
+card_event_sloped_armor	ExecuteUbergraph_card_event_sloped_armor	$/1/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_event_soviet_military_research	ExecuteUbergraph_card_event_soviet_military_research	$/1	WhichChooseOne			[]	unmapped_symbol	False
+card_event_soviet_military_research	ExecuteUbergraph_card_event_soviet_military_research	$/7/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_aerosani""}"	"[""card_event_aerosani""]"	literal_resolved_receiver_unverified	False
+card_event_soviet_military_research	ExecuteUbergraph_card_event_soviet_military_research	$/9/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_expanded_soviet_research""}"	"[""card_event_expanded_soviet_research""]"	literal_resolved_receiver_unverified	False
+card_unit_102_rifles	ExecuteUbergraph_card_unit_102_rifles	$/10/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_the_hammer""}"	"[""card_event_the_hammer""]"	literal_resolved_receiver_unverified	False
+card_unit_3rd_morskoi_pekhoty	ExecuteUbergraph_card_unit_3rd_morskoi_pekhoty	$/1/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_unit_3rd_morskoi_pekhoty	ExecuteUbergraph_card_unit_3rd_morskoi_pekhoty	$/2/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_blast""}"	"[""card_event_blast""]"	literal_resolved_receiver_unverified	False
+card_unit_75th_rifle_regiment	ExecuteUbergraph_card_unit_75th_rifle_regiment	$/11	SpawnCopy			[]	unmapped_symbol	False
+card_unit_75th_rifle_regiment	OnBeforeOtherCardDeploymentTrigger	$/7	SpawnCopy			[]	unmapped_symbol	False
+card_unit_75th_rifle_regiment	SpawnCopy	$/5/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_unit_866th_rifles	ExecuteUbergraph_card_unit_866th_rifles	$/6/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_blast""}"	"[""card_event_blast""]"	literal_resolved_receiver_unverified	False
+card_unit_stz_5_katyusha	OnCardDealDamage	$/10/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_blast""}"	"[""card_event_blast""]"	literal_resolved_receiver_unverified	False
+card_event_conscripts	ExecuteUbergraph_card_event_conscripts	$/21/Expression	SpawnCardInDeckBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_reserves""}"	"[""card_event_reserves""]"	literal_resolved_receiver_unverified	False
+card_event_tractor_factories	ExecuteUbergraph_card_event_tractor_factories	$/7/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_event_depths_of_winter	ExecuteUbergraph_card_event_depths_of_winter	$/33/Expression	SpawnMultipleCardsOnBattlefield			[]	unmapped_symbol	False
+card_event_depths_of_winter	ExecuteUbergraph_card_event_depths_of_winter	$/39/Expression	SpawnMultipleCardsOnBattlefield			[]	unmapped_symbol	False
+card_event_depths_of_winter	ExecuteUbergraph_card_event_depths_of_winter	$/42/Expression	SpawnMultipleCardsOnBattlefield			[]	unmapped_symbol	False
+card_event_depths_of_winter	ExecuteUbergraph_card_event_depths_of_winter	$/63/Expression	SpawnMultipleCardsOnBattlefield			[]	unmapped_symbol	False
+card_event_depths_of_winter	ExecuteUbergraph_card_event_depths_of_winter	$/69/Expression	SpawnMultipleCardsOnBattlefield			[]	unmapped_symbol	False
+card_event_depths_of_winter	ExecuteUbergraph_card_event_depths_of_winter	$/72/Expression	SpawnMultipleCardsOnBattlefield			[]	unmapped_symbol	False
+card_event_line_of_engagement	ExecuteUbergraph_card_event_line_of_engagement	$/1/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_event_line_of_engagement	ExecuteUbergraph_card_event_line_of_engagement	$/5/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_event_line_of_engagement	ExecuteUbergraph_card_event_line_of_engagement	$/9/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_event_line_of_engagement	ExecuteUbergraph_card_event_line_of_engagement	$/11/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_event_special_reinforcements	ExecuteUbergraph_card_event_special_reinforcements	$/33/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""LocalVariable"", ""Variable Outer"": {""PinCategory"": ""Name"", ""PinSubCategory"": ""Name""}, ""Variable Name"": ""CallFunc_Conv_StringToName_ReturnValue_1""}"	[]	dynamic_or_missing_argument	False
+card_event_machines_of_war	ExecuteUbergraph_card_event_machines_of_war	$/36/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_event_out_with_the_old	ExecuteUbergraph_card_event_out_with_the_old	$/3/Expression	ConvertCard	2	"{""Inst"": ""NameConst"", ""Value"": ""card_unit_yak_9""}"	"[""card_unit_yak_9""]"	literal_resolved_receiver_unverified	False
+card_unit_ilyushin_10	ExecuteUbergraph_card_unit_ilyushin_10	$/55/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_event_assault_cam1	ExecuteUbergraph_card_event_assault_cam1	$/35/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_unit_light_infantry""}"	"[""card_unit_light_infantry""]"	literal_resolved_receiver_unverified	False
+card_event_assault_cam1	ExecuteUbergraph_card_event_assault_cam1	$/50/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_unit_light_infantry""}"	"[""card_unit_light_infantry""]"	literal_resolved_receiver_unverified	False
+card_event_reserves_cam1	ExecuteUbergraph_card_event_reserves_cam1	$/40/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_unit_light_infantry_cam1""}"	"[""card_unit_light_infantry_cam1""]"	literal_resolved_receiver_unverified	False
+card_event_reserves_cam1	ExecuteUbergraph_card_event_reserves_cam1	$/53/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_unit_light_infantry""}"	"[""card_unit_light_infantry""]"	literal_resolved_receiver_unverified	False
+card_event_ural_factories_cam1	ExecuteUbergraph_card_event_ural_factories_cam1	$/92/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_event_ural_factories_cam1	ExecuteUbergraph_card_event_ural_factories_cam1	$/124/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""InstanceVariable"", ""Variable Outer"": {""PinCategory"": ""Name"", ""PinSubCategory"": ""Name""}, ""Variable Name"": ""cardToSpawn""}"	[]	dynamic_or_missing_argument	False
+card_event_ural_factories_cam1	ExecuteUbergraph_card_event_ural_factories_cam1	$/131/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_soviet_scen1	ExecuteUbergraph_card_location_soviet_scen1	$/32/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_soviet_scen1	ExecuteUbergraph_card_location_soviet_scen1	$/42/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_soviet_scen1	ExecuteUbergraph_card_location_soviet_scen1	$/51/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_soviet_scen1	ExecuteUbergraph_card_location_soviet_scen1	$/57/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_campaign_moscow1_retreat""}"	"[""card_event_campaign_moscow1_retreat""]"	literal_resolved_receiver_unverified	False
+card_location_soviet_scen1	ExecuteUbergraph_card_location_soviet_scen1	$/73/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_soviet_scen1	ExecuteUbergraph_card_location_soviet_scen1	$/76/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_soviet_scen1	ExecuteUbergraph_card_location_soviet_scen1	$/79/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_soviet_scen1	ExecuteUbergraph_card_location_soviet_scen1	$/101/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_soviet_scen1	ExecuteUbergraph_card_location_soviet_scen1	$/103/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_soviet_scen1	ExecuteUbergraph_card_location_soviet_scen1	$/106/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_soviet_scen1	ExecuteUbergraph_card_location_soviet_scen1	$/110/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_soviet_scen1	ExecuteUbergraph_card_location_soviet_scen1	$/112/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_soviet_scen1	ExecuteUbergraph_card_location_soviet_scen1	$/115/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_soviet_scen1	ExecuteUbergraph_card_location_soviet_scen1	$/117/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_soviet_scen1	ExecuteUbergraph_card_location_soviet_scen1	$/131/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_soviet_scen1	ExecuteUbergraph_card_location_soviet_scen1	$/132/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_campaign_moscow1_retreat""}"	"[""card_event_campaign_moscow1_retreat""]"	literal_resolved_receiver_unverified	False
+card_location_soviet_scen1	ExecuteUbergraph_card_location_soviet_scen1	$/142/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_soviet_scen1	ExecuteUbergraph_card_location_soviet_scen1	$/151/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_soviet_scen1	ExecuteUbergraph_card_location_soviet_scen1	$/170/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_soviet_scen1	ExecuteUbergraph_card_location_soviet_scen1	$/172/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_soviet_scen1	ExecuteUbergraph_card_location_soviet_scen1	$/190/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_soviet_scen2	ExecuteUbergraph_card_location_soviet_scen2	$/25/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_soviet_scen2	ExecuteUbergraph_card_location_soviet_scen2	$/27/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_soviet_scen2	ExecuteUbergraph_card_location_soviet_scen2	$/30/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_soviet_scen2	ExecuteUbergraph_card_location_soviet_scen2	$/32/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_soviet_scen2	ExecuteUbergraph_card_location_soviet_scen2	$/36/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_soviet_scen2	ExecuteUbergraph_card_location_soviet_scen2	$/38/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_soviet_scen2	ExecuteUbergraph_card_location_soviet_scen2	$/40/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_soviet_scen2	ExecuteUbergraph_card_location_soviet_scen2	$/43/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_soviet_scen2	ExecuteUbergraph_card_location_soviet_scen2	$/45/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_soviet_scen2	ExecuteUbergraph_card_location_soviet_scen2	$/47/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_soviet_scen2	ExecuteUbergraph_card_location_soviet_scen2	$/57/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_unit_503rd_motors""}"	"[""card_unit_503rd_motors""]"	literal_resolved_receiver_unverified	False
+card_location_soviet_scen2	ExecuteUbergraph_card_location_soviet_scen2	$/61/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_moat""}"	"[""card_event_moat""]"	literal_resolved_receiver_unverified	False
+card_location_soviet_scen2	ExecuteUbergraph_card_location_soviet_scen2	$/65/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_unit_17th_rifle_regiment""}"	"[""card_unit_17th_rifle_regiment""]"	literal_resolved_receiver_unverified	False
+card_location_soviet_scen2	ExecuteUbergraph_card_location_soviet_scen2	$/116/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_unit_panzer_iii_j""}"	"[""card_unit_panzer_iii_j""]"	literal_resolved_receiver_unverified	False
+card_location_soviet_scen2	ExecuteUbergraph_card_location_soviet_scen2	$/118/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_unit_me_bf_109_g""}"	"[""card_unit_me_bf_109_g""]"	literal_resolved_receiver_unverified	False
+card_location_soviet_scen2	ExecuteUbergraph_card_location_soviet_scen2	$/120/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_soviet_scen3	ExecuteUbergraph_card_location_soviet_scen3	$/15/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_soviet_scen3	ExecuteUbergraph_card_location_soviet_scen3	$/21/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_soviet_scen3	ExecuteUbergraph_card_location_soviet_scen3	$/25/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_soviet_scen3	ExecuteUbergraph_card_location_soviet_scen3	$/29/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_soviet_scen3	ExecuteUbergraph_card_location_soviet_scen3	$/32/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_soviet_scen3	ExecuteUbergraph_card_location_soviet_scen3	$/52/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_campaign_frostbite""}"	"[""card_event_campaign_frostbite""]"	literal_resolved_receiver_unverified	False
+card_location_soviet_scen3	ExecuteUbergraph_card_location_soviet_scen3	$/66/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_campaign_moscow3_forward_press""}"	"[""card_event_campaign_moscow3_forward_press""]"	literal_resolved_receiver_unverified	False
+card_location_soviet_scen3	ExecuteUbergraph_card_location_soviet_scen3	$/70/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_campaign_moscow3_charge""}"	"[""card_event_campaign_moscow3_charge""]"	literal_resolved_receiver_unverified	False
+card_location_soviet_scen3	ExecuteUbergraph_card_location_soviet_scen3	$/74/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_campaign_moscow3_toe_to_toe""}"	"[""card_event_campaign_moscow3_toe_to_toe""]"	literal_resolved_receiver_unverified	False
+card_location_soviet_scen3	ExecuteUbergraph_card_location_soviet_scen3	$/81/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_conscripts""}"	"[""card_event_conscripts""]"	literal_resolved_receiver_unverified	False
+card_location_soviet_scen3	ExecuteUbergraph_card_location_soviet_scen3	$/108/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_soviet_scen3	ExecuteUbergraph_card_location_soviet_scen3	$/110/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_soviet_scen3	ExecuteUbergraph_card_location_soviet_scen3	$/113/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_soviet_scen3	ExecuteUbergraph_card_location_soviet_scen3	$/116/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_soviet_scen3	ExecuteUbergraph_card_location_soviet_scen3	$/120/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_soviet_scen3	ExecuteUbergraph_card_location_soviet_scen3	$/122/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_soviet_scen3	ExecuteUbergraph_card_location_soviet_scen3	$/126/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_soviet_scen3	ExecuteUbergraph_card_location_soviet_scen3	$/128/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_soviet_scen3	ExecuteUbergraph_card_location_soviet_scen3	$/185/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_campaign_frostbite""}"	"[""card_event_campaign_frostbite""]"	literal_resolved_receiver_unverified	False
+card_location_soviet_scen4	ExecuteUbergraph_card_location_soviet_scen4	$/76/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_soviet_scen4	ExecuteUbergraph_card_location_soviet_scen4	$/80/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_soviet_scen4	ExecuteUbergraph_card_location_soviet_scen4	$/82/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_soviet_scen4	ExecuteUbergraph_card_location_soviet_scen4	$/87/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_soviet_scen4	ExecuteUbergraph_card_location_soviet_scen4	$/89/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_soviet_scen4	ExecuteUbergraph_card_location_soviet_scen4	$/97/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_ura""}"	"[""card_event_ura""]"	literal_resolved_receiver_unverified	False
+card_location_soviet_scen4	ExecuteUbergraph_card_location_soviet_scen4	$/112/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_unit_i_15_chaika""}"	"[""card_unit_i_15_chaika""]"	literal_resolved_receiver_unverified	False
+card_location_soviet_scen4	ExecuteUbergraph_card_location_soviet_scen4	$/116/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_unit_45mm_anti_tank_gun""}"	"[""card_unit_45mm_anti_tank_gun""]"	literal_resolved_receiver_unverified	False
+card_location_soviet_scen4	ExecuteUbergraph_card_location_soviet_scen4	$/120/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_unit_845th_rifles""}"	"[""card_unit_845th_rifles""]"	literal_resolved_receiver_unverified	False
+card_location_soviet_scen4	ExecuteUbergraph_card_location_soviet_scen4	$/125/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_winter_war""}"	"[""card_event_winter_war""]"	literal_resolved_receiver_unverified	False
+card_location_soviet_scen4	ExecuteUbergraph_card_location_soviet_scen4	$/163/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_soviet_scen4	ExecuteUbergraph_card_location_soviet_scen4	$/169/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_soviet_scen4	ExecuteUbergraph_card_location_soviet_scen4	$/172/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_soviet_scen4	ExecuteUbergraph_card_location_soviet_scen4	$/176/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_soviet_scen4	ExecuteUbergraph_card_location_soviet_scen4	$/179/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_soviet_scen5	ExecuteUbergraph_card_location_soviet_scen5	$/53/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_soviet_scen5	ExecuteUbergraph_card_location_soviet_scen5	$/55/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_soviet_scen5	ExecuteUbergraph_card_location_soviet_scen5	$/58/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_soviet_scen5	ExecuteUbergraph_card_location_soviet_scen5	$/60/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_soviet_scen5	ExecuteUbergraph_card_location_soviet_scen5	$/70/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_heroes_of_the_soviet_union""}"	"[""card_event_heroes_of_the_soviet_union""]"	literal_resolved_receiver_unverified	False
+card_unit_321st_rifles_cam1	ExecuteUbergraph_card_unit_321st_rifles_cam1	$/45/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_unit_321st_rifles_cam1	ExecuteUbergraph_card_unit_321st_rifles_cam1	$/49/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_unit_414th_rifles	ExecuteUbergraph_card_unit_414th_rifles	$/1/Expression	SpawnCardInDeckBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_unit_97th_rifles""}"	"[""card_unit_97th_rifles""]"	literal_resolved_receiver_unverified	False
+card_event_carrier_cover	ExecuteUbergraph_card_event_carrier_cover	$/50	WhichChooseOne			[]	unmapped_symbol	False
+card_event_magic	CanPlayFromHand	$/0	WhichChooseOne			[]	unmapped_symbol	False
+card_event_magic	ExecuteUbergraph_card_event_magic	$/1	WhichChooseOne			[]	unmapped_symbol	False
+card_event_naval_task_force	ExecuteUbergraph_card_event_naval_task_force	$/1	WhichChooseOne			[]	unmapped_symbol	False
+card_event_naval_task_force	ExecuteUbergraph_card_event_naval_task_force	$/7/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_naval_bombardment""}"	"[""card_event_naval_bombardment""]"	literal_resolved_receiver_unverified	False
+card_event_naval_task_force	ExecuteUbergraph_card_event_naval_task_force	$/9/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_supply_shipment""}"	"[""card_event_supply_shipment""]"	literal_resolved_receiver_unverified	False
+card_event_shore_bombardment	CanPlayFromHand	$/0	WhichChooseOne			[]	unmapped_symbol	False
+card_event_shore_bombardment	ExecuteUbergraph_card_event_shore_bombardment	$/4	WhichChooseOne			[]	unmapped_symbol	False
+card_event_shore_bombardment	GetPlayFromHandDamage	$/0	WhichChooseOne			[]	unmapped_symbol	False
+card_event_strafing	CanPlayFromHand	$/0	WhichChooseOne			[]	unmapped_symbol	False
+card_event_strafing	ExecuteUbergraph_card_event_strafing	$/20	WhichChooseOne			[]	unmapped_symbol	False
+card_unit_b_25h	ExecuteUbergraph_card_unit_b_25h	$/1/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_gunship""}"	"[""card_event_gunship""]"	literal_resolved_receiver_unverified	False
+card_event_seaborne_invasion	ExecuteUbergraph_card_event_seaborne_invasion	$/17/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_event_seaborne_invasion	ExecuteUbergraph_card_event_seaborne_invasion	$/18/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_event_supply_chain	ExecuteUbergraph_card_event_supply_chain	$/14/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_supply_chain""}"	"[""card_event_supply_chain""]"	literal_resolved_receiver_unverified	False
+card_event_uncle_sam	ExecuteUbergraph_card_event_uncle_sam	$/24/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""Context"", ""Context"": {""Inst"": ""LocalVariable"", ""Variable Outer"": {""PinCategory"": ""Object"", ""PinSubCategory"": ""Object"", ""PinSubCategoryObject"": ""/Script/kards.BaseCardObject""}, ""Variable Name"": ""CallFunc_GetRandomCard_randomCard""}, ""SkipOffsetForNull"": 9, ""RValuePropertyOuter"": ""##NOT SERIALIZED##"", ""RValuePropertyName"": ""name"", ""Expression"": {""Inst"": ""InstanceVariable"", ""Variable Outer"": ""##NOT SERIALIZED##"", ""Variable Name"": ""name""}}"	[]	dynamic_or_missing_argument	False
+card_unit_f4f_wildcat	ExecuteUbergraph_card_unit_f4f_wildcat	$/1/Expression	SpawnNextToCard	0	"{""Inst"": ""NameConst"", ""Value"": ""card_unit_brewster_f2a""}"	"[""card_unit_brewster_f2a""]"	literal_resolved_receiver_unverified	False
+card_unit_m24_chaffee	ExecuteUbergraph_card_unit_m24_chaffee	$/1/Expression	SpawnNextToCard	0	"{""Inst"": ""NameConst"", ""Value"": ""card_unit_m24_chaffee""}"	"[""card_unit_m24_chaffee""]"	literal_resolved_receiver_unverified	False
+card_event_hell_on_wheels	ExecuteUbergraph_card_event_hell_on_wheels	$/9	ShouldSpawnFrontline			[]	unmapped_symbol	False
+card_event_hell_on_wheels	ExecuteUbergraph_card_event_hell_on_wheels	$/10/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_unit_62nd_armored_infantry	ExecuteUbergraph_card_unit_62nd_armored_infantry	$/22/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_unit_m4_sherman""}"	"[""card_unit_m4_sherman""]"	literal_resolved_receiver_unverified	False
+card_unit_cyclone_division	ExecuteUbergraph_card_unit_cyclone_division	$/29	SpawnShermanInHand			[]	unmapped_symbol	False
+card_unit_cyclone_division	ExecuteUbergraph_card_unit_cyclone_division	$/31	SpawnShermanInHand			[]	unmapped_symbol	False
+card_unit_cyclone_division	SpawnShermanInHand	$/24/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""Context"", ""Context"": {""Inst"": ""LocalVariable"", ""Variable Outer"": {""PinCategory"": ""Object"", ""PinSubCategory"": ""Object"", ""PinSubCategoryObject"": ""/Script/kards.BaseCardObject""}, ""Variable Name"": ""CallFunc_GetRandomCard_randomCard""}, ""SkipOffsetForNull"": 9, ""RValuePropertyOuter"": ""##NOT SERIALIZED##"", ""RValuePropertyName"": ""name"", ""Expression"": {""Inst"": ""InstanceVariable"", ""Variable Outer"": ""##NOT SERIALIZED##"", ""Variable Name"": ""name""}}"	[]	dynamic_or_missing_argument	False
+card_event_advanced_us_research	ExecuteUbergraph_card_event_advanced_us_research	$/19/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_manhattan_project""}"	"[""card_event_manhattan_project""]"	literal_resolved_receiver_unverified	False
+card_event_advanced_us_research	ExecuteUbergraph_card_event_advanced_us_research	$/24	WhichChooseOne			[]	unmapped_symbol	False
+card_event_advanced_us_research	ExecuteUbergraph_card_event_advanced_us_research	$/30/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_penicillin""}"	"[""card_event_penicillin""]"	literal_resolved_receiver_unverified	False
+card_event_advanced_us_research	ExecuteUbergraph_card_event_advanced_us_research	$/32/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_manhattan_project""}"	"[""card_event_manhattan_project""]"	literal_resolved_receiver_unverified	False
+card_event_allied_research_effort	ExecuteUbergraph_card_event_allied_research_effort	$/20/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""Context"", ""Context"": {""Inst"": ""LocalVariable"", ""Variable Outer"": {""PinCategory"": ""Object"", ""PinSubCategory"": ""Object"", ""PinSubCategoryObject"": ""/Script/kards.BaseCardObject""}, ""Variable Name"": ""CallFunc_GetRandomCard_randomCard""}, ""SkipOffsetForNull"": 9, ""RValuePropertyOuter"": ""##NOT SERIALIZED##"", ""RValuePropertyName"": ""name"", ""Expression"": {""Inst"": ""InstanceVariable"", ""Variable Outer"": ""##NOT SERIALIZED##"", ""Variable Name"": ""name""}}"	[]	dynamic_or_missing_argument	False
+card_event_allied_research_effort	ExecuteUbergraph_card_event_allied_research_effort	$/41	WhichChooseOne			[]	unmapped_symbol	False
+card_event_expanded_us_research	ExecuteUbergraph_card_event_expanded_us_research	$/1	WhichChooseOne			[]	unmapped_symbol	False
+card_event_expanded_us_research	ExecuteUbergraph_card_event_expanded_us_research	$/7/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_pressurized_cabin""}"	"[""card_event_pressurized_cabin""]"	literal_resolved_receiver_unverified	False
+card_event_expanded_us_research	ExecuteUbergraph_card_event_expanded_us_research	$/9/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_advanced_us_research""}"	"[""card_event_advanced_us_research""]"	literal_resolved_receiver_unverified	False
+card_event_pressurized_cabin	ExecuteUbergraph_card_event_pressurized_cabin	$/11/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_unit_b_29_super_fortress""}"	"[""card_unit_b_29_super_fortress""]"	literal_resolved_receiver_unverified	False
+card_event_us_military_research	ExecuteUbergraph_card_event_us_military_research	$/1	WhichChooseOne			[]	unmapped_symbol	False
+card_event_us_military_research	ExecuteUbergraph_card_event_us_military_research	$/7/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_depth_charges""}"	"[""card_event_depth_charges""]"	literal_resolved_receiver_unverified	False
+card_event_us_military_research	ExecuteUbergraph_card_event_us_military_research	$/9/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_expanded_us_research""}"	"[""card_event_expanded_us_research""]"	literal_resolved_receiver_unverified	False
+card_unit_47th_infantry_regiment	ExecuteUbergraph_card_unit_47th_infantry_regiment	$/12/Expression	SpawnNextToCard	0	"{""Inst"": ""NameConst"", ""Value"": ""card_unit_47th_infantry_regiment""}"	"[""card_unit_47th_infantry_regiment""]"	literal_resolved_receiver_unverified	False
+card_unit_60th_infantry_regiment	ExecuteUbergraph_card_unit_60th_infantry_regiment	$/1/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_unit_c47_skytrain	ExecuteUbergraph_card_unit_c47_skytrain	$/18/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_event_manpower	ExecuteUbergraph_card_event_manpower	$/2/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_unit_179th_tomahawks	ExecuteUbergraph_card_unit_179th_tomahawks	$/26/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_unit_6th_infantry_regiment_usa	ExecuteUbergraph_card_unit_6th_infantry_regiment_usa	$/6/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_unity_is_strength""}"	"[""card_event_unity_is_strength""]"	literal_resolved_receiver_unverified	False
+card_event_furor	ExecuteUbergraph_card_event_furor	$/2/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_retribution""}"	"[""card_event_retribution""]"	literal_resolved_receiver_unverified	False
+card_event_hidden_plans	CanPlayFromHand	$/0	WhichChooseOne			[]	unmapped_symbol	False
+card_event_hidden_plans	ExecuteUbergraph_card_event_hidden_plans	$/33	WhichChooseOne			[]	unmapped_symbol	False
+card_unit_121st_infantry_regiment	ExecuteUbergraph_card_unit_121st_infantry_regiment	$/1/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_retribution""}"	"[""card_event_retribution""]"	literal_resolved_receiver_unverified	False
+card_unit_blue_and_gray	ExecuteUbergraph_card_unit_blue_and_gray	$/9/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_retribution""}"	"[""card_event_retribution""]"	literal_resolved_receiver_unverified	False
+card_unit_blue_and_gray	ExecuteUbergraph_card_unit_blue_and_gray	$/11/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_retribution""}"	"[""card_event_retribution""]"	literal_resolved_receiver_unverified	False
+card_event_rationing	ExecuteUbergraph_card_event_rationing	$/18	WhichChooseOne			[]	unmapped_symbol	False
+card_event_spars	ExecuteUbergraph_card_event_spars	$/70	WhichChooseOne			[]	unmapped_symbol	False
+card_event_mass_deployment	ExecuteUbergraph_card_event_mass_deployment	$/5	SpawnUnitsWithKreditCombo			[]	unmapped_symbol	False
+card_event_mass_deployment	SpawnUnitsWithKreditCombo	$/44/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_unit_sb2c_helldiver	ExecuteUbergraph_card_unit_sb2c_helldiver	$/11/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_unit_sb2c_helldiver""}"	"[""card_unit_sb2c_helldiver""]"	literal_resolved_receiver_unverified	False
+card_event_air_cover_us	ExecuteUbergraph_card_event_air_cover_us	$/5/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_event_air_cover_us	ExecuteUbergraph_card_event_air_cover_us	$/12/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_event_air_cover_us	ExecuteUbergraph_card_event_air_cover_us	$/19/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_event_air_cover_us	ExecuteUbergraph_card_event_air_cover_us	$/20/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_event_semper_fi	ExecuteUbergraph_card_event_semper_fi	$/19/Expression	ConvertCard	2	"{""Inst"": ""InstanceVariable"", ""Variable Outer"": {""PinCategory"": ""Name"", ""PinSubCategory"": ""Name""}, ""Variable Name"": ""cardNameToConvertInto""}"	[]	dynamic_or_missing_argument	False
+card_event_uss_yorktown	ExecuteUbergraph_card_event_uss_yorktown	$/5/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_event_uss_yorktown	ExecuteUbergraph_card_event_uss_yorktown	$/27/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_unit_pb2y_coronado	ExecuteUbergraph_card_unit_pb2y_coronado	$/43/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_unit_the_123s	ExecuteUbergraph_card_unit_the_123s	$/12/Expression	ConvertCard	2	"{""Inst"": ""Context"", ""Context"": {""Inst"": ""InstanceVariable"", ""Variable Outer"": {""PinCategory"": ""Object"", ""PinSubCategory"": ""Object"", ""PinSubCategoryObject"": ""/Script/kards.BaseCardObject""}, ""Variable Name"": ""otherCardPlayed""}, ""SkipOffsetForNull"": 9, ""RValuePropertyOuter"": ""##NOT SERIALIZED##"", ""RValuePropertyName"": ""name"", ""Expression"": {""Inst"": ""InstanceVariable"", ""Variable Outer"": ""##NOT SERIALIZED##"", ""Variable Name"": ""name""}}"	[]	dynamic_or_missing_argument	False
+card_unit_the_123s	ExecuteUbergraph_card_unit_the_123s	$/24/Expression	ConvertCard	2	"{""Inst"": ""Context"", ""Context"": {""Inst"": ""InstanceVariable"", ""Variable Outer"": {""PinCategory"": ""Object"", ""PinSubCategory"": ""Object"", ""PinSubCategoryObject"": ""/Script/kards.BaseCardObject""}, ""Variable Name"": ""otherCardPlayed""}, ""SkipOffsetForNull"": 9, ""RValuePropertyOuter"": ""##NOT SERIALIZED##"", ""RValuePropertyName"": ""name"", ""Expression"": {""Inst"": ""InstanceVariable"", ""Variable Outer"": ""##NOT SERIALIZED##"", ""Variable Name"": ""name""}}"	[]	dynamic_or_missing_argument	False
+card_unit_the_american_guard	ExecuteUbergraph_card_unit_the_american_guard	$/8/Expression	ConvertCard	2	"{""Inst"": ""NameConst"", ""Value"": ""None""}"	[]	literal_unresolved	False
+card_event_naval_battle	ExecuteUbergraph_card_event_naval_battle	$/50	WhichChooseOne			[]	unmapped_symbol	False
+card_event_parachute_assault	ExecuteUbergraph_card_event_parachute_assault	$/11/Expression	SpawnMultipleCardsOnBattlefield			[]	unmapped_symbol	False
+card_event_us_weather_bureau	ExecuteUbergraph_card_event_us_weather_bureau	$/1	WhichChooseOne			[]	unmapped_symbol	False
+card_event_production_order	ExecuteUbergraph_card_event_production_order	$/1	WhichChooseOne			[]	unmapped_symbol	False
+card_event_production_order	ExecuteUbergraph_card_event_production_order	$/7/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_unit_b_24_d""}"	"[""card_unit_b_24_d""]"	literal_resolved_receiver_unverified	False
+card_event_production_order	ExecuteUbergraph_card_event_production_order	$/9/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_unit_b_24_j""}"	"[""card_unit_b_24_j""]"	literal_resolved_receiver_unverified	False
+card_event_supply_priorities	ExecuteUbergraph_card_event_supply_priorities	$/48	WhichChooseOne			[]	unmapped_symbol	False
+card_event_screening_force	ExecuteUbergraph_card_event_screening_force	$/37/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_unit_442nd_infantry_regiment	ExecuteUbergraph_card_unit_442nd_infantry_regiment	$/4/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_unit_442nd_infantry_regiment""}"	"[""card_unit_442nd_infantry_regiment""]"	literal_resolved_receiver_unverified	False
+card_unit_5th_rangers	ExecuteUbergraph_card_unit_5th_rangers	$/1	WhichChooseOne			[]	unmapped_symbol	False
+card_unit_m4a2	ExecuteUbergraph_card_unit_m4a2	$/1/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_unit_tigercat	ExecuteUbergraph_card_unit_tigercat	$/5/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_cherbourg_unlock5	ExecuteUbergraph_card_location_cherbourg_unlock5	$/87/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_unit_japan_ki_100_goshiken""}"	"[""card_unit_japan_ki_100_goshiken""]"	literal_resolved_receiver_unverified	False
+card_location_cherbourg_unlock7	ExecuteUbergraph_card_location_cherbourg_unlock7	$/7/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_unit_japan_ki_100_goshiken""}"	"[""card_unit_japan_ki_100_goshiken""]"	literal_resolved_receiver_unverified	False
+card_event_retribution7	ExecuteUbergraph_card_event_retribution7	$/11/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""Context"", ""Context"": {""Inst"": ""InstanceVariable"", ""Variable Outer"": {""PinCategory"": ""Object"", ""PinSubCategory"": ""Object"", ""PinSubCategoryObject"": ""/Script/kards.BaseCardObject""}, ""Variable Name"": ""cardDestroyed""}, ""SkipOffsetForNull"": 9, ""RValuePropertyOuter"": ""##NOT SERIALIZED##"", ""RValuePropertyName"": ""name"", ""Expression"": {""Inst"": ""InstanceVariable"", ""Variable Outer"": ""##NOT SERIALIZED##"", ""Variable Name"": ""name""}}"	[]	dynamic_or_missing_argument	False
+card_location_usa_scen1	ExecuteUbergraph_card_location_usa_scen1	$/9/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_usa_scen1	ExecuteUbergraph_card_location_usa_scen1	$/31/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_usa_scen1	ExecuteUbergraph_card_location_usa_scen1	$/37/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_supply_shipment""}"	"[""card_event_supply_shipment""]"	literal_resolved_receiver_unverified	False
+card_location_usa_scen1	ExecuteUbergraph_card_location_usa_scen1	$/44/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_magic""}"	"[""card_event_magic""]"	literal_resolved_receiver_unverified	False
+card_location_usa_scen1	ExecuteUbergraph_card_location_usa_scen1	$/54/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_special_delivery_us""}"	"[""card_event_special_delivery_us""]"	literal_resolved_receiver_unverified	False
+card_location_usa_scen1	ExecuteUbergraph_card_location_usa_scen1	$/70/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_usa_scen1	ExecuteUbergraph_card_location_usa_scen1	$/79/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_usa_scen1	ExecuteUbergraph_card_location_usa_scen1	$/87/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_for_prosperety""}"	"[""card_event_for_prosperety""]"	literal_resolved_receiver_unverified	False
+card_location_usa_scen2	ExecuteUbergraph_card_location_usa_scen2	$/35/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_usa_scen2	ExecuteUbergraph_card_location_usa_scen2	$/38/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_usa_scen2	ExecuteUbergraph_card_location_usa_scen2	$/41/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_usa_scen2	ExecuteUbergraph_card_location_usa_scen2	$/45/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_usa_scen2	ExecuteUbergraph_card_location_usa_scen2	$/48/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_usa_scen2	ExecuteUbergraph_card_location_usa_scen2	$/55/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_direct_hit""}"	"[""card_event_direct_hit""]"	literal_resolved_receiver_unverified	False
+card_location_usa_scen2	ExecuteUbergraph_card_location_usa_scen2	$/63/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_usa_scen2	ExecuteUbergraph_card_location_usa_scen2	$/78/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_campaign_guadalcanal2_base_defense""}"	"[""card_event_campaign_guadalcanal2_base_defense""]"	literal_resolved_receiver_unverified	False
+card_location_usa_scen2	ExecuteUbergraph_card_location_usa_scen2	$/82/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_campaign_guadalcanal2_coastal_raid""}"	"[""card_event_campaign_guadalcanal2_coastal_raid""]"	literal_resolved_receiver_unverified	False
+card_location_usa_scen2	ExecuteUbergraph_card_location_usa_scen2	$/86/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_campaign_guadalcanal2_naval_patrol""}"	"[""card_event_campaign_guadalcanal2_naval_patrol""]"	literal_resolved_receiver_unverified	False
+card_location_usa_scen2	ExecuteUbergraph_card_location_usa_scen2	$/104/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_usa_scen2	ExecuteUbergraph_card_location_usa_scen2	$/105/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_unit_33rd_recon""}"	"[""card_unit_33rd_recon""]"	literal_resolved_receiver_unverified	False
+card_location_usa_scen3	ExecuteUbergraph_card_location_usa_scen3	$/49/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_usa_scen3	ExecuteUbergraph_card_location_usa_scen3	$/53/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_usa_scen3	ExecuteUbergraph_card_location_usa_scen3	$/56/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_usa_scen3	ExecuteUbergraph_card_location_usa_scen3	$/66/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_unit_p39_airacobra""}"	"[""card_unit_p39_airacobra""]"	literal_resolved_receiver_unverified	False
+card_location_usa_scen3	ExecuteUbergraph_card_location_usa_scen3	$/70/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_unit_2_5_marines""}"	"[""card_unit_2_5_marines""]"	literal_resolved_receiver_unverified	False
+card_location_usa_scen3	ExecuteUbergraph_card_location_usa_scen3	$/74/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_patrol""}"	"[""card_event_patrol""]"	literal_resolved_receiver_unverified	False
+card_location_usa_scen3	ExecuteUbergraph_card_location_usa_scen3	$/81/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_we_can_do_it""}"	"[""card_event_we_can_do_it""]"	literal_resolved_receiver_unverified	False
+card_location_usa_scen3	ExecuteUbergraph_card_location_usa_scen3	$/103/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_usa_scen3	ExecuteUbergraph_card_location_usa_scen3	$/109/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_usa_scen3	ExecuteUbergraph_card_location_usa_scen3	$/116/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_usa_scen4	ExecuteUbergraph_card_location_usa_scen4	$/89/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_usa_scen4	ExecuteUbergraph_card_location_usa_scen4	$/95/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_usa_scen4	ExecuteUbergraph_card_location_usa_scen4	$/98/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_usa_scen4	ExecuteUbergraph_card_location_usa_scen4	$/108/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_campaign_guadalcanal4_bomber_runway""}"	"[""card_event_campaign_guadalcanal4_bomber_runway""]"	literal_resolved_receiver_unverified	False
+card_location_usa_scen4	ExecuteUbergraph_card_location_usa_scen4	$/114/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_campaign_guadalcanal4_marine_patrols""}"	"[""card_event_campaign_guadalcanal4_marine_patrols""]"	literal_resolved_receiver_unverified	False
+card_location_usa_scen4	ExecuteUbergraph_card_location_usa_scen4	$/118/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_campaign_guadalcanal4_naval_blockade""}"	"[""card_event_campaign_guadalcanal4_naval_blockade""]"	literal_resolved_receiver_unverified	False
+card_location_usa_scen4	ExecuteUbergraph_card_location_usa_scen4	$/141/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_usa_scen4	ExecuteUbergraph_card_location_usa_scen4	$/144/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_usa_scen4	ExecuteUbergraph_card_location_usa_scen4	$/159/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_usa_scen4	ExecuteUbergraph_card_location_usa_scen4	$/160/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_usa_scen4	ExecuteUbergraph_card_location_usa_scen4	$/168/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_usa_scen4	ExecuteUbergraph_card_location_usa_scen4	$/170/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_usa_scen5	ExecuteUbergraph_card_location_usa_scen5	$/53/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_usa_scen5	ExecuteUbergraph_card_location_usa_scen5	$/55/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_usa_scen5	ExecuteUbergraph_card_location_usa_scen5	$/57/Expression	SpawnCardOnBattlefield			[]	unmapped_symbol	False
+card_location_usa_scen5	ExecuteUbergraph_card_location_usa_scen5	$/61/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_usa_scen5	ExecuteUbergraph_card_location_usa_scen5	$/63/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_usa_scen5	ExecuteUbergraph_card_location_usa_scen5	$/65/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_usa_scen5	ExecuteUbergraph_card_location_usa_scen5	$/68/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_usa_scen5	ExecuteUbergraph_card_location_usa_scen5	$/70/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_usa_scen5	ExecuteUbergraph_card_location_usa_scen5	$/72/Expression	SpawnCardInFrontline			[]	unmapped_symbol	False
+card_location_usa_scen5	ExecuteUbergraph_card_location_usa_scen5	$/77/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_a_few_good_men""}"	"[""card_event_a_few_good_men""]"	literal_resolved_receiver_unverified	False
+card_unit_b_25h_cam1	ExecuteUbergraph_card_unit_b_25h_cam1	$/42/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_gunship""}"	"[""card_event_gunship""]"	literal_resolved_receiver_unverified	False
+card_unit_b_25h_cam1	ExecuteUbergraph_card_unit_b_25h_cam1	$/45/Expression	SpawnCardInHandBySide	1	"{""Inst"": ""NameConst"", ""Value"": ""card_event_gunship""}"	"[""card_event_gunship""]"	literal_resolved_receiver_unverified	False
+card_unit_superman	ExecuteUbergraph_card_unit_superman	$/6/Expression	ConvertCard	2	"{""Inst"": ""NameConst"", ""Value"": ""card_unit_light_infantry""}"	"[""card_unit_light_infantry""]"	literal_resolved_receiver_unverified	False

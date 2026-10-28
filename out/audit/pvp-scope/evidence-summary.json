@@ -1,0 +1,225 @@
+{
+  "scope": "SCOPE-001",
+  "status": "partial_scope_characterization_not_pvp_closure",
+  "runtime_raw_hash_name_header_and_redecode_verified": [
+    {
+      "owner": "CardFunctionsStub",
+      "name": "ConvertCard",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "owner": "CardFunctionsStub",
+      "name": "GetAllActiveStaticCards",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "owner": "CardFunctionsStub",
+      "name": "IsCardReserved",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "owner": "CardFunctionsStub",
+      "name": "SpawnCardInDeckBySide",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "owner": "CardFunctionsStub",
+      "name": "SpawnCardInHandBySide",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "owner": "CardFunctionsStub",
+      "name": "SpawnNextToCard",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "owner": "I_BP_Logic_Receiver_C",
+      "name": "HandleCheckCardBlackListed",
+      "bytes": 3,
+      "sha256": "10941dedc1b7fd60933ac0dba3e874553eabd6afa293a147e89244bcd2f966f1"
+    },
+    {
+      "owner": "I_BP_Logic_Receiver_C",
+      "name": "HandleCheckCardReserved",
+      "bytes": 3,
+      "sha256": "10941dedc1b7fd60933ac0dba3e874553eabd6afa293a147e89244bcd2f966f1"
+    },
+    {
+      "owner": "BP_GameState_Battle_C",
+      "name": "GetAllStaticCardsSortedByName",
+      "bytes": 30,
+      "sha256": "8980782e6d465f4a9201fc8970ff23de7e06c19c117b88f4b3e1cf607a07a8cf"
+    },
+    {
+      "owner": "U_CardFunctionsNotifier_C",
+      "name": "NotifyCheckCardBlacklisted",
+      "bytes": 77,
+      "sha256": "ccd5a30d4653c4e9a1680dccac6d8135d680e969359f585701aa9db7a6a44da6"
+    },
+    {
+      "owner": "U_CardFunctionsNotifier_C",
+      "name": "NotifyCheckCardReserved",
+      "bytes": 77,
+      "sha256": "b08f7f45e6970f4ee53dd91908297c77e58b1522380a8484ecbd234c699231dd"
+    },
+    {
+      "owner": "UtilityFunctions_C",
+      "name": "IsCardReserved",
+      "bytes": 1541,
+      "sha256": "379bb80d70a7228bf83aa77f76fb27c227d851909254caef3ee211cf9b9cccd3"
+    },
+    {
+      "owner": "BP_CardFunctions_C",
+      "name": "IsCardReserved",
+      "bytes": 76,
+      "sha256": "44abab9dfa568f72e86cfec5bc001757e53235d29fcb180d16fa66e7d9c35611"
+    },
+    {
+      "owner": "BP_CardFunctions_C",
+      "name": "SpawnCardToBoard",
+      "bytes": 1917,
+      "sha256": "0719d50282a7313cbc5431b334393ba01ad8f4d80fdebcfc151c8ed1611c2069"
+    },
+    {
+      "owner": "BP_CardFunctions_C",
+      "name": "ConvertCard",
+      "bytes": 4558,
+      "sha256": "dcb5f0ffc0cbb4a22c92e61e197dffac6cbffe39a5aeb8fa71df901d549c841d"
+    },
+    {
+      "owner": "BP_CardFunctions_C",
+      "name": "SpawnCardInDeckBySide",
+      "bytes": 1351,
+      "sha256": "cae5cdb178ededde731a132bd3b1d9e29ebddc76b8eed278b9c532ecb3aa90fe"
+    },
+    {
+      "owner": "BP_CardFunctions_C",
+      "name": "SpawnCardInHandBySide",
+      "bytes": 617,
+      "sha256": "2c12bcfd0f542fd9931f5a55c9a3357953a4e11b1ab6c098ad816ee5f1e80c42"
+    },
+    {
+      "owner": "BP_CardFunctions_C",
+      "name": "GetAllActiveStaticCards",
+      "bytes": 2638,
+      "sha256": "b309a05e75b0f0f2c58607c33f87df80dc6e314e4dd5d5da4bb9394b8096070b"
+    },
+    {
+      "owner": "BP_CardFunctions_C",
+      "name": "SpawnNextToCard",
+      "bytes": 589,
+      "sha256": "cdf9f24208b6c4cd813a2715da4d08789b734526ac04592d4cfe4141b83445ef"
+    },
+    {
+      "owner": "BP_Logic_C",
+      "name": "HandleCheckCardReserved",
+      "bytes": 77,
+      "sha256": "09757c63b29d0c9918ed1607909c364f5cff9e2ca88b391dae6df554ad3c594e"
+    },
+    {
+      "owner": "BP_Logic_C",
+      "name": "HandleCheckCardBlackListed",
+      "bytes": 77,
+      "sha256": "d242c110304ab767fabc55f82622efb8680a2c919a92dcc9398e2348d8ab20b2"
+    },
+    {
+      "owner": "DeckAndCollectionUtilityFunctions_C",
+      "name": "isCardSetConfigActive",
+      "bytes": 522,
+      "sha256": "5a3ebe0d9a99105eaced8a0851bef3be94c098f9b1fc44b72650d175b8dccaca"
+    },
+    {
+      "owner": "BP_DeckAndCollectionLoader_C",
+      "name": "checkCustomRules",
+      "bytes": 9181,
+      "sha256": "7d4a60f3ff5c2fbec327c2d6ef6bd068c915072aff7cef13f394f5cab069cb54"
+    },
+    {
+      "owner": "BP_DeckAndCollectionLoader_C",
+      "name": "IsDeckValid",
+      "bytes": 12008,
+      "sha256": "7bf8130ad2aedc57f033b5331ae149a586d1fccce4ba455b344d0b304f816ed5"
+    }
+  ],
+  "worker_job": "20261029-033110-scope001-byte-inventory-43647b3b",
+  "worker_exact_byte_inventory_verified": true,
+  "selector_model": {
+    "scope": "SCOPE-001",
+    "single_card_cases": 16384,
+    "ordered_multi_card_cases": 8,
+    "case_digest_sha256": "9400f7eb69b690a6e14b9d6a3c06ea5ea9ceba42b87419f5c6a8c69fcf75ac8c",
+    "function_sha256": "b309a05e75b0f0f2c58607c33f87df80dc6e314e4dd5d5da4bb9394b8096070b",
+    "limitations": "Actual complete2638B selector AST; stable valid supplied static object array, region/config/reservation/blacklist services and fresh empty local array controlled. Not complete deck legality, live policy values, changing source array/callback reentry or entire PvP universe. No game function calls/writes."
+  },
+  "selector": {
+    "always_allowed_sets_if_not_basic": [
+      1,
+      8,
+      9,
+      10,
+      12,
+      13,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20
+    ],
+    "include_not_attainable_sets": [
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "config_gated_set": 21,
+    "basic_only_set": 1,
+    "reservation_skippable": true,
+    "blacklist_skippable": false
+  },
+  "caveats": [
+    "Set admission is before reservation and blacklist checks.",
+    "Only selector model semantics characterized; deck/custom-rules bodies merely captured.",
+    "Static source array, supplied service booleans and fresh locals assumed in offline model.",
+    "Date activation uses client anti-cheat server UTC, not host clock.",
+    "No live client function invocation, process mutation or automated match operations."
+  ],
+  "evidence_bindings": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\scope001-pool-and-reference-functions-20261029.json",
+      "sha256": "ed4a2cf33b9897377be5f44d9faeb630c114b0923f1a056e29501176418c83c7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-scope001-pool.py",
+      "sha256": "0ff8a6d1d20f252b0d154dda844acdb6a3d1e308835f3d924891b3197477d5d5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\scope001-pool-verification-20261029.json",
+      "sha256": "2fe4a231aaa9d17a2f80effdfb1b5fcc86de4bee896d8e52e0b2c11ca4cc7228"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-scope001-evidence.py",
+      "sha256": "b8173bd4f6b76b71c9b99c374635bfa5033b713cf03b9e4999607e5af089d2ad"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\scope001-worker\\input.json",
+      "sha256": "3f9df63b4d2707f10074c49b366cb52a33ffd92892fcd600b58d4a3eeaf468b9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\scope001-worker\\output.json",
+      "sha256": "e6cc6e3fa0e921ad0a75702b207feb5809bed1c3bd0a76a215e3c7b9b482c38e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\scope001-worker\\verify.py",
+      "sha256": "7f30a072061b9cc3e7339073244d3c7ace5b60a65b4a11b985f3ad52f850f7df"
+    }
+  ]
+}

@@ -23,7 +23,7 @@
     {
       "id": "BASE-02",
       "title": "无头PvP范围与分母",
-      "status": "open",
+      "status": "partial",
       "depends_on": [
         "BASE-01"
       ],
@@ -38,7 +38,23 @@
         "pvp-denominator-manifest.json"
       ],
       "effort_estimate": "not_sized",
-      "status_basis": "planning taxonomy; historical partial evidence is not domain completion"
+      "status_basis": "SCOPE-001 characterizes effect-pool selector and candidate references; legality and recursive closure remain open",
+      "progress_notes": [
+        "当前客户端24个目标入口已重新采集；6个空声明和2个接口返回体独立标记，18个非空函数的原始哈希、名称头及反解逐项一致。",
+        "GetAllActiveStaticCards完整选择器离线模型通过16384个单卡组合及8个顺序样例；服务布尔值和稳定对象数组为受控输入，并非实测所有会话策略。",
+        "2019个导出资产、5585个自有函数扫描出1325条候选引用、697个不同卡牌对；这些不是已证明可达的生成关系。",
+        "731个生成/转换/选择相关名称调用中，245个可按SDK名称槽位匹配卡名；38个动态/缺参数、5个字面名称未匹配、443个符号待映射，均保留。",
+        "牌组及特殊模式合法性、当前导出版本、动态卡池、继承/原生和隐式总部根仍未闭合；全部资产scope仍为unreviewed，未建立最终分母。"
+      ],
+      "current_deliverables": [
+        "out/audit/pvp-scope/README.md",
+        "out/audit/pvp-scope/manifest.json",
+        "out/audit/pvp-scope/evidence-summary.json",
+        "out/audit/pvp-scope/assets.tsv",
+        "out/audit/pvp-scope/candidate_references.tsv",
+        "out/audit/pvp-scope/creation_calls.tsv",
+        "out/audit/pvp-scope/runtime_functions.tsv"
+      ]
     },
     {
       "id": "BASE-03",
