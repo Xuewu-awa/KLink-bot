@@ -1110,6 +1110,8 @@ internal static class SelfTest
         new("RULE-522：单卡生成初始化槽位和创建后可见字段", SingleSpawnInitialPlacement),
         new("RULE-522：单卡生成分阶段解析ID并保留山地对象引用", SingleSpawnIdentityLookup),
         new("RULE-523：缺失生成ID仍派发空主体观察者，回调恢复不改旧缓存", SingleSpawnMissingMapping),
+        new("RULE-524：相邻生成保留回调位置并按返回ID复制攻击", NeighborSpawnCallbackReferences),
+        new("RULE-524：相邻生成使用来源物理位置并转发回收参数", NeighborSpawnPhysicalLocations),
         new("山地：新部署的 Alpine 单位得到 +N/+N（手牌打出 + 效果生成两条路），且一次部署只加一次",
             AlpineBonusOnEntry),
 
@@ -40517,6 +40519,143 @@ internal static class SelfTest
     /// 与效果生成（`SpawnOnBattlefield` ↔ `SpawnCardToBoard` si=872）。
     /// 「一次部署只加一次」由数值**恰好**等于 +N 保证（加法重复调会变 +2N）。
     /// </summary>
+    private static string? NeighborSpawnCallbackReferences(CardDatabase db)
+    {
+        using var entry = InstallEntryMethodProbe(); using var move = InstallMovementObserverProbes();
+        const string name = "card_unit_typhoon_mk_ib", sourceName = "card_unit_10_5_cm_lefh";
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (bool frontline in new[] { false, true })
+        foreach (bool copy in new[] { false, true })
+        foreach (int phase in Enumerable.Range(0, 7))
+        foreach (int sourceMutation in new[] { 0, 1, 2 })
+        {
+            var (engine, state) = EmptyBoard(db); var where = frontline ? CardLocation.BoardFrontline : side.HqOf();
+            int sourceNumber = frontline ? 0 : 1;
+            var source = state.CreateWithId(sourceName, side, 9, where, sourceNumber, isGold: true);
+            source.Keywords.Clear(); source.BaseAttack = 8; source.TemporaryAttack = 3;
+            var peer = state.CreateWithId(PlainUnit, side, 20, where, sourceNumber + 1); peer.Keywords.Clear();
+            CardInstance? original = null, replacement = null; bool changed = false, entered = false, moved = false;
+            void Replace(bool removeOnly)
+            {
+                if (original is null || changed) return; changed = true;
+                var location = original.Location; int number = original.LocationNumber;
+                state.Remove(original); original.Location = location; original.LocationNumber = number;
+                if (removeOnly) return;
+                replacement = state.CreateWithId(name, side, original.CardId, where, 17);
+                replacement.Keywords.Clear(); replacement.BaseAttack = 4; replacement.TemporaryAttack = 3;
+                replacement.Defense = replacement.MaxDefense = 7;
+            }
+            var created = state.CardCreated;
+            state.CardCreated = made => {
+                created?.Invoke(made);
+                if (made.Name == name && original is null)
+                {
+                    original = made; made.Keywords.Clear(); made.BaseAttack = 2; made.TemporaryAttack = 2;
+                    made.Defense = made.MaxDefense = 5;
+                    if (sourceMutation == 1)
+                    {
+                        var location = source.Location; int number = source.LocationNumber;
+                        state.Remove(source); source.Location = location; source.LocationNumber = number;
+                        var freshSource = state.CreateWithId(sourceName, side, 9, where, 13);
+                        freshSource.BaseAttack = 40;
+                    }
+                    if (sourceMutation == 2) source.BaseAttack = 11;
+                    if (phase is 1 or 2) Replace(phase == 2);
+                }
+                else if (made.Name == "card_unit_routed_troops" && original is not null)
+                {
+                    var current = state.ById(original.CardId);
+                    bool moving = Equals(original.BlueprintVariables.GetValueOrDefault("_auditMovementCalled"), true)
+                        || (current is not null && Equals(current.BlueprintVariables.GetValueOrDefault("_auditMovementCalled"), true));
+                    if (!moving && !entered)
+                    {
+                        entered = true; if (phase is 3 or 4) Replace(phase == 4);
+                    }
+                    else if (moving && !moved)
+                    {
+                        moved = true; if (phase is 5 or 6) Replace(phase == 6);
+                        peer.Location = side.HandOf(); peer.LocationNumber = 37;
+                        if (state.ById(original.CardId) is { } last) last.LocationNumber = 23;
+                    }
+                }
+            };
+            var result = engine.Api.InvokeByName("SpawnNextToCard", source,
+                new object?[] { name, 9, (int)side.Opposite(), null, copy, true, 5, false },
+                new EffectContext { Engine = engine, State = state, Self = source, Controller = side }, out bool handled);
+            if (!handled || original is null || result is not int id || id != original.CardId
+                || !original.IsSalvaged || original.SalvageFaction != "5" || !original.IsGold)
+                return "相邻生成须保留ID并转发生成前缓存的金卡/回收参数";
+            var target = state.ById(id); int sourceAttack = sourceMutation == 2 ? 11 : 8;
+            if (target is null)
+            {
+                if (original.BaseAttack != 2) return "相邻生成目标消失后不得复制到旧对象";
+            }
+            else
+            {
+                int initial = ReferenceEquals(target, original) ? 2 : 4;
+                int temp = ReferenceEquals(target, original) ? 2 : 3;
+                if (target.BaseAttack != (copy ? sourceAttack : initial) || target.TemporaryAttack != temp
+                    || target.Defense != (ReferenceEquals(target, original) ? 5 : 7)
+                    || (target.BuffsBySource.GetValueOrDefault((id, false))?.Attack ?? 0) != (copy ? sourceAttack - initial : 0))
+                    return $"相邻生成应重取目标并读取缓存来源的当前基础攻击：{side}/{frontline}/{copy}/{phase}/{sourceMutation}";
+                if (!ReferenceEquals(target, original) && original.BaseAttack != 2) return "复制攻击误写已被替换的对象";
+            }
+            if (moved)
+            {
+                if (peer.Location != side.HandOf() || peer.LocationNumber != 37 || target is not null && target.LocationNumber != 23)
+                    return "相邻生成不得在移动回调后恢复旧编号";
+            }
+            else
+            {
+                var numbers = state.AllCardsInBattleOrder.Where(c => c.Location == where).Select(c => c.LocationNumber).OrderBy(n => n).ToArray();
+                if (!numbers.SequenceEqual(Enumerable.Range(0, numbers.Length))) return "目标移除后须保留共享生成流程的压紧编号";
+            }
+        }
+        return null;
+    }
+
+    private static string? NeighborSpawnPhysicalLocations(CardDatabase db)
+    {
+        const string name = "card_unit_typhoon_mk_ib";
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (CardLocation where in new[] { side.DeckOf(), side.HandOf(), CardLocation.Discard, CardLocation.Deck, side.Opposite().HqOf() })
+        foreach (bool copy in new[] { false, true })
+        foreach (bool replace in new[] { false, true })
+        {
+            // Discard copy's ChangeAttack availability gate is audited separately.
+            if (where == CardLocation.Discard && copy) continue;
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId(PlainUnit, side, 9, where, 2, isGold: true);
+            source.Keywords.Clear(); source.BaseAttack = 8; source.TemporaryAttack = 3;
+            CardInstance? original = null, replacement = null; var created = state.CardCreated;
+            state.CardCreated = made => {
+                created?.Invoke(made);
+                if (made.Name != name || original is not null) return;
+                original = made; made.Keywords.Clear(); made.BaseAttack = 2; made.TemporaryAttack = 2;
+                made.Defense = made.MaxDefense = 5;
+                if (replace)
+                {
+                    var location = made.Location; int number = made.LocationNumber;
+                    state.Remove(made); made.Location = location; made.LocationNumber = number;
+                    replacement = state.CreateWithId(name, side, made.CardId, where, 17);
+                    replacement.Keywords.Clear(); replacement.BaseAttack = 4; replacement.TemporaryAttack = 3;
+                    replacement.Defense = replacement.MaxDefense = 7;
+                }
+            };
+            var result = engine.Api.InvokeByName("SpawnNextToCard", source,
+                new object?[] { name, 9, (int)side.Opposite(), null, copy, true, 5, false },
+                new EffectContext { Engine = engine, State = state, Self = source, Controller = side }, out bool handled);
+            if (!handled || result is not int id || original is null || state.ById(id) is not { } target
+                || target.Location != where || target.Owner != side || !original.IsSalvaged || original.SalvageFaction != "5"
+                || target.BaseAttack != (copy ? 8 : replace ? 4 : 2) || target.TemporaryAttack != (replace ? 3 : 2)
+                || target.Defense != (replace ? 7 : 5))
+                return $"相邻生成物理位置/原始攻击错误：{side}/{where}/{copy}/{replace}";
+            if (where == CardLocation.Discard && target.LocationNumber != (replace ? 17 : 3))
+                return "弃牌位置setter不得覆盖回调替代对象原编号";
+        }
+        return null;
+    }
+
     private static string? SingleSpawnMissingMapping(CardDatabase db)
     {
         using var own = InstallEntryMethodProbe();
@@ -44710,19 +44849,20 @@ internal static class SelfTest
         var spawned = state.ById(spawnedId);
         if (spawned is null
             || spawned.Location != CardLocation.BoardFrontline
-            || spawned.LocationNumber != 3
+            || spawned.LocationNumber != 2
             || !spawned.IsGold
             || !spawned.Keywords.Contains(Keyword.Veteran)
             || spawned.BaseAttack != spawner.BaseAttack || spawned.TemporaryAttack != 0)
         {
-            return $"生成卡应在前线位置 3、继承金卡/老兵并复制攻击力，实际="
+            return $"生成卡应在稀疏位置压紧后的前线位置 2、继承金卡/老兵并复制攻击力，实际="
                  + $"{spawned?.Location}/{spawned?.LocationNumber}, gold={spawned?.IsGold}, "
                  + $"veteran={spawned?.Keywords.Contains(Keyword.Veteran)}, attack={spawned?.Attack}";
         }
 
-        if (existing.LocationNumber != 4)
+        // RULE-524: actual gap + refresh AST maps sparse [2,3,3] to [0,1,2].
+        if (spawner.LocationNumber != 0 || existing.LocationNumber != 1)
         {
-            return $"插入相邻卡后原有位置应顺延到 4，实际 {existing.LocationNumber}";
+            return $"共享生成刷新后来源/既有卡应为 0/1，实际 {spawner.LocationNumber}/{existing.LocationNumber}";
         }
 
         return null;

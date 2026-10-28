@@ -5371,69 +5371,36 @@ public sealed partial class CardApi
     }
 
     /// <summary>
-    /// `SpawnNextToCard(card_name, spawnerId, side, out spawnedCardID,
-    /// copySpawnerAttack, copySpawnerDefense, salvageFaction, makeVeteran)`.
-    ///
-    /// 蓝图实际把生成者的 side/location/locationNumber+1、金卡标记和 spawnerID
-    /// 传给 `SpawnCardToBoard`；`copySpawnerAttack` 为真时再把生成卡的攻击力调到
-    /// 与生成者一致。`copySpawnerDefense` 在当前函数体中没有被读取，故保持无效。
+    /// Current SpawnNextToCard589B: cache the source, pass its physical location
+    /// and raw gold flag to the shared spawn, then optionally re-resolve the
+    /// generated ID and copy the cached source's current base attack.
+    /// side/copySpawnerDefense are unused by this Blueprint.
     /// </summary>
     private object? DoSpawnNextToCard(EffectContext c, object?[] a)
     {
         string? cardName = a.ElementAtOrDefault(0) as string;
         int spawnerId = IntArg(a, 1);
-        var spawner = c.State.ById(spawnerId);
-        if (spawner is null
-            || string.IsNullOrWhiteSpace(cardName)
-            || c.State.Database.Find(cardName) is null)
+        var spawner = GetCardFromID(spawnerId);
+        if (spawner is null || string.IsNullOrWhiteSpace(cardName)
+            || c.State.Database.Find(cardName) is null) return 0;
+        // Invalid source/default-location fallback remains a separate shared-
+        // creation audit; preserve its legacy result outside known locations.
+        if (spawner.Owner is not (Side.Left or Side.Right)
+            || spawner.Location == CardLocation.NotAvailable) return 0;
+
+        var spawned = SpawnCardAtLocation(spawner.Owner, cardName, spawner.Location,
+            unchecked(spawner.LocationNumber + 1), newGiveBlitz: false,
+            forceGoldCard: spawner.IsGold, salvageFaction: IntArg(a, 6),
+            makeVeteran: TruthyArg(a, 7), spawnerId: spawnerId);
+        int spawnedId = spawned.CardId;
+        // i=346 re-resolves the ID AFTER every shared-spawn callback. The
+        // source reference remains cached; no post-spawn position writes exist.
+        if (TruthyArg(a, 4) && GetCardFromID(spawnedId) is { } target)
         {
-            return 0;
+            int delta = unchecked(spawner.BaseAttack - target.BaseAttack);
+            ChangeAttack(target, delta, target, instigatorId: spawnedId);
         }
-
-        bool frontline = spawner.Location == CardLocation.BoardFrontline;
-        if (!frontline && spawner.Location != spawner.Owner.HqOf())
-        {
-            return 0;
-        }
-
-        CardLocation location = spawner.Location;
-        int insertNumber = spawner.LocationNumber + 1;
-        var existing = c.State.Cards(spawner.Owner, location)
-            .Where(card => !card.IsHq)
-            .ToList();
-        var originalNumbers = existing.ToDictionary(card => card, card => card.LocationNumber);
-
-        var spawned = SpawnOnBattlefield(spawner.Owner, cardName,
-            frontline,
-            insertNumber,
-            newGiveBlitz: false,
-            forceGoldCard: spawner.IsGold,
-            makeVeteran: TruthyArg(a, 7));
-
-        // `GameState.Move` normalizes a newly appended card by insertion order.
-        // The Blueprint's `SpawnCardToBoard` instead inserts at the requested slot
-        // and shifts cards already occupying that slot, so restore that numbering
-        // after the shared spawn path has emitted its normal events.
-        foreach (var card in existing)
-        {
-            int originalNumber = originalNumbers[card];
-            card.LocationNumber = originalNumber >= insertNumber
-                ? originalNumber + 1
-                : originalNumber;
-        }
-
-        spawned.LocationNumber = insertNumber;
-
-        if (TruthyArg(a, 4))
-        {
-            int delta = unchecked(spawner.BaseAttack - spawned.BaseAttack);
-            if (delta != 0)
-            {
-                ChangeAttack(spawned, delta, spawned);
-            }
-        }
-
-        return spawned.CardId;
+        return spawnedId;
     }
 
     /// <summary>

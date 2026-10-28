@@ -1,0 +1,58 @@
+{
+  "rule_id": "RULE-524",
+  "date": "2026-10-28",
+  "status": "已修复已知有效来源的相邻生成回调位置覆盖、攻击目标重取、物理位置及回收参数；根攻击原语与无效来源/默认位置仍开放",
+  "authority": {
+    "pid": 24220,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "read_only": true,
+    "client_writes": 0,
+    "real_client_function_calls": 0,
+    "historical_replays_used_as_authority": false
+  },
+  "findings": [
+    "当前SpawnNextToCard完整589B/15节点，0B stub另列。23/55缓存spawnerCardRef；74计算缓存来源locationNumber+1，138向SpawnCardToBoard传缓存side/Location/isGold、原spawnerID、salvageFaction与MakeVeteran，GiveBlitz=false。函数没有生成结束后的任何位置回写；输入side与copySpawnerDefense在整个实际函数中没有LocalVariable读取。",
+    "305保存共享生成返回ID；copySpawnerAttack真时346按该ID重新查询目标，378读目标原始基础攻击，419读最初缓存来源的当前原始攻击，460相减，506始终调用ChangeAttack(target,savedID,delta,1,false)，559返回保存ID。来源映射在生成回调中替换不应改变缓存来源；目标映射则必须观察所有生成回调后的当前值。缺目标时ChangeAttack先IsValid，393日志/456 false后退出。",
+    "原适配器保存生成前位置快照，生成结束后无条件重写旧卡及返回对象编号；这会覆盖回调的移位和共享流程的压紧结果。它还直接复制到共享函数返回的缓存对象，并限制为来源所属支援线/前线，漏传回收参数。现移除所有后置位置写入，按保存ID重取复制目标，保留缓存来源当前BaseAttack与目标TemporaryAttack，转发salvageFaction/MakeVeteran/spawnerID。",
+    "将共享物理位置生成体提取为SpawnCardAtLocation，公共SpawnOnBattlefield仍按原签名映射到支援/前线；相邻生成直接传缓存来源物理位置与控制方，二者独立。setter对Discard只写Location而保留已有locationNumber，符合375B实际函数。有效手牌、牌库、弃牌及控制方与物理支援线不同的位置均可到达共享体；没有增加不存在的手牌/牌库特殊事件。",
+    "432组完整相邻函数AST执行覆盖双方、六种物理位置、攻击/防御复制开关、目标同对象/替代/缺失、来源同对象/替代/缓存字段改变。共享生成及其回调结果、基础攻击getter、有效ChangeAttack体供给；无效ChangeAttack实际2713B分支及有效入口门独立执行。验证精确参数、来源缓存/目标重取、原始攻击差值、保存ID输出、无位置回写。",
+    "额外连接实际Inject139B/gap1365B/setter375B/Refresh973B/Rearrange455B，稳定排序和UpdateGuarded体供给，确认旧前线稀疏输入[source2,peer3,new3]最终为[0,1,2]。旧自测要求new3/peer4依赖原来多余回写；现按权威组合结果改为source0/peer1/new2，金卡/老兵/基础攻击复制原断言保留。不是依据历史回放或为了保留错误实现改测试。",
+    "新增C#168组回调引用整合，覆盖双方/阵线/复制开关、无变动/创建替换或删除/入场替换或删除/移动替换或删除、来源映射替换或字段变化，核对当前目标、缓存来源、临时攻击、同来源账本、未使用防御参数及回调位置。另36组物理位置/回收参数/当前映射整合覆盖牌库、手牌、弃牌、通用牌库和与控制方不同的支援线；弃牌复制受根原语待审门影响，明确不计入这36组已核验路径。",
+    "修复前两项新测试失败；修复后新测试通过，旧稀疏编号断言按实际AST结果校正后最终940/940通过，构建0警告0错误。原始修复后日志保留，不能把该旧断言失败误列为第二项未修产品故障。",
+    "DeepSeek完成6个请求节点精确转录，主agent逐对象比对当前AST并独立扫描side/copySpawnerDefense未使用事实；位置、来源/目标引用、原语边界及整合结论均独立核验。"
+  ],
+  "validation": {
+    "neighbor_blueprint_cases": 432,
+    "actual_sparse_position_composition_cases": 1,
+    "new_csharp_callback_cases": 168,
+    "new_csharp_physical_location_cases": 36,
+    "selftest_passed": 940,
+    "selftest_total": 940,
+    "build_warnings": 0,
+    "build_errors": 0
+  },
+  "remaining": [
+    "优先：当前通用ChangeAttack管理实现仍有IsAlive与delta==0早退。当前2713B需继续组合核对弃牌/NotAvailable有效对象及零增量的账本、通知和回调；相邻函数虽按原参数调用，不意味着该根原语所有语义已正确。弃牌copy=true和零差值未获得本轮数值结果认证。",
+    "无效/缺失来源、Side.NotAvailable或来源Location.NotAvailable路径仍保留管理层早退；当前589B没有同样的显式验证门。需恢复共享CreateCard默认位置/无效阵营/类加载行为后再解除，不能称相邻函数全部逻辑1比1完成。",
+    "共享生成满位置/overrideCardID、完整分配/通知、空上下文异常中止、并列排序和原生容器全局顺序仍开放。",
+    "公共托管返回ID载体及其他原语的对象/ID类型绑定仍需继续核查；本轮仅明确修复相邻生成的后续目标重取。"
+  ],
+  "fully_certified_cards": 0,
+  "evidence_sha256": {
+    "D:\\Codex Workshop\\kards-install-review\\capture-rule524-spawn-next.py": "f8b0cdbf1941f1f980bf1e9d8a80408d52e12cfa5b942c2c33e3ab9aafebc625",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule524-spawn-next-to-card-20261028.json": "859a39a0d880c0ea0e046c2ca7012c545b43abe35ab4fb2ed5575b30677bc994",
+    "D:\\Codex Workshop\\kards-install-review\\capture-rule524-position.py": "bf4f5a3d34d0eb938d954d2e46d55efd4d80f9298c313b8ae3ff3a32bc4730d4",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule524-spawn-next-position-dependencies-20261028.json": "6e7a6f10a7e5efaf5e38195fa89c4ad44544f88894045fc5bfe31e54dc3108f6",
+    "D:\\Codex Workshop\\kards-install-review\\capture-rule524-attack.py": "3690382436daa87554204fbe36c9e26a0575bb293695654c37ecfbf0b696180d",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule524-spawn-next-attack-dependency-20261028.json": "4fbfb6ec26a4cfb54987ddd3d666b59fc89dc0dbce7f47ab5b2dc039d15cfb08",
+    "D:\\Codex Workshop\\kards-install-review\\verify-rule524-neighbor.py": "d7c1f6ea3bcebf51bbc381a8c6e233119b758fae2a8f24c9fb6c35adb4d342a3",
+    "D:\\Codex Workshop\\kards-install-review\\rule524-neighbor-verification-20261028.json": "ce1e74727a267138e81ce17be61ce61f6e10c061f560206d248d90cdf7a43071",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-rule524-before-20261028.txt": "ac5405eb2b78839a6057aa8fcbc161d825cfd20da93ac71b9ced1772ae9964f0",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-rule524-after-20261028.txt": "2fd082a73e80464b933ce602cd91811eb70c0774f848b5acfee60949ab551d47",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-rule524-final-20261028.txt": "b19500b6f862e6d606fb7a42f38ec30fac7acfc8d5efdc999e94a4d07f7285c5",
+    "D:\\Codex Workshop\\kards-install-review\\build-rule524-final-20261028.txt": "7190469f76f9bcdb30da3ef71a57566f356c46e76fa04cdc2552b2508b36e37c",
+    "D:\\Codex Workshop\\kards-install-review\\rule524-worker\\input.json": "5e841298e9f499a5aacf6d7cadc976691dee852b4ec1b3923709021afff75175",
+    "D:\\Codex Workshop\\kards-install-review\\rule524-worker\\output.json": "9e7624baca6cff282dbaae37d10a00751f7cde1a122e4d9ed7ed2bdf522671f9",
+    "D:\\Codex Workshop\\kards-install-review\\rule524-worker-verification-20261028.json": "51b53a2a6746871769df9153ed214a0560dfacf9908cc0ca969b5819b3c02628"
+  }
+}

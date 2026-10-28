@@ -3533,8 +3533,15 @@ public sealed partial class CardApi
                                            int salvageFaction = 0,
                                            bool makeVeteran = false,
                                            int spawnerId = 0)
+        => SpawnCardAtLocation(side, cardName, frontline ? CardLocation.BoardFrontline : side.HqOf(),
+            locationNumber, newGiveBlitz, forceGoldCard, salvageFaction, makeVeteran, spawnerId);
+
+    // The native shared primitive accepts a physical location independently of
+    // side. Neighbor spawning passes the cached source location unchanged.
+    private CardInstance SpawnCardAtLocation(Side side, string cardName, CardLocation where,
+        int locationNumber = -1, bool newGiveBlitz = false, bool forceGoldCard = false,
+        int salvageFaction = 0, bool makeVeteran = false, int spawnerId = 0)
     {
-        CardLocation where = frontline ? CardLocation.BoardFrontline : side.HqOf();
         // RULE-450: SpawnCardToBoard i=1468..1650 selects the salvage struct
         // before CreateCard; it must already be visible to creation callbacks.
         int salvage = unchecked((byte)salvageFaction);
@@ -3566,7 +3573,7 @@ public sealed partial class CardApi
             if (State.ById(spawnedId) is { } injected)
             {
                 injected.Location = where;
-                injected.LocationNumber = locationNumber;
+                if (where != CardLocation.Discard) injected.LocationNumber = locationNumber;
             }
         }
         // RULE-523: preserve a missing lookup as null for this entire entry/
