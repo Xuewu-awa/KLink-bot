@@ -1,0 +1,840 @@
+{
+  "rule_id": "RULE-510",
+  "date": "2026-10-28",
+  "base_commit": "94143d44c65e9829f715a1b7b4951f24555087d5",
+  "status": "玩家动作入队到手牌答复回调的条件同步路径已验证；后继队列推进/真实回调仍开放",
+  "findings": [
+    "当前指定名称只读复读PlayerMoves.ExecuteUbergraph13890B完整AST、AddMoveToPlayerMoveQueue144B、ResolvePlayerMoveQueue18B、DoNextInQueue18B和无关控件doNext18B。后者不作为规则恢复目标；名称候选不是所有动态/原生入口穷尽。",
+    "144B AddMove先以LetValueOnPersistentFrame存7个输入，126 LocalFinalFunction转ubergraph1806。1806取目标对象只供调试调用；1910/1978/2046/2114/2182/2250/2318按序追加sourceCard/actionType/locationNumber/location/targetCard/nonVisualLocationNumber/sourceCardID七队列。2386处queueIsRunning真即2400返回，false则2401调用实际18B ResolvePlayerMoveQueue，后者直接转2416。不能把每次AddMove一律当成只排队或一律立即执行。",
+    "2416置queueIsRunning=true，取实际时间/调试/TimerHandle边界后分别读取各队首至tmp字段，3105至3381移除七个首项；按tmpActionType分派。若原有旧队首，先处理旧项，不保证新入动作就是此次立即处理项。原生数组复制/一致性/异常重入未认证，七队列长度一致是测试前置。",
+    "手牌分支8671获取Board后关闭chooseOneActive，8750创建答复动作开始，8804按tmpSourceCardID重取来源，8877调用来源OnHandTargetSelected(tmpTargetCardID,tmpSourceCardID)，随后8977额外出牌触发、按9022/9067条件9081登记子动作、9135/9180条件9240 AfterWait、9294自动出牌、9330结束答复动作、9366清tmpTargetCardID、9389 DoNextInQueue。实际回调/边界服务在本轮供给记录，未认证它们的传递副作用。",
+    "32组实际wrapper->1806->Resolve wrapper->2416/手牌分支控制流通过，覆盖忙碌/空闲、0/2旧项、目标0/101、action-process和AfterWait真假。空闲时供给OnHand回调在AddMove返回前追加合成待选ID，忙碌时无Resolve及新待选项。调试/时间/对象查找、无冒号Split、动作边界/额外触发/AfterWait/自动出牌/DoNext是声明供给；非真实引擎调度和单卡回调认证。",
+    "对RULE509的限定进一步收窄：只有队列空闲且被处理的队首进入相应答复路径时，所测结构允许回调在入队返回前追加请求。忙碌分支仅追加；DoNextInQueue11741之后的自动出牌/后继推进/可能调度仍未执行，不能据此把所有自动重试或普通策略FIFO一律改成同步递归。",
+    "DeepSeek提取七队列追加/移除和8877位置，主agent独立递归重算精确核对。没有足够证据要求产品修复，本轮仅审计材料；未重跑C#，历史929/929非本轮验证。完整认证卡数0、游戏写入/注入/真实函数调用0。"
+  ],
+  "verification": {
+    "rule": "RULE-510",
+    "enqueue_to_hand_callback_cases": 32,
+    "scope": "Actual144B AddMove wrapper persistent-frame writes -> ubergraph1806 -> actual18B Resolve wrapper -> ubergraph2416 dequeue/string route/hand reply8671..9403. Native containers, object lookup/references, split(no colon inputs), time/debug, action boundary/extra/wait/autoplay callbacks and DoNextInQueue continuation supplied. OnHand callback explicitly appends synthetic pending ID to prove conditional call-before-return opportunity, not real single-card effect behavior. Busy queue only appends; idle processes current FIFO head (possibly older than incoming). Full DoNext/autoplay/latent/reentry/subscriber/client event-loop semantics not certified.",
+    "game_writes": 0,
+    "real_game_function_calls": 0,
+    "fully_certified_cards": 0,
+    "case_sha256": "2097445cb4ef8ada91f30c60cef02b51d0bed5b7c5abccd9139bebcfc86291bc",
+    "profile_summaries": [
+      {
+        "running": false,
+        "prior_count": 0,
+        "target": 0,
+        "action_process": false,
+        "wait": false,
+        "new_pending": [
+          1011
+        ],
+        "calls": [
+          "DebugAddItemPlayerMoves",
+          "ResolvePlayerMoveQueue",
+          "DebugSetQueueRunning",
+          "DebugDoNextInQueue",
+          "CreateAction_HandTargetSelected_Start",
+          "OnHandTargetSelected",
+          "HandleExtraPlayTriggersAfterSelectHandCard",
+          "ExecuteAutoPlayCards",
+          "CreateAction_HandTargetSelected_End",
+          "DoNextInQueue"
+        ],
+        "hand_callback_args": [
+          [
+            0,
+            11
+          ]
+        ]
+      },
+      {
+        "running": false,
+        "prior_count": 0,
+        "target": 0,
+        "action_process": false,
+        "wait": true,
+        "new_pending": [
+          1011
+        ],
+        "calls": [
+          "DebugAddItemPlayerMoves",
+          "ResolvePlayerMoveQueue",
+          "DebugSetQueueRunning",
+          "DebugDoNextInQueue",
+          "CreateAction_HandTargetSelected_Start",
+          "OnHandTargetSelected",
+          "HandleExtraPlayTriggersAfterSelectHandCard",
+          "AfterWaitCardPlayFromHand",
+          "ExecuteAutoPlayCards",
+          "CreateAction_HandTargetSelected_End",
+          "DoNextInQueue"
+        ],
+        "hand_callback_args": [
+          [
+            0,
+            11
+          ]
+        ]
+      },
+      {
+        "running": false,
+        "prior_count": 0,
+        "target": 0,
+        "action_process": true,
+        "wait": false,
+        "new_pending": [
+          1011
+        ],
+        "calls": [
+          "DebugAddItemPlayerMoves",
+          "ResolvePlayerMoveQueue",
+          "DebugSetQueueRunning",
+          "DebugDoNextInQueue",
+          "CreateAction_HandTargetSelected_Start",
+          "OnHandTargetSelected",
+          "HandleExtraPlayTriggersAfterSelectHandCard",
+          "AddSubActionHandTargetSelected",
+          "ExecuteAutoPlayCards",
+          "CreateAction_HandTargetSelected_End",
+          "DoNextInQueue"
+        ],
+        "hand_callback_args": [
+          [
+            0,
+            11
+          ]
+        ]
+      },
+      {
+        "running": false,
+        "prior_count": 0,
+        "target": 0,
+        "action_process": true,
+        "wait": true,
+        "new_pending": [
+          1011
+        ],
+        "calls": [
+          "DebugAddItemPlayerMoves",
+          "ResolvePlayerMoveQueue",
+          "DebugSetQueueRunning",
+          "DebugDoNextInQueue",
+          "CreateAction_HandTargetSelected_Start",
+          "OnHandTargetSelected",
+          "HandleExtraPlayTriggersAfterSelectHandCard",
+          "AddSubActionHandTargetSelected",
+          "AfterWaitCardPlayFromHand",
+          "ExecuteAutoPlayCards",
+          "CreateAction_HandTargetSelected_End",
+          "DoNextInQueue"
+        ],
+        "hand_callback_args": [
+          [
+            0,
+            11
+          ]
+        ]
+      },
+      {
+        "running": false,
+        "prior_count": 0,
+        "target": 101,
+        "action_process": false,
+        "wait": false,
+        "new_pending": [
+          1011
+        ],
+        "calls": [
+          "DebugAddItemPlayerMoves",
+          "ResolvePlayerMoveQueue",
+          "DebugSetQueueRunning",
+          "DebugDoNextInQueue",
+          "CreateAction_HandTargetSelected_Start",
+          "OnHandTargetSelected",
+          "HandleExtraPlayTriggersAfterSelectHandCard",
+          "ExecuteAutoPlayCards",
+          "CreateAction_HandTargetSelected_End",
+          "DoNextInQueue"
+        ],
+        "hand_callback_args": [
+          [
+            101,
+            11
+          ]
+        ]
+      },
+      {
+        "running": false,
+        "prior_count": 0,
+        "target": 101,
+        "action_process": false,
+        "wait": true,
+        "new_pending": [
+          1011
+        ],
+        "calls": [
+          "DebugAddItemPlayerMoves",
+          "ResolvePlayerMoveQueue",
+          "DebugSetQueueRunning",
+          "DebugDoNextInQueue",
+          "CreateAction_HandTargetSelected_Start",
+          "OnHandTargetSelected",
+          "HandleExtraPlayTriggersAfterSelectHandCard",
+          "AfterWaitCardPlayFromHand",
+          "ExecuteAutoPlayCards",
+          "CreateAction_HandTargetSelected_End",
+          "DoNextInQueue"
+        ],
+        "hand_callback_args": [
+          [
+            101,
+            11
+          ]
+        ]
+      },
+      {
+        "running": false,
+        "prior_count": 0,
+        "target": 101,
+        "action_process": true,
+        "wait": false,
+        "new_pending": [
+          1011
+        ],
+        "calls": [
+          "DebugAddItemPlayerMoves",
+          "ResolvePlayerMoveQueue",
+          "DebugSetQueueRunning",
+          "DebugDoNextInQueue",
+          "CreateAction_HandTargetSelected_Start",
+          "OnHandTargetSelected",
+          "HandleExtraPlayTriggersAfterSelectHandCard",
+          "AddSubActionHandTargetSelected",
+          "ExecuteAutoPlayCards",
+          "CreateAction_HandTargetSelected_End",
+          "DoNextInQueue"
+        ],
+        "hand_callback_args": [
+          [
+            101,
+            11
+          ]
+        ]
+      },
+      {
+        "running": false,
+        "prior_count": 0,
+        "target": 101,
+        "action_process": true,
+        "wait": true,
+        "new_pending": [
+          1011
+        ],
+        "calls": [
+          "DebugAddItemPlayerMoves",
+          "ResolvePlayerMoveQueue",
+          "DebugSetQueueRunning",
+          "DebugDoNextInQueue",
+          "CreateAction_HandTargetSelected_Start",
+          "OnHandTargetSelected",
+          "HandleExtraPlayTriggersAfterSelectHandCard",
+          "AddSubActionHandTargetSelected",
+          "AfterWaitCardPlayFromHand",
+          "ExecuteAutoPlayCards",
+          "CreateAction_HandTargetSelected_End",
+          "DoNextInQueue"
+        ],
+        "hand_callback_args": [
+          [
+            101,
+            11
+          ]
+        ]
+      },
+      {
+        "running": false,
+        "prior_count": 2,
+        "target": 0,
+        "action_process": false,
+        "wait": false,
+        "new_pending": [
+          1021
+        ],
+        "calls": [
+          "DebugAddItemPlayerMoves",
+          "ResolvePlayerMoveQueue",
+          "DebugSetQueueRunning",
+          "DebugDoNextInQueue",
+          "CreateAction_HandTargetSelected_Start",
+          "OnHandTargetSelected",
+          "HandleExtraPlayTriggersAfterSelectHandCard",
+          "ExecuteAutoPlayCards",
+          "CreateAction_HandTargetSelected_End",
+          "DoNextInQueue"
+        ],
+        "hand_callback_args": [
+          [
+            201,
+            21
+          ]
+        ]
+      },
+      {
+        "running": false,
+        "prior_count": 2,
+        "target": 0,
+        "action_process": false,
+        "wait": true,
+        "new_pending": [
+          1021
+        ],
+        "calls": [
+          "DebugAddItemPlayerMoves",
+          "ResolvePlayerMoveQueue",
+          "DebugSetQueueRunning",
+          "DebugDoNextInQueue",
+          "CreateAction_HandTargetSelected_Start",
+          "OnHandTargetSelected",
+          "HandleExtraPlayTriggersAfterSelectHandCard",
+          "AfterWaitCardPlayFromHand",
+          "ExecuteAutoPlayCards",
+          "CreateAction_HandTargetSelected_End",
+          "DoNextInQueue"
+        ],
+        "hand_callback_args": [
+          [
+            201,
+            21
+          ]
+        ]
+      },
+      {
+        "running": false,
+        "prior_count": 2,
+        "target": 0,
+        "action_process": true,
+        "wait": false,
+        "new_pending": [
+          1021
+        ],
+        "calls": [
+          "DebugAddItemPlayerMoves",
+          "ResolvePlayerMoveQueue",
+          "DebugSetQueueRunning",
+          "DebugDoNextInQueue",
+          "CreateAction_HandTargetSelected_Start",
+          "OnHandTargetSelected",
+          "HandleExtraPlayTriggersAfterSelectHandCard",
+          "AddSubActionHandTargetSelected",
+          "ExecuteAutoPlayCards",
+          "CreateAction_HandTargetSelected_End",
+          "DoNextInQueue"
+        ],
+        "hand_callback_args": [
+          [
+            201,
+            21
+          ]
+        ]
+      },
+      {
+        "running": false,
+        "prior_count": 2,
+        "target": 0,
+        "action_process": true,
+        "wait": true,
+        "new_pending": [
+          1021
+        ],
+        "calls": [
+          "DebugAddItemPlayerMoves",
+          "ResolvePlayerMoveQueue",
+          "DebugSetQueueRunning",
+          "DebugDoNextInQueue",
+          "CreateAction_HandTargetSelected_Start",
+          "OnHandTargetSelected",
+          "HandleExtraPlayTriggersAfterSelectHandCard",
+          "AddSubActionHandTargetSelected",
+          "AfterWaitCardPlayFromHand",
+          "ExecuteAutoPlayCards",
+          "CreateAction_HandTargetSelected_End",
+          "DoNextInQueue"
+        ],
+        "hand_callback_args": [
+          [
+            201,
+            21
+          ]
+        ]
+      },
+      {
+        "running": false,
+        "prior_count": 2,
+        "target": 101,
+        "action_process": false,
+        "wait": false,
+        "new_pending": [
+          1021
+        ],
+        "calls": [
+          "DebugAddItemPlayerMoves",
+          "ResolvePlayerMoveQueue",
+          "DebugSetQueueRunning",
+          "DebugDoNextInQueue",
+          "CreateAction_HandTargetSelected_Start",
+          "OnHandTargetSelected",
+          "HandleExtraPlayTriggersAfterSelectHandCard",
+          "ExecuteAutoPlayCards",
+          "CreateAction_HandTargetSelected_End",
+          "DoNextInQueue"
+        ],
+        "hand_callback_args": [
+          [
+            201,
+            21
+          ]
+        ]
+      },
+      {
+        "running": false,
+        "prior_count": 2,
+        "target": 101,
+        "action_process": false,
+        "wait": true,
+        "new_pending": [
+          1021
+        ],
+        "calls": [
+          "DebugAddItemPlayerMoves",
+          "ResolvePlayerMoveQueue",
+          "DebugSetQueueRunning",
+          "DebugDoNextInQueue",
+          "CreateAction_HandTargetSelected_Start",
+          "OnHandTargetSelected",
+          "HandleExtraPlayTriggersAfterSelectHandCard",
+          "AfterWaitCardPlayFromHand",
+          "ExecuteAutoPlayCards",
+          "CreateAction_HandTargetSelected_End",
+          "DoNextInQueue"
+        ],
+        "hand_callback_args": [
+          [
+            201,
+            21
+          ]
+        ]
+      },
+      {
+        "running": false,
+        "prior_count": 2,
+        "target": 101,
+        "action_process": true,
+        "wait": false,
+        "new_pending": [
+          1021
+        ],
+        "calls": [
+          "DebugAddItemPlayerMoves",
+          "ResolvePlayerMoveQueue",
+          "DebugSetQueueRunning",
+          "DebugDoNextInQueue",
+          "CreateAction_HandTargetSelected_Start",
+          "OnHandTargetSelected",
+          "HandleExtraPlayTriggersAfterSelectHandCard",
+          "AddSubActionHandTargetSelected",
+          "ExecuteAutoPlayCards",
+          "CreateAction_HandTargetSelected_End",
+          "DoNextInQueue"
+        ],
+        "hand_callback_args": [
+          [
+            201,
+            21
+          ]
+        ]
+      },
+      {
+        "running": false,
+        "prior_count": 2,
+        "target": 101,
+        "action_process": true,
+        "wait": true,
+        "new_pending": [
+          1021
+        ],
+        "calls": [
+          "DebugAddItemPlayerMoves",
+          "ResolvePlayerMoveQueue",
+          "DebugSetQueueRunning",
+          "DebugDoNextInQueue",
+          "CreateAction_HandTargetSelected_Start",
+          "OnHandTargetSelected",
+          "HandleExtraPlayTriggersAfterSelectHandCard",
+          "AddSubActionHandTargetSelected",
+          "AfterWaitCardPlayFromHand",
+          "ExecuteAutoPlayCards",
+          "CreateAction_HandTargetSelected_End",
+          "DoNextInQueue"
+        ],
+        "hand_callback_args": [
+          [
+            201,
+            21
+          ]
+        ]
+      },
+      {
+        "running": true,
+        "prior_count": 0,
+        "target": 0,
+        "action_process": false,
+        "wait": false,
+        "new_pending": [],
+        "calls": [
+          "DebugAddItemPlayerMoves"
+        ],
+        "hand_callback_args": []
+      },
+      {
+        "running": true,
+        "prior_count": 0,
+        "target": 0,
+        "action_process": false,
+        "wait": true,
+        "new_pending": [],
+        "calls": [
+          "DebugAddItemPlayerMoves"
+        ],
+        "hand_callback_args": []
+      },
+      {
+        "running": true,
+        "prior_count": 0,
+        "target": 0,
+        "action_process": true,
+        "wait": false,
+        "new_pending": [],
+        "calls": [
+          "DebugAddItemPlayerMoves"
+        ],
+        "hand_callback_args": []
+      },
+      {
+        "running": true,
+        "prior_count": 0,
+        "target": 0,
+        "action_process": true,
+        "wait": true,
+        "new_pending": [],
+        "calls": [
+          "DebugAddItemPlayerMoves"
+        ],
+        "hand_callback_args": []
+      },
+      {
+        "running": true,
+        "prior_count": 0,
+        "target": 101,
+        "action_process": false,
+        "wait": false,
+        "new_pending": [],
+        "calls": [
+          "DebugAddItemPlayerMoves"
+        ],
+        "hand_callback_args": []
+      },
+      {
+        "running": true,
+        "prior_count": 0,
+        "target": 101,
+        "action_process": false,
+        "wait": true,
+        "new_pending": [],
+        "calls": [
+          "DebugAddItemPlayerMoves"
+        ],
+        "hand_callback_args": []
+      },
+      {
+        "running": true,
+        "prior_count": 0,
+        "target": 101,
+        "action_process": true,
+        "wait": false,
+        "new_pending": [],
+        "calls": [
+          "DebugAddItemPlayerMoves"
+        ],
+        "hand_callback_args": []
+      },
+      {
+        "running": true,
+        "prior_count": 0,
+        "target": 101,
+        "action_process": true,
+        "wait": true,
+        "new_pending": [],
+        "calls": [
+          "DebugAddItemPlayerMoves"
+        ],
+        "hand_callback_args": []
+      },
+      {
+        "running": true,
+        "prior_count": 2,
+        "target": 0,
+        "action_process": false,
+        "wait": false,
+        "new_pending": [],
+        "calls": [
+          "DebugAddItemPlayerMoves"
+        ],
+        "hand_callback_args": []
+      },
+      {
+        "running": true,
+        "prior_count": 2,
+        "target": 0,
+        "action_process": false,
+        "wait": true,
+        "new_pending": [],
+        "calls": [
+          "DebugAddItemPlayerMoves"
+        ],
+        "hand_callback_args": []
+      },
+      {
+        "running": true,
+        "prior_count": 2,
+        "target": 0,
+        "action_process": true,
+        "wait": false,
+        "new_pending": [],
+        "calls": [
+          "DebugAddItemPlayerMoves"
+        ],
+        "hand_callback_args": []
+      },
+      {
+        "running": true,
+        "prior_count": 2,
+        "target": 0,
+        "action_process": true,
+        "wait": true,
+        "new_pending": [],
+        "calls": [
+          "DebugAddItemPlayerMoves"
+        ],
+        "hand_callback_args": []
+      },
+      {
+        "running": true,
+        "prior_count": 2,
+        "target": 101,
+        "action_process": false,
+        "wait": false,
+        "new_pending": [],
+        "calls": [
+          "DebugAddItemPlayerMoves"
+        ],
+        "hand_callback_args": []
+      },
+      {
+        "running": true,
+        "prior_count": 2,
+        "target": 101,
+        "action_process": false,
+        "wait": true,
+        "new_pending": [],
+        "calls": [
+          "DebugAddItemPlayerMoves"
+        ],
+        "hand_callback_args": []
+      },
+      {
+        "running": true,
+        "prior_count": 2,
+        "target": 101,
+        "action_process": true,
+        "wait": false,
+        "new_pending": [],
+        "calls": [
+          "DebugAddItemPlayerMoves"
+        ],
+        "hand_callback_args": []
+      },
+      {
+        "running": true,
+        "prior_count": 2,
+        "target": 101,
+        "action_process": true,
+        "wait": true,
+        "new_pending": [],
+        "calls": [
+          "DebugAddItemPlayerMoves"
+        ],
+        "hand_callback_args": []
+      }
+    ]
+  },
+  "queue_index": {
+    "enqueue_fields": [
+      {
+        "index": 1910,
+        "field": "sourceCardQueue"
+      },
+      {
+        "index": 1978,
+        "field": "actionTypeQueue"
+      },
+      {
+        "index": 2046,
+        "field": "locationNumberQueue"
+      },
+      {
+        "index": 2114,
+        "field": "locationQueue"
+      },
+      {
+        "index": 2182,
+        "field": "targetCardQueue"
+      },
+      {
+        "index": 2250,
+        "field": "nonVisualLocationNumberQueue"
+      },
+      {
+        "index": 2318,
+        "field": "sourceCardIDQueue"
+      }
+    ],
+    "dequeue_fields": [
+      {
+        "index": 3105,
+        "field": "sourceCardQueue"
+      },
+      {
+        "index": 3151,
+        "field": "actionTypeQueue"
+      },
+      {
+        "index": 3197,
+        "field": "locationNumberQueue"
+      },
+      {
+        "index": 3243,
+        "field": "locationQueue"
+      },
+      {
+        "index": 3289,
+        "field": "targetCardQueue"
+      },
+      {
+        "index": 3335,
+        "field": "nonVisualLocationNumberQueue"
+      },
+      {
+        "index": 3381,
+        "field": "sourceCardIDQueue"
+      }
+    ],
+    "hand_callback_indexes": [
+      8877
+    ]
+  },
+  "captured_functions": [
+    {
+      "owner": "BP_PlayerMoves_C",
+      "name": "ExecuteUbergraph_BP_PlayerMoves",
+      "script_size": 13890,
+      "decode_complete": true,
+      "script_sha256": "cbe61ba857d7770c70af3eb11593ba6c1b9688288ede4c323e4833664bc59ff7"
+    },
+    {
+      "owner": "BP_PlayerMoves_C",
+      "name": "AddMoveToPlayerMoveQueue",
+      "script_size": 144,
+      "decode_complete": true,
+      "script_sha256": "289e91260b6b797a2d6ebf395f86a76fd04c713ee19739c0d2769c16b069a370"
+    },
+    {
+      "owner": "BP_PlayerMoves_C",
+      "name": "ResolvePlayerMoveQueue",
+      "script_size": 18,
+      "decode_complete": true,
+      "script_sha256": "ee3e6eee003b75323ef7717db43d6bcc99a148ef1d4133ad27ea5711784b9c1d"
+    },
+    {
+      "owner": "BP_PlayerMoves_C",
+      "name": "DoNextInQueue",
+      "script_size": 18,
+      "decode_complete": true,
+      "script_sha256": "953579d3647d6020919a198877561b2ed063b48010009897aed86edb23030f25"
+    },
+    {
+      "owner": "ConfirmHandTargetButton_Widget_C",
+      "name": "doNext",
+      "script_size": 18,
+      "decode_complete": true,
+      "script_sha256": "63d91a52d144af733b412715cdf64eed13910d7d906b446d5f33d8dfee81e899"
+    }
+  ],
+  "worker_job": "20261028-032506-rule510-queue-index-74ae9686",
+  "evidence": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule510-queue.py",
+      "bytes": 598,
+      "sha256": "e2a4fc8478af7d337e9252b6e99d82f308fe5c18a65a5cc8e0dc44ca1513c69f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule510-player-move-queue-functions-20261028.json",
+      "bytes": 5049313,
+      "sha256": "618ac22b36f0d1a2d523e8ceae72a09e0447b21392ff40b8ab5a31cef33831ed"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule510-queue.py",
+      "bytes": 13631,
+      "sha256": "34f3cc1cb1274e05089ecb888ca55617cd14482f9e1c0da3512ed230ce4708b7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule510-queue-verification-20261028.json",
+      "bytes": 39058,
+      "sha256": "4a6b7c73575ffdcd1b99ce6e40f529d3b4a87deec143b89e14c94f3c4775e6e6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule510-worker\\input.json",
+      "bytes": 119176,
+      "sha256": "0c8afdc59fc98d1c907831335895a52df26a9af100eaa02b88135834578b6d26"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule510-worker\\task.txt",
+      "bytes": 565,
+      "sha256": "6417b8b87e4fcacad116ad015b945806dcc8a6fa7519c03102d495a3f1b151c9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule510-worker\\output.json",
+      "bytes": 1135,
+      "sha256": "2cb1b00c4e02b567f283e37c405cd8fb97b823a34c270eec6b623d13a6b66d5a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\MatchEngine.cs",
+      "bytes": 199427,
+      "sha256": "d2cafdcf3f4de9481e13f4b4423f91a33c3868bc1562d55b615ea972688e199f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs",
+      "bytes": 402458,
+      "sha256": "97e5d5efac6a97b575c4f74267ea13d898178fb250edcaf9fe0e756e9db67c9f"
+    }
+  ],
+  "remaining": [
+    "DoNextInQueue11741之后何时继续下一队首，queueIsRunning复位/自动出牌优先与Timer语义。",
+    "真实单卡OnHandTargetSelected及通知接口绑定，实际新待选项生成时机。",
+    "自动重试与普通策略/跨方候选来源的完整映射；全PvP和卡池未认证。"
+  ],
+  "game_writes": 0,
+  "real_game_function_calls": 0,
+  "fully_certified_cards": 0
+}
