@@ -1,0 +1,1808 @@
+{
+  "rule_id": "RULE-513",
+  "date": "2026-10-28",
+  "status": "数组CHAININFO片段重组及原生Find/AddUnique/Clear分支已受控执行；分配/属性生命周期仍开放",
+  "findings": [
+    "从当前安装EXE异常目录递归解析UNW_FLAG_CHAININFO，按父RUNTIME_FUNCTION的根关联分组，重新只读采集代码及unwind信息，并稳定复读确认内存==磁盘。GenericArray_AddUnique恢复7片段521B、Array_Clear thunk5片段328B、GenericArray_Find3片段216B，共15片段1065B。",
+    "每片段完整反汇编，主agent独立核对所有直接j*目标均落在同组已解码指令边界，DeepSeek重新提取段数/字节/外部直接跳转并精确比对，三组无外部直接跳转。此为组内控制流覆盖，不是所有间接调用/跨函数生命周期已还原。",
+    "离线Unicorn执行重组后的实际AddUnique/Find代码，FArray/ArrayProperty/inner int32/vtable和普通分配模式由夹具供给。40组Find覆盖空/重复/多项数组、int32零/负/极值及不同容量，返回首个匹配索引或-1；对应40组Add覆盖重复返回-1且不写数组、新项追加并返回旧长度，再加null数组返回-1一例，共41组Add。",
+    "RULE513重组CHAININFO并离线执行确认GenericArray_AddUnique重复项返回-1、添加新项返回旧长度。RULE512供给AddUnique helper对重复项返回已有索引，与当前原生不同；旧生命周期断言未使用该临时返回值，故不推翻其声明范围内的数组内容结果，但不得引用旧模型认证返回值。原external脚本/结果按当时hash保留；未改写旧证据。GameState.AddAutoPlayCards为void，不消费该返回值。",
+    "9组原生Clear覆盖元素数0/1/3和容量余量、null数组、null属性、错误属性类型。元素非空时实际原生将Num写0，随后走供给的析构/缩容；原本Num=0时不执行析构/缩容，即可能保留原容量。null数组保持数组内容，属性无效/类型不符走FFrame失败标志。容量释放/指针变化由供给helper完成，不能据此认证UE真实释放行为。",
+    "显式供给：int32标量alignment/equality/copy，容量增长/缩容释放，元素初始化/析构，UE FFrame解析/类型helper。测试执行原生遍历、查找提前停止、分支/返回、Num写入，不执行真实游戏、不等于原生分配器/FProperty/GC/VM完整认证。ArrayNum达到int32最大值的报错路径、带标签/内联分配器及坏地址异常未执行。",
+    "这一边界问题也意味着旧采集中仅凭单个.pdata条目标为完整的函数，需要重新检查CHAININFO父子片段；本轮只确认并修复上述3个函数的证据范围，未声称全局所有旧原生采集都已补齐，也未推断还有多少缺失。",
+    "当前GameState.AddAutoPlayCards Contains后Add的void结构在所测数组内容层面无需改动；Get输出复制仍是另一条未完整验证的原生路径。本轮仅补充审计与更正旧供给模型说明，未改产品/C#未重跑，历史929/929非本轮测试。完整认证卡数0，游戏写入/注入/真实函数调用0。"
+  ],
+  "verification": {
+    "rule": "RULE-513",
+    "find_cases": 40,
+    "add_cases": 41,
+    "clear_cases": 9,
+    "profiles": [
+      {
+        "prior": [],
+        "value": 7,
+        "spare": 0,
+        "find": {
+          "result": -1,
+          "values": [],
+          "num": 0,
+          "capacity": 0,
+          "events": [
+            "alignment"
+          ],
+          "frame_failure": 0
+        },
+        "add": {
+          "result": 0,
+          "values": [
+            7
+          ],
+          "num": 1,
+          "capacity": 5,
+          "events": [
+            "alignment",
+            "alignment",
+            "supplied-grow",
+            "supplied-init",
+            "int32-copy"
+          ],
+          "frame_failure": 0
+        }
+      },
+      {
+        "prior": [],
+        "value": 7,
+        "spare": 4,
+        "find": {
+          "result": -1,
+          "values": [],
+          "num": 0,
+          "capacity": 4,
+          "events": [
+            "alignment"
+          ],
+          "frame_failure": 0
+        },
+        "add": {
+          "result": 0,
+          "values": [
+            7
+          ],
+          "num": 1,
+          "capacity": 4,
+          "events": [
+            "alignment",
+            "alignment",
+            "supplied-init",
+            "int32-copy"
+          ],
+          "frame_failure": 0
+        }
+      },
+      {
+        "prior": [],
+        "value": 0,
+        "spare": 0,
+        "find": {
+          "result": -1,
+          "values": [],
+          "num": 0,
+          "capacity": 0,
+          "events": [
+            "alignment"
+          ],
+          "frame_failure": 0
+        },
+        "add": {
+          "result": 0,
+          "values": [
+            0
+          ],
+          "num": 1,
+          "capacity": 5,
+          "events": [
+            "alignment",
+            "alignment",
+            "supplied-grow",
+            "supplied-init",
+            "int32-copy"
+          ],
+          "frame_failure": 0
+        }
+      },
+      {
+        "prior": [],
+        "value": 0,
+        "spare": 4,
+        "find": {
+          "result": -1,
+          "values": [],
+          "num": 0,
+          "capacity": 4,
+          "events": [
+            "alignment"
+          ],
+          "frame_failure": 0
+        },
+        "add": {
+          "result": 0,
+          "values": [
+            0
+          ],
+          "num": 1,
+          "capacity": 4,
+          "events": [
+            "alignment",
+            "alignment",
+            "supplied-init",
+            "int32-copy"
+          ],
+          "frame_failure": 0
+        }
+      },
+      {
+        "prior": [],
+        "value": -2,
+        "spare": 0,
+        "find": {
+          "result": -1,
+          "values": [],
+          "num": 0,
+          "capacity": 0,
+          "events": [
+            "alignment"
+          ],
+          "frame_failure": 0
+        },
+        "add": {
+          "result": 0,
+          "values": [
+            -2
+          ],
+          "num": 1,
+          "capacity": 5,
+          "events": [
+            "alignment",
+            "alignment",
+            "supplied-grow",
+            "supplied-init",
+            "int32-copy"
+          ],
+          "frame_failure": 0
+        }
+      },
+      {
+        "prior": [],
+        "value": -2,
+        "spare": 4,
+        "find": {
+          "result": -1,
+          "values": [],
+          "num": 0,
+          "capacity": 4,
+          "events": [
+            "alignment"
+          ],
+          "frame_failure": 0
+        },
+        "add": {
+          "result": 0,
+          "values": [
+            -2
+          ],
+          "num": 1,
+          "capacity": 4,
+          "events": [
+            "alignment",
+            "alignment",
+            "supplied-init",
+            "int32-copy"
+          ],
+          "frame_failure": 0
+        }
+      },
+      {
+        "prior": [],
+        "value": -2147483648,
+        "spare": 0,
+        "find": {
+          "result": -1,
+          "values": [],
+          "num": 0,
+          "capacity": 0,
+          "events": [
+            "alignment"
+          ],
+          "frame_failure": 0
+        },
+        "add": {
+          "result": 0,
+          "values": [
+            -2147483648
+          ],
+          "num": 1,
+          "capacity": 5,
+          "events": [
+            "alignment",
+            "alignment",
+            "supplied-grow",
+            "supplied-init",
+            "int32-copy"
+          ],
+          "frame_failure": 0
+        }
+      },
+      {
+        "prior": [],
+        "value": -2147483648,
+        "spare": 4,
+        "find": {
+          "result": -1,
+          "values": [],
+          "num": 0,
+          "capacity": 4,
+          "events": [
+            "alignment"
+          ],
+          "frame_failure": 0
+        },
+        "add": {
+          "result": 0,
+          "values": [
+            -2147483648
+          ],
+          "num": 1,
+          "capacity": 4,
+          "events": [
+            "alignment",
+            "alignment",
+            "supplied-init",
+            "int32-copy"
+          ],
+          "frame_failure": 0
+        }
+      },
+      {
+        "prior": [],
+        "value": 2147483647,
+        "spare": 0,
+        "find": {
+          "result": -1,
+          "values": [],
+          "num": 0,
+          "capacity": 0,
+          "events": [
+            "alignment"
+          ],
+          "frame_failure": 0
+        },
+        "add": {
+          "result": 0,
+          "values": [
+            2147483647
+          ],
+          "num": 1,
+          "capacity": 5,
+          "events": [
+            "alignment",
+            "alignment",
+            "supplied-grow",
+            "supplied-init",
+            "int32-copy"
+          ],
+          "frame_failure": 0
+        }
+      },
+      {
+        "prior": [],
+        "value": 2147483647,
+        "spare": 4,
+        "find": {
+          "result": -1,
+          "values": [],
+          "num": 0,
+          "capacity": 4,
+          "events": [
+            "alignment"
+          ],
+          "frame_failure": 0
+        },
+        "add": {
+          "result": 0,
+          "values": [
+            2147483647
+          ],
+          "num": 1,
+          "capacity": 4,
+          "events": [
+            "alignment",
+            "alignment",
+            "supplied-init",
+            "int32-copy"
+          ],
+          "frame_failure": 0
+        }
+      },
+      {
+        "prior": [
+          7
+        ],
+        "value": 7,
+        "spare": 0,
+        "find": {
+          "result": 0,
+          "values": [
+            7
+          ],
+          "num": 1,
+          "capacity": 1,
+          "events": [
+            "alignment",
+            "int32-identical"
+          ],
+          "frame_failure": 0
+        },
+        "add": {
+          "result": -1,
+          "values": [
+            7
+          ],
+          "num": 1,
+          "capacity": 1,
+          "events": [
+            "alignment",
+            "alignment",
+            "int32-identical"
+          ],
+          "frame_failure": 0
+        }
+      },
+      {
+        "prior": [
+          7
+        ],
+        "value": 7,
+        "spare": 4,
+        "find": {
+          "result": 0,
+          "values": [
+            7
+          ],
+          "num": 1,
+          "capacity": 5,
+          "events": [
+            "alignment",
+            "int32-identical"
+          ],
+          "frame_failure": 0
+        },
+        "add": {
+          "result": -1,
+          "values": [
+            7
+          ],
+          "num": 1,
+          "capacity": 5,
+          "events": [
+            "alignment",
+            "alignment",
+            "int32-identical"
+          ],
+          "frame_failure": 0
+        }
+      },
+      {
+        "prior": [
+          7
+        ],
+        "value": 0,
+        "spare": 0,
+        "find": {
+          "result": -1,
+          "values": [
+            7
+          ],
+          "num": 1,
+          "capacity": 1,
+          "events": [
+            "alignment",
+            "int32-identical"
+          ],
+          "frame_failure": 0
+        },
+        "add": {
+          "result": 1,
+          "values": [
+            7,
+            0
+          ],
+          "num": 2,
+          "capacity": 6,
+          "events": [
+            "alignment",
+            "alignment",
+            "int32-identical",
+            "supplied-grow",
+            "supplied-init",
+            "int32-copy"
+          ],
+          "frame_failure": 0
+        }
+      },
+      {
+        "prior": [
+          7
+        ],
+        "value": 0,
+        "spare": 4,
+        "find": {
+          "result": -1,
+          "values": [
+            7
+          ],
+          "num": 1,
+          "capacity": 5,
+          "events": [
+            "alignment",
+            "int32-identical"
+          ],
+          "frame_failure": 0
+        },
+        "add": {
+          "result": 1,
+          "values": [
+            7,
+            0
+          ],
+          "num": 2,
+          "capacity": 5,
+          "events": [
+            "alignment",
+            "alignment",
+            "int32-identical",
+            "supplied-init",
+            "int32-copy"
+          ],
+          "frame_failure": 0
+        }
+      },
+      {
+        "prior": [
+          7
+        ],
+        "value": -2,
+        "spare": 0,
+        "find": {
+          "result": -1,
+          "values": [
+            7
+          ],
+          "num": 1,
+          "capacity": 1,
+          "events": [
+            "alignment",
+            "int32-identical"
+          ],
+          "frame_failure": 0
+        },
+        "add": {
+          "result": 1,
+          "values": [
+            7,
+            -2
+          ],
+          "num": 2,
+          "capacity": 6,
+          "events": [
+            "alignment",
+            "alignment",
+            "int32-identical",
+            "supplied-grow",
+            "supplied-init",
+            "int32-copy"
+          ],
+          "frame_failure": 0
+        }
+      },
+      {
+        "prior": [
+          7
+        ],
+        "value": -2,
+        "spare": 4,
+        "find": {
+          "result": -1,
+          "values": [
+            7
+          ],
+          "num": 1,
+          "capacity": 5,
+          "events": [
+            "alignment",
+            "int32-identical"
+          ],
+          "frame_failure": 0
+        },
+        "add": {
+          "result": 1,
+          "values": [
+            7,
+            -2
+          ],
+          "num": 2,
+          "capacity": 5,
+          "events": [
+            "alignment",
+            "alignment",
+            "int32-identical",
+            "supplied-init",
+            "int32-copy"
+          ],
+          "frame_failure": 0
+        }
+      },
+      {
+        "prior": [
+          7
+        ],
+        "value": -2147483648,
+        "spare": 0,
+        "find": {
+          "result": -1,
+          "values": [
+            7
+          ],
+          "num": 1,
+          "capacity": 1,
+          "events": [
+            "alignment",
+            "int32-identical"
+          ],
+          "frame_failure": 0
+        },
+        "add": {
+          "result": 1,
+          "values": [
+            7,
+            -2147483648
+          ],
+          "num": 2,
+          "capacity": 6,
+          "events": [
+            "alignment",
+            "alignment",
+            "int32-identical",
+            "supplied-grow",
+            "supplied-init",
+            "int32-copy"
+          ],
+          "frame_failure": 0
+        }
+      },
+      {
+        "prior": [
+          7
+        ],
+        "value": -2147483648,
+        "spare": 4,
+        "find": {
+          "result": -1,
+          "values": [
+            7
+          ],
+          "num": 1,
+          "capacity": 5,
+          "events": [
+            "alignment",
+            "int32-identical"
+          ],
+          "frame_failure": 0
+        },
+        "add": {
+          "result": 1,
+          "values": [
+            7,
+            -2147483648
+          ],
+          "num": 2,
+          "capacity": 5,
+          "events": [
+            "alignment",
+            "alignment",
+            "int32-identical",
+            "supplied-init",
+            "int32-copy"
+          ],
+          "frame_failure": 0
+        }
+      },
+      {
+        "prior": [
+          7
+        ],
+        "value": 2147483647,
+        "spare": 0,
+        "find": {
+          "result": -1,
+          "values": [
+            7
+          ],
+          "num": 1,
+          "capacity": 1,
+          "events": [
+            "alignment",
+            "int32-identical"
+          ],
+          "frame_failure": 0
+        },
+        "add": {
+          "result": 1,
+          "values": [
+            7,
+            2147483647
+          ],
+          "num": 2,
+          "capacity": 6,
+          "events": [
+            "alignment",
+            "alignment",
+            "int32-identical",
+            "supplied-grow",
+            "supplied-init",
+            "int32-copy"
+          ],
+          "frame_failure": 0
+        }
+      },
+      {
+        "prior": [
+          7
+        ],
+        "value": 2147483647,
+        "spare": 4,
+        "find": {
+          "result": -1,
+          "values": [
+            7
+          ],
+          "num": 1,
+          "capacity": 5,
+          "events": [
+            "alignment",
+            "int32-identical"
+          ],
+          "frame_failure": 0
+        },
+        "add": {
+          "result": 1,
+          "values": [
+            7,
+            2147483647
+          ],
+          "num": 2,
+          "capacity": 5,
+          "events": [
+            "alignment",
+            "alignment",
+            "int32-identical",
+            "supplied-init",
+            "int32-copy"
+          ],
+          "frame_failure": 0
+        }
+      },
+      {
+        "prior": [
+          7,
+          7
+        ],
+        "value": 7,
+        "spare": 0,
+        "find": {
+          "result": 0,
+          "values": [
+            7,
+            7
+          ],
+          "num": 2,
+          "capacity": 2,
+          "events": [
+            "alignment",
+            "int32-identical"
+          ],
+          "frame_failure": 0
+        },
+        "add": {
+          "result": -1,
+          "values": [
+            7,
+            7
+          ],
+          "num": 2,
+          "capacity": 2,
+          "events": [
+            "alignment",
+            "alignment",
+            "int32-identical"
+          ],
+          "frame_failure": 0
+        }
+      },
+      {
+        "prior": [
+          7,
+          7
+        ],
+        "value": 7,
+        "spare": 4,
+        "find": {
+          "result": 0,
+          "values": [
+            7,
+            7
+          ],
+          "num": 2,
+          "capacity": 6,
+          "events": [
+            "alignment",
+            "int32-identical"
+          ],
+          "frame_failure": 0
+        },
+        "add": {
+          "result": -1,
+          "values": [
+            7,
+            7
+          ],
+          "num": 2,
+          "capacity": 6,
+          "events": [
+            "alignment",
+            "alignment",
+            "int32-identical"
+          ],
+          "frame_failure": 0
+        }
+      },
+      {
+        "prior": [
+          7,
+          7
+        ],
+        "value": 0,
+        "spare": 0,
+        "find": {
+          "result": -1,
+          "values": [
+            7,
+            7
+          ],
+          "num": 2,
+          "capacity": 2,
+          "events": [
+            "alignment",
+            "int32-identical",
+            "int32-identical"
+          ],
+          "frame_failure": 0
+        },
+        "add": {
+          "result": 2,
+          "values": [
+            7,
+            7,
+            0
+          ],
+          "num": 3,
+          "capacity": 7,
+          "events": [
+            "alignment",
+            "alignment",
+            "int32-identical",
+            "int32-identical",
+            "supplied-grow",
+            "supplied-init",
+            "int32-copy"
+          ],
+          "frame_failure": 0
+        }
+      },
+      {
+        "prior": [
+          7,
+          7
+        ],
+        "value": 0,
+        "spare": 4,
+        "find": {
+          "result": -1,
+          "values": [
+            7,
+            7
+          ],
+          "num": 2,
+          "capacity": 6,
+          "events": [
+            "alignment",
+            "int32-identical",
+            "int32-identical"
+          ],
+          "frame_failure": 0
+        },
+        "add": {
+          "result": 2,
+          "values": [
+            7,
+            7,
+            0
+          ],
+          "num": 3,
+          "capacity": 6,
+          "events": [
+            "alignment",
+            "alignment",
+            "int32-identical",
+            "int32-identical",
+            "supplied-init",
+            "int32-copy"
+          ],
+          "frame_failure": 0
+        }
+      },
+      {
+        "prior": [
+          7,
+          7
+        ],
+        "value": -2,
+        "spare": 0,
+        "find": {
+          "result": -1,
+          "values": [
+            7,
+            7
+          ],
+          "num": 2,
+          "capacity": 2,
+          "events": [
+            "alignment",
+            "int32-identical",
+            "int32-identical"
+          ],
+          "frame_failure": 0
+        },
+        "add": {
+          "result": 2,
+          "values": [
+            7,
+            7,
+            -2
+          ],
+          "num": 3,
+          "capacity": 7,
+          "events": [
+            "alignment",
+            "alignment",
+            "int32-identical",
+            "int32-identical",
+            "supplied-grow",
+            "supplied-init",
+            "int32-copy"
+          ],
+          "frame_failure": 0
+        }
+      },
+      {
+        "prior": [
+          7,
+          7
+        ],
+        "value": -2,
+        "spare": 4,
+        "find": {
+          "result": -1,
+          "values": [
+            7,
+            7
+          ],
+          "num": 2,
+          "capacity": 6,
+          "events": [
+            "alignment",
+            "int32-identical",
+            "int32-identical"
+          ],
+          "frame_failure": 0
+        },
+        "add": {
+          "result": 2,
+          "values": [
+            7,
+            7,
+            -2
+          ],
+          "num": 3,
+          "capacity": 6,
+          "events": [
+            "alignment",
+            "alignment",
+            "int32-identical",
+            "int32-identical",
+            "supplied-init",
+            "int32-copy"
+          ],
+          "frame_failure": 0
+        }
+      },
+      {
+        "prior": [
+          7,
+          7
+        ],
+        "value": -2147483648,
+        "spare": 0,
+        "find": {
+          "result": -1,
+          "values": [
+            7,
+            7
+          ],
+          "num": 2,
+          "capacity": 2,
+          "events": [
+            "alignment",
+            "int32-identical",
+            "int32-identical"
+          ],
+          "frame_failure": 0
+        },
+        "add": {
+          "result": 2,
+          "values": [
+            7,
+            7,
+            -2147483648
+          ],
+          "num": 3,
+          "capacity": 7,
+          "events": [
+            "alignment",
+            "alignment",
+            "int32-identical",
+            "int32-identical",
+            "supplied-grow",
+            "supplied-init",
+            "int32-copy"
+          ],
+          "frame_failure": 0
+        }
+      },
+      {
+        "prior": [
+          7,
+          7
+        ],
+        "value": -2147483648,
+        "spare": 4,
+        "find": {
+          "result": -1,
+          "values": [
+            7,
+            7
+          ],
+          "num": 2,
+          "capacity": 6,
+          "events": [
+            "alignment",
+            "int32-identical",
+            "int32-identical"
+          ],
+          "frame_failure": 0
+        },
+        "add": {
+          "result": 2,
+          "values": [
+            7,
+            7,
+            -2147483648
+          ],
+          "num": 3,
+          "capacity": 6,
+          "events": [
+            "alignment",
+            "alignment",
+            "int32-identical",
+            "int32-identical",
+            "supplied-init",
+            "int32-copy"
+          ],
+          "frame_failure": 0
+        }
+      },
+      {
+        "prior": [
+          7,
+          7
+        ],
+        "value": 2147483647,
+        "spare": 0,
+        "find": {
+          "result": -1,
+          "values": [
+            7,
+            7
+          ],
+          "num": 2,
+          "capacity": 2,
+          "events": [
+            "alignment",
+            "int32-identical",
+            "int32-identical"
+          ],
+          "frame_failure": 0
+        },
+        "add": {
+          "result": 2,
+          "values": [
+            7,
+            7,
+            2147483647
+          ],
+          "num": 3,
+          "capacity": 7,
+          "events": [
+            "alignment",
+            "alignment",
+            "int32-identical",
+            "int32-identical",
+            "supplied-grow",
+            "supplied-init",
+            "int32-copy"
+          ],
+          "frame_failure": 0
+        }
+      },
+      {
+        "prior": [
+          7,
+          7
+        ],
+        "value": 2147483647,
+        "spare": 4,
+        "find": {
+          "result": -1,
+          "values": [
+            7,
+            7
+          ],
+          "num": 2,
+          "capacity": 6,
+          "events": [
+            "alignment",
+            "int32-identical",
+            "int32-identical"
+          ],
+          "frame_failure": 0
+        },
+        "add": {
+          "result": 2,
+          "values": [
+            7,
+            7,
+            2147483647
+          ],
+          "num": 3,
+          "capacity": 6,
+          "events": [
+            "alignment",
+            "alignment",
+            "int32-identical",
+            "int32-identical",
+            "supplied-init",
+            "int32-copy"
+          ],
+          "frame_failure": 0
+        }
+      },
+      {
+        "prior": [
+          7,
+          -2,
+          0
+        ],
+        "value": 7,
+        "spare": 0,
+        "find": {
+          "result": 0,
+          "values": [
+            7,
+            -2,
+            0
+          ],
+          "num": 3,
+          "capacity": 3,
+          "events": [
+            "alignment",
+            "int32-identical"
+          ],
+          "frame_failure": 0
+        },
+        "add": {
+          "result": -1,
+          "values": [
+            7,
+            -2,
+            0
+          ],
+          "num": 3,
+          "capacity": 3,
+          "events": [
+            "alignment",
+            "alignment",
+            "int32-identical"
+          ],
+          "frame_failure": 0
+        }
+      },
+      {
+        "prior": [
+          7,
+          -2,
+          0
+        ],
+        "value": 7,
+        "spare": 4,
+        "find": {
+          "result": 0,
+          "values": [
+            7,
+            -2,
+            0
+          ],
+          "num": 3,
+          "capacity": 7,
+          "events": [
+            "alignment",
+            "int32-identical"
+          ],
+          "frame_failure": 0
+        },
+        "add": {
+          "result": -1,
+          "values": [
+            7,
+            -2,
+            0
+          ],
+          "num": 3,
+          "capacity": 7,
+          "events": [
+            "alignment",
+            "alignment",
+            "int32-identical"
+          ],
+          "frame_failure": 0
+        }
+      },
+      {
+        "prior": [
+          7,
+          -2,
+          0
+        ],
+        "value": 0,
+        "spare": 0,
+        "find": {
+          "result": 2,
+          "values": [
+            7,
+            -2,
+            0
+          ],
+          "num": 3,
+          "capacity": 3,
+          "events": [
+            "alignment",
+            "int32-identical",
+            "int32-identical",
+            "int32-identical"
+          ],
+          "frame_failure": 0
+        },
+        "add": {
+          "result": -1,
+          "values": [
+            7,
+            -2,
+            0
+          ],
+          "num": 3,
+          "capacity": 3,
+          "events": [
+            "alignment",
+            "alignment",
+            "int32-identical",
+            "int32-identical",
+            "int32-identical"
+          ],
+          "frame_failure": 0
+        }
+      },
+      {
+        "prior": [
+          7,
+          -2,
+          0
+        ],
+        "value": 0,
+        "spare": 4,
+        "find": {
+          "result": 2,
+          "values": [
+            7,
+            -2,
+            0
+          ],
+          "num": 3,
+          "capacity": 7,
+          "events": [
+            "alignment",
+            "int32-identical",
+            "int32-identical",
+            "int32-identical"
+          ],
+          "frame_failure": 0
+        },
+        "add": {
+          "result": -1,
+          "values": [
+            7,
+            -2,
+            0
+          ],
+          "num": 3,
+          "capacity": 7,
+          "events": [
+            "alignment",
+            "alignment",
+            "int32-identical",
+            "int32-identical",
+            "int32-identical"
+          ],
+          "frame_failure": 0
+        }
+      },
+      {
+        "prior": [
+          7,
+          -2,
+          0
+        ],
+        "value": -2,
+        "spare": 0,
+        "find": {
+          "result": 1,
+          "values": [
+            7,
+            -2,
+            0
+          ],
+          "num": 3,
+          "capacity": 3,
+          "events": [
+            "alignment",
+            "int32-identical",
+            "int32-identical"
+          ],
+          "frame_failure": 0
+        },
+        "add": {
+          "result": -1,
+          "values": [
+            7,
+            -2,
+            0
+          ],
+          "num": 3,
+          "capacity": 3,
+          "events": [
+            "alignment",
+            "alignment",
+            "int32-identical",
+            "int32-identical"
+          ],
+          "frame_failure": 0
+        }
+      },
+      {
+        "prior": [
+          7,
+          -2,
+          0
+        ],
+        "value": -2,
+        "spare": 4,
+        "find": {
+          "result": 1,
+          "values": [
+            7,
+            -2,
+            0
+          ],
+          "num": 3,
+          "capacity": 7,
+          "events": [
+            "alignment",
+            "int32-identical",
+            "int32-identical"
+          ],
+          "frame_failure": 0
+        },
+        "add": {
+          "result": -1,
+          "values": [
+            7,
+            -2,
+            0
+          ],
+          "num": 3,
+          "capacity": 7,
+          "events": [
+            "alignment",
+            "alignment",
+            "int32-identical",
+            "int32-identical"
+          ],
+          "frame_failure": 0
+        }
+      },
+      {
+        "prior": [
+          7,
+          -2,
+          0
+        ],
+        "value": -2147483648,
+        "spare": 0,
+        "find": {
+          "result": -1,
+          "values": [
+            7,
+            -2,
+            0
+          ],
+          "num": 3,
+          "capacity": 3,
+          "events": [
+            "alignment",
+            "int32-identical",
+            "int32-identical",
+            "int32-identical"
+          ],
+          "frame_failure": 0
+        },
+        "add": {
+          "result": 3,
+          "values": [
+            7,
+            -2,
+            0,
+            -2147483648
+          ],
+          "num": 4,
+          "capacity": 8,
+          "events": [
+            "alignment",
+            "alignment",
+            "int32-identical",
+            "int32-identical",
+            "int32-identical",
+            "supplied-grow",
+            "supplied-init",
+            "int32-copy"
+          ],
+          "frame_failure": 0
+        }
+      },
+      {
+        "prior": [
+          7,
+          -2,
+          0
+        ],
+        "value": -2147483648,
+        "spare": 4,
+        "find": {
+          "result": -1,
+          "values": [
+            7,
+            -2,
+            0
+          ],
+          "num": 3,
+          "capacity": 7,
+          "events": [
+            "alignment",
+            "int32-identical",
+            "int32-identical",
+            "int32-identical"
+          ],
+          "frame_failure": 0
+        },
+        "add": {
+          "result": 3,
+          "values": [
+            7,
+            -2,
+            0,
+            -2147483648
+          ],
+          "num": 4,
+          "capacity": 7,
+          "events": [
+            "alignment",
+            "alignment",
+            "int32-identical",
+            "int32-identical",
+            "int32-identical",
+            "supplied-init",
+            "int32-copy"
+          ],
+          "frame_failure": 0
+        }
+      },
+      {
+        "prior": [
+          7,
+          -2,
+          0
+        ],
+        "value": 2147483647,
+        "spare": 0,
+        "find": {
+          "result": -1,
+          "values": [
+            7,
+            -2,
+            0
+          ],
+          "num": 3,
+          "capacity": 3,
+          "events": [
+            "alignment",
+            "int32-identical",
+            "int32-identical",
+            "int32-identical"
+          ],
+          "frame_failure": 0
+        },
+        "add": {
+          "result": 3,
+          "values": [
+            7,
+            -2,
+            0,
+            2147483647
+          ],
+          "num": 4,
+          "capacity": 8,
+          "events": [
+            "alignment",
+            "alignment",
+            "int32-identical",
+            "int32-identical",
+            "int32-identical",
+            "supplied-grow",
+            "supplied-init",
+            "int32-copy"
+          ],
+          "frame_failure": 0
+        }
+      },
+      {
+        "prior": [
+          7,
+          -2,
+          0
+        ],
+        "value": 2147483647,
+        "spare": 4,
+        "find": {
+          "result": -1,
+          "values": [
+            7,
+            -2,
+            0
+          ],
+          "num": 3,
+          "capacity": 7,
+          "events": [
+            "alignment",
+            "int32-identical",
+            "int32-identical",
+            "int32-identical"
+          ],
+          "frame_failure": 0
+        },
+        "add": {
+          "result": 3,
+          "values": [
+            7,
+            -2,
+            0,
+            2147483647
+          ],
+          "num": 4,
+          "capacity": 7,
+          "events": [
+            "alignment",
+            "alignment",
+            "int32-identical",
+            "int32-identical",
+            "int32-identical",
+            "supplied-init",
+            "int32-copy"
+          ],
+          "frame_failure": 0
+        }
+      }
+    ],
+    "null_add": {
+      "result": -1,
+      "values": [],
+      "num": 0,
+      "capacity": 0,
+      "events": [],
+      "frame_failure": 0
+    },
+    "clear_profiles": [
+      {
+        "prior": [],
+        "spare": 0,
+        "clear": {
+          "result": 3153928,
+          "values": [],
+          "num": 0,
+          "capacity": 0,
+          "events": [
+            "supplied-type-getter",
+            "supplied-frame-step",
+            "alignment"
+          ],
+          "frame_failure": 0
+        }
+      },
+      {
+        "prior": [],
+        "spare": 4,
+        "clear": {
+          "result": 3153928,
+          "values": [],
+          "num": 0,
+          "capacity": 4,
+          "events": [
+            "supplied-type-getter",
+            "supplied-frame-step",
+            "alignment"
+          ],
+          "frame_failure": 0
+        }
+      },
+      {
+        "prior": [
+          7
+        ],
+        "spare": 0,
+        "clear": {
+          "result": 0,
+          "values": [],
+          "num": 0,
+          "capacity": 0,
+          "events": [
+            "supplied-type-getter",
+            "supplied-frame-step",
+            "alignment",
+            "supplied-destroy-int32",
+            "supplied-shrink-release"
+          ],
+          "frame_failure": 0
+        }
+      },
+      {
+        "prior": [
+          7
+        ],
+        "spare": 4,
+        "clear": {
+          "result": 0,
+          "values": [],
+          "num": 0,
+          "capacity": 0,
+          "events": [
+            "supplied-type-getter",
+            "supplied-frame-step",
+            "alignment",
+            "supplied-destroy-int32",
+            "supplied-shrink-release"
+          ],
+          "frame_failure": 0
+        }
+      },
+      {
+        "prior": [
+          7,
+          -2,
+          0
+        ],
+        "spare": 0,
+        "clear": {
+          "result": 0,
+          "values": [],
+          "num": 0,
+          "capacity": 0,
+          "events": [
+            "supplied-type-getter",
+            "supplied-frame-step",
+            "alignment",
+            "supplied-destroy-int32",
+            "supplied-shrink-release"
+          ],
+          "frame_failure": 0
+        }
+      },
+      {
+        "prior": [
+          7,
+          -2,
+          0
+        ],
+        "spare": 4,
+        "clear": {
+          "result": 0,
+          "values": [],
+          "num": 0,
+          "capacity": 0,
+          "events": [
+            "supplied-type-getter",
+            "supplied-frame-step",
+            "alignment",
+            "supplied-destroy-int32",
+            "supplied-shrink-release"
+          ],
+          "frame_failure": 0
+        }
+      },
+      {
+        "flags": {
+          "null_array": true
+        },
+        "clear": {
+          "result": 7340032,
+          "values": [
+            7
+          ],
+          "num": 1,
+          "capacity": 1,
+          "events": [
+            "supplied-type-getter",
+            "supplied-frame-step"
+          ],
+          "frame_failure": 0
+        }
+      },
+      {
+        "flags": {
+          "null_property": true
+        },
+        "clear": {
+          "result": 0,
+          "values": [
+            7
+          ],
+          "num": 1,
+          "capacity": 1,
+          "events": [
+            "supplied-type-getter",
+            "supplied-frame-step"
+          ],
+          "frame_failure": 1
+        }
+      },
+      {
+        "flags": {
+          "bad_type": true
+        },
+        "clear": {
+          "result": 3170304,
+          "values": [
+            7
+          ],
+          "num": 1,
+          "capacity": 1,
+          "events": [
+            "supplied-type-getter",
+            "supplied-frame-step"
+          ],
+          "frame_failure": 1
+        }
+      }
+    ],
+    "scope": "Offline Unicorn of chained native AddUnique521B/Find216B/Clear328B with synthetic ordinary int32 FArray/FProperty/frame. Scalar alignment/equality/copy, allocation capacity growth/release, element init/destruction and UE frame/type helpers explicitly supplied; no allocator/FProperty VM/GC certification. Actual native loops/index/count/branch/return writes exercised. ArrayNum max overflow/logging, tagged inline allocation and invalid pointer faults not executed.",
+    "game_writes": 0,
+    "real_game_function_calls": 0,
+    "fully_certified_cards": 0,
+    "case_sha256": "afe3cb32f8333e0238f056729272619d6d669dd54e806384d145bc567d549a5c"
+  },
+  "group_index": [
+    {
+      "name": "GenericArray_AddUnique",
+      "segment_count": 7,
+      "bytes": 521,
+      "external_direct_jumps": []
+    },
+    {
+      "name": "Array_Clear thunk",
+      "segment_count": 5,
+      "bytes": 328,
+      "external_direct_jumps": []
+    },
+    {
+      "name": "GenericArray_Find",
+      "segment_count": 3,
+      "bytes": 216,
+      "external_direct_jumps": []
+    }
+  ],
+  "worker_job": "20261028-160935-rule513-unwind-edges-889ed8ef",
+  "evidence": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule513-fragments.py",
+      "bytes": 3023,
+      "sha256": "0e312e698b38b75937c80103cb6fdebe3b535aa4d9efe168cbe04b663f11dc9b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule513-array-unwind-groups-20261028.json",
+      "bytes": 58217,
+      "sha256": "9b590a57a9b0b7061cb7a35aba9bc9323bac06a02addaf1903c5e8e65e83e106"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule513-native.py",
+      "bytes": 6430,
+      "sha256": "7b1ec4ce9c3a07a529e2fb102bbbde4fb67bff894ae774d8b63a7831304e31de"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule513-native-verification-20261028.json",
+      "bytes": 33227,
+      "sha256": "e07bedaf8e56d15f23682db75ca76a1a0008f7dff94cda4d3d4dcaefa9435d74"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule513-worker\\input.json",
+      "bytes": 30451,
+      "sha256": "54d61b012bf203539ff2efce7fca299e720f4ff887367bf35dc4e51ffbd23f37"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule513-worker\\task.txt",
+      "bytes": 527,
+      "sha256": "68bf9ad9d72f1347108c8e89e9d5270df0e35d0be6e080ef3abc908c34cd8acb"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule513-worker\\output.json",
+      "bytes": 356,
+      "sha256": "60379dcd83e5b99ce3207ef0052675ddb81ee03af499ab581950f8d66c285b10"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\GameState.cs",
+      "bytes": 59996,
+      "sha256": "fb87ed9ff284e1f336b5691a71342ce758007fd3767b851c1c07c0201504fe65"
+    }
+  ],
+  "remaining": [
+    "全局旧native覆盖重新按CHAININFO审计，而非仅按单个.pdata首段定界。",
+    "真实int32属性vtable比较/复制、分配增长/析构/释放及数组Get赋值复制链。",
+    "溢出/标签分配/非法地址边界及全PvP/单卡语义，完整卡数仍0。"
+  ],
+  "game_writes": 0,
+  "real_game_function_calls": 0,
+  "fully_certified_cards": 0
+}
