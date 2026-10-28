@@ -1,0 +1,60 @@
+{
+  "rule_id": "RULE-526",
+  "date": "2026-10-29",
+  "status": "已修复攻击绝对设置模式2/3/5对有效对象的额外区域拒绝；继续开放撤销及其他模式、输出ABI与原生重入边界",
+  "authority": {
+    "pid": 24220,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "read_only": true,
+    "client_writes": 0,
+    "real_client_function_calls": 0,
+    "historical_replays_used_as_authority": false
+  },
+  "findings": [
+    "当前重新采集ChangeAttack2713B、ChangeBuffsFromCards6267B、ExecuteAfterChangeAttackEvents694B及NotifyGainAttack103B，全部按原始字节哈希、符号头和FName重解码一致；0B声明单独排除。主函数普通与绝对模式共有28/57的IsValid、CanCardBeBuffed及正instigatorID入口，没有按Location/IsAlive拒绝。",
+    "模式2/3/5在705/750/840跳到共同855分支。493先调用账本；855读取原始基础攻击，896/934比较它与原始请求。相等时948置valueChanged=false并退出；不同则960/1007更新夹到0..99的maxAttack，1144写加密基础攻击，1212置valueChanged=true。保留临时分量，不以可见总攻击或夹断后值判断相等。",
+    "因此amount==0是有效绝对请求，原始基础攻击为0时仍先处理账本，再跳过数值/通知/after；原始基础攻击为99而请求105时，即使最终可见差为0，也更新maxAttack并继续通知/after。管理实现已有这些分支顺序，本轮保留并加强整合验证。",
+    "旧SetAttackValue额外按IsAlive拒绝NotAvailable/Discard中的有效对象；已移除这一个条件，保留正来源ID与CanCardBeBuffed。该共享helper服务模式2/3/5及显式压制攻击阶段，不改变基础相等时压制直接调用账本的特殊路径。",
+    "账本独立核对：三模式全局清永久攻击与SetValue；模式2将当前来源原结构加上新的SetValue写回；模式3额外全局清Suppress后将当前来源原结构加Suppress写回；模式5保留清理结果而不恢复旧当前来源。临时攻击键及防御键保留。Suppress帧变量payload在离线受控为0，管理层只表示键存在，不认证完整原生payload。",
+    "2880组实际主函数+完整账本+after-helper AST串联覆盖10位置、模式2/3/5、请求-3/0/5/105、基础/临时/压制三状态、来源存在/缺失、action-process与skip开关；验证原始相等、maxAttack哨兵、总攻击夹断差、来源及外来账本、通知七参数及通知先于自身再其他回调。容器/标量、枚举名、原生有效性/加密setter/密钥、T5查询成员顺序、通知接收体与具体回调体供给，不作为这些原语的完整实现认证。",
+    "重新复读原生IsLocatedInDeck的当前UFunction头与17B后端，核对RULE514当前磁盘相符捕获，离线全部256位置值通过：只有1/2为真，Deck=9不跳过通知。此处产品行为未改。",
+    "新增C#2880组整合覆盖双方、10位置、三模式、四请求、三原始/临时/压制状态、skip及来源缺失；种入当前/外来来源永久攻击、独立SetValue、Suppress、防御及临时攻击，核对所有账本变化、回调时已更新的状态、七字段通知、零请求、原始相等与零可见差。新增用例在修复前首先于Left/NotAvailable/2/-3失败，修复后全量942/942通过，构建0警告0错误。",
+    "DeepSeek仅执行30个指定AST节点的机械转录；主agent逐节点对比当前权威捕获，独立重解码、判断语义、修复及验证。"
+  ],
+  "validation": {
+    "absolute_composed_ast_cases": 2880,
+    "native_deck_byte_vectors": 256,
+    "new_csharp_cases": 2880,
+    "selftest_passed": 942,
+    "selftest_total": 942,
+    "build_warnings": 0,
+    "build_errors": 0,
+    "worker_exact_current_ast_nodes": 30
+  },
+  "remaining": [
+    "ChangeAttack撤销模式4与其他UByte模式仍需继续按当前主函数及账本组合核对。公共便利参数与显式native模式的绑定也未全部认证。",
+    "qqq输出与托管void适配器、默认目标绑定、空上下文异常及对象生命周期尚未完整认证；本轮有效路径保持调用者qqq原值的离线结果不等同于管理ABI已实现。",
+    "Suppress键具体帧payload、T5原生容器/全局顺序、通知接收体、回调重入及全部加密/诊断失败路径仍开放。",
+    "相邻生成缺来源/无效控制方/默认位置，共享满位置、overrideCardID与完整分配通知等先前边界仍开放。"
+  ],
+  "fully_certified_cards": 0,
+  "evidence_sha256": {
+    "D:\\Codex Workshop\\kards-install-review\\capture-rule526-change-attack.py": "4116321900fec9598fe12473833509ad18ebe2934259488f5e2aaead37561d02",
+    "D:\\Codex Workshop\\kards-install-review\\capture-rule526-attack-after.py": "1b64958bb004cf3362ebf8dea959c0235575ade24ce5a744ebe7f710cccea41c",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule526-change-attack-functions-20261029.json": "9c0ebe86f1ad27e8a519cfefba24e02eb4eae7d7b5737c1a43c4949df744a464",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule526-attack-after-notify-functions-20261029.json": "12d604840b1a17b2ab4ee17db393c902e4f756cef56349319d5bf0ae306f2c9c",
+    "D:\\Codex Workshop\\kards-install-review\\verify-rule526-absolute.py": "051c8500c41d8e76f1b0755c8d4e36d8bbc123ebc3006ecc7740e1aaae187224",
+    "D:\\Codex Workshop\\kards-install-review\\rule526-absolute-verification-20261029.json": "ff8e0e41b340820fcdcd04a09daa3c728d88a0ac29b225e1e23786d75b1b42f3",
+    "D:\\Codex Workshop\\kards-install-review\\verify-rule525-change-attack.py": "45937aa36b223e1c2c26558b146e65f73e2ee3cfc30c7c923dbf545679424f61",
+    "D:\\Codex Workshop\\kards-install-review\\verify-rule518-ledger.py": "f2aa5f261b10bbac3673f2245ab4201bed4c6a66eb91b4268791ab41c0cc5039",
+    "D:\\Codex Workshop\\kards-install-review\\verify-rule526-deck-native.py": "3a2fc6a143af78467181815283353fc9f246a4a327cac0e1c7f38d191447b903",
+    "D:\\Codex Workshop\\kards-install-review\\rule526-deck-native-verification-20261029.json": "6d421e8882324151e961cbc388ac4975905574cfa4b59f9e7f121886b3b22fd7",
+    "D:\\Codex Workshop\\kards-install-review\\verify-rule526-evidence.py": "77c4ba5f036ec8b662a052069dc767dc54348e15cb216cddb22a876eabb17729",
+    "D:\\Codex Workshop\\kards-install-review\\rule526-worker-verification-20261029.json": "a33fb3bf10084a57d758173511bf0c5431eed3a5e9eeb517fa872c3e648a4fba",
+    "D:\\Codex Workshop\\kards-install-review\\rule526-worker\\input.json": "6b0af380597e344dc90612c7f4c08d2e5e7abde3632eb9f6236c40dcd415da1e",
+    "D:\\Codex Workshop\\kards-install-review\\rule526-worker\\output.json": "6c24a2936702b31773b043506dec9e6318c1369b346ec182b9aa19635b3f6585",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-rule526-before-20261029.txt": "0c5a2320e5478607dc1bb058a5abbef01d82ac5a7f22721337b83264327db4c1",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-rule526-final-20261029.txt": "95cdf48ca7a744c6a5739b8694e3473aa8caf8455e5d01ea15b3c47a4f2ec2f5",
+    "D:\\Codex Workshop\\kards-install-review\\build-rule526-final-20261029.txt": "935ab4911eb37759399cfbed59dd90abc883c9dfa93b733080a5e0de9d201ce4"
+  }
+}

@@ -4174,7 +4174,9 @@ public sealed partial class CardApi
 
     private void SetAttackValue(CardInstance target, int value, int sourceId, bool skipAction, int changeType = 2)
     {
-        if (!target.IsAlive || sourceId <= 0 || !CanCardBeBuffed(target)) return;
+        // RULE-526: absolute modes2/3/5 validate the object independently
+        // of its physical zone; ledger processing also precedes raw equality.
+        if (sourceId <= 0 || !CanCardBeBuffed(target)) return;
         int previous = target.Attack;
 
         RecordAbsoluteAttackLedger(target, value, sourceId, changeType);
