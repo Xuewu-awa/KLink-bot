@@ -19,6 +19,8 @@
 | 已索引JSON审计记录 | 403 |
 | 已人工关联局部证据单元 | 4 |
 | 局部证据绑定输入一致 | 4 |
+| 规划工作域（不作完成率分母） | 14 |
+| 明确验收条件 | 42 |
 | 当前权威PvP分母已建立 | 否 |
 | 已完整认证单卡 | 0 |
 | 整体语义完成百分比 | 未建立分母，暂不计算 |
@@ -33,6 +35,8 @@
 - [branches.tsv](branches.tsv)：人工确认的局部验证范围、版本/源码指纹与失效原因。
 - [reports.tsv](reports.tsv)：全部JSON审计记录；旧remaining保留为历史待整理文本。
 - [open_items.tsv](open_items.tsv)：明确整理的当前待办，和历史remaining分开。
+- [work_units.tsv](work_units.tsv)：工作域、依赖、验收条件及交付物；不以分组数量估计总体工作量。
+- [进度基线](../progress-baseline/README.md)：台账/报告对齐、文件指纹复核和历史陈述去重。
 - [matrix.json](matrix.json)：完整机器可读数据与输入SHA-256。
 
 TSV中的null表示缺失/未知值；复杂字段为JSON单元格，完整类型以matrix.json为准。

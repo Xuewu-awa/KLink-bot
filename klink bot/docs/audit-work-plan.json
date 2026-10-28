@@ -1,0 +1,383 @@
+{
+  "schema_version": 1,
+  "scope": "Acceptance-contract work domains; not an exhaustive or effort-weighted denominator.",
+  "work_units": [
+    {
+      "id": "BASE-01",
+      "title": "当前版本资产基线",
+      "status": "partial",
+      "depends_on": [],
+      "scope": "安装客户端、pak导出、运行时静态对象与卡表的版本及身份关联",
+      "acceptance_criteria": [
+        "明确当前EXE与pak/导出版本，不把旧导出自动当作当前版本。",
+        "逐资产对齐ID、类、父类、CDO和函数身份；记录遗漏和仅有数据的资产。",
+        "形成带来源指纹和范围说明的资产清单。"
+      ],
+      "deliverables": [
+        "version-manifest.json",
+        "asset-identity-reconciliation.tsv"
+      ],
+      "effort_estimate": "not_sized",
+      "status_basis": "planning taxonomy; historical partial evidence is not domain completion"
+    },
+    {
+      "id": "BASE-02",
+      "title": "无头PvP范围与分母",
+      "status": "open",
+      "depends_on": [
+        "BASE-01"
+      ],
+      "scope": "所有受支持PvP模式的可构筑卡、可生成/转换/选择对象、总部及隐式规则；有证据排除UI/战役/教程",
+      "acceptance_criteria": [
+        "明确PvP模式集合和每种模式的合法卡池条件，包括会话配置/黑名单/轮换。",
+        "递归闭合生成、转换、选择及动态卡池依赖；不能仅按可构筑卡数量计数。",
+        "逐对象记录纳入或排除证据，未确认项不得从分母消失。"
+      ],
+      "deliverables": [
+        "pvp-scope-decisions.tsv",
+        "pvp-denominator-manifest.json"
+      ],
+      "effort_estimate": "not_sized",
+      "status_basis": "planning taxonomy; historical partial evidence is not domain completion"
+    },
+    {
+      "id": "BASE-03",
+      "title": "既有审计成果归档与去重",
+      "status": "partial",
+      "depends_on": [],
+      "scope": "台账、JSON报告、原始证据、版本声明以及历史未完成陈述的精确对应",
+      "acceptance_criteria": [
+        "每条台账规则有可追踪记录；标明是否有独立JSON报告。",
+        "逐报告检查可识别的原始指纹；变动、缺失与未检查分别列出。",
+        "按精确范围重核后续解决关系；历史remaining不自动累加成当前独立缺陷。"
+      ],
+      "deliverables": [
+        "ledger.tsv",
+        "reports.tsv",
+        "bindings.tsv",
+        "remaining_claims.tsv"
+      ],
+      "effort_estimate": "not_sized",
+      "status_basis": "planning taxonomy; historical partial evidence is not domain completion"
+    },
+    {
+      "id": "VM-01",
+      "title": "IR解释、参数和返回绑定",
+      "status": "partial",
+      "depends_on": [
+        "BASE-01"
+      ],
+      "scope": "PvP调用闭包内解释节点、类型、上下文、参数/出参和执行帧",
+      "acceptance_criteria": [
+        "所有可达节点/运算/上下文有权威语义及边界；记录未知节点。",
+        "参数、出参、默认目标及空上下文行为逐入口核对。",
+        "普通/持久帧、整数边界和控制流以差分用例覆盖。"
+      ],
+      "deliverables": [
+        "opcode-contracts.tsv",
+        "call-binding-contracts.tsv",
+        "vm-differential-results.json"
+      ],
+      "effort_estimate": "not_sized",
+      "status_basis": "planning taxonomy; historical partial evidence is not domain completion"
+    },
+    {
+      "id": "STATE-01",
+      "title": "对象创建、复制与生命周期",
+      "status": "partial",
+      "depends_on": [
+        "BASE-01",
+        "VM-01"
+      ],
+      "scope": "CDO/模板、分配、初始化、映射、克隆、销毁及失效引用",
+      "acceptance_criteria": [
+        "创建/复制/默认值与回调时序逐阶段核对。",
+        "对象ID映射替换、删除、失败路径和快照/克隆字段闭合。",
+        "剩余原生分配、引用及生命周期边界有明确结论。"
+      ],
+      "deliverables": [
+        "object-lifecycle-contracts.tsv",
+        "state-copy-field-matrix.tsv"
+      ],
+      "effort_estimate": "not_sized",
+      "status_basis": "planning taxonomy; historical partial evidence is not domain completion"
+    },
+    {
+      "id": "EVENT-01",
+      "title": "触发注册、派发及中断",
+      "status": "partial",
+      "depends_on": [
+        "VM-01",
+        "STATE-01"
+      ],
+      "scope": "注册集合、枚举顺序、抑制例外、取消、重入和延后回调",
+      "acceptance_criteria": [
+        "所有PvP触发调用点关联查询/筛选/顺序及参数。",
+        "修改状态后的重筛选、快照、短路和延后轮逐路径验证。",
+        "原生容器重插入、并列顺序与回调重入边界闭合。"
+      ],
+      "deliverables": [
+        "event-dispatch-matrix.tsv",
+        "event-order-regressions.json"
+      ],
+      "effort_estimate": "not_sized",
+      "status_basis": "planning taxonomy; historical partial evidence is not domain completion"
+    },
+    {
+      "id": "TURN-01",
+      "title": "对局初始化、回合和资源",
+      "status": "partial",
+      "depends_on": [
+        "STATE-01",
+        "EVENT-01"
+      ],
+      "scope": "初始牌组/选牌、抽牌、回合切换、指挥点、手牌/牌库/疲劳及终局",
+      "acceptance_criteria": [
+        "完整初始化及回合流程逐阶段对照权威实现。",
+        "资源上限、失败路径、终局条件和相关事件时序覆盖。",
+        "阶段组合回归与状态快照一致。"
+      ],
+      "deliverables": [
+        "match-phase-contracts.tsv",
+        "turn-resource-regressions.json"
+      ],
+      "effort_estimate": "not_sized",
+      "status_basis": "planning taxonomy; historical partial evidence is not domain completion"
+    },
+    {
+      "id": "COMBAT-01",
+      "title": "动作合法性与战斗结算",
+      "status": "partial",
+      "depends_on": [
+        "VM-01",
+        "EVENT-01",
+        "TURN-01"
+      ],
+      "scope": "移动、目标、射程、费用、守护、反制、伤害/反击及死亡结算",
+      "acceptance_criteria": [
+        "合法动作条件及关键词交互逐分支核对。",
+        "攻击/反制/伤害/死亡所有中断和事件顺序有证据。",
+        "跨单位类型、边界和联动场景通过差分验证。"
+      ],
+      "deliverables": [
+        "combat-branch-matrix.tsv",
+        "legal-action-differentials.json"
+      ],
+      "effort_estimate": "not_sized",
+      "status_basis": "planning taxonomy; historical partial evidence is not domain completion"
+    },
+    {
+      "id": "STATS-01",
+      "title": "数值、来源增益和能力",
+      "status": "partial",
+      "depends_on": [
+        "VM-01",
+        "STATE-01",
+        "EVENT-01"
+      ],
+      "scope": "攻击、防御、费用、关键字、来源账本、加密/公开字段及增减事件",
+      "acceptance_criteria": [
+        "各原语模式、零键、溢出、原始/可见数值及出参范围闭合。",
+        "来源关系、撤销、压制、克隆和临时清理交互完整。",
+        "全部剩余受控原语和native边界有单独验证结论。"
+      ],
+      "deliverables": [
+        "stat-mode-contracts.tsv",
+        "buff-ledger-field-matrix.tsv"
+      ],
+      "effort_estimate": "not_sized",
+      "status_basis": "planning taxonomy; historical partial evidence is not domain completion"
+    },
+    {
+      "id": "EFFECTS-01",
+      "title": "生成、区域迁移及通用效果",
+      "status": "partial",
+      "depends_on": [
+        "STATE-01",
+        "EVENT-01",
+        "STATS-01"
+      ],
+      "scope": "生成、变形、移除、弃牌、返回、流放和其他公共效果",
+      "acceptance_criteria": [
+        "每个共享入口的前置门、对象/ID返回和失败分支核对。",
+        "无效来源/控制方/默认位置、满区和overrideCardID等开放边界闭合。",
+        "全部相关回调时序及区域编号/容量一致。"
+      ],
+      "deliverables": [
+        "effect-entry-contracts.tsv",
+        "zone-transition-regressions.json"
+      ],
+      "effort_estimate": "not_sized",
+      "status_basis": "planning taxonomy; historical partial evidence is not domain completion"
+    },
+    {
+      "id": "RANDOM-01",
+      "title": "随机流、卡池和会话条件",
+      "status": "partial",
+      "depends_on": [
+        "BASE-01",
+        "BASE-02",
+        "VM-01"
+      ],
+      "scope": "随机数消耗、候选顺序、集合过滤、日期/配置/模式条件",
+      "acceptance_criteria": [
+        "随机状态更新和每种动作的抽样消耗可重现。",
+        "候选池/排序/黑名单/轮换/服务器时间条件来源闭合。",
+        "对权威场景记录随机状态和候选顺序，避免用历史回放充当规则依据。"
+      ],
+      "deliverables": [
+        "random-consumption-matrix.tsv",
+        "pool-session-contracts.tsv"
+      ],
+      "effort_estimate": "not_sized",
+      "status_basis": "planning taxonomy; historical partial evidence is not domain completion"
+    },
+    {
+      "id": "CARDS-01",
+      "title": "逐卡函数与隐式依赖闭合",
+      "status": "open",
+      "depends_on": [
+        "BASE-02",
+        "VM-01",
+        "STATE-01",
+        "EVENT-01",
+        "TURN-01",
+        "COMBAT-01",
+        "STATS-01",
+        "EFFECTS-01",
+        "RANDOM-01"
+      ],
+      "scope": "范围内每张卡全部自定义、继承、原生及共享依赖的分支",
+      "acceptance_criteria": [
+        "为每张纳入卡明确全部函数、分支、默认和动态依赖。",
+        "逐路径验证数据与行为，并保留版本绑定的证据。",
+        "独立完整认证准入审查通过后才能标记整卡完成。"
+      ],
+      "deliverables": [
+        "card-closure-manifests/",
+        "card-certification-admissions.tsv"
+      ],
+      "effort_estimate": "not_sized",
+      "status_basis": "planning taxonomy; historical partial evidence is not domain completion"
+    },
+    {
+      "id": "INTEGRATION-01",
+      "title": "多卡联动与差分一致性",
+      "status": "open",
+      "depends_on": [
+        "CARDS-01"
+      ],
+      "scope": "跨机制、回调重入、同帧修改和完整对局状态一致性",
+      "acceptance_criteria": [
+        "按闭包风险建立联动场景，验证事件顺序及状态。",
+        "差分到权威资料/当前客户端的可观察规则结果，覆盖随机与异常中断。",
+        "所有差异有修复或明确有证据的范围说明。"
+      ],
+      "deliverables": [
+        "integration-scenario-matrix.tsv",
+        "end-to-end-differential-results.json"
+      ],
+      "effort_estimate": "not_sized",
+      "status_basis": "planning taxonomy; historical partial evidence is not domain completion"
+    },
+    {
+      "id": "TRAIN-01",
+      "title": "训练用无头接口与验收",
+      "status": "open",
+      "depends_on": [
+        "INTEGRATION-01"
+      ],
+      "scope": "合法动作、观测、奖励/终局、随机种子与大量模拟的状态隔离",
+      "acceptance_criteria": [
+        "动作入口与规则合法性一致，不依赖UI/战役/教程。",
+        "观测/克隆/重置/终局及随机流在重复模拟中一致且无泄漏。",
+        "公开验收基线与已知范围/限制，工作量估计以定界子任务为依据。"
+      ],
+      "deliverables": [
+        "headless-simulator-acceptance.json",
+        "training-interface-contracts.tsv"
+      ],
+      "effort_estimate": "not_sized",
+      "status_basis": "planning taxonomy; historical partial evidence is not domain completion"
+    }
+  ],
+  "remaining_claim_reviews": [
+    {
+      "claim_id": "out/audit/systematic-rules/neighbor-spawn-cached-source-fresh-target-and-position-fix-20261028.json#/remaining/0",
+      "text_sha256": "991e1b00de29ee61306ea13dc14277590d601f06cadd982342681e9ac3584140",
+      "disposition": "partially_addressed",
+      "addressed_scope": [
+        "普通0/1有效弃牌/NotAvailable对象的区域门、零请求与可见零变化，以及弃牌相邻复制整合已由525局部核验。"
+      ],
+      "residual_scope": "无效来源/阵营/默认位置、完整分配/通知及native生命周期仍保留；不认证相邻生成整个闭包。",
+      "basis_reports": [
+        {
+          "path": "out/audit/systematic-rules/ordinary-attack-valid-zones-zero-and-after-chain-fix-20261028.json",
+          "sha256": "7cf54dacd747c091f324db75e0e4be484277eb5d1226dbe9d7f36583c290ef5a"
+        }
+      ],
+      "review_basis": "Primary reviewed precise earlier claim and subsequent partial reports; no whole-function certification."
+    },
+    {
+      "claim_id": "out/audit/systematic-rules/ordinary-attack-valid-zones-zero-and-after-chain-fix-20261028.json#/remaining/0",
+      "text_sha256": "90e595f5dd5ac60f5bec7e894b6c936d8527ed1f06018b9f51aa322016625ea9",
+      "disposition": "partially_addressed",
+      "addressed_scope": [
+        "2/3/5绝对分支、4撤销分支、6..255自定义/默认的数据路径已在后续三轮限定范围核验。"
+      ],
+      "residual_scope": "qqq输出、非字节/默认目标、普通/持久帧、原生原语与接收体等边界仍开放。",
+      "basis_reports": [
+        {
+          "path": "out/audit/systematic-rules/absolute-attack-valid-zones-raw-equality-and-ledger-fix-20261029.json",
+          "sha256": "f2c40e5c8e69fbb704cefe800c86eed7c29f2bee1db8c3f41cd5d7281d2a0ecd"
+        },
+        {
+          "path": "out/audit/systematic-rules/temporary-attack-removal-source-cleanup-and-int32-audit-20261029.json",
+          "sha256": "64f9176b6dcb05f5185d5267c81cb67dbffdf29623b1750bd181166fa09f0a9d"
+        },
+        {
+          "path": "out/audit/systematic-rules/attack-custom-and-default-byte-ledger-only-fix-20261029.json",
+          "sha256": "716d0ce3a379a021997a3d7d4489cc6347e1a697f393fb30c7b18b6029049138"
+        }
+      ],
+      "review_basis": "Primary reviewed precise earlier claim and subsequent partial reports; no whole-function certification."
+    },
+    {
+      "claim_id": "out/audit/systematic-rules/absolute-attack-valid-zones-raw-equality-and-ledger-fix-20261029.json#/remaining/0",
+      "text_sha256": "53c3f61c3335e6f5a40a43f6cb854566ffab2b17e9f3d2e38a2df6a7a8f13990",
+      "disposition": "partially_addressed",
+      "addressed_scope": [
+        "模式4临时键撤销及6..255的数据/账本分支后续已有局部验证。"
+      ],
+      "residual_scope": "公开便利绑定、原始出参和完整native帧/生命周期仍未闭合。",
+      "basis_reports": [
+        {
+          "path": "out/audit/systematic-rules/temporary-attack-removal-source-cleanup-and-int32-audit-20261029.json",
+          "sha256": "64f9176b6dcb05f5185d5267c81cb67dbffdf29623b1750bd181166fa09f0a9d"
+        },
+        {
+          "path": "out/audit/systematic-rules/attack-custom-and-default-byte-ledger-only-fix-20261029.json",
+          "sha256": "716d0ce3a379a021997a3d7d4489cc6347e1a697f393fb30c7b18b6029049138"
+        }
+      ],
+      "review_basis": "Primary reviewed precise earlier claim and subsequent partial reports; no whole-function certification."
+    },
+    {
+      "claim_id": "out/audit/systematic-rules/temporary-attack-removal-source-cleanup-and-int32-audit-20261029.json#/remaining/0",
+      "text_sha256": "b352cc4dc3ef93d1fc5db1a084badf80a9d32ccb02402a236dbb1994c7ff93f5",
+      "disposition": "partially_addressed",
+      "addressed_scope": [
+        "模式6..255在普通新帧条件下的账本/数值路径已由528核验。"
+      ],
+      "residual_scope": "任意持久帧、qqq接口、通用非空明细及native原语仍待闭合。",
+      "basis_reports": [
+        {
+          "path": "out/audit/systematic-rules/attack-custom-and-default-byte-ledger-only-fix-20261029.json",
+          "sha256": "716d0ce3a379a021997a3d7d4489cc6347e1a697f393fb30c7b18b6029049138"
+        }
+      ],
+      "review_basis": "Primary reviewed precise earlier claim and subsequent partial reports; no whole-function certification."
+    }
+  ],
+  "percentage_policy": "Do not compute overall completion before authoritative PvP closure and sized, non-overlapping work items."
+}

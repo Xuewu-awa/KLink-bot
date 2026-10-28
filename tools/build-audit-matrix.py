@@ -60,6 +60,15 @@ def build(repo, review_path, client_sha256=None):
     manifest[review_path.relative_to(repo).as_posix()] = digest(review_path.read_bytes())
     if reviews.get('schema_version') != 1:
         raise ValueError('unsupported review registry schema')
+    plan_path = 'klink bot/docs/audit-work-plan.json'
+    work_units = read(plan_path).get('work_units', []) if (repo / plan_path).is_file() else []
+    work_ids = {u['id'] for u in work_units}
+    if len(work_ids) != len(work_units):
+        raise ValueError('duplicate planning work unit')
+    for unit in work_units:
+        if (unit.get('status') not in ['open', 'partial'] or not unit.get('acceptance_criteria')
+                or not unit.get('deliverables') or not set(unit.get('depends_on', [])) <= work_ids):
+            raise ValueError('invalid planning acceptance contract')
 
     inventory_cards = {r['name']: r for r in inventory['cards']}
     known = set(database) | set(ir) | set(inventory_cards)
@@ -264,6 +273,7 @@ def build(repo, review_path, client_sha256=None):
         program_containers=len(programs), dependency_edges=len(edges), dependency_symbols=len(dependencies),
         secondary_reports=len(reports), explicit_partial_units=len(partial_units),
         partial_units_matching_bound_inputs=sum(u['freshness'] == 'bound_inputs_match' for u in partial_units),
+        planning_work_domains=len(work_units), planning_acceptance_criteria=sum(len(u['acceptance_criteria']) for u in work_units),
         authoritative_current_pvp_denominator_available=False,
         fully_certified_cards=0, semantic_completion_percent=None, total_work_remaining_percent=None)
     return dict(schema_version=1, counts=counts, inputs=manifest, client_exe_sha256=client_sha256,
@@ -276,7 +286,7 @@ def build(repo, review_path, client_sha256=None):
             'This version deliberately rejects automatic full-certification entries.'],
         cards=cards, functions=sorted(functions.values(), key=lambda r:r['id']), programs=programs,
         edges=edges, dependencies=dependencies, reports=reports, partial_evidence=partial_units,
-        open_items=reviews.get('open_items', []))
+        open_items=reviews.get('open_items', []), work_units=work_units)
 
 
 def write_outputs(result, output):
@@ -290,7 +300,7 @@ def write_outputs(result, output):
     (output / 'matrix.json').write_bytes(('{\n' + ',\n'.join(sections) + '\n}\n').encode('utf8'))
     tables = dict(cards=result['cards'], functions=result['functions'], programs=result['programs'],
         dependencies=result['dependencies'], edges=result['edges'], reports=result['reports'],
-        branches=result['partial_evidence'], open_items=result['open_items'])
+        branches=result['partial_evidence'], open_items=result['open_items'], work_units=result['work_units'])
     for name, rows in tables.items():
         fields = list(dict.fromkeys(k for row in rows for k in row))
         stream = io.StringIO(newline='')
@@ -314,6 +324,7 @@ def write_outputs(result, output):
         dependency_edges='聚合静态依赖关联', dependency_symbols='依赖符号',
         secondary_reports='已索引JSON审计记录', explicit_partial_units='已人工关联局部证据单元',
         partial_units_matching_bound_inputs='局部证据绑定输入一致',
+        planning_work_domains='规划工作域（不作完成率分母）', planning_acceptance_criteria='明确验收条件',
         authoritative_current_pvp_denominator_available='当前权威PvP分母已建立',
         fully_certified_cards='已完整认证单卡', semantic_completion_percent='整体语义完成百分比',
         total_work_remaining_percent='整体剩余工作百分比')
@@ -330,6 +341,8 @@ def write_outputs(result, output):
         '- [branches.tsv](branches.tsv)：人工确认的局部验证范围、版本/源码指纹与失效原因。',
         '- [reports.tsv](reports.tsv)：全部JSON审计记录；旧remaining保留为历史待整理文本。',
         '- [open_items.tsv](open_items.tsv)：明确整理的当前待办，和历史remaining分开。',
+        '- [work_units.tsv](work_units.tsv)：工作域、依赖、验收条件及交付物；不以分组数量估计总体工作量。',
+        '- [进度基线](../progress-baseline/README.md)：台账/报告对齐、文件指纹复核和历史陈述去重。',
         '- [matrix.json](matrix.json)：完整机器可读数据与输入SHA-256。', '',
         'TSV中的null表示缺失/未知值；复杂字段为JSON单元格，完整类型以matrix.json为准。', '',
         '## 优先整理的公共依赖', '',

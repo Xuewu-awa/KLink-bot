@@ -1,5 +1,4 @@
 {
-  "rule": "RULE-528",
   "date": "2026-10-29",
   "counts": {
     "cards": 2019,
@@ -15,18 +14,16 @@
     "secondary_reports": 403,
     "explicit_partial_units": 4,
     "partial_units_matching_bound_inputs": 4,
+    "planning_work_domains": 14,
+    "planning_acceptance_criteria": 42,
     "authoritative_current_pvp_denominator_available": false,
     "fully_certified_cards": 0,
     "semantic_completion_percent": null,
     "total_work_remaining_percent": null
   },
-  "independent_call_site_count": 27124,
-  "fixture_tests_passed": 16,
-  "validation": "Independent corpus/reference/TSV/fingerprint checks; old three units explicitly revalidated before source binding refresh, new unit remains partial; no card certification promotion.",
-  "files_sha256": {
-    "tools\\build-audit-matrix.py": "ae1041c77ad4719c94d98a3a3363ca0eefdd405074a950b2412806f3d16f7dbc",
-    "tools\\test-audit-matrix.py": "3f8d743b4b4878c9509857586d08c4f223c2c5dd0697cfb540fc0db3de184287",
-    "klink bot\\docs\\audit-matrix-reviews.json": "357d8ae6652fe03413cec2d02c3cac6e47b56733b04056a3447a517de98ca9de",
-    "out\\audit\\coverage-matrix\\matrix.json": "ec089a80f47889561fd5776881405b852b63e459e3b22c91348af7667f1b705b"
-  }
+  "tests": 16,
+  "work_plan_synced": true,
+  "validation": "All current matrix input fingerprints checked; work plan equals source registry and acceptance criteria count42. Four existing partial units retain matching bound inputs, no card promotion.",
+  "generator_sha256": "c4eb12ac252a6e6f2b97517ec0d67584b056b951f8f29d9fba70f3b6e8f6f469",
+  "matrix_sha256": "03bec35615408007140a4700a410f372bc3fadf37731d243cad75f780a4b2582"
 }

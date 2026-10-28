@@ -26,3 +26,4 @@ instructions.
 - Report mentions and shared regression results are candidate links, never automatic card certification.
 - Do not refresh stale evidence fingerprints without rechecking the affected scope. Missing raw evidence and version mismatches remain visible.
 - Keep historical unresolved text separate from the current reviewed work list. Do not derive an overall percentage before the authoritative PvP scope and completion denominator are established.
+- Maintain `klink bot/docs/audit-work-plan.json` for acceptance contracts and exact historical-claim dispositions. When updating progress estimates or this baseline, rebuild `out/audit/progress-baseline` with `tools/build-audit-baseline.py` and run `tools/test-audit-baseline.py`; use `--hash-evidence` before claiming current file provenance. File matches or changed fingerprints alone do not certify rules or establish defects.
