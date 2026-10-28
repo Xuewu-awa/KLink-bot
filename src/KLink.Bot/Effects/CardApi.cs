@@ -2637,7 +2637,10 @@ public sealed partial class CardApi
             SetAttackValue(target, delta, instigatorId ?? source?.CardId ?? target.CardId, skipAction, changeType);
             return;
         }
-        if (!target.IsAlive || delta == 0 || !CanCardBeBuffed(target))
+        // RULE-525: native ordinary modes0/1 accept valid objects in every
+        // zone. Zero requests still leave values, ledger and callbacks unchanged.
+        bool rejectedLegacyZone = changeType is not (0 or 1) && !target.IsAlive;
+        if (rejectedLegacyZone || delta == 0 || !CanCardBeBuffed(target))
         {
             return;
         }

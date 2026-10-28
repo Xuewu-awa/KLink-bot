@@ -1112,6 +1112,7 @@ internal static class SelfTest
         new("RULE-523：缺失生成ID仍派发空主体观察者，回调恢复不改旧缓存", SingleSpawnMissingMapping),
         new("RULE-524：相邻生成保留回调位置并按返回ID复制攻击", NeighborSpawnCallbackReferences),
         new("RULE-524：相邻生成使用来源物理位置并转发回收参数", NeighborSpawnPhysicalLocations),
+        new("RULE-525：有效攻击对象不按区域拒绝，零请求与零可见变化分开", OrdinaryAttackZoneAndZero),
         new("山地：新部署的 Alpine 单位得到 +N/+N（手牌打出 + 效果生成两条路），且一次部署只加一次",
             AlpineBonusOnEntry),
 
@@ -40519,6 +40520,106 @@ internal static class SelfTest
     /// 与效果生成（`SpawnOnBattlefield` ↔ `SpawnCardToBoard` si=872）。
     /// 「一次部署只加一次」由数值**恰好**等于 +N 保证（加法重复调会变 +2N）。
     /// </summary>
+    private static string? OrdinaryAttackZoneAndZero(CardDatabase db)
+    {
+        const string name = "card_event_honorifics", own = "OnAfterChangeAttack", other = "OnAfterOtherCardChangeAttack";
+        var locals = (IDictionary<string, IReadOnlyList<KismetStep>>)KismetLibrary.Default!.Find(name)!.Locals;
+        if (KismetLibrary.Default.FindProgram(name, own) is not null || KismetLibrary.Default.FindProgram(name, other) is not null)
+            return "攻击区域探针目标已占用";
+        var cache = (Dictionary<string, Dictionary<string, KismetProgram>>)typeof(KismetLibrary)
+            .GetField("_localCache", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!.GetValue(KismetLibrary.Default)!;
+        cache.TryGetValue(name, out var oldCache);
+        var saved = new Dictionary<string, KismetProgram?>();
+        foreach (string hook in new[] { own, other })
+        {
+            KismetProgram? prior = null; oldCache?.Remove(hook, out prior); saved[hook] = prior;
+            var steps = new List<KismetStep>();
+            foreach (string variable in hook == own ? new[] { "changedAmount", "instigatorID" } : new[] { "changedAmount", "instigatorID", "cardChanged" })
+                steps.Add(new KismetStep(steps.Count, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(),
+                    new KismetExpr { Var = "K2Node_Event_" + variable, Scope = "local" }, null, -1, "_auditZone_" + variable, null) { DestinationScope = "instance" });
+            steps.Add(new KismetStep(steps.Count, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(),
+                new KismetExpr { Math = "Add_IntInt", Args = new[] { new KismetExpr { Var = "_auditZoneCount", Scope = "instance" }, new KismetExpr { Int = 1 } } },
+                null, -1, "_auditZoneCount", null) { DestinationScope = "instance" });
+            steps.Add(new KismetStep(steps.Count, "call", "SpawnCardInDeckBySide", new[] {
+                new KismetExpr { Int = (int)Side.Right }, new KismetExpr { Str = "card_unit_routed_troops" }, new KismetExpr { Int = 30 }, new KismetExpr { Int = 1 }
+            }, Array.Empty<int>(), null, null, -1, null, null));
+            steps.Add(new KismetStep(steps.Count, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null));
+            locals.Add(hook, steps);
+        }
+        try
+        {
+            foreach (Side side in new[] { Side.Left, Side.Right })
+            foreach (CardLocation where in Enumerable.Range(0, 10).Select(i => (CardLocation)i))
+            foreach (int mode in new[] { 0, 1 })
+            foreach (int requested in new[] { -3, 0, 4 })
+            foreach (var profile in new[] { (Base: 5, Temp: 3, Suppressed: false), (Base: 99, Temp: 0, Suppressed: false),
+                (Base: 0, Temp: -3, Suppressed: false), (Base: 5, Temp: 3, Suppressed: true) })
+            foreach (bool skip in new[] { false, true })
+            foreach (int sourceId in new[] { 9, 99 })
+            {
+                var (engine, state) = EmptyBoard(db);
+                var source = state.CreateWithId(PlainUnit, side, 9, side.DeckOf(), 0);
+                var target = state.CreateWithId(name, side, 60, where, 0);
+                var watcher = state.CreateWithId(name, side, 70, CardLocation.Discard, 0);
+                foreach (var card in new[] { target, watcher })
+                {
+                    card.Definition = new CardDefinition { Name = name, Type = "fighter", UsedTriggers = new[] { other } };
+                    card.Keywords.Clear(); card.BlueprintVariables["_auditZoneCount"] = 0;
+                }
+                if (profile.Suppressed) target.Keywords.Add(Keyword.Suppressed);
+                target.BaseAttack = profile.Base; target.TemporaryAttack = profile.Temp; target.MaxAttack = 123;
+                target.BuffsBySource[(sourceId, mode == 0)] = new CardBuff { SourceCardId = sourceId, Temporary = mode == 0, Attack = 3, Defense = 2 };
+                if (sourceId == 9) source.CardsBuffedByThisCard.Add(60);
+                bool applied = requested != 0;
+                int expectedBase = applied && mode == 1 ? Math.Clamp(unchecked(profile.Base + requested), 0, 99) : profile.Base;
+                int expectedTemp = applied && mode == 0 ? unchecked(profile.Temp + requested) : profile.Temp;
+                int visible = Math.Clamp(unchecked(expectedBase + expectedTemp), 0, 99);
+                int changed = visible - Math.Clamp(unchecked(profile.Base + profile.Temp), 0, 99);
+                bool notified = applied && !skip && where is not (CardLocation.DeckLeft or CardLocation.DeckRight);
+                var seen = new List<int>(); bool eventState = true; var created = state.CardCreated;
+                state.CardCreated = made => {
+                    created?.Invoke(made); if (made.Name != "card_unit_routed_troops") return;
+                    var who = new[] { target, watcher }.FirstOrDefault(c => Convert.ToInt32(c.BlueprintVariables.GetValueOrDefault("_auditZoneCount") ?? 0) > seen.Count(id => id == c.CardId));
+                    if (who is null) return; seen.Add(who.CardId);
+                    eventState &= target.BaseAttack == expectedBase && target.TemporaryAttack == expectedTemp
+                        && target.BuffsBySource[(sourceId, mode == 0)].Attack == 3 + requested
+                        && state.ActionLog.SelectMany(a => a.SubActions).Count(a => a.Name == "ZActionGainAttack") == (notified ? 1 : 0);
+                };
+                engine.Api.InvokeByName("ChangeAttack", null, new object?[] { target, sourceId, requested, mode, skip, null },
+                    new EffectContext { Engine = engine, State = state, Self = source, Controller = side }, out bool handled);
+                var actions = state.ActionLog.SelectMany(a => a.SubActions).Where(a => a.Name == "ZActionGainAttack").ToArray();
+                var expectedCalls = !applied ? Array.Empty<int>() : profile.Suppressed ? new[] { 70 } : new[] { 60, 70 };
+                bool Payload(CardInstance card) => Equals(card.BlueprintVariables.GetValueOrDefault("_auditZone_changedAmount"), changed)
+                    && Equals(card.BlueprintVariables.GetValueOrDefault("_auditZone_instigatorID"), sourceId);
+                if (!handled || target.BaseAttack != expectedBase || target.TemporaryAttack != expectedTemp
+                    || target.MaxAttack != (applied && mode == 1 ? expectedBase : 123)
+                    || target.BuffsBySource[(sourceId, mode == 0)].Attack != 3 + (applied ? requested : 0)
+                    || target.BuffsBySource[(sourceId, mode == 0)].Defense != 2 || !eventState
+                    || !seen.SequenceEqual(expectedCalls) || actions.Length != (notified ? 1 : 0)
+                    || (applied && (!Payload(watcher) || !profile.Suppressed && !Payload(target)
+                        || !ReferenceEquals(watcher.BlueprintVariables.GetValueOrDefault("_auditZone_cardChanged"), target))))
+                    return $"有效攻击对象/零请求错误：{side}/{where}/{mode}/{requested}/{profile}/{skip}/{sourceId}，actual={target.BaseAttack}/{target.TemporaryAttack}, events={string.Join(',', seen)}";
+                if (notified)
+                {
+                    var expected = new[] { ActionValue2.Int("cardID", 60), ActionValue2.Int("gained", changed), ActionValue2.Int("newAttackValue", visible),
+                        ActionValue2.Int("duration", 0), ActionValue2.Int("instigatorID", sourceId), ActionValue2.Bool("isBuff", false),
+                        ActionValue2.Str("changeType", mode == 0 ? "tempBuffGive" : "permBuff") };
+                    if (!actions[0].Values.SequenceEqual(expected)) return "攻击区域修复必须保持完整七字段通知";
+                }
+            }
+            return null;
+        }
+        finally
+        {
+            foreach (string hook in new[] { own, other })
+            {
+                locals.Remove(hook);
+                if (!cache.TryGetValue(name, out var programs)) continue;
+                if (saved[hook] is { } prior) programs[hook] = prior; else programs.Remove(hook);
+            }
+        }
+    }
+
     private static string? NeighborSpawnCallbackReferences(CardDatabase db)
     {
         using var entry = InstallEntryMethodProbe(); using var move = InstallMovementObserverProbes();
@@ -40622,8 +40723,7 @@ internal static class SelfTest
         foreach (bool copy in new[] { false, true })
         foreach (bool replace in new[] { false, true })
         {
-            // Discard copy's ChangeAttack availability gate is audited separately.
-            if (where == CardLocation.Discard && copy) continue;
+            // RULE-525 also verifies ordinary copying into a valid discard object.
             var (engine, state) = EmptyBoard(db);
             var source = state.CreateWithId(PlainUnit, side, 9, where, 2, isGold: true);
             source.Keywords.Clear(); source.BaseAttack = 8; source.TemporaryAttack = 3;

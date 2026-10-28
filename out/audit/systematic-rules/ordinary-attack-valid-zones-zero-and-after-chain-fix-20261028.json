@@ -1,0 +1,62 @@
+{
+  "rule_id": "RULE-525",
+  "date": "2026-10-28",
+  "status": "已修复普通攻击模式0/1对有效对象的额外区域拒绝；零请求早退确认正确，其他模式继续开放",
+  "authority": {
+    "pid": 24220,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "read_only": true,
+    "client_writes": 0,
+    "real_client_function_calls": 0,
+    "historical_replays_used_as_authority": false
+  },
+  "findings": [
+    "重新采集并从原始字节、符号头及FName重解码ChangeAttack2713B/104节点、ChangeBuffsFromCards6267B/205节点、ExecuteAfterChangeAttackEvents694B/25节点、NotifyGainAttack103B/3节点；另有0B声明明确不计为已获取实现。",
+    "普通模式0/1入口按IsValid(card)、CanCardBeBuffed与正instigatorID判断，没有按卡牌区域或来源对象存在性拒绝。旧管理实现额外按IsAlive排除NotAvailable和Discard；现仅解除模式0/1的该区域门，其他模式不借此修改。有效显式正来源ID即使映射缺失仍能记录。",
+    "493先调用真实增益账本。模式1在1224/1258判amount==0后1272置valueChanged=false；模式0对应1722/1756/1770。1990因此跳过数值、通知和after链；账本自身零输入门也不改记录。管理层delta==0早退对本轮受控游戏状态正确，保留。非零请求即使夹断导致可见差为0，仍设置valueChanged=true并继续通知/after，不可与零请求混同。",
+    "非零模式1基础攻击按int32相加后夹到0..99并更新maxAttack；模式0仅修改临时分量。通知记录的gained是总可见攻击前后差，而来源账本累加原请求。skip或左右牌库只抑制通知，不抑制after链；自身压制只跳过自身OnAfterChangeAttack，随后T5查询及排除目标ID的其他回调仍执行。",
+    "补核原生BaseCardObject:IsLocatedInDeck：当前UFunction头及17B后端稳定复读，后端与RULE514的当前磁盘相符捕获一致。偏移0x275的uint8位置先减1再与1作无符号比较，只有1/2为真。离线执行全部256位置值通过；通用Deck=9应照常通知。初版新增测试误把9归为通知跳过，现按原生证据改正；产品此处没有修改。UE包装器参数编组仍为边界。",
+    "实际主函数、账本与after-helper AST串联1920组：10位置、两模式、三请求、四原始/压制状态、来源存在/缺失、IsActionProcess及skip；另96组空目标/非正来源/不可增强拒绝路径。验证数值、账本、完整七参数通知、通知先于自身再其他回调及零可见差。容器/标量原语、原生有效性与getter/加密setter/密钥、枚举名、T5成员顺序、通知接收体及具体回调体供给，不能据此认证其全部实现。",
+    "新增C#1920组整合，覆盖双方、10位置、两模式、三请求、四原始/压制状态、skip与来源映射缺失；验证原始/临时/maxAttack、同来源账本且防御保留、完整七字段通知和after参数/状态顺序。同时解除旧相邻生成自测的弃牌复制排除，由36扩展至40组，新增4组均通过。",
+    "恢复HEAD旧区域门且保留新增回归测试时2/941失败：弃牌相邻复制及NotAvailable普通攻击；恢复修复后最终941/941通过，构建0警告0错误。基线测试与最终测试差异仅为后续按原生证据校正Deck=9通知预期；两项基线均在更早的Discard/NotAvailable案例失败。最初after日志的探针未用K2Node_Event_事件参数绑定导致假失败，已修正探针并保留旧日志，不作为额外产品故障。",
+    "DeepSeek仅转录22个指定AST节点；主agent逐节点与当前捕获比对并重解码全部四个函数，独立完成语义判断、整合和发布。"
+  ],
+  "validation": {
+    "ordinary_composed_ast_cases": 1920,
+    "rejected_ast_cases": 96,
+    "native_deck_byte_vectors": 256,
+    "new_csharp_cases": 1920,
+    "newly_enabled_neighbor_discard_copy_cases": 4,
+    "neighbor_physical_cases_now": 40,
+    "selftest_passed": 941,
+    "selftest_total": 941,
+    "build_warnings": 0,
+    "build_errors": 0,
+    "worker_exact_current_ast_nodes": 22
+  },
+  "remaining": [
+    "继续核对ChangeAttack绝对模式2/3/5、撤销模式4、其他UByte模式入口与分支；本轮没有解除这些分支的旧IsAlive门，也不认证其通知、账本和输出。",
+    "主函数qqq只在拒绝时写false，普通有效路径保持调用者原值。离线受控验证了该行为，但托管void适配器仍无完整native输出ABI；目标默认绑定、空上下文异常及对象生命周期也未完整认证。",
+    "实际T5集合顺序、通知接收体与回调重入、原生容器及全部加密/诊断失败路径未在本轮证明。",
+    "RULE524相邻生成缺失来源、无效控制方、默认位置，以及共享满位置/overrideCardID和完整分配通知仍开放。"
+  ],
+  "fully_certified_cards": 0,
+  "evidence_sha256": {
+    "D:\\Codex Workshop\\kards-install-review\\capture-rule525-change-attack.py": "1fe462af1d2b92d3a9af9a9e356b8d7e59fc3bacc622c4c19c2a5716e25937b8",
+    "D:\\Codex Workshop\\kards-install-review\\capture-rule525-attack-after.py": "46622248d2d9d0116044c27ca85cd17bf35328f969399556042cd517c658b463",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule525-change-attack-functions-20261028.json": "cd932e4282b2ef460a07330f1488f74698ba38aaba284f6574bd8140480340cb",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule525-attack-after-notify-functions-20261028.json": "3fd5e69ce7a763e4c07aba31a1b9ee954e639e4376bd0e607282ae817464392d",
+    "D:\\Codex Workshop\\kards-install-review\\verify-rule525-change-attack.py": "45937aa36b223e1c2c26558b146e65f73e2ee3cfc30c7c923dbf545679424f61",
+    "D:\\Codex Workshop\\kards-install-review\\rule525-attack-verification-20261028.json": "a641fc0cd6562abbf9b74dc8ce1d7246302876bfc082b878ae8aa16823ffc062",
+    "D:\\Codex Workshop\\kards-install-review\\verify-rule525-deck-native.py": "d2b0c957937199405ec7a156abba3b16b74e1877ef0ddd6dce6b2f688563cafe",
+    "D:\\Codex Workshop\\kards-install-review\\rule525-deck-native-verification-20261028.json": "fe0829fba0beebbbe956211d4c9c363f9a6c641e389f17b301352bccbb5a30fb",
+    "D:\\Codex Workshop\\kards-install-review\\verify-rule525-evidence.py": "0f3e9a76fdc47bea93689d0f41ec68cb99a00535d24ff7c9041c527cec12b5bc",
+    "D:\\Codex Workshop\\kards-install-review\\rule525-worker-verification-20261028.json": "7532f5f451dd16a713bbdc606780826f7222bfc644b546f65f40e3251b1638fd",
+    "D:\\Codex Workshop\\kards-install-review\\rule525-worker\\input.json": "2ab96e169f3427c844c2926d446b2b4b19da29f9f8305bcb187c3b6f5b93b522",
+    "D:\\Codex Workshop\\kards-install-review\\rule525-worker\\output.json": "e82f71bff325bccf2934ec263ebfca926f5837c647936d45049e8b5442c85aca",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-rule525-corrected-before-20261028.txt": "bec83e474d8132aeb8f510171b948185771ffb9f96148a8270da45819d1da16a",
+    "D:\\Codex Workshop\\kards-install-review\\rule525-baseline-manifest-20261028.json": "c4e782602aef7c3f74540685d7b78ec918abca10bad507cf19657d9b705382f5",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-rule525-final-20261028.txt": "c9035c8971925a48bd7c4eb3ec815c211089d7eb37d1656c4454949e63361d7e",
+    "D:\\Codex Workshop\\kards-install-review\\build-rule525-final-20261028.txt": "95010f787815f574c138cb0c6f2aa5c773013cb00ce6c2746982e2450ee806e9"
+  }
+}
