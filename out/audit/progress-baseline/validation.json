@@ -1,35 +1,84 @@
 {
   "date": "2026-10-29",
-  "documentation_records": 528,
-  "reports": 403,
-  "independently_rehashed_physical_files": 4785,
-  "binding_states": {
-    "match": 6243,
-    "changed": 658
+  "batch": "RULE-529",
+  "documentation_records": 529,
+  "reports": 404,
+  "verification_scope": "New batch source/evidence hashes independently checked; baseline generator performed full historical hashing. No new semantic certification of historical reports.",
+  "independently_rehashed_this_batch_files": 70,
+  "baseline_counts": {
+    "ledger_rule_records": 529,
+    "json_reports": 404,
+    "ledger_rules_with_explicit_json_report": 403,
+    "json_reports_with_explicit_rule_identity": 403,
+    "distinct_declared_file_paths": 4859,
+    "file_binding_claims": 6971,
+    "physical_files_hashed": 4837,
+    "bytes_hashed": 1975123002,
+    "binding_states": {
+      "match": 6313,
+      "changed": 658
+    },
+    "changed_binding_roles": {
+      "kernel_or_regression_source": 604,
+      "other_audit_artifact": 14,
+      "client_executable": 31,
+      "captured_or_extracted_data": 1,
+      "parser_or_sdk_source": 4,
+      "audit_tool_script": 4
+    },
+    "distinct_changed_physical_files": 26,
+    "report_provenance_states": {
+      "all_recognized_file_bindings_match": 176,
+      "declared_bindings_changed": 224,
+      "no_recognized_file_bindings": 4
+    },
+    "report_version_states": {
+      "declared_current_exe_hash": 244,
+      "not_declared": 128,
+      "declared_other_exe_hash": 32
+    },
+    "historical_remaining_claims": 2144,
+    "remaining_dispositions": {
+      "partially_addressed": 4,
+      "historical_untriaged": 2140
+    },
+    "work_units": 14,
+    "acceptance_criteria": 42,
+    "scope_candidates": 2019,
+    "scope_metadata_buckets": {
+      "explicit-cardSet:Special": 319,
+      "native_or_inherited_cardSet_needs_resolution": 5,
+      "explicit-cardSet:OnlySpawnable": 104,
+      "explicit-cardSet:Campaign2020": 45,
+      "explicit-cardSet:Basic": 355,
+      "explicit-cardSet:OceaniaStorm": 120,
+      "explicit-cardSet:BrothersInArms": 94,
+      "explicit-cardSet:Expansion2019": 150,
+      "explicit-cardSet:Legions": 105,
+      "explicit-cardSet:Homefront": 113,
+      "explicit-cardSet:BloodAndIron": 116,
+      "explicit-cardSet:NavalWarfare": 107,
+      "explicit-cardSet:CurrentExpansion": 87,
+      "explicit-cardSet:Breakthrough": 105,
+      "explicit-cardSet:WinterWar": 87,
+      "explicit-cardSet:WorldAtWar": 58,
+      "explicit-cardSet:Expansion1": 5,
+      "explicit-cardSet:Placeholder": 20,
+      "explicit-cardSet:Wildcards": 24
+    },
+    "authoritative_pvp_denominator_established": false,
+    "semantic_completion_percent": null,
+    "remaining_work_percent": null
   },
-  "changed_physical_files": 26,
-  "historical_claims": 2138,
-  "reviewed_partial_dispositions": 4,
-  "work_domains": 14,
-  "acceptance_criteria": 42,
   "tests": {
+    "game_selftest": 948,
     "baseline_tool": 20,
     "matrix_tool": 16
   },
-  "worker": {
-    "job": "20261029-021943-audit-baseline-exact-extract-c4f8f55e",
-    "exact_rows_verified": 403,
-    "first_job_no_artifact": "20261029-020351-audit-baseline-reconcile-c07c7f67"
-  },
   "no_semantic_certification_promotion": true,
   "files_sha256": {
-    "tools/build-audit-baseline.py": "794ae3efcf8fb8028ab313b427d606155d276745b74dccec6f76200da724ebc7",
-    "tools/test-audit-baseline.py": "0ee2b904f32e167ab9cf170264823c06ec096cc5e5c7b276050aa02a4e8fc4a7",
-    "klink bot/docs/audit-work-plan.json": "6679a971e76e7db47f0cc253fe1cc00343b47b6241fd380a2b079a8da38e80e5",
-    "out/audit/progress-baseline/baseline.json": "0abf86f26d47f4ca798dfe4716051212a917e635112addaf5acb7105c4a7b5fe"
-  },
-  "worker_files_sha256": {
-    "D:\\Codex Workshop\\kards-install-review\\audit-baseline-worker\\input.json": "f486dd0b8baf1fb241c20df8d3b3eed8ad3659309289dcb2e7ff762bba466733",
-    "D:\\Codex Workshop\\kards-install-review\\audit-baseline-worker\\output.json": "f3effbade9f0cc529a9682e9a6f8b9bf610acf11c230d59ec68a2d39497fe6f4"
+    "out/audit/progress-baseline/baseline.json": "5ddf301fed6df2585102fabcef984800bc20205201eb78c31715c9c3347077fd",
+    "klink bot/docs/audit-work-plan.json": "b6d86d73525d7ab49fc4bde2e9b7b3b77ce7216b17bcaf1d91221d5cc1ab2079",
+    "klink bot/docs/audit-matrix-reviews.json": "5934eb4565de952940a0cc275906771fc73dbad9b5c9267748e972df56482883"
   }
 }

@@ -1,5 +1,6 @@
 {
   "date": "2026-10-29",
+  "batch": "RULE-529",
   "counts": {
     "cards": 2019,
     "cards_with_own_ir": 1709,
@@ -11,9 +12,9 @@
     "program_containers": 2626,
     "dependency_edges": 18571,
     "dependency_symbols": 440,
-    "secondary_reports": 403,
-    "explicit_partial_units": 4,
-    "partial_units_matching_bound_inputs": 4,
+    "secondary_reports": 404,
+    "explicit_partial_units": 5,
+    "partial_units_matching_bound_inputs": 5,
     "planning_work_domains": 14,
     "planning_acceptance_criteria": 42,
     "authoritative_current_pvp_denominator_available": false,
@@ -23,7 +24,8 @@
   },
   "tests": 16,
   "work_plan_synced": true,
-  "validation": "All current matrix input fingerprints checked; work plan equals source registry and acceptance criteria count42. Four existing partial units retain matching bound inputs, no card promotion.",
-  "generator_sha256": "3055a9877abe68dcc903393d0e431a2fd0d28006df4938815e9f1797fbcbe1e7",
-  "matrix_sha256": "28603d4db7c499eae56f443eba5627490d6144afffaa2916828958dee0465e6b"
+  "partial_source_scopes_revalidated": 4,
+  "new_partial_units": 1,
+  "matrix_sha256": "08831fc0210b8e567ce6d327f1cee5ac5d49893dda3948f3179da2dad431721e",
+  "no_semantic_certification_promotion": true
 }

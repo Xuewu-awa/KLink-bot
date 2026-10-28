@@ -1936,8 +1936,9 @@ public sealed partial class CardApi
             ["FullyHealCard"] = (c, r, a) =>
             {
                 var target = TargetArg(c, r, a);
-                if (target is null) return new object?[] { 0 };
-                return new object?[] { c.Engine.Api.FullyHealCard(target) };
+                if (target is null) return 0;
+                // One scalar out slot: an object[] would be stored as the value by the VM.
+                return c.Engine.Api.FullyHealCard(target, IntArg(a, 1));
             },
             ["GetCardsPlayedFromHandThisTurn"] = (c, r, a) =>
                 c.State.CardsPlayedThisTurn.Select(card => card.CardId).ToList(),

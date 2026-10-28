@@ -2416,27 +2416,56 @@ public sealed partial class CardApi
         }
     }
 
-    /// <summary>Blueprint `FullyHealCard`: set defense to max and return healed amount.</summary>
-    public int FullyHealCard(CardInstance target)
+    /// <summary>FullyHealCard action path: saved request, cancellable T12,
+    /// fresh maximum write, notification, frozen T44, then unsuppressed self.</summary>
+    public int FullyHealCard(CardInstance target, int healerCardId = 0)
     {
-        if (!target.IsAlive || target.Defense <= 0) return 0;
-        int amount = Math.Max(target.MaxDefense - target.Defense, 0);
-        if (amount > 0)
-        {
-            var hits = BroadcastLocalWithOutParams(
-                "OnBeforeFullyRepaired", target, new[] { "stopAction" },
-                new Dictionary<string, object?>(StringComparer.Ordinal)
-                {
-                    ["cardRepaired"] = target,
-                },
-                includeSubject: true);
-            if (hits.Any(hit => Blueprint.KismetVm.Truthy(
-                    hit.Outs.GetValueOrDefault("stopAction"))))
-            {
-                return 0;
-            }
+        // RULE-529 i=5..317: UObject validity and clamped total defense,
+        // with no location/alive gate. Preserve this pre-callback request.
+        int totalDefense = Math.Clamp(target.Defense, 0, 99);
+        if (totalDefense <= 0) return 0;
+        int amount = unchecked(target.MaxDefense - totalDefense);
+        if (amount <= 0) return 0;
 
-            HealCard(target, amount);
+        const string before = "OnBeforeFullyRepaired";
+        foreach (var observer in CaptureRegisteredTriggerSnapshot(before))
+        {
+            var hits = BroadcastLocalWithOutParams(before, target, new[] { "stopAction" },
+                new Dictionary<string, object?> { ["cardRepaired"] = target },
+                only: new[] { observer }, includeSubject: true, recipientsAlreadyFiltered: true);
+            // i=716/726: stop before visiting subsequent saved recipients.
+            if (hits.Any(hit => Blueprint.KismetVm.Truthy(hit.Outs.GetValueOrDefault("stopAction")))) return 0;
+        }
+
+        // i=869 rereads maxDefense after callbacks; the native setter stores
+        // the supplied raw int. Do not recompute the amount or run HealCard.
+        target.Defense = target.MaxDefense;
+        _engine.FireSubAction("ZActionHealCard", new[] {
+            ActionValue2.Int("cardID", target.CardId),
+            ActionValue2.Int("amount", amount),
+            ActionValue2.Int("instigatorID", healerCardId),
+        });
+
+        const string other = "OnOtherCardFullyRepaired", own = "OnFullyRepaired";
+        var recipients = CaptureRegisteredTriggerSnapshot(other);
+        var library = Blueprint.KismetLibrary.Default;
+        if (library is null) return amount;
+        var args = new object?[] { target, amount };
+        var named = new Dictionary<string, object?> { ["cardRepaired"] = target, ["amount"] = amount };
+        foreach (var observer in recipients)
+        {
+            // i=1366 compares IDs; the materialized query is not re-filtered.
+            if (observer.CardId == target.CardId || library.FindProgram(observer.Name, other) is null) continue;
+            TriggerTrace?.Add($"{other} → {observer.Name}#{observer.CardId}（eventCard={target.Name}#{target.CardId}）");
+            RunTriggerProgram(library, observer, observer.Name, other, target, eventArgs: args, namedArgs: named);
+        }
+        // Execution-flow stack runs i=1097 observers before i=1646 self.
+        // Only this final self hook has the direct current suppression gate.
+        if (!target.IsSuppressed && library.FindProgram(target.Name, own) is not null)
+        {
+            TriggerTrace?.Add($"{own} → {target.Name}#{target.CardId}（eventCard={target.Name}#{target.CardId}）");
+            RunTriggerProgram(library, target, target.Name, own, target,
+                eventArgs: new object?[] { amount }, namedArgs: new Dictionary<string, object?> { ["amount"] = amount });
         }
         return amount;
     }

@@ -254,7 +254,13 @@
         "zone-transition-regressions.json"
       ],
       "effort_estimate": "not_sized",
-      "status_basis": "planning taxonomy; historical partial evidence is not domain completion"
+      "status_basis": "planning taxonomy; historical partial evidence is not domain completion",
+      "progress_notes": [
+        "RULE-529修复FullyHealCard取消短路/数值与事件顺序、来源参数及单out接线；野战医院实际IR恢复抽牌。948项自测通过；33个导出调用点/31个候选卡不等于PvP整卡认证。"
+      ],
+      "current_deliverables": [
+        "out/audit/systematic-rules/full-repair-short-circuit-event-order-and-scalar-out-fix-20261029.json"
+      ]
     },
     {
       "id": "RANDOM-01",

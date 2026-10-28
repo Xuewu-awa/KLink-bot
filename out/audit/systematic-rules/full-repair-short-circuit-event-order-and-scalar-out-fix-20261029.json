@@ -1,0 +1,333 @@
+{
+  "rule": "RULE-529",
+  "date": "2026-10-29",
+  "publishing_branch": "DinkyPuffer",
+  "base_commit": "d6c08f059d6656bad80fb16fde83c88875d7c296",
+  "client_exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "kernel_changed": true,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "finding": "FullyHealCard routed through general HealCard, adding an alive/location gate, visiting later cancellation callbacks, losing fresh maximum writes and observer-before-self ordering. Its one-int out value was boxed as object[], so Field Hospital healed units but failed the repaired-count draw condition.",
+  "changes": [
+    "Use clamped total-defense gate without IsAlive, preserve pre-callback requested amount and stop on the first true T12 result.",
+    "Write the fresh raw maxDefense after callbacks, preserve saved amount and raw healer ID in cardID/amount/instigatorID notification.",
+    "Query/freeze T44 after notice; exclude matching target ID, invoke saved recipients without repeated filtering, then invoke unsuppressed own hook.",
+    "Return a scalar int from the dispatch entry so single IR out slot receives an integer; no generalized VM unwrapping change."
+  ],
+  "validation": {
+    "repair_script_bytes": 1819,
+    "runtime_functions_redecoded": 8,
+    "candidate_export_calls": 33,
+    "candidate_export_cards": 31,
+    "new_selftest_cases": 3,
+    "selftest_passed": 948,
+    "selftest_total": 948,
+    "before_new_contract_failures": "2/947 before production fix; actual Field Hospital integration separately failed before scalar-output correction.",
+    "real_card_integration": "Field Hospital: one injured/one healthy friendly unit, wounded enemy unchanged, exactly one card drawn, healing source ID preserved.",
+    "prior_partial_units_revalidated": 4
+  },
+  "affected_candidate_cards": [
+    "card_event_cadet_nurse_corps",
+    "card_event_campaign_alamein1_iron_fist",
+    "card_event_campaign_trail",
+    "card_event_desert_push",
+    "card_event_desert_push_cam1",
+    "card_event_field_hospital",
+    "card_event_furor",
+    "card_event_imperial_order",
+    "card_event_magic",
+    "card_event_manpower",
+    "card_event_naval_engagement",
+    "card_event_order_no_227",
+    "card_event_reinforcements",
+    "card_event_reinforcements_cam1",
+    "card_event_supply_front",
+    "card_event_supply_priorities",
+    "card_event_supply_shipment_cam1",
+    "card_event_tactical_withdrawal",
+    "card_event_tamanskya",
+    "card_location_japan_scen5",
+    "card_unit_10th_guards_regiment_cam1",
+    "card_unit_11th_infantry_regiment",
+    "card_unit_162nd_regiment",
+    "card_unit_17th_rifle_regiment",
+    "card_unit_222th_guard_rifles",
+    "card_unit_42nd_rifles",
+    "card_unit_43e_regiment_motorise",
+    "card_unit_5th_medical_battalion",
+    "card_unit_84th_infantry_cam1",
+    "card_unit_fiat_cr_32",
+    "card_unit_winter_regiment"
+  ],
+  "remaining": [
+    "Per-card export call inventory is version-unconfirmed and includes campaign; not a PvP certification.",
+    "ActionProcess=true headless path only. Native scalar validity/crypto and dynamic callback services retain their existing boundaries.",
+    "Global trigger set iteration ordering is not closed by these tests.",
+    "Generic HealCard, UI receiver functions, full repair hooks on all individual cards are not certified.",
+    "Complete null/UObject lifetime/crypto failure paths and all per-card hooks remain unverified.",
+    "The declaration-only native stub and UI/interface bodies are not gameplay semantic closure."
+  ],
+  "source_bindings": {
+    "src/KLink.Bot/Effects/CardApi.cs": "81a3e12a0936b090d51b635eb1565cb324b904bacd6d04d274f8cd0eeaed2d74",
+    "src/KLink.Bot/Effects/CardApiDispatch.cs": "40bcc200f5b5ed84f3a798d103488768f10f9beec2ac18da9c1770978955ef85",
+    "src/KLink.Bot/Effects/Blueprint/KismetVm.cs": "9f412b103c4701413902a3def18a170bb2a8719a8901199f21e4ff6c40c9c173",
+    "src/KLink.Bot/Engine/CardInstance.cs": "350c5d79a51fe68af6af4769abd18764dcbfa36cdcae06cc91b7d553754551da",
+    "klink bot/docs/card-ir.json": "526812fa8dc0934f1d6ecd3794053871fa6b701c2b5df3fd1edb3c38513ba2e9",
+    "tools/BotSim/SelfTest.cs": "959d4d1bc3e5e962d0b7413bc7d089e6fde7a7e2b09b8100a44099cedeb1ced2",
+    "tools/BotSim/SelfTest.Repair.cs": "ae428444d538bb3f7b977d2567e7c5dfc8cca72021bad6620b07ec043b56f9db"
+  },
+  "evidence_bindings": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule529-repair-functions-20261029.json",
+      "sha256": "54990c281141d994f47a0734b7df1ac80f6d938fd8ae58226f6d5cd56cb393a0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule529-repair.py",
+      "sha256": "cda2700496f6043671c758a18a771598f5b9da660ae2984810432d3e19aa5692"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-498.py",
+      "sha256": "254664d0aa1146756993fda4ac54e58891709c0ec5bcdd2cfa852f874c4e67ef"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule334-defense-accessors.py",
+      "sha256": "445595b9441d2883b47e2d9a9872f311bcf5e9c15603f255b9a2e826b1659325"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-native-numeric-accessors-pe-20261023.json",
+      "sha256": "8213e9fb22facc40ec5ab1c3d3e7601d0f22318cb774a4fdf34613135cdef274"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule-delay-scope-native-20261020.json",
+      "sha256": "21e36301e3b2c801d2d93202df3ff94055630e06ee67cc9d8fe657dea8a4c543"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\check-rule380-native-accessors.py",
+      "sha256": "d118f6ae2a39d4a83c4ca542fb7df975f6499818a5f400f102a5765f19356795"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule380-verified-20261024.json",
+      "sha256": "acc188160acf603f2fa42de0bd293f73dd2430f82ebf3c2d3eb03024fbc2ffcd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\cards.definitions.json",
+      "sha256": "122e051175ba711975269838fe1097946fe23bab41cbe0db535b3ec5f539f65e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule529-worker\\input.json",
+      "sha256": "c06d55800a594a3e6bb9441942b2aa76cad3103a6660e03384729a4b7e75955e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule529-worker\\output.json",
+      "sha256": "92d12417faaacde254973bc4fbccfa258d1672893e7f9fdea6d78eeabee78089"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule529-worker\\extract.py",
+      "sha256": "4a371eef611bc24e51df62d50bce6bae09a691c8ec4acd9e3b87c9e9133caa00"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule529-evidence.py",
+      "sha256": "d2b66d654b3c200ddd56808b2a90d959a7d5c1ecb32ae6d95bf02cd1bfaabb85"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Britain\\Base\\events\\card_event_tactical_withdrawal.functions.json",
+      "sha256": "a76512cf20edae7fd25f9374a465b4215f5b547c22a69bb5922eba0c9a6d66fd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\France\\units\\card_unit_43e_regiment_motorise.functions.json",
+      "sha256": "28b78a0949fad80c2340a585b5e123d70f13959ca6797ddf52e8520dc065f336"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Germany\\Base\\events\\card_event_reinforcements.functions.json",
+      "sha256": "9e662f71ac7404d9311913372eb5e21312a7a84a079fa4c987f39d71bbc8ec22"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Germany\\specialCards\\card_event_campaign_alamein1_iron_fist.functions.json",
+      "sha256": "7d865dc147253dd304639247cc854127f6ebec5625e4e2f7735aabfd6b2e46f8"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Germany\\specialCards\\card_event_reinforcements_cam1.functions.json",
+      "sha256": "1f5a8d611ea2e3103aa1c7242c4ce6cd4dc1c285fab99a7466b0ae347caa98e4"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Italy\\events\\card_event_desert_push.functions.json",
+      "sha256": "15439f907ad1f81d0bbd4859d02c84307cd166240fa1cf3df0f0ce9ebf106c71"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Italy\\events\\card_event_naval_engagement.functions.json",
+      "sha256": "05a66a1daed3d2588a3eb3e968cbb2b2904286c4dfc40f87dd0895e2599dccbf"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Italy\\specialCards\\card_event_desert_push_cam1.functions.json",
+      "sha256": "cb26ea967dbd65535c9e58cb81b81da2d0a8828eba47b99e7cfa9ee7d46aa735"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Italy\\units\\card_unit_fiat_cr_32.functions.json",
+      "sha256": "cf9981c6c26d673fde8d0dcf2ba2f74173ae59672b31fd3e8a7e6d87262893ba"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Japan\\Base\\events\\card_event_imperial_order.functions.json",
+      "sha256": "b444eaa4f79bd2a13593ed530dcdd7b316998ba1c1130f182211568c0bbcf182"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Japan\\BrothersInArms\\units\\card_unit_okayama_regiment.functions.json",
+      "sha256": "e4f60065c3583f3b76f533bdd7fdb12235e6e52277a8ff00421ae69b06e0c8e6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Japan\\WinterWar\\units\\card_unit_winter_regiment.functions.json",
+      "sha256": "82e60214a08cbe2e70dfc04ac633a186f2b1c2eaa0d364379f278605e7cafadf"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Japan\\WorldAtWar\\units\\card_unit_kyushu_j7w3.functions.json",
+      "sha256": "f7cdf9ac06c89b0a52d83074f072d5ab4782e6dec75aa3a53189db00ec700f22"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Japan\\specialCards\\card_location_japan_scen5.functions.json",
+      "sha256": "d931044cba8eb74cff3b0a992c10d9664c257e500a3d47cd7aadc121a250f61f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Soviet\\Base\\events\\card_event_order_no_227.functions.json",
+      "sha256": "c34e92dab63dbe1230bb0eed8a993d676346be4348723c5aaa90d4fcd3fb94ac"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Soviet\\Base\\events\\card_event_tamanskya.functions.json",
+      "sha256": "f853b3296e809735cc643d29f2d922340fbd40d86b247afd1dea14bed4b0c1c2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Soviet\\Base\\units\\card_unit_42nd_rifles.functions.json",
+      "sha256": "92c08373df9356cf1dca4006a9ba5a78aa59b80d3033478ca1d6ca12b522d958"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Soviet\\Breakthrough\\units\\card_unit_222th_guard_rifles.functions.json",
+      "sha256": "20dec2202b4c67599aef47dbb48aceb0137168c7be42c60fd7c33ca3b27b6695"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Soviet\\BrothersInArms\\units\\card_unit_1357th_rifles.functions.json",
+      "sha256": "5b0443b289fc450d14f50a502dddf0703fb933dcdf0cab524489922b89ab2f0a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Soviet\\CovertOp\\units\\card_unit_392nd_rifles.functions.json",
+      "sha256": "515557ac18b5e71941fb1f0841adcc6919187c26148e5d4a702cda5bf1f16f0c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Soviet\\CovertOp\\units\\card_unit_su_100.functions.json",
+      "sha256": "95651df72c1d83ab924b7ba0755c991d4944f48ca5eda2974c4f0a37dad1262d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Soviet\\NavalWarfare\\units\\card_unit_220th_rifles.functions.json",
+      "sha256": "28daa861c7baa238bb87750a282181096335c076f422baefb57fbcbe39523412"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Soviet\\OceaniaStorm\\units\\card_unit_511th_regiment.functions.json",
+      "sha256": "f6ee8d5668a46026b1a67c5d1e58a7f19c237fb4bd24b69294e85b6e256c00ea"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Soviet\\ToW\\units\\card_unit_17th_rifle_regiment.functions.json",
+      "sha256": "9dacd893b1ff5c1af0633a5c8d5786dd1732ccb1a2de13b62beefced7c761dfb"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Soviet\\specialCards\\card_unit_10th_guards_regiment_cam1.functions.json",
+      "sha256": "2d72d98d260bcc93edefdf7e509a37b949263622178ffe16a0af2c006f5001d1"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Soviet\\specialCards\\card_unit_84th_infantry_cam1.functions.json",
+      "sha256": "9a8e828cee0654093fd87791faec2a6fece551380f92a737739fd70c62275481"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\USA\\Allegiance\\events\\card_event_magic.functions.json",
+      "sha256": "741edc4411e37d0901cfb15f4a6552e2540e33aa44f44e2c4e059e1a7757629f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\USA\\Allegiance\\events\\card_event_supply_front.functions.json",
+      "sha256": "a5e71bacd49d9ac26f2907cf72ffe9e4ffffbe1d1bca5f551807cbfb9788170a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\USA\\Allegiance\\units\\card_unit_11th_infantry_regiment.functions.json",
+      "sha256": "875aedaa7ee9cf327bd9f2c88dbdbf7eeca84d0eba9f5d18bf8093c2aa40f2b2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\USA\\Base\\events\\card_event_cadet_nurse_corps.functions.json",
+      "sha256": "f9ccf45e7d1e2b99dd62efdbf02af2a633a17cdc93dc99ca021e790d504a89bc"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\USA\\Breakthrough\\events\\card_event_campaign_trail.functions.json",
+      "sha256": "e19564f5fd5defaa0f3701d025fa846405f754cd30b105877abba3c1a6cf8884"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\USA\\Breakthrough\\units\\card_unit_60th_infantry_regiment.functions.json",
+      "sha256": "7fbe70f314a7004d10fe3a41eba06425377dce7a3cb9afb0723b11aee6931565"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\USA\\BrothersInArms\\events\\card_event_field_hospital.functions.json",
+      "sha256": "4739d9fb756a6cfd1eb23e09b9b1f78e2eb7a2e41beb0d2d8eba86caff5af388"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\USA\\BrothersInArms\\events\\card_event_manpower.functions.json",
+      "sha256": "ca539d1d2502657fd882048a160dfb376a95e25a88ef59b1695e217c9c200a12"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\USA\\BrothersInArms\\units\\card_unit_158th_bushmasters.functions.json",
+      "sha256": "ea3382c1a2fdf221e7432fbdd9b5d81ab68e6fd22e3715ac915936c6d9794f38"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\USA\\BrothersInArms\\units\\card_unit_6th_infantry_regiment_usa.functions.json",
+      "sha256": "6f057bf2924972692a2b5059c752c1aceb9d3c892f88cc6e5ebf456c92867d2a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\USA\\BrothersInArms\\units\\card_unit_seabees.functions.json",
+      "sha256": "54c12a030ab62cf4b6f6c4cc4942a75468f001f6ce05981917e41efb152df579"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\USA\\CovertOp\\events\\card_event_furor.functions.json",
+      "sha256": "04ea151572f04fd611fdf614e0c837af22b228d10686e54b2c09305841ea048c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\USA\\OceaniaStorm\\units\\card_unit_162nd_regiment.functions.json",
+      "sha256": "778d23734f844ec6dcc208be8b99b1995ff840733667bc2c9f9522bf738268d5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\USA\\WinterWar\\events\\card_event_supply_priorities.functions.json",
+      "sha256": "795bafeee64aaf7bc67fda3d0cf79eb27666b1db521a63954a8fbb2827969861"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\USA\\WorldAtWar\\units\\card_unit_5th_medical_battalion.functions.json",
+      "sha256": "165f801ba271d3b707ddba39b3ee4ed3867889ad698016cfa8cd264eb909f48b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\USA\\specialCards\\card_event_supply_shipment_cam1.functions.json",
+      "sha256": "d855b1c40fbc0daee31b48ff578ccaa5eeead33e131281b345ebe12a0b24490e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule529-verified-20261029.json",
+      "sha256": "18d13e44865c7a195b3b4ec8b0fef32ce81dfa0b20541625457d3454ef0bd9eb"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule529-prior-unit-scope-revalidation.json",
+      "sha256": "f45e3c52fcd0816fb293678e798a5a41aae3e0193a25fcf04edf767e102c9abc"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule529-selftest-final-scalar.log",
+      "sha256": "5588d9a6f77a239968c1a2254705eea683a99603e180fcec07a812e0265dbb66"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule529-selftest-before.log",
+      "sha256": "26357079a2ce9eefedfbd497178e957e7d02054e63b350ab8e8fd098a52d7fff"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule529-selftest-final.log",
+      "sha256": "4cbe498ae5a0b7dc7354e6952fcc390ba4629b06dd2c705cc0476b67eda69d50"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\patch-rule529.py",
+      "sha256": "68522c90597b83b42a3b629be8cd437f7ae5a707ce20ec68ccd0fe78ceeb1927"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\patch-rule529-single-out.py",
+      "sha256": "cb36c6b6be83325f66538f6740601c7f445ff7800af67228453af09111935de9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\report-rule529.py",
+      "sha256": "240369b9eb3674fadbb711ce4cfb588289450162543b2e3c639cddc38564663c"
+    }
+  ]
+}

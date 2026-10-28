@@ -14,12 +14,15 @@ namespace KLink.Bot.Sim;
 /// 「效果没触发」「原语接错参数」还是「前置条件不满足」。
 /// 这里对单个效果做最小可复现的断言，坏掉时能立刻定位。
 /// </summary>
-internal static class SelfTest
+internal static partial class SelfTest
 {
     private sealed record Case(string Name, Func<CardDatabase, string?> Run);
 
     private static readonly List<Case> Cases = new()
     {
+        new("完整修复：取消短路、原始差值、回调后上限及来源ID", FullyRepairAuthorityContract),
+        new("完整修复：观察者快照先于自身、抑制门和回调参数", FullyRepairEventContract),
+        new("野战医院真实IR：完整修复返回量控制抽牌并保留来源", FieldHospitalRepairIntegration),
         new("卡库只包含当前 pak 的 2019 张卡资产，不包含 UI 辅助蓝图", CardPoolContainsOnlyLiveBattleCards),
         new("当前 CDO 的固有能力、情报、抑制例外与目标额外费用在建卡时加载", LiveNativeDefaults),
         new("原生关键词读取保留基础标志或非空来源数组，不按来源值求和", NativeKeywordSourcePresence),
@@ -17311,9 +17314,9 @@ internal static class SelfTest
             return "FullyHealCard 没进派发表";
         }
 
-        if (raw is not object?[] result || result.Length != 1 || result[0] is not int healed)
+        if (raw is not int healed)
         {
-            return $"FullyHealCard 返回形状错误：{raw?.GetType().Name ?? "null"}，应为 [int]";
+            return $"FullyHealCard 返回形状错误：{raw?.GetType().Name ?? "null"}，应为 int";
         }
 
         if (healed != 2 || target.Defense != max)
@@ -17323,8 +17326,7 @@ internal static class SelfTest
 
         raw = engine.Api.InvokeByName("FullyHealCard", null,
             new object?[] { target }, ctx, out handled);
-        if (!handled || raw is not object?[] fullResult || fullResult.Length != 1
-            || fullResult[0] is not int fullHealed || fullHealed != 0
+        if (!handled || raw is not int fullHealed || fullHealed != 0
             || target.Defense != max)
         {
             return $"满血目标应返回 0 且保持 {max}，实际返回 {raw ?? "null"}、防御 {target.Defense}";
@@ -17333,8 +17335,7 @@ internal static class SelfTest
         target.Location = CardLocation.Discard;
         raw = engine.Api.InvokeByName("FullyHealCard", null,
             new object?[] { target }, ctx, out handled);
-        if (!handled || raw is not object?[] deadResult || deadResult.Length != 1
-            || deadResult[0] is not int deadHealed || deadHealed != 0
+        if (!handled || raw is not int deadHealed || deadHealed != 0
             || target.Defense != max)
         {
             return $"弃牌堆目标应返回 0 且不变更防御，实际返回 {raw ?? "null"}、防御 {target.Defense}";
@@ -17367,8 +17368,7 @@ internal static class SelfTest
 
         object? raw = engine.Api.InvokeByName("FullyHealCard", null,
             new object?[] { unit }, ctx, out bool handled);
-        if (!handled || raw is not object?[] unitResult || unitResult.Length != 1
-            || unitResult[0] is not int unitHealed || unitHealed != 0
+        if (!handled || raw is not int unitHealed || unitHealed != 0
             || unit.Defense != unitMax - 1)
         {
             return $"Okayama 在场时单位修复应返回 0 并保持 {unitMax - 1} 防御，实际返回 {raw ?? "null"}、防御 {unit.Defense}";
@@ -17386,8 +17386,7 @@ internal static class SelfTest
         };
         raw = engine.Api.InvokeByName("FullyHealCard", null,
             new object?[] { hq }, ctx, out handled);
-        if (!handled || raw is not object?[] hqResult || hqResult.Length != 1
-            || hqResult[0] is not int hqHealed || hqHealed != 1
+        if (!handled || raw is not int hqHealed || hqHealed != 1
             || hq.Defense != hqMax)
         {
             return $"Okayama 不应阻止 HQ 修复 1 点，实际返回 {raw ?? "null"}、防御 {hq.Defense}";
