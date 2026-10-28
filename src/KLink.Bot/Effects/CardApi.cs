@@ -1918,21 +1918,19 @@ public sealed partial class CardApi
                            bool isCombatDamage = false, bool counterDamage = false, bool isRedirected = false,
                            bool fromFight = false, bool isFightDefenderDamage = false)
     {
+        if (!isCombatDamage)
+        {
+            ResolveEffectDamage(target, amount, source, isRedirected, fromFight, isFightDefenderDamage);
+            return;
+        }
+
         if (amount <= 0 || !target.IsAlive)
         {
             return;
         }
 
-        // ---- 伤害修正链（P1，2026-09-30）----
-        //
-        // 位置与蓝图一致：`ExecuteOnDealDamageAddDamage` 在**伤害真正落地之前**跑
-        // （`DamageCard` si=690 → si=190 `ExecuteOnDealDamageAddDamageAfterCalc` → si=251
-        //  `ApplyDamageToCard`），所以这里放在 `ApplyDamage` 之前，
-        // 后面的事件/ZAction 自然带的就是**修正后**的值。
-        //
-        // ⚠️ `isRedirected` 为 true 时**整条修正链跳过** —— 蓝图 `DamageCard`
-        // si=149 `JumpIfNot(isRedirected) -> si=690`：重定向伤害（把伤害原样转给另一张卡）
-        // 不再问一遍修正者，否则同一笔伤害会被加两次。
+        // Legacy direct-combat convenience path. Effect DamageCard uses the
+        // separately audited entry below; ordinary attacks use DealCombatDamagePair.
         if (!isRedirected)
         {
             amount = ExecuteOnDealDamageAddDamage(source, target, amount,

@@ -19,6 +19,13 @@ authorization does not expand the task or authorize unrelated external actions.
 Do not delegate when it provides no benefit or conflicts with higher-priority
 instructions.
 
+## Training-focused audit batches
+
+- Prioritize shared PvP mechanisms that affect training correctness and concrete simulator fixes. Collection/unlock/UI/format configuration investigations are secondary unless they block a core rule decision.
+- Complete bounded batches: authoritative comparison, failing regression, scoped fix, relevant card IR integration, validation and push. Track verified branches and fixes rather than treating test or commit counts as progress percentages.
+- Use `BotSim selftest --filter <name fragment>` for iteration, then the complete selftest suite before publishing production changes. An unmatched filter must fail.
+- Refresh audit inventories once at the end of a completed batch. Revalidate unchanged scopes by exact source boundaries and relevant regressions; never silently reset fingerprints or expand certification.
+
 ## Audit coverage matrix
 
 - Maintain `klink bot/docs/audit-matrix-reviews.json` for exact partial evidence scopes and current open items.

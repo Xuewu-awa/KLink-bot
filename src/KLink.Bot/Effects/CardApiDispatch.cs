@@ -4968,46 +4968,13 @@ public sealed partial class CardApi
 
     private object? DoDamageCard(EffectContext c, object? r, object?[] a)
     {
-        var target = TargetCard(c, r, a);
-        if (target is null)
-        {
-            return null;
-        }
-
-        // DamageCard(card, amount, damagerCardID, isRedirected, fromFight, isFightDefenderDamage, out targetDestroyed)
-        // 参数名/顺序出处：资产里 `FunctionExport.LoadedProperties` 的 `CPF_Parm` 声明序
-        // （`ref/kards-sim/KardsTranspiler/BlueprintSignatures.cs` 的取法），
-        // 调用点互证 `out/bp-cardfn.json` → `DamageCard` si=690。
-        //
-        // ⚠️ 第 3 参在蓝图里是 **cardID（int）**，不是卡对象（权威签名
-        //    `ref/kards-sim/KardsSim/Generated/BP_CardFunctions.g.cs:11606-11618`：
-        //    `L["damagerCardID"] = args[2]` → `GetCardFromID(damagerCardID)` 得
-        //    `damageDealer`，见 `g.cs:11624-11626`）。
-        //
-        // ★ 2026-10-03 修：旧写法 `AsCard(a[2]) ?? c.Self` —— `AsCard(整数) = null`
-        //   ⇒ **整数形状一律退回施法者**，伤害来源记成施法者自己。改成 `AsCardOrId`
-        //   （同族先例：`DestroyCard` 的 `destroyer`、`DiscardCard` 的 `discarder`）。
-        //
-        // IR 实测（`docs/card-ir.json` 扫描，2026-10-03）：271 个调用点，`a[2]` =
-        //   · 裸 `{"var":"cardID"}`（= `ctx.Self.CardId`）×262 —— 新旧解析**逐位相同**；
-        //   · `{"var":"cardID","ctx":{…}}` = **别人卡的 cardID** ×7
-        //     （`card_event_infiltrate`、`card_unit_halifax`、`card_event_yamato`、
-        //      `card_event_jungle_warfare`、`card_event_special_attack`、
-        //      `card_event_sunny2_heatwave3`、`card_event_sunny4_scorching_sun3`）；
-        //   · `spawnedCardID` ×2（`card_event_audacity`、`card_location_soviet_scen4`）。
-        //   ⇒ 那 9 处的「伤害来源」此前记成施法者（影响 `ZActionDamageCard.attackerCardID`
-        //     与 `OnCardDealDamage` / `OnOtherCardDealDamage` 的 `damageDealer` 事件参数）。
-        int amount = IntArg(a, 1);
-        var source = AsCardOrId(c, a.ElementAtOrDefault(2)) ?? c.Self;
-
-        // si=149 `JumpIfNot(isRedirected) -> si=690`：重定向伤害**跳过**修正链。
-        // si=690 `ExecuteOnDealDamageAddDamage(damageDealer, card, amount, False, fromFight, False, …)`
-        bool isRedirected = a.Length > 3 && Blueprint.KismetVm.Truthy(a[3]);
-        bool fromFight = a.Length > 4 && Blueprint.KismetVm.Truthy(a[4]);
-
-        DealDamage(target, amount, source, isRedirected: isRedirected, fromFight: fromFight,
-            isFightDefenderDamage: TruthyArg(a, 5));
-        return null;
+        // RULE-530: exact mandatory card/ID slots. An invalid explicit target
+        // or source must not borrow a context card or another argument.
+        var target = AsCardOrId(c, a.ElementAtOrDefault(0));
+        if (target is null) return false;
+        var source = AsCardOrId(c, a.ElementAtOrDefault(2));
+        return ResolveEffectDamage(target, IntArg(a, 1), source, TruthyArg(a, 3),
+            TruthyArg(a, 4), TruthyArg(a, 5));
     }
 
     private object? DoHealCard(EffectContext c, object? r, object?[] a)

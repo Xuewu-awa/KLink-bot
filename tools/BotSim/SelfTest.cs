@@ -20,6 +20,10 @@ internal static partial class SelfTest
 
     private static readonly List<Case> Cases = new()
     {
+        new("效果伤害入口：区域、零负请求、重定向和未知来源", EffectDamageEntryContract),
+        new("效果伤害入口：布尔输出、零通知和无效目标", EffectDamageDestroyedOutput),
+        new("效果伤害入口：受伤回调换区后继续原结算", EffectDamageMovedDuringReceive),
+        new("效果伤害入口：皇家苏格兰真实IR重定向仍检查免疫", PincerRedirectImmunityIntegration),
         new("完整修复：取消短路、原始差值、回调后上限及来源ID", FullyRepairAuthorityContract),
         new("完整修复：观察者快照先于自身、抑制门和回调参数", FullyRepairEventContract),
         new("野战医院真实IR：完整修复返回量控制抽牌并保留来源", FieldHospitalRepairIntegration),
@@ -1453,10 +1457,17 @@ internal static partial class SelfTest
         return null;
     }
 
-    public static int Run(CardDatabase db)
+    public static int Run(CardDatabase db, string? filter = null)
     {
+        var selected = Cases.Where(c => string.IsNullOrEmpty(filter)
+            || c.Name.Contains(filter, StringComparison.OrdinalIgnoreCase)).ToArray();
+        if (selected.Length == 0)
+        {
+            Console.WriteLine($"没有匹配的自测：{filter}");
+            return 1;
+        }
         int failed = 0;
-        foreach (var c in Cases)
+        foreach (var c in selected)
         {
             string? err;
             try
@@ -1482,8 +1493,8 @@ internal static partial class SelfTest
 
         Console.WriteLine();
         Console.WriteLine(failed == 0
-            ? $"全部 {Cases.Count} 项通过"
-            : $"{failed}/{Cases.Count} 项失败");
+            ? $"全部 {selected.Length} 项通过"
+            : $"{failed}/{selected.Length} 项失败");
         return failed == 0 ? 0 : 1;
     }
 
@@ -40061,7 +40072,7 @@ internal static partial class SelfTest
             var actions = state.ActionLog.SelectMany(x => x.SubActions).ToArray();
             var damage = actions.Where(x => x.Name == "ZActionDamageCard").ToArray();
             bool killed = amount == 7;
-            if (damage.Length != (amount > 0 ? 1 : 0)
+            if (damage.Length != 1
                 || actions.Any(x => x.Name is "ZActionDestroyUnit" or "ZActionRemoveCardFromBoard"))
                 return "单体伤害不应额外生成直接摧毁或移除动作";
             if (amount == 0)

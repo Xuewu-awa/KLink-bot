@@ -210,7 +210,13 @@
         "legal-action-differentials.json"
       ],
       "effort_estimate": "not_sized",
-      "status_basis": "planning taxonomy; historical partial evidence is not domain completion"
+      "status_basis": "planning taxonomy; historical partial evidence is not domain completion",
+      "progress_notes": [
+        "RULE-530修复效果DamageCard区域/零负请求、重定向最终修正、显式来源和bool输出；真实皇家苏格兰Pincer免疫通过，952项回归全通过。286个导出调用点/262个候选资产不等于PvP闭合。"
+      ],
+      "current_deliverables": [
+        "out/audit/systematic-rules/effect-damage-entry-redirect-final-modifiers-and-bool-out-fix-20261029.json"
+      ]
     },
     {
       "id": "STATS-01",

@@ -53,7 +53,7 @@ internal static class Program
                 "gaps" => GapReport.Run(db),
                 "dispatch-gap" => CmdDispatchGap(db),
                 "replay" => CmdReplay(db, opts),
-                "selftest" => SelfTest.Run(db),
+                "selftest" => SelfTest.Run(db, opts.GetValueOrDefault("filter")),
                 // 全卡池蓝图烟雾测试 —— 逐卡跑蓝图，抓异常/未实现原语/步数上限/零变化/非确定性。
                 // 为什么是「工具里的一个模式」而不是一次性脚本：内核每次改动都要能重跑（回归价值）。
                 "smoke-all-cards" or "smoke" => SmokeAllCards.Run(db, new SmokeAllCards.Options
