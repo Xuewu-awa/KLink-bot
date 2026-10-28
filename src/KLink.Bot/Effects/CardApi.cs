@@ -229,7 +229,7 @@ public sealed partial class CardApi
 
     // ExecuteOnEnterPlayEvents i=74 queries T43 after the own hook; i=343
     // excludes only the entering ID. The saved recipients are invoked directly.
-    internal void ExecuteOtherCardEnterPlayEvents(CardInstance entered, int method)
+    internal void ExecuteOtherCardEnterPlayEvents(CardInstance? entered, int method)
     {
         const string trigger = "OnOtherCardEnterPlay";
         var recipients = CaptureRegisteredTriggerSnapshot(trigger);
@@ -239,8 +239,8 @@ public sealed partial class CardApi
         var named = new Dictionary<string, object?> { ["cardPlayed"] = entered, ["Method"] = method };
         foreach (var observer in recipients)
         {
-            if (observer.CardId == entered.CardId || library.FindProgram(observer.Name, trigger) is null) continue;
-            TriggerTrace?.Add($"{trigger} → {observer.Name}#{observer.CardId}（eventCard={entered.Name}#{entered.CardId}）");
+            if (observer.CardId == (entered?.CardId ?? 0) || library.FindProgram(observer.Name, trigger) is null) continue;
+            TriggerTrace?.Add($"{trigger} → {observer.Name}#{observer.CardId}（eventCard={entered?.Name}#{entered?.CardId ?? 0}）");
             RunTriggerProgram(library, observer, observer.Name, trigger, entered, eventArgs: args, namedArgs: named);
         }
     }
@@ -3550,7 +3550,7 @@ public sealed partial class CardApi
 
         // RULE-522: only explicit placement reaches InjectCardIntoLocation.
         // Resolve its ID after creation callbacks, then cache again at i=496.
-        if (locationNumber != -1 && State.ById(spawnedId) is { } injected)
+        if (locationNumber != -1)
         {
             var occupants = State.AllCardsInBattleOrder.Where(c => c.Location == where)
                 .OrderBy(c => c.LocationNumber).ToArray();
@@ -3563,29 +3563,32 @@ public sealed partial class CardApi
             foreach (var other in occupants.Where(c => c.CardId != spawnedId))
                 if (other.LocationNumber >= locationNumber) other.LocationNumber++;
             // SetCardLocationAndLocNumber only writes these two fields.
-            injected.Location = where;
-            injected.LocationNumber = locationNumber;
+            if (State.ById(spawnedId) is { } injected)
+            {
+                injected.Location = where;
+                injected.LocationNumber = locationNumber;
+            }
         }
-        // A missing mapping retains the legacy managed fallback pending the
-        // separate null-context callback audit; valid replacements use the map.
-        var card = State.ById(spawnedId) ?? created;
-        card.EnteredPlayOnTurn = State.Turn;
+        // RULE-523: preserve a missing lookup as null for this entire entry/
+        // Alpine phase. Observers may restore the ID without replacing this cache.
+        var card = State.ById(spawnedId);
+        if (card is not null) card.EnteredPlayOnTurn = State.Turn;
 
         // RULE-521: current i=619..734 chooses one entry path before Blitz.
         // A hidden spawn dispatches T65; even if its callbacks reveal the card,
         // control resumes at i=734 without running ordinary method-3 entry.
-        if (IsUnrevealedCovertCard(card)) ExecuteOnCovertCardSpawned(card);
+        if (card is not null && IsUnrevealedCovertCard(card)) ExecuteOnCovertCardSpawned(card);
         else _engine.ExecuteOnEnterPlayEvents(card, 3);
 
         // i=785 passes spawnedID and spawnerID to the formal primitive. Keep
         // the held card for Alpine after GiveBlitz callbacks (i=817..872).
         if (newGiveBlitz && State.ById(spawnedId) is { } blitzTarget)
             GiveBlitz(blitzTarget, spawnerId);
-        if (card.HasKeyword(Keyword.Alpine)) GiveAlpineBonus(card);
+        if (card?.HasKeyword(Keyword.Alpine) == true) GiveAlpineBonus(card);
         RefreshLocationStatus(new[] { where });
 
-        if (State.ById(spawnedId) is { } moved)
-            _engine.ExecuteOnCardLocationMoved(moved, CardLocation.NotAvailable, where);
+        _engine.ExecuteOnCardLocationMovedById(spawnedId, CardLocation.NotAvailable, where,
+            false, CardMoveReason.Uncategorized);
         if (where == CardLocation.BoardFrontline)
         {
             _engine.RefreshFrontlineOwnerById(spawnedId);
@@ -3596,7 +3599,10 @@ public sealed partial class CardApi
             ActionValue2.Int("cardID", spawnedId),
             ActionValue2.Int("location", (int)where),
         });
-        return card;
+        // Legacy managed callers receive an ID carrier even if the map is empty.
+        // It is never substituted into the rule phase above; named adapters
+        // resolve the final map or return the saved integer ID.
+        return card ?? created;
     }
 
     public void DestroyCard(CardInstance target, CardInstance? source)

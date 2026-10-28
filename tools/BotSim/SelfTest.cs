@@ -1109,6 +1109,7 @@ internal static class SelfTest
         new("RULE-521：单卡生成区分隐藏入场并先事件后闪击与山地", SingleSpawnEntryLifecycle),
         new("RULE-522：单卡生成初始化槽位和创建后可见字段", SingleSpawnInitialPlacement),
         new("RULE-522：单卡生成分阶段解析ID并保留山地对象引用", SingleSpawnIdentityLookup),
+        new("RULE-523：缺失生成ID仍派发空主体观察者，回调恢复不改旧缓存", SingleSpawnMissingMapping),
         new("山地：新部署的 Alpine 单位得到 +N/+N（手牌打出 + 效果生成两条路），且一次部署只加一次",
             AlpineBonusOnEntry),
 
@@ -40516,6 +40517,137 @@ internal static class SelfTest
     /// 与效果生成（`SpawnOnBattlefield` ↔ `SpawnCardToBoard` si=872）。
     /// 「一次部署只加一次」由数值**恰好**等于 +N 保证（加法重复调会变 +2N）。
     /// </summary>
+    private static string? SingleSpawnMissingMapping(CardDatabase db)
+    {
+        using var own = InstallEntryMethodProbe();
+        using var movement = InstallMovementObserverProbes();
+        const string entry = "OnOtherCardEnterPlay", moved = "OnOtherCardLocationMoved", name = "card_unit_typhoon_mk_ib";
+        var installed = new List<(IDictionary<string, IReadOnlyList<KismetStep>> Locals, IReadOnlyList<KismetStep> Moved)>();
+        var cache = (Dictionary<string, Dictionary<string, KismetProgram>>)typeof(KismetLibrary)
+            .GetField("_localCache", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!.GetValue(KismetLibrary.Default)!;
+        var savedPrograms = new List<(string Host, string Trigger, KismetProgram? Previous)>();
+        IReadOnlyList<KismetStep> Probe(string kind, string subject, string phaseValue) => new[] {
+            new KismetStep(0, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), new KismetExpr { Str = kind }, null, -1, "_auditNullKind", null) { DestinationScope = "instance" },
+            new KismetStep(1, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), new KismetExpr { Var = subject, Scope = "local" }, null, -1, "_auditNullSubject", null) { DestinationScope = "instance" },
+            new KismetStep(2, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), new KismetExpr { Var = phaseValue, Scope = "local" }, null, -1, "_auditNullPhase", null) { DestinationScope = "instance" },
+            new KismetStep(3, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), new KismetExpr { Math = "Add_IntInt", Args = new[] {
+                new KismetExpr { Var = "_auditNullCount", Scope = "instance" }, new KismetExpr { Int = 1 }
+            } }, null, -1, "_auditNullCount", null) { DestinationScope = "instance" },
+            new KismetStep(4, "call", "SpawnCardInDeckBySide", new[] {
+                new KismetExpr { Int = (int)Side.Right }, new KismetExpr { Str = "card_unit_routed_troops" }, new KismetExpr { Int = 30 }, new KismetExpr { Int = 1 }
+            }, Array.Empty<int>(), null, null, -1, null, null),
+            new KismetStep(5, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null) };
+        try
+        {
+            foreach (string host in new[] { "card_event_honorifics", "card_unit_51e_regiment" })
+            {
+                var locals = (IDictionary<string, IReadOnlyList<KismetStep>>)KismetLibrary.Default!.Find(host)!.Locals;
+                if (locals.ContainsKey(entry)) return "空主体入场探针目标已占用";
+                installed.Add((locals, locals[moved]));
+                foreach (string trigger in new[] { entry, moved })
+                {
+                    KismetProgram? prior = null;
+                    if (cache.TryGetValue(host, out var programs)) programs.Remove(trigger, out prior);
+                    savedPrograms.Add((host, trigger, prior));
+                }
+                locals.Add(entry, Probe("entry", "cardPlayed", "Method")); locals[moved] = Probe("move", "cardMoved", "newLocation");
+            }
+            foreach (Side side in new[] { Side.Left, Side.Right })
+            foreach (bool frontline in new[] { false, true })
+            foreach (int slot in new[] { -1, 0, 2 })
+            foreach (int deletePhase in new[] { 1, 2 })
+            foreach (int restorePhase in new[] { 0, 1, 2 })
+            foreach (bool giveBlitz in new[] { false, true })
+            foreach (bool hidden in new[] { false, true })
+            foreach (bool restoreOnBoard in new[] { false, true })
+            {
+                var (engine, state) = EmptyBoard(db); state.Turn = 7;
+                var where = frontline ? CardLocation.BoardFrontline : side.HqOf();
+                var source = state.CreateWithId(PlainUnit, side, 9, side.DeckOf(), 0);
+                var peer = state.CreateWithId(PlainUnit, side, 20, where, 19); peer.Keywords.Clear(); peer.Keywords.Add(Keyword.Alpine);
+                var observers = new[] {
+                    state.CreateWithId("card_event_honorifics", side, 90, side.DeckOf(), 0),
+                    state.CreateWithId("card_unit_51e_regiment", side, 91, side.DeckOf(), 1) };
+                foreach (var observer in observers) { observer.Definition = new CardDefinition { Name = observer.Name, UsedTriggers = new[] { entry, moved } }; observer.BlueprintVariables["_auditNullCount"] = 0; }
+                CardInstance? original = null, replacement = null; bool removed = false;
+                var seen = new Dictionary<int, int> { [90] = 0, [91] = 0 };
+                var events = new List<(string Kind, int Receiver, CardInstance? Subject, int Value)>();
+                int peerAtEntry = -1;
+                void Remove()
+                {
+                    if (original is null || removed) return;
+                    var location = original.Location; int number = original.LocationNumber;
+                    state.Remove(original); original.Location = location; original.LocationNumber = number;
+                    removed = true;
+                }
+                var created = state.CardCreated;
+                state.CardCreated = made => {
+                    created?.Invoke(made);
+                    if (made.Name == name && original is null)
+                    {
+                        original = made; made.Keywords.Clear(); made.Keywords.Add(Keyword.Alpine);
+                        made.Attack = 2; made.Defense = made.MaxDefense = 5;
+                        if (hidden) { made.Keywords.Add(Keyword.Covert); made.IsRevealed = false; }
+                        if (deletePhase == 1) Remove();
+                    }
+                    else if (made.Name == "card_unit_routed_troops" && original is not null)
+                    {
+                        var observer = observers.FirstOrDefault(o => Convert.ToInt32(o.BlueprintVariables.GetValueOrDefault("_auditNullCount") ?? 0) > seen[o.CardId]);
+                        if (observer is null) return;
+                        seen[observer.CardId]++;
+                        string kind = (string)observer.BlueprintVariables["_auditNullKind"]!;
+                        var subject = observer.BlueprintVariables.GetValueOrDefault("_auditNullSubject") as CardInstance;
+                        int value = Convert.ToInt32(observer.BlueprintVariables["_auditNullPhase"]);
+                        events.Add((kind, observer.CardId, subject, value));
+                        if (kind == "entry" && peerAtEntry < 0) peerAtEntry = peer.LocationNumber;
+                        if (replacement is null && ((restorePhase == 1 && kind == "entry") || (restorePhase == 2 && kind == "move")))
+                        {
+                            replacement = state.CreateWithId(name, side, original.CardId, restoreOnBoard ? where : CardLocation.Discard, 17);
+                            replacement.Keywords.Clear(); replacement.Keywords.Add(Keyword.Alpine); replacement.Attack = 4; replacement.Defense = replacement.MaxDefense = 7;
+                            replacement.EnteredPlayOnTurn = 41;
+                        }
+                    }
+                };
+                var modifiers = state.CardCreationModifiers;
+                state.CardCreationModifiers = made => { modifiers?.Invoke(made); if (deletePhase == 2 && ReferenceEquals(made, original)) Remove(); };
+                var result = engine.Api.InvokeByName("SpawnCardOnBattlefield", null,
+                    new object?[] { (int)side, frontline, name, source.CardId, null, giveBlitz, slot, 0, false, false },
+                    new EffectContext { Engine = engine, State = state, Self = source, Controller = side }, out bool handled);
+                if (!handled || original is null || !removed || events.Count != 4
+                    || !events.Select(e => (e.Kind, e.Receiver)).SequenceEqual(new[] { ("entry", 90), ("entry", 91), ("move", 90), ("move", 91) })
+                    || events.Take(2).Any(e => e.Subject is not null || e.Value != 3)
+                    || events.Skip(2).Any(e => !ReferenceEquals(e.Subject, restorePhase == 1 ? replacement : null) || e.Value != (int)where)
+                    || original.EnteredPlayOnTurn != 0 || original.Attack != 2 || original.BlueprintVariables.ContainsKey("_auditEntryMethod")
+                    || original.HasBlitz || Equals(original.BlueprintVariables.GetValueOrDefault("_auditMovementCalled"), true)
+                    || peerAtEntry != (slot == -1 ? 19 : 20))
+                    return $"缺失生成ID阶段/空载荷错误：{side}/{frontline}/{slot}/{deletePhase}/{restorePhase}/{giveBlitz}/{hidden}/{restoreOnBoard}，events={string.Join(',', events.Select(e => e.Kind+e.Receiver))}, turn={original?.EnteredPlayOnTurn}, peer={peerAtEntry}";
+                if (restorePhase == 0)
+                {
+                    if (result is not int id || id != original.CardId || state.ById(id) is not null)
+                        return "缺失映射的命名生成输出须为保存ID，不能泄露旧对象";
+                }
+                else if (replacement is null || !ReferenceEquals(result, replacement) || replacement.EnteredPlayOnTurn != 41
+                    || replacement.Location != (restoreOnBoard ? where : CardLocation.Discard) || replacement.Attack != 4
+                    || replacement.BlueprintVariables.ContainsKey("_auditEntryMethod")
+                    || replacement.HasBlitz != (restorePhase == 1 && giveBlitz)
+                    || Equals(replacement.BlueprintVariables.GetValueOrDefault("_auditMovementCalled"), true) != (restorePhase == 1))
+                    return "回调恢复映射不得重跑入场或重新取当前阶段的空主体";
+                int blitzActions = state.ActionLog.SelectMany(a => a.SubActions).Count(a => a.Name == "ZActionGiveBlitz");
+                if (blitzActions != (restorePhase == 1 && giveBlitz ? 1 : 0)) return "无效生成ID的闪击不得通知，早恢复后方可通知";
+            }
+            return null;
+        }
+        finally
+        {
+            foreach (var (locals, priorMoved) in installed) { locals.Remove(entry); locals[moved] = priorMoved; }
+            foreach (var (host, trigger, prior) in savedPrograms)
+            {
+                if (!cache.TryGetValue(host, out var programs)) continue;
+                if (prior is null) programs.Remove(trigger); else programs[trigger] = prior;
+            }
+        }
+    }
+
     private static string? SingleSpawnInitialPlacement(CardDatabase db)
     {
         foreach (Side side in new[] { Side.Left, Side.Right })

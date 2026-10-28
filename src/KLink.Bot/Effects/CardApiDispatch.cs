@@ -5280,7 +5280,7 @@ public sealed partial class CardApi
             makeVeteran: TruthyArg(a, 8),
             spawnerId: spawnerId);
 
-        return card;
+        return (object?)State.ById(card.CardId) ?? card.CardId;
     }
 
     /// <summary>
@@ -5603,7 +5603,7 @@ public sealed partial class CardApi
             makeVeteran: TruthyArg(a, 8),
             spawnerId: IntArg(a, 2));
 
-        return card;
+        return (object?)State.ById(card.CardId) ?? card.CardId;
     }
 
     /// <summary>

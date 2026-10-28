@@ -330,9 +330,9 @@ public sealed class MatchEngine
     }
 
     /// <summary>ExecuteOnEnterPlayEvents: unsuppressed self first, then T43 observers.</summary>
-    public void ExecuteOnEnterPlayEvents(CardInstance card, int method)
+    public void ExecuteOnEnterPlayEvents(CardInstance? card, int method)
     {
-        if (!card.IsSuppressed)
+        if (card is not null && !card.IsSuppressed)
             Api.FireTrigger("OnEnterPlay", card, card.Owner,
                 eventArgs: new object?[] { method },
                 namedArgs: new Dictionary<string, object?> { ["Method"] = method },

@@ -1,0 +1,60 @@
+{
+  "rule_id": "RULE-523",
+  "date": "2026-10-28",
+  "status": "已替换单卡生成规则阶段的旧对象后备路径，接通空主体入场/移动观察者并固定回调恢复的缓存边界；诊断继续执行和有效运行时元数据条件下验证",
+  "authority": {
+    "pid": 24220,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "read_only": true,
+    "client_writes": 0,
+    "real_client_function_calls": 0,
+    "historical_replays_used_as_authority": false
+  },
+  "findings": [
+    "当前完整采集SpawnCardToBoard1917B、入场681B、移动856B、GiveBlitz1335B、前线1099B及能力变化430B；空声明另列。重新采集当前EX_Context0x19安装槽/跳板及2824B handler，代码与安装PE、当前只读内存一致；采集本轮6个int/bool属性的当前类/尺寸/flags。",
+    "对当前handler的159c2fb..159ca0e空上下文清零后缀做48组离线原生执行，覆盖6属性、4种非零/零预填与2种SkipOffset；目标属性清零、邻接字节保持、代码游标跳过12+skip符合实际指令。VCRUNTIME140.dll:memset作为标准清零hook供给。该结果不等于完整opcode入口/异常回调/虚属性后备或函数帧初始化认证。",
+    "缺失GetCardFromID496后保留cardSpawned=null，570对对象字段写入无目标；656/817的void getter在null上下文跳过，供给新调用局部false，普通入场681B仍执行T43查询。入场440自身调用跳过；343自我排除读空主体CardID=0，623给保存观察者传null与Method3。不能把原created对象替代null。",
+    "GiveBlitz先11查ID、43缓存、62 IsValid、91无效跳615日志，686直接返回1332，故未恢复映射时没有账本/T29/闪击通知。移动856B的38重新查ID；空主体跳过自身515，仍125查询T47并771传null给观察者；排除依据是输入保存CardID，区别于空主体CardID=0。已复用既有按ID移动helper，保留其阶段缓存。",
+    "已将入场helper参数改为nullable，仅有效且未压制的主体执行自身入场，观察者仍接收精确null载荷。单卡生成保留null缓存，不写旧对象回合、不触发旧对象山地；回调恢复ID只影响后续重新取ID的闪击/移动阶段，不替换入场/山地空缓存。显式位置即使对象缺失仍生成编号空隙，setter只在有效对象时写字段。前线更新继续按保存ID。",
+    "命名战场/前线生成包装在结束时返回当前映射对象或保存整数ID，避免将已失效旧对象直接泄露给命名输出。公共托管SpawnOnBattlefield为兼容既有签名仍返回ID载体，但该载体不再用于上述规则阶段；其他直接复用返回对象的消费者须单独核对。未将托管投影当原生ABI完整还原。",
+    "108组实际AST组合执行，连接Spawn448..end、完整入场681B/移动856B、GiveBlitz无效分支、Inject139B/gap1365B/setter375B。覆盖三物理位置/三槽位、无恢复/入场观察者恢复/移动观察者恢复、闪击开关和恢复对象在场/弃牌且带山地。验证空载荷、缓存不重取、无效闪击退出、显式缺目标留空隙及保存ID输出。原生查询/排序/容器/枚举、观察者效果、有效闪击体、刷新/前线体、void getter的新帧局部默认和诊断继续执行均供给，未执行游戏函数。",
+    "新增576组C#整合场景覆盖双方、阵线、三槽位、创建/创建修正删除ID、三种恢复时机、闪击、原对象隐藏与否、恢复对象在场/弃牌。用受控删除映射但保留原字段的探针隔离空缓存，检查旧对象不执行、T43/T47各两次精确载荷、回调恢复不补跑本阶段、山地不回取恢复对象、通知及命名输出ID/对象。",
+    "测试夹具需隔离并恢复Kismet局部程序缓存，不能仅替换Locals复用旧编译探针。首轮无效探针日志不作为产品故障证据；以修正缓存的同一最终夹具重跑HEAD基线，1/938失败（旧对象回合被写7、缺移动空通知）；自动finally恢复3个产品文件后独立核对SHA，修复后938/938通过，构建0警告0错误。既有回归没有改写。",
+    "DeepSeek私有机械提取任务180秒超时，无output.json，不采纳任何助手结论。节点/空上下文/组合执行及整合验证均独立完成。"
+  ],
+  "validation": {
+    "native_scalar_null_suffix_cases": 48,
+    "actual_blueprint_composition_cases": 108,
+    "new_csharp_matrix_cases": 576,
+    "corrected_baseline_failed": 1,
+    "selftest_passed": 938,
+    "selftest_total": 938,
+    "build_warnings": 0,
+    "build_errors": 0
+  },
+  "remaining": [
+    "完整EX_Context诊断/异常中止设置、pending-kill/GC、并发失效和虚属性清理后备尚未认证。本轮是正常诊断后继续执行的控制流；void getter出参在新帧的默认false为明示供给，没有执行完整UFunction帧初始化。",
+    "公共托管返回ID载体及SpawnNextToCard等直接消费返回对象的路径、所有命名输出类型投影和对象失效后的后续参数绑定仍需继续核对，不能说所有后备对象已从整个项目清除。",
+    "原生触发集合全局顺序、缺映射对象的真实可达条件、键与CardID字段不一致、有效闪击/数值/通知长链、完整最终生成通知仍开放。",
+    "全量卡牌覆盖与所有PvP语义未完成，完全认证卡牌仍为0。"
+  ],
+  "fully_certified_cards": 0,
+  "evidence_sha256": {
+    "D:\\Codex Workshop\\kards-install-review\\capture-rule523-missing-id.py": "d01d98e85328e59c3f8d03ecf22b9b62491496304a5e3de644f20169dccf1974",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule523-missing-spawn-id-functions-20261028.json": "feaff008ed0a9d24e4976abe5e0a187d7bd567ec3d85d0c78d9d0867daf876b1",
+    "D:\\Codex Workshop\\kards-install-review\\capture-rule523-context-opcode.py": "dce52c8198ba2d5a8c6fbba98efdcf7ba5bb218ff016db63e6b7eb47abcd7f0c",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule523-context-opcode-native-20261028.json": "693d75f141817903c8cd41d710491f7344c02abadf4551a5a4f04f82e54506ef",
+    "D:\\Codex Workshop\\kards-install-review\\capture-rule523-null-properties.py": "ca6fb24925d1829fe63e158061ef77bc5d7c65ab108b21327ec8a11588f2c6cf",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule523-null-scalar-properties-20261028.json": "9bc4ee3a87838faa5f86b40e09693b5800c8eccbad0589e781f7bd5070946062",
+    "D:\\Codex Workshop\\kards-install-review\\emulate-rule523-null-context.py": "abb50b795f2f6308cbce381a0615d7fdfa4533ff430cc01eee59044a9c27532a",
+    "D:\\Codex Workshop\\kards-install-review\\rule523-null-suffix-emulation-20261028.json": "d34df46e76539cee7fa138a5a9dad7f066ffbb8148adf1b23d43eaeb2093beea",
+    "D:\\Codex Workshop\\kards-install-review\\verify-rule523-missing-id.py": "a920430811d507e964155dd0e5ead14da27dd6654826f4bc5ced580dbbdece8f",
+    "D:\\Codex Workshop\\kards-install-review\\rule523-missing-id-verification-20261028.json": "9e7532474701d6bca6751156c7ef9632778c1cede1e74a8b69a673646269de55",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-rule523-corrected-before-20261028.txt": "81ff2abb8e99fed0da7ffd00bc691fed90a4da02ccf033bebe67ba99eb66d570",
+    "D:\\Codex Workshop\\kards-install-review\\rule523-corrected-baseline-manifest-20261028.json": "31c96bda7ce6bfa99b6a13b17dde43612d9e9373486d4e75ea1b5d7deb9c3277",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-rule523-verified-final-20261028.txt": "9b3c7d12e5af466d76d3bff6856d210f64d8ea8acb262f1f0a32ea712342d430",
+    "D:\\Codex Workshop\\kards-install-review\\build-rule523-final-20261028.txt": "fdef6babfe95053cfead9b29f4d57e579656403433b432d02e0f0de196eef697",
+    "D:\\Codex Workshop\\kards-install-review\\rule523-worker\\input.json": "2a4e9f75cf7a74b6c07e9c1258d8aa2566648a8920d537b20cbfd1b63da925f8",
+    "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261028-210921-rule523-null-guards-95ca0f38\\job.json": "ebb02c9dbf6f125397d8e65da596c01991dc7bc54a110bf1919a0ca8007b6d07"
+  }
+}
