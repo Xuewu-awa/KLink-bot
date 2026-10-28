@@ -1,0 +1,1493 @@
+{
+  "rule_id": "RULE-512",
+  "date": "2026-10-28",
+  "base_commit": "a03181f",
+  "status": "自动出牌列表蓝图接口/重置点已核查；原生容器跨展开片段仍开放",
+  "findings": [
+    "当前复读ClearAutoPlayCards44B、AddAutoPlayCards71B、GetAutoPlayCards30B，均为实际蓝图函数，不是原生getter。添加唯一调用Array_AddUnique，读取直接Let赋实例AutoPlayerCardIDs到输出，清空唯一调用Array_Clear。当前SDK声明TArray<int32>，供给ID不必是现存卡牌对象才能进入该接口；这不是证明所有值都是合法游戏卡ID。",
+    "对添加函数中的实际AutoPlayerCardIDs FProperty指针扫描已加载脚本，命中上述3接口及ClearGameStateVariables1363B，在349调用Array_Clear。四者均完整语法解码；扫描仅覆盖已加载直接指针字节候选，不能排除原生、反射、序列化、默认值或未加载资产的其他读写。",
+    "32组实际接口AST及全局重置349单节点窗口执行通过：4种初始列表、4种追加序列、2条清空路径。声明供给AddUnique整数等价/保序、数组赋值复制和clear语义；测试包含重复、零、负值、int32极值，覆盖既有重复不自行修复、输出副本修改不回写和清空后已取副本保留。副本/容器生命周期结论仍以该供给边界为限，不是完整UE原生执行。",
+    "已只读捕获并比对当前EXE的Array_AddUnique包装与直接调用目标、Array_Clear包装与直接调用目标。发现PE.pdata边界可能只是单个展开片段：Generic AddUnique RVA3d79ca0仅首段36B，Clear包装3d925b0首段149B末尾仍是取inner property，外部分支继续到片段外。不能把这些首段当完整逻辑或直接用缺段原生程序模拟全部数组行为。",
+    "本轮原生采集保留各范围/pdata、原始字节、反汇编和SHA；未执行原生数组分配/析构/比较/复制。Array_AddUnique的数组元素类型、FProperty、泛型查找/增长和Array_Clear清理路径需后续重组展开片段后验证。没有用函数名推断完成原生认证。",
+    "只读对照GameState.AddAutoPlayCards的Contains后Add、GetAutoPlayCards.ToArray和ClearAutoPlayCards.Clear，与蓝图接口结构一致；本轮不需要产品代码修改。该对照未认证全部快照回灌、克隆、默认初始化或自动出牌卡体。",
+    "DeepSeek机械提取4脚本的字段/调用位置，主agent独立递归逐字段核对。未重跑C#，历史929/929非本轮验证；完整认证卡数0，游戏写入/注入/真实函数调用0。"
+  ],
+  "verification": {
+    "rule": "RULE-512",
+    "list_lifecycle_cases": 32,
+    "profiles": [
+      {
+        "prior": [],
+        "requests": [],
+        "clear_mode": "api",
+        "history": [],
+        "result_before_clear": [],
+        "snapshot_after_clear": [
+          123456
+        ]
+      },
+      {
+        "prior": [],
+        "requests": [],
+        "clear_mode": "reset-window",
+        "history": [],
+        "result_before_clear": [],
+        "snapshot_after_clear": [
+          123456
+        ]
+      },
+      {
+        "prior": [],
+        "requests": [
+          11,
+          11
+        ],
+        "clear_mode": "api",
+        "history": [
+          [
+            11
+          ],
+          [
+            11
+          ]
+        ],
+        "result_before_clear": [
+          11
+        ],
+        "snapshot_after_clear": [
+          11,
+          123456
+        ]
+      },
+      {
+        "prior": [],
+        "requests": [
+          11,
+          11
+        ],
+        "clear_mode": "reset-window",
+        "history": [
+          [
+            11
+          ],
+          [
+            11
+          ]
+        ],
+        "result_before_clear": [
+          11
+        ],
+        "snapshot_after_clear": [
+          11,
+          123456
+        ]
+      },
+      {
+        "prior": [],
+        "requests": [
+          0,
+          -1,
+          11,
+          22
+        ],
+        "clear_mode": "api",
+        "history": [
+          [
+            0
+          ],
+          [
+            0,
+            -1
+          ],
+          [
+            0,
+            -1,
+            11
+          ],
+          [
+            0,
+            -1,
+            11,
+            22
+          ]
+        ],
+        "result_before_clear": [
+          0,
+          -1,
+          11,
+          22
+        ],
+        "snapshot_after_clear": [
+          0,
+          -1,
+          11,
+          22,
+          123456
+        ]
+      },
+      {
+        "prior": [],
+        "requests": [
+          0,
+          -1,
+          11,
+          22
+        ],
+        "clear_mode": "reset-window",
+        "history": [
+          [
+            0
+          ],
+          [
+            0,
+            -1
+          ],
+          [
+            0,
+            -1,
+            11
+          ],
+          [
+            0,
+            -1,
+            11,
+            22
+          ]
+        ],
+        "result_before_clear": [
+          0,
+          -1,
+          11,
+          22
+        ],
+        "snapshot_after_clear": [
+          0,
+          -1,
+          11,
+          22,
+          123456
+        ]
+      },
+      {
+        "prior": [],
+        "requests": [
+          2147483647,
+          -2147483648,
+          2147483647
+        ],
+        "clear_mode": "api",
+        "history": [
+          [
+            2147483647
+          ],
+          [
+            2147483647,
+            -2147483648
+          ],
+          [
+            2147483647,
+            -2147483648
+          ]
+        ],
+        "result_before_clear": [
+          2147483647,
+          -2147483648
+        ],
+        "snapshot_after_clear": [
+          2147483647,
+          -2147483648,
+          123456
+        ]
+      },
+      {
+        "prior": [],
+        "requests": [
+          2147483647,
+          -2147483648,
+          2147483647
+        ],
+        "clear_mode": "reset-window",
+        "history": [
+          [
+            2147483647
+          ],
+          [
+            2147483647,
+            -2147483648
+          ],
+          [
+            2147483647,
+            -2147483648
+          ]
+        ],
+        "result_before_clear": [
+          2147483647,
+          -2147483648
+        ],
+        "snapshot_after_clear": [
+          2147483647,
+          -2147483648,
+          123456
+        ]
+      },
+      {
+        "prior": [
+          11
+        ],
+        "requests": [],
+        "clear_mode": "api",
+        "history": [],
+        "result_before_clear": [
+          11
+        ],
+        "snapshot_after_clear": [
+          11,
+          123456
+        ]
+      },
+      {
+        "prior": [
+          11
+        ],
+        "requests": [],
+        "clear_mode": "reset-window",
+        "history": [],
+        "result_before_clear": [
+          11
+        ],
+        "snapshot_after_clear": [
+          11,
+          123456
+        ]
+      },
+      {
+        "prior": [
+          11
+        ],
+        "requests": [
+          11,
+          11
+        ],
+        "clear_mode": "api",
+        "history": [
+          [
+            11
+          ],
+          [
+            11
+          ]
+        ],
+        "result_before_clear": [
+          11
+        ],
+        "snapshot_after_clear": [
+          11,
+          123456
+        ]
+      },
+      {
+        "prior": [
+          11
+        ],
+        "requests": [
+          11,
+          11
+        ],
+        "clear_mode": "reset-window",
+        "history": [
+          [
+            11
+          ],
+          [
+            11
+          ]
+        ],
+        "result_before_clear": [
+          11
+        ],
+        "snapshot_after_clear": [
+          11,
+          123456
+        ]
+      },
+      {
+        "prior": [
+          11
+        ],
+        "requests": [
+          0,
+          -1,
+          11,
+          22
+        ],
+        "clear_mode": "api",
+        "history": [
+          [
+            11,
+            0
+          ],
+          [
+            11,
+            0,
+            -1
+          ],
+          [
+            11,
+            0,
+            -1
+          ],
+          [
+            11,
+            0,
+            -1,
+            22
+          ]
+        ],
+        "result_before_clear": [
+          11,
+          0,
+          -1,
+          22
+        ],
+        "snapshot_after_clear": [
+          11,
+          0,
+          -1,
+          22,
+          123456
+        ]
+      },
+      {
+        "prior": [
+          11
+        ],
+        "requests": [
+          0,
+          -1,
+          11,
+          22
+        ],
+        "clear_mode": "reset-window",
+        "history": [
+          [
+            11,
+            0
+          ],
+          [
+            11,
+            0,
+            -1
+          ],
+          [
+            11,
+            0,
+            -1
+          ],
+          [
+            11,
+            0,
+            -1,
+            22
+          ]
+        ],
+        "result_before_clear": [
+          11,
+          0,
+          -1,
+          22
+        ],
+        "snapshot_after_clear": [
+          11,
+          0,
+          -1,
+          22,
+          123456
+        ]
+      },
+      {
+        "prior": [
+          11
+        ],
+        "requests": [
+          2147483647,
+          -2147483648,
+          2147483647
+        ],
+        "clear_mode": "api",
+        "history": [
+          [
+            11,
+            2147483647
+          ],
+          [
+            11,
+            2147483647,
+            -2147483648
+          ],
+          [
+            11,
+            2147483647,
+            -2147483648
+          ]
+        ],
+        "result_before_clear": [
+          11,
+          2147483647,
+          -2147483648
+        ],
+        "snapshot_after_clear": [
+          11,
+          2147483647,
+          -2147483648,
+          123456
+        ]
+      },
+      {
+        "prior": [
+          11
+        ],
+        "requests": [
+          2147483647,
+          -2147483648,
+          2147483647
+        ],
+        "clear_mode": "reset-window",
+        "history": [
+          [
+            11,
+            2147483647
+          ],
+          [
+            11,
+            2147483647,
+            -2147483648
+          ],
+          [
+            11,
+            2147483647,
+            -2147483648
+          ]
+        ],
+        "result_before_clear": [
+          11,
+          2147483647,
+          -2147483648
+        ],
+        "snapshot_after_clear": [
+          11,
+          2147483647,
+          -2147483648,
+          123456
+        ]
+      },
+      {
+        "prior": [
+          22,
+          11
+        ],
+        "requests": [],
+        "clear_mode": "api",
+        "history": [],
+        "result_before_clear": [
+          22,
+          11
+        ],
+        "snapshot_after_clear": [
+          22,
+          11,
+          123456
+        ]
+      },
+      {
+        "prior": [
+          22,
+          11
+        ],
+        "requests": [],
+        "clear_mode": "reset-window",
+        "history": [],
+        "result_before_clear": [
+          22,
+          11
+        ],
+        "snapshot_after_clear": [
+          22,
+          11,
+          123456
+        ]
+      },
+      {
+        "prior": [
+          22,
+          11
+        ],
+        "requests": [
+          11,
+          11
+        ],
+        "clear_mode": "api",
+        "history": [
+          [
+            22,
+            11
+          ],
+          [
+            22,
+            11
+          ]
+        ],
+        "result_before_clear": [
+          22,
+          11
+        ],
+        "snapshot_after_clear": [
+          22,
+          11,
+          123456
+        ]
+      },
+      {
+        "prior": [
+          22,
+          11
+        ],
+        "requests": [
+          11,
+          11
+        ],
+        "clear_mode": "reset-window",
+        "history": [
+          [
+            22,
+            11
+          ],
+          [
+            22,
+            11
+          ]
+        ],
+        "result_before_clear": [
+          22,
+          11
+        ],
+        "snapshot_after_clear": [
+          22,
+          11,
+          123456
+        ]
+      },
+      {
+        "prior": [
+          22,
+          11
+        ],
+        "requests": [
+          0,
+          -1,
+          11,
+          22
+        ],
+        "clear_mode": "api",
+        "history": [
+          [
+            22,
+            11,
+            0
+          ],
+          [
+            22,
+            11,
+            0,
+            -1
+          ],
+          [
+            22,
+            11,
+            0,
+            -1
+          ],
+          [
+            22,
+            11,
+            0,
+            -1
+          ]
+        ],
+        "result_before_clear": [
+          22,
+          11,
+          0,
+          -1
+        ],
+        "snapshot_after_clear": [
+          22,
+          11,
+          0,
+          -1,
+          123456
+        ]
+      },
+      {
+        "prior": [
+          22,
+          11
+        ],
+        "requests": [
+          0,
+          -1,
+          11,
+          22
+        ],
+        "clear_mode": "reset-window",
+        "history": [
+          [
+            22,
+            11,
+            0
+          ],
+          [
+            22,
+            11,
+            0,
+            -1
+          ],
+          [
+            22,
+            11,
+            0,
+            -1
+          ],
+          [
+            22,
+            11,
+            0,
+            -1
+          ]
+        ],
+        "result_before_clear": [
+          22,
+          11,
+          0,
+          -1
+        ],
+        "snapshot_after_clear": [
+          22,
+          11,
+          0,
+          -1,
+          123456
+        ]
+      },
+      {
+        "prior": [
+          22,
+          11
+        ],
+        "requests": [
+          2147483647,
+          -2147483648,
+          2147483647
+        ],
+        "clear_mode": "api",
+        "history": [
+          [
+            22,
+            11,
+            2147483647
+          ],
+          [
+            22,
+            11,
+            2147483647,
+            -2147483648
+          ],
+          [
+            22,
+            11,
+            2147483647,
+            -2147483648
+          ]
+        ],
+        "result_before_clear": [
+          22,
+          11,
+          2147483647,
+          -2147483648
+        ],
+        "snapshot_after_clear": [
+          22,
+          11,
+          2147483647,
+          -2147483648,
+          123456
+        ]
+      },
+      {
+        "prior": [
+          22,
+          11
+        ],
+        "requests": [
+          2147483647,
+          -2147483648,
+          2147483647
+        ],
+        "clear_mode": "reset-window",
+        "history": [
+          [
+            22,
+            11,
+            2147483647
+          ],
+          [
+            22,
+            11,
+            2147483647,
+            -2147483648
+          ],
+          [
+            22,
+            11,
+            2147483647,
+            -2147483648
+          ]
+        ],
+        "result_before_clear": [
+          22,
+          11,
+          2147483647,
+          -2147483648
+        ],
+        "snapshot_after_clear": [
+          22,
+          11,
+          2147483647,
+          -2147483648,
+          123456
+        ]
+      },
+      {
+        "prior": [
+          11,
+          11
+        ],
+        "requests": [],
+        "clear_mode": "api",
+        "history": [],
+        "result_before_clear": [
+          11,
+          11
+        ],
+        "snapshot_after_clear": [
+          11,
+          11,
+          123456
+        ]
+      },
+      {
+        "prior": [
+          11,
+          11
+        ],
+        "requests": [],
+        "clear_mode": "reset-window",
+        "history": [],
+        "result_before_clear": [
+          11,
+          11
+        ],
+        "snapshot_after_clear": [
+          11,
+          11,
+          123456
+        ]
+      },
+      {
+        "prior": [
+          11,
+          11
+        ],
+        "requests": [
+          11,
+          11
+        ],
+        "clear_mode": "api",
+        "history": [
+          [
+            11,
+            11
+          ],
+          [
+            11,
+            11
+          ]
+        ],
+        "result_before_clear": [
+          11,
+          11
+        ],
+        "snapshot_after_clear": [
+          11,
+          11,
+          123456
+        ]
+      },
+      {
+        "prior": [
+          11,
+          11
+        ],
+        "requests": [
+          11,
+          11
+        ],
+        "clear_mode": "reset-window",
+        "history": [
+          [
+            11,
+            11
+          ],
+          [
+            11,
+            11
+          ]
+        ],
+        "result_before_clear": [
+          11,
+          11
+        ],
+        "snapshot_after_clear": [
+          11,
+          11,
+          123456
+        ]
+      },
+      {
+        "prior": [
+          11,
+          11
+        ],
+        "requests": [
+          0,
+          -1,
+          11,
+          22
+        ],
+        "clear_mode": "api",
+        "history": [
+          [
+            11,
+            11,
+            0
+          ],
+          [
+            11,
+            11,
+            0,
+            -1
+          ],
+          [
+            11,
+            11,
+            0,
+            -1
+          ],
+          [
+            11,
+            11,
+            0,
+            -1,
+            22
+          ]
+        ],
+        "result_before_clear": [
+          11,
+          11,
+          0,
+          -1,
+          22
+        ],
+        "snapshot_after_clear": [
+          11,
+          11,
+          0,
+          -1,
+          22,
+          123456
+        ]
+      },
+      {
+        "prior": [
+          11,
+          11
+        ],
+        "requests": [
+          0,
+          -1,
+          11,
+          22
+        ],
+        "clear_mode": "reset-window",
+        "history": [
+          [
+            11,
+            11,
+            0
+          ],
+          [
+            11,
+            11,
+            0,
+            -1
+          ],
+          [
+            11,
+            11,
+            0,
+            -1
+          ],
+          [
+            11,
+            11,
+            0,
+            -1,
+            22
+          ]
+        ],
+        "result_before_clear": [
+          11,
+          11,
+          0,
+          -1,
+          22
+        ],
+        "snapshot_after_clear": [
+          11,
+          11,
+          0,
+          -1,
+          22,
+          123456
+        ]
+      },
+      {
+        "prior": [
+          11,
+          11
+        ],
+        "requests": [
+          2147483647,
+          -2147483648,
+          2147483647
+        ],
+        "clear_mode": "api",
+        "history": [
+          [
+            11,
+            11,
+            2147483647
+          ],
+          [
+            11,
+            11,
+            2147483647,
+            -2147483648
+          ],
+          [
+            11,
+            11,
+            2147483647,
+            -2147483648
+          ]
+        ],
+        "result_before_clear": [
+          11,
+          11,
+          2147483647,
+          -2147483648
+        ],
+        "snapshot_after_clear": [
+          11,
+          11,
+          2147483647,
+          -2147483648,
+          123456
+        ]
+      },
+      {
+        "prior": [
+          11,
+          11
+        ],
+        "requests": [
+          2147483647,
+          -2147483648,
+          2147483647
+        ],
+        "clear_mode": "reset-window",
+        "history": [
+          [
+            11,
+            11,
+            2147483647
+          ],
+          [
+            11,
+            11,
+            2147483647,
+            -2147483648
+          ],
+          [
+            11,
+            11,
+            2147483647,
+            -2147483648
+          ]
+        ],
+        "result_before_clear": [
+          11,
+          11,
+          2147483647,
+          -2147483648
+        ],
+        "snapshot_after_clear": [
+          11,
+          11,
+          2147483647,
+          -2147483648,
+          123456
+        ]
+      }
+    ],
+    "scope": "Actual Add71B/Get30B/Clear44B AST plus ClearGameStateVariables isolated349 clear node. AddUnique integer equality/order, array assignment/output copy and clear storage are explicit supplied container semantics, not native allocator/FProperty lifecycle certification. Includes duplicate existing data, zero/negative/int32-extreme IDs as interface behavior only, not legal card validation. Current C# API structure compared read-only; no C# tests run.",
+    "game_writes": 0,
+    "real_game_function_calls": 0,
+    "fully_certified_cards": 0,
+    "case_sha256": "96c9eb1af809d799537fe1664567e9f63a42046aa26123ba52bb5e940f8b55fb"
+  },
+  "worker_index": [
+    {
+      "name": "ClearAutoPlayCards",
+      "autoplay_field_indexes": [
+        0
+      ],
+      "calls": [
+        {
+          "index": 0,
+          "name": "Array_Clear"
+        }
+      ]
+    },
+    {
+      "name": "AddAutoPlayCards",
+      "autoplay_field_indexes": [
+        0
+      ],
+      "calls": [
+        {
+          "index": 0,
+          "name": "Array_AddUnique"
+        }
+      ]
+    },
+    {
+      "name": "GetAutoPlayCards",
+      "autoplay_field_indexes": [
+        0
+      ],
+      "calls": []
+    },
+    {
+      "name": "ClearGameStateVariables",
+      "autoplay_field_indexes": [
+        349
+      ],
+      "calls": [
+        {
+          "index": 349,
+          "name": "Array_Clear"
+        }
+      ]
+    }
+  ],
+  "property_targets": {
+    "AutoPlayerCardIDs": [
+      "0x1cb148c7f80"
+    ]
+  },
+  "loaded_script_census": {
+    "function_objects": 30583,
+    "scripted_functions": 18111,
+    "script_bytes": 7922413
+  },
+  "captured_functions": [
+    {
+      "owner": "KismetArrayLibrary",
+      "name": "Array_AddUnique",
+      "script_size": 0,
+      "decode_complete": false,
+      "decode_status": "no-script; native/declaration not decoded"
+    },
+    {
+      "owner": "KismetArrayLibrary",
+      "name": "Array_Clear",
+      "script_size": 0,
+      "decode_complete": false,
+      "decode_status": "no-script; native/declaration not decoded"
+    },
+    {
+      "owner": "BP_GameState_Battle_C",
+      "name": "ClearAutoPlayCards",
+      "script_size": 44,
+      "decode_complete": true,
+      "decode_status": null
+    },
+    {
+      "owner": "BP_GameState_Battle_C",
+      "name": "AddAutoPlayCards",
+      "script_size": 71,
+      "decode_complete": true,
+      "decode_status": null
+    },
+    {
+      "owner": "BP_GameState_Battle_C",
+      "name": "GetAutoPlayCards",
+      "script_size": 30,
+      "decode_complete": true,
+      "decode_status": null
+    },
+    {
+      "owner": "BP_GameState_Battle_C",
+      "name": "ClearAutoPlayCards",
+      "script_size": 44,
+      "decode_complete": true,
+      "decode_status": null
+    },
+    {
+      "owner": "BP_GameState_Battle_C",
+      "name": "AddAutoPlayCards",
+      "script_size": 71,
+      "decode_complete": true,
+      "decode_status": null
+    },
+    {
+      "owner": "BP_GameState_Battle_C",
+      "name": "GetAutoPlayCards",
+      "script_size": 30,
+      "decode_complete": true,
+      "decode_status": null
+    },
+    {
+      "owner": "BP_GameState_Battle_C",
+      "name": "ClearGameStateVariables",
+      "script_size": 1363,
+      "decode_complete": true,
+      "decode_status": null
+    }
+  ],
+  "native_ranges": [
+    {
+      "label": "KismetArrayLibrary:Array_AddUnique wrapper",
+      "rva": "0x3d922e0",
+      "bytes": 440,
+      "pdata": {
+        "begin_rva": 64561888,
+        "end_rva": 64562328,
+        "unwind_rva": 145004388
+      },
+      "sha256": "d2a7011b4ba502f13b6233aaa395dcc08a3d031fcd2b246c5292e8912ce8c8df",
+      "last_instruction": {
+        "rva": "0x3d92497",
+        "mnemonic": "ret",
+        "op_str": ""
+      },
+      "logical_function_complete": false
+    },
+    {
+      "label": "KismetArrayLibrary:Array_AddUnique direct call target",
+      "rva": "0x1543a10",
+      "bytes": 164,
+      "pdata": {
+        "begin_rva": 22297104,
+        "end_rva": 22297268,
+        "unwind_rva": 144759796
+      },
+      "sha256": "2381ea5098deccd1224f79127d644071a2ec1a0981db9e5c6e23e6eadc672bf4",
+      "last_instruction": {
+        "rva": "0x1543ab3",
+        "mnemonic": "ret",
+        "op_str": ""
+      },
+      "logical_function_complete": false
+    },
+    {
+      "label": "KismetArrayLibrary:Array_AddUnique direct call target",
+      "rva": "0x15a0ee0",
+      "bytes": 38,
+      "pdata": null,
+      "sha256": "7fcfeb30a8b5397e4ded4b8752bb119da59dd7c838aab6ea6c2ed2764921ce69",
+      "last_instruction": {
+        "rva": "0x15a0f02",
+        "mnemonic": "jmp",
+        "op_str": "qword ptr [r9 + rax*8]"
+      },
+      "logical_function_complete": false
+    },
+    {
+      "label": "KismetArrayLibrary:Array_AddUnique direct call target",
+      "rva": "0x15a0f10",
+      "bytes": 58,
+      "pdata": null,
+      "sha256": "3ee69b2f8f2b288b5ff5fbcb0a99240ece385996211c104bc9431028b98dae79",
+      "last_instruction": {
+        "rva": "0x15a0f49",
+        "mnemonic": "ret",
+        "op_str": ""
+      },
+      "logical_function_complete": false
+    },
+    {
+      "label": "KismetArrayLibrary:Array_AddUnique direct call target",
+      "rva": "0x6e9f620",
+      "bytes": 78,
+      "pdata": {
+        "begin_rva": 115996192,
+        "end_rva": 115996270,
+        "unwind_rva": 149964704
+      },
+      "sha256": "24ba2f8e6f97e3f8dec9771f775f11294b7da43ba09efabbb1bd3c079ac25b6e",
+      "last_instruction": {
+        "rva": "0x6e9f66d",
+        "mnemonic": "ret",
+        "op_str": ""
+      },
+      "logical_function_complete": false
+    },
+    {
+      "label": "KismetArrayLibrary:Array_AddUnique direct call target",
+      "rva": "0x6eabda7",
+      "bytes": 6,
+      "pdata": null,
+      "sha256": "decfbb5cb3daab9cb432bcddae146c97e4453f7c32e4a3a02ef5eeaec56eff55",
+      "last_instruction": {
+        "rva": "0x6eabda7",
+        "mnemonic": "jmp",
+        "op_str": "qword ptr [rip + 0x19698b]"
+      },
+      "logical_function_complete": false
+    },
+    {
+      "label": "KismetArrayLibrary:Array_AddUnique direct call target",
+      "rva": "0x1543ac0",
+      "bytes": 162,
+      "pdata": {
+        "begin_rva": 22297280,
+        "end_rva": 22297442,
+        "unwind_rva": 144759796
+      },
+      "sha256": "3292c74cd83a1f68541d2037f8d807b5c83c3f073332622b0a1bc3e48ff89b19",
+      "last_instruction": {
+        "rva": "0x1543b61",
+        "mnemonic": "ret",
+        "op_str": ""
+      },
+      "logical_function_complete": false
+    },
+    {
+      "label": "KismetArrayLibrary:Array_AddUnique direct call target",
+      "rva": "0x15a0ee0",
+      "bytes": 38,
+      "pdata": null,
+      "sha256": "7fcfeb30a8b5397e4ded4b8752bb119da59dd7c838aab6ea6c2ed2764921ce69",
+      "last_instruction": {
+        "rva": "0x15a0f02",
+        "mnemonic": "jmp",
+        "op_str": "qword ptr [r9 + rax*8]"
+      },
+      "logical_function_complete": false
+    },
+    {
+      "label": "KismetArrayLibrary:Array_AddUnique direct call target",
+      "rva": "0x15a0f10",
+      "bytes": 58,
+      "pdata": null,
+      "sha256": "3ee69b2f8f2b288b5ff5fbcb0a99240ece385996211c104bc9431028b98dae79",
+      "last_instruction": {
+        "rva": "0x15a0f49",
+        "mnemonic": "ret",
+        "op_str": ""
+      },
+      "logical_function_complete": false
+    },
+    {
+      "label": "KismetArrayLibrary:Array_AddUnique direct call target",
+      "rva": "0x3d79ca0",
+      "bytes": 36,
+      "pdata": {
+        "begin_rva": 64461984,
+        "end_rva": 64462020,
+        "unwind_rva": 147175252
+      },
+      "sha256": "7ba8fe29e82ef889eca3f3b99d91fd9275ed9e8f1da7bd3ed8697853e65bd4c1",
+      "last_instruction": {
+        "rva": "0x3d79cc0",
+        "mnemonic": "mov",
+        "op_str": "rcx, qword ptr [rdx + 0x78]"
+      },
+      "logical_function_complete": false
+    },
+    {
+      "label": "KismetArrayLibrary:Array_AddUnique direct call target",
+      "rva": "0x6e9f680",
+      "bytes": 30,
+      "pdata": {
+        "begin_rva": 115996288,
+        "end_rva": 115996318,
+        "unwind_rva": 149964712
+      },
+      "sha256": "87c3c530dba94b26c539f99740b5c35c3fb0e40ddffe960550ebf42e39631782",
+      "last_instruction": {
+        "rva": "0x6e9f699",
+        "mnemonic": "jmp",
+        "op_str": "0x7ff7110bfd98"
+      },
+      "logical_function_complete": false
+    },
+    {
+      "label": "KismetArrayLibrary:Array_Clear wrapper",
+      "rva": "0x3d925b0",
+      "bytes": 149,
+      "pdata": {
+        "begin_rva": 64562608,
+        "end_rva": 64562757,
+        "unwind_rva": 144795092
+      },
+      "sha256": "fa7adb5d1865362df8a6bb4760e1f020ac3176aaa84845550cbe7c25ccbd9923",
+      "last_instruction": {
+        "rva": "0x3d92641",
+        "mnemonic": "mov",
+        "op_str": "rcx, qword ptr [rsi + 0x78]"
+      },
+      "logical_function_complete": false
+    },
+    {
+      "label": "KismetArrayLibrary:Array_Clear direct call target",
+      "rva": "0x1543a10",
+      "bytes": 164,
+      "pdata": {
+        "begin_rva": 22297104,
+        "end_rva": 22297268,
+        "unwind_rva": 144759796
+      },
+      "sha256": "2381ea5098deccd1224f79127d644071a2ec1a0981db9e5c6e23e6eadc672bf4",
+      "last_instruction": {
+        "rva": "0x1543ab3",
+        "mnemonic": "ret",
+        "op_str": ""
+      },
+      "logical_function_complete": false
+    },
+    {
+      "label": "KismetArrayLibrary:Array_Clear direct call target",
+      "rva": "0x15a0ee0",
+      "bytes": 38,
+      "pdata": null,
+      "sha256": "7fcfeb30a8b5397e4ded4b8752bb119da59dd7c838aab6ea6c2ed2764921ce69",
+      "last_instruction": {
+        "rva": "0x15a0f02",
+        "mnemonic": "jmp",
+        "op_str": "qword ptr [r9 + rax*8]"
+      },
+      "logical_function_complete": false
+    },
+    {
+      "label": "KismetArrayLibrary:Array_Clear direct call target",
+      "rva": "0x15a0f10",
+      "bytes": 58,
+      "pdata": null,
+      "sha256": "3ee69b2f8f2b288b5ff5fbcb0a99240ece385996211c104bc9431028b98dae79",
+      "last_instruction": {
+        "rva": "0x15a0f49",
+        "mnemonic": "ret",
+        "op_str": ""
+      },
+      "logical_function_complete": false
+    }
+  ],
+  "worker_job": "20261028-160256-rule512-autoplay-field-index-ef0d7f28",
+  "evidence": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule512-list.py",
+      "bytes": 562,
+      "sha256": "97eb333450e3fd25d279c632662aed9dfb3731d98a88c230a2f23be0654d0785"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule512-autoplay-list-functions-20261028.json",
+      "bytes": 4500668,
+      "sha256": "1d1df4c0f35be99d3a7e35ddcce6f65a54cda067a370ad0758b80b0739e51507"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule512-references.py",
+      "bytes": 665,
+      "sha256": "0b36c4987c305b9c8cab625f926ad6955c12dcc44fac393620e8cadc24fc70f3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule512-autoplay-field-references-20261028.json",
+      "bytes": 4568725,
+      "sha256": "82a717cf8ff1abc6748c4a04e9a7c1e3769d13d0d8f6b926f6328e1264fbe4c4"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule512-native.py",
+      "bytes": 938,
+      "sha256": "cff0b693e0e61319cd9d8b1d8486468f751c0ddf0739d6dc641c339034680195"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule512-array-native-20261028.json",
+      "bytes": 55859,
+      "sha256": "0ea3b955eecc2049b9c522572caa121418573eea6940588f00c3fefa6bedcf00"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule512-list.py",
+      "bytes": 13634,
+      "sha256": "dd679e21c7f69a433537aa0559c8636386c9f6818e9870173bc409c219cc67ae"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule512-list-verification-20261028.json",
+      "bytes": 16900,
+      "sha256": "a9ad684fc08cd9208f8157ee999d4bcaa267edf1e6aa2fd2b5be10fb9c330795"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule512-worker\\input.json",
+      "bytes": 14747,
+      "sha256": "716dfb43ac5ebd08c6d260d76efa5677627c9dcfba222b5873bfcc81990ed31c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule512-worker\\task.txt",
+      "bytes": 444,
+      "sha256": "492ae789770ac750df91d3508c16c148ea8ae8640e7f24d394cc0a56ada19c20"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule512-worker\\output.json",
+      "bytes": 429,
+      "sha256": "3e9021aff58322c64dc11d0e0434580d2009163823ab3f52a60f964467f8f7c2"
+    },
+    {
+      "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\ue4ss\\CXXHeaderDump\\BP_GameState_Battle.hpp",
+      "bytes": 12826,
+      "sha256": "1cadb726530c7dc01ab2b25f06c3224357007ee05fbae39f5db3b16a37d4ad4d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\GameState.cs",
+      "bytes": 59996,
+      "sha256": "fb87ed9ff284e1f336b5691a71342ce758007fd3767b851c1c07c0201504fe65"
+    }
+  ],
+  "remaining": [
+    "重组Array_AddUnique和Array_Clear跨.pdata/展开片段，验证实际int32比较、增长、清理与赋值复制语义。",
+    "自动列表其他原生/反射写入、快照/克隆和默认初始化的完整边界。",
+    "具体自动出牌卡体/原生调用和全PvP/卡池认证。"
+  ],
+  "game_writes": 0,
+  "real_game_function_calls": 0,
+  "fully_certified_cards": 0
+}
