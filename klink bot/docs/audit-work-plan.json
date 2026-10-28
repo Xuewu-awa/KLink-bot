@@ -44,7 +44,10 @@
         "GetAllActiveStaticCards完整选择器离线模型通过16384个单卡组合及8个顺序样例；服务布尔值和稳定对象数组为受控输入，并非实测所有会话策略。",
         "2019个导出资产、5585个自有函数扫描出1325条候选引用、697个不同卡牌对；这些不是已证明可达的生成关系。",
         "731个生成/转换/选择相关名称调用中，245个可按SDK名称槽位匹配卡名；38个动态/缺参数、5个字面名称未匹配、443个符号待映射，均保留。",
-        "牌组及特殊模式合法性、当前导出版本、动态卡池、继承/原生和隐式总部根仍未闭合；全部资产scope仍为unreviewed，未建立最终分母。"
+        "牌组及特殊模式合法性、当前导出版本、动态卡池、继承/原生和隐式总部根仍未闭合；全部资产scope仍为unreviewed，未建立最终分母。",
+        "SCOPE-002执行IsDeckValid外围判定链1856个受控案例；卡牌统计块、特殊模式自定义规则和查询服务显式替代，不认证完整牌组合法性。",
+        "38处动态名称细分为32处对象名称投影、5处实例值、1处局部值；赋值/参数出现位置仅作来源候选，未证明到达定义。",
+        "五处未匹配字面名均为ConvertCard传None且另有动态ID；运行时正ID选择对象Name分支已定位及做12项局部选择验证，仍须核对实际ID、空对象和完整生命周期。"
       ],
       "current_deliverables": [
         "out/audit/pvp-scope/README.md",
@@ -53,7 +56,10 @@
         "out/audit/pvp-scope/assets.tsv",
         "out/audit/pvp-scope/candidate_references.tsv",
         "out/audit/pvp-scope/creation_calls.tsv",
-        "out/audit/pvp-scope/runtime_functions.tsv"
+        "out/audit/pvp-scope/runtime_functions.tsv",
+        "out/audit/pvp-scope/scope002-README.md",
+        "out/audit/pvp-scope/deck-validation-phase.json",
+        "out/audit/pvp-scope/scope002-followup.json"
       ]
     },
     {

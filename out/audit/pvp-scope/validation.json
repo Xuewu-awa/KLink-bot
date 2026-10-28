@@ -18,6 +18,10 @@
       "sha256": "4917ed02ed68021e52630349c6f27e1ff78f9e7fa736792ed4190880dce73ac3"
     },
     {
+      "path": "out\\audit\\pvp-scope\\deck-validation-phase.json",
+      "sha256": "92b77adc423429fcb75a4e11c1bedb725c43093e75e1e7264a1f007a1908cf8c"
+    },
+    {
       "path": "out\\audit\\pvp-scope\\evidence-summary.json",
       "sha256": "5d2847566f877a4c859471a3e1225dacaa21949191612386e8f6fade6a4befc1"
     },
@@ -32,6 +36,14 @@
     {
       "path": "out\\audit\\pvp-scope\\runtime_functions.tsv",
       "sha256": "c1d2480f5c33bf1909e08d4a1762306cbdbf615841713bf622967f42a7f05e1c"
+    },
+    {
+      "path": "out\\audit\\pvp-scope\\scope002-followup.json",
+      "sha256": "8d7a629f9362c71da09dff45957e582e74309c33bb9f2043a05f659b209eae16"
+    },
+    {
+      "path": "out\\audit\\pvp-scope\\scope002-README.md",
+      "sha256": "2ed1ff89a7f6134e2d800ce9915774ac1059bccb67c26eaab9b6e9289962a2c5"
     }
   ],
   "verifier": {

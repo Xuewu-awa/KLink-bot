@@ -1,0 +1,2621 @@
+{
+  "scope": "SCOPE-002",
+  "status": "partial; denominator not established",
+  "deck_phase_model": {
+    "cases": 1856,
+    "case_digest_sha256": "648e9f471467c774a64ea84eb97962cff27109c348eedec57eb68c3ba290429d",
+    "visited_statement_offsets": [
+      0,
+      5,
+      16,
+      27,
+      38,
+      58,
+      69,
+      115,
+      129,
+      140,
+      145,
+      150,
+      155,
+      160,
+      165,
+      170,
+      175,
+      180,
+      185,
+      190,
+      220,
+      266,
+      297,
+      357,
+      389,
+      403,
+      408,
+      419,
+      508,
+      519,
+      530,
+      619,
+      630,
+      719,
+      724,
+      734,
+      745,
+      840,
+      859,
+      870,
+      965,
+      976,
+      1071,
+      1076,
+      1086,
+      1097,
+      1178,
+      1197,
+      1208,
+      1289,
+      1300,
+      1381,
+      1386,
+      1420,
+      1430,
+      1441,
+      1519,
+      1538,
+      1549,
+      1627,
+      1638,
+      1716,
+      1721,
+      1735,
+      1736,
+      1747,
+      1828,
+      1839,
+      1850,
+      1931,
+      1942,
+      2023,
+      2028,
+      2087,
+      2121,
+      2131,
+      2136,
+      2141,
+      2187,
+      2322,
+      2341,
+      2368,
+      2369,
+      2403,
+      2413,
+      2468,
+      2518,
+      2532,
+      2587,
+      2645,
+      2682,
+      2786,
+      2805,
+      2832,
+      2833,
+      2862,
+      2881,
+      2972,
+      2999,
+      3000,
+      3034,
+      3044,
+      3049,
+      3054,
+      3064,
+      3075,
+      3165,
+      3192,
+      3193,
+      3227,
+      3265,
+      3275,
+      3330,
+      3380,
+      3394,
+      3449,
+      3507,
+      3544,
+      3596,
+      3610,
+      3611,
+      3622,
+      3712,
+      3739,
+      3740,
+      3750,
+      3796,
+      3879,
+      3893,
+      3894,
+      3905,
+      3995,
+      4022,
+      4023,
+      4069,
+      4083,
+      4129,
+      4160,
+      4174,
+      4320,
+      4374,
+      4388,
+      4443,
+      4457,
+      4511,
+      4525,
+      4576,
+      4590,
+      4643,
+      4657,
+      4708,
+      4727,
+      4754,
+      4773,
+      4792,
+      4819,
+      4838,
+      4865,
+      5186,
+      5196,
+      5201,
+      5206,
+      5216,
+      5227,
+      5324,
+      5351,
+      5352,
+      5386,
+      5424,
+      5434,
+      5489,
+      5539,
+      5553,
+      5608,
+      5666,
+      5703,
+      5747,
+      5761,
+      5762,
+      5773,
+      5870,
+      5897,
+      5898,
+      5908,
+      5954,
+      6029,
+      6043,
+      6044,
+      6055,
+      6152,
+      6179,
+      6180,
+      12005
+    ],
+    "function_sha256": "7bf8130ad2aedc57f033b5331ae149a586d1fccce4ba455b344d0b304f816ed5",
+    "scope": "Fixture platform=0, nonstarter deck name; captured control flow with card aggregation block stubbed and custom-rule services supplied. Not full deck legality or actual session policy.",
+    "capture_sha256": "ed4a2cf33b9897377be5f44d9faeb630c114b0923f1a056e29501176418c83c7",
+    "generator_sha256": "aa15abe834a4789336ee3883374f2d7c10447055898a2ac23790e53360cd02c2"
+  },
+  "worker_job": "20261029-034439-scope002-deck-config-keys-7d0c6ac9",
+  "worker_keys_independently_verified": [
+    {
+      "function": "checkCustomRules",
+      "path": "$/decoded/5/Expression",
+      "key": "blacklist"
+    },
+    {
+      "function": "checkCustomRules",
+      "path": "$/decoded/72/Expression",
+      "key": "allow_reserved"
+    },
+    {
+      "function": "IsDeckValid",
+      "path": "$/decoded/88/Expression",
+      "key": "deck_rules"
+    },
+    {
+      "function": "IsDeckValid",
+      "path": "$/decoded/115/Expression",
+      "key": "deck_rules"
+    },
+    {
+      "function": "IsDeckValid",
+      "path": "$/decoded/120/Expression",
+      "key": "allow_more_ally_cards"
+    },
+    {
+      "function": "IsDeckValid",
+      "path": "$/decoded/129/Expression",
+      "key": "allow_more_ally_cards"
+    },
+    {
+      "function": "IsDeckValid",
+      "path": "$/decoded/185/Expression",
+      "key": "deck_rules"
+    },
+    {
+      "function": "IsDeckValid",
+      "path": "$/decoded/190/Expression",
+      "key": "allow_unowned"
+    },
+    {
+      "function": "IsDeckValid",
+      "path": "$/decoded/199/Expression",
+      "key": "allow_unowned"
+    }
+  ],
+  "dynamic_counts": {
+    "receiver_name_projection": 32,
+    "instance_name_value": 5,
+    "local_name_value": 1
+  },
+  "dynamic_targets": [
+    {
+      "source": "card_event_espionage_skirm",
+      "function": "ExecuteUbergraph_card_event_espionage_skirm",
+      "path": "$/11/Expression",
+      "symbol": "SpawnCardInHandBySide",
+      "argument": {
+        "Inst": "Context",
+        "Context": {
+          "Inst": "LocalVariable",
+          "Variable Outer": {
+            "PinCategory": "Object",
+            "PinSubCategory": "Object",
+            "PinSubCategoryObject": "/Script/kards.BaseCardObject"
+          },
+          "Variable Name": "CallFunc_GetRandomCard_randomCard"
+        },
+        "SkipOffsetForNull": 9,
+        "RValuePropertyOuter": "##NOT SERIALIZED##",
+        "RValuePropertyName": "name",
+        "Expression": {
+          "Inst": "InstanceVariable",
+          "Variable Outer": "##NOT SERIALIZED##",
+          "Variable Name": "name"
+        }
+      },
+      "syntactic_kind": "receiver_name_projection",
+      "receiver_or_value_variable": "CallFunc_GetRandomCard_randomCard",
+      "candidate_assignments": [],
+      "argument_occurrences_not_proven_outputs": [
+        {
+          "function": "ExecuteUbergraph_card_event_espionage_skirm",
+          "path": "$/8/Expression",
+          "symbol": "GetRandomCard",
+          "argument_slots": [
+            2
+          ]
+        },
+        {
+          "function": "ExecuteUbergraph_card_event_espionage_skirm",
+          "path": "$/9/Expression",
+          "symbol": "IsValid",
+          "argument_slots": [
+            0
+          ]
+        }
+      ],
+      "status": "open; no reaching-definition or runtime-target proof"
+    },
+    {
+      "source": "card_event_atlantic_convoy",
+      "function": "ExecuteUbergraph_card_event_atlantic_convoy",
+      "path": "$/26/Expression",
+      "symbol": "SpawnCardInHandBySide",
+      "argument": {
+        "Inst": "Context",
+        "Context": {
+          "Inst": "LocalVariable",
+          "Variable Outer": {
+            "PinCategory": "Object",
+            "PinSubCategory": "Object",
+            "PinSubCategoryObject": "/Script/kards.BaseCardObject"
+          },
+          "Variable Name": "CallFunc_GetRandomCard_randomCard_1"
+        },
+        "SkipOffsetForNull": 9,
+        "RValuePropertyOuter": "##NOT SERIALIZED##",
+        "RValuePropertyName": "name",
+        "Expression": {
+          "Inst": "InstanceVariable",
+          "Variable Outer": "##NOT SERIALIZED##",
+          "Variable Name": "name"
+        }
+      },
+      "syntactic_kind": "receiver_name_projection",
+      "receiver_or_value_variable": "CallFunc_GetRandomCard_randomCard_1",
+      "candidate_assignments": [],
+      "argument_occurrences_not_proven_outputs": [
+        {
+          "function": "ExecuteUbergraph_card_event_atlantic_convoy",
+          "path": "$/23/Expression",
+          "symbol": "GetRandomCard",
+          "argument_slots": [
+            2
+          ]
+        },
+        {
+          "function": "ExecuteUbergraph_card_event_atlantic_convoy",
+          "path": "$/24/Expression",
+          "symbol": "IsValid",
+          "argument_slots": [
+            0
+          ]
+        }
+      ],
+      "status": "open; no reaching-definition or runtime-target proof"
+    },
+    {
+      "source": "card_event_night_raid",
+      "function": "ExecuteUbergraph_card_event_night_raid",
+      "path": "$/39/Expression",
+      "symbol": "SpawnCardInHandBySide",
+      "argument": {
+        "Inst": "Context",
+        "Context": {
+          "Inst": "LocalVariable",
+          "Variable Outer": {
+            "PinCategory": "Object",
+            "PinSubCategory": "Object",
+            "PinSubCategoryObject": "/Script/kards.BaseCardObject"
+          },
+          "Variable Name": "CallFunc_GetRandomCard_randomCard"
+        },
+        "SkipOffsetForNull": 9,
+        "RValuePropertyOuter": "##NOT SERIALIZED##",
+        "RValuePropertyName": "name",
+        "Expression": {
+          "Inst": "InstanceVariable",
+          "Variable Outer": "##NOT SERIALIZED##",
+          "Variable Name": "name"
+        }
+      },
+      "syntactic_kind": "receiver_name_projection",
+      "receiver_or_value_variable": "CallFunc_GetRandomCard_randomCard",
+      "candidate_assignments": [],
+      "argument_occurrences_not_proven_outputs": [
+        {
+          "function": "ExecuteUbergraph_card_event_night_raid",
+          "path": "$/36/Expression",
+          "symbol": "GetRandomCard",
+          "argument_slots": [
+            2
+          ]
+        },
+        {
+          "function": "ExecuteUbergraph_card_event_night_raid",
+          "path": "$/37/Expression",
+          "symbol": "IsValid",
+          "argument_slots": [
+            0
+          ]
+        }
+      ],
+      "status": "open; no reaching-definition or runtime-target proof"
+    },
+    {
+      "source": "card_event_rescue_mission",
+      "function": "ExecuteUbergraph_card_event_rescue_mission",
+      "path": "$/10/Expression",
+      "symbol": "SpawnCardInHandBySide",
+      "argument": {
+        "Inst": "Context",
+        "Context": {
+          "Inst": "LocalVariable",
+          "Variable Outer": {
+            "PinCategory": "Object",
+            "PinSubCategory": "Object",
+            "PinSubCategoryObject": "/Script/kards.BaseCardObject"
+          },
+          "Variable Name": "K2Node_Event_cardDestroyed"
+        },
+        "SkipOffsetForNull": 9,
+        "RValuePropertyOuter": "##NOT SERIALIZED##",
+        "RValuePropertyName": "name",
+        "Expression": {
+          "Inst": "InstanceVariable",
+          "Variable Outer": "##NOT SERIALIZED##",
+          "Variable Name": "name"
+        }
+      },
+      "syntactic_kind": "receiver_name_projection",
+      "receiver_or_value_variable": "K2Node_Event_cardDestroyed",
+      "candidate_assignments": [],
+      "argument_occurrences_not_proven_outputs": [],
+      "status": "open; no reaching-definition or runtime-target proof"
+    },
+    {
+      "source": "card_event_rescue_mission",
+      "function": "ExecuteUbergraph_card_event_rescue_mission",
+      "path": "$/11/Expression",
+      "symbol": "SpawnCardInHandBySide",
+      "argument": {
+        "Inst": "Context",
+        "Context": {
+          "Inst": "LocalVariable",
+          "Variable Outer": {
+            "PinCategory": "Object",
+            "PinSubCategory": "Object",
+            "PinSubCategoryObject": "/Script/kards.BaseCardObject"
+          },
+          "Variable Name": "K2Node_Event_cardDestroyed"
+        },
+        "SkipOffsetForNull": 9,
+        "RValuePropertyOuter": "##NOT SERIALIZED##",
+        "RValuePropertyName": "name",
+        "Expression": {
+          "Inst": "InstanceVariable",
+          "Variable Outer": "##NOT SERIALIZED##",
+          "Variable Name": "name"
+        }
+      },
+      "syntactic_kind": "receiver_name_projection",
+      "receiver_or_value_variable": "K2Node_Event_cardDestroyed",
+      "candidate_assignments": [],
+      "argument_occurrences_not_proven_outputs": [],
+      "status": "open; no reaching-definition or runtime-target proof"
+    },
+    {
+      "source": "card_event_fog_of_war",
+      "function": "ExecuteUbergraph_card_event_fog_of_war",
+      "path": "$/2/Expression",
+      "symbol": "SpawnCardInDeckBySide",
+      "argument": {
+        "Inst": "Context",
+        "Context": {
+          "Inst": "LocalVariable",
+          "Variable Outer": {
+            "PinCategory": "Object",
+            "PinSubCategory": "Object",
+            "PinSubCategoryObject": "/Script/kards.BaseCardObject"
+          },
+          "Variable Name": "K2Node_Event_targetCard"
+        },
+        "SkipOffsetForNull": 9,
+        "RValuePropertyOuter": "##NOT SERIALIZED##",
+        "RValuePropertyName": "name",
+        "Expression": {
+          "Inst": "InstanceVariable",
+          "Variable Outer": "##NOT SERIALIZED##",
+          "Variable Name": "name"
+        }
+      },
+      "syntactic_kind": "receiver_name_projection",
+      "receiver_or_value_variable": "K2Node_Event_targetCard",
+      "candidate_assignments": [],
+      "argument_occurrences_not_proven_outputs": [],
+      "status": "open; no reaching-definition or runtime-target proof"
+    },
+    {
+      "source": "card_event_double_strength",
+      "function": "ExecuteUbergraph_card_event_double_strength",
+      "path": "$/26/Expression",
+      "symbol": "SpawnCardInDeckBySide",
+      "argument": {
+        "Inst": "Context",
+        "Context": {
+          "Inst": "LocalVariable",
+          "Variable Outer": {
+            "PinCategory": "Object",
+            "PinSubCategory": "Object",
+            "PinSubCategoryObject": "/Script/kards.BaseCardObject"
+          },
+          "Variable Name": "CallFunc_GetRandomCard_randomCard"
+        },
+        "SkipOffsetForNull": 9,
+        "RValuePropertyOuter": "##NOT SERIALIZED##",
+        "RValuePropertyName": "name",
+        "Expression": {
+          "Inst": "InstanceVariable",
+          "Variable Outer": "##NOT SERIALIZED##",
+          "Variable Name": "name"
+        }
+      },
+      "syntactic_kind": "receiver_name_projection",
+      "receiver_or_value_variable": "CallFunc_GetRandomCard_randomCard",
+      "candidate_assignments": [],
+      "argument_occurrences_not_proven_outputs": [
+        {
+          "function": "ExecuteUbergraph_card_event_double_strength",
+          "path": "$/23/Expression",
+          "symbol": "GetRandomCard",
+          "argument_slots": [
+            2
+          ]
+        },
+        {
+          "function": "ExecuteUbergraph_card_event_double_strength",
+          "path": "$/24/Expression",
+          "symbol": "IsValid",
+          "argument_slots": [
+            0
+          ]
+        }
+      ],
+      "status": "open; no reaching-definition or runtime-target proof"
+    },
+    {
+      "source": "card_unit_sherwood_foresters",
+      "function": "ExecuteUbergraph_card_unit_sherwood_foresters",
+      "path": "$/3/Expression",
+      "symbol": "SpawnCardInDeckBySide",
+      "argument": {
+        "Inst": "Context",
+        "Context": {
+          "Inst": "LocalVariable",
+          "Variable Outer": {
+            "PinCategory": "Object",
+            "PinSubCategory": "Object",
+            "PinSubCategoryObject": "/Script/kards.BaseCardObject"
+          },
+          "Variable Name": "K2Node_Event_targetCard"
+        },
+        "SkipOffsetForNull": 9,
+        "RValuePropertyOuter": "##NOT SERIALIZED##",
+        "RValuePropertyName": "name",
+        "Expression": {
+          "Inst": "InstanceVariable",
+          "Variable Outer": "##NOT SERIALIZED##",
+          "Variable Name": "name"
+        }
+      },
+      "syntactic_kind": "receiver_name_projection",
+      "receiver_or_value_variable": "K2Node_Event_targetCard",
+      "candidate_assignments": [],
+      "argument_occurrences_not_proven_outputs": [
+        {
+          "function": "ExecuteUbergraph_card_unit_sherwood_foresters",
+          "path": "$/1/Expression",
+          "symbol": "IsValid",
+          "argument_slots": [
+            0
+          ]
+        }
+      ],
+      "status": "open; no reaching-definition or runtime-target proof"
+    },
+    {
+      "source": "card_event_colossus",
+      "function": "ExecuteUbergraph_card_event_colossus",
+      "path": "$/9/Expression",
+      "symbol": "SpawnCardInDeckBySide",
+      "argument": {
+        "Inst": "Context",
+        "Context": {
+          "Inst": "LocalVariable",
+          "Variable Outer": {
+            "PinCategory": "Object",
+            "PinSubCategory": "Object",
+            "PinSubCategoryObject": "/Script/kards.BaseCardObject"
+          },
+          "Variable Name": "CallFunc_GetRandomCard_randomCard"
+        },
+        "SkipOffsetForNull": 9,
+        "RValuePropertyOuter": "##NOT SERIALIZED##",
+        "RValuePropertyName": "name",
+        "Expression": {
+          "Inst": "InstanceVariable",
+          "Variable Outer": "##NOT SERIALIZED##",
+          "Variable Name": "name"
+        }
+      },
+      "syntactic_kind": "receiver_name_projection",
+      "receiver_or_value_variable": "CallFunc_GetRandomCard_randomCard",
+      "candidate_assignments": [],
+      "argument_occurrences_not_proven_outputs": [
+        {
+          "function": "ExecuteUbergraph_card_event_colossus",
+          "path": "$/6/Expression",
+          "symbol": "GetRandomCard",
+          "argument_slots": [
+            2
+          ]
+        },
+        {
+          "function": "ExecuteUbergraph_card_event_colossus",
+          "path": "$/7/Expression",
+          "symbol": "IsValid",
+          "argument_slots": [
+            0
+          ]
+        }
+      ],
+      "status": "open; no reaching-definition or runtime-target proof"
+    },
+    {
+      "source": "card_event_seac",
+      "function": "ExecuteUbergraph_card_event_seac",
+      "path": "$/24/Expression",
+      "symbol": "SpawnCardInHandBySide",
+      "argument": {
+        "Inst": "Context",
+        "Context": {
+          "Inst": "LocalVariable",
+          "Variable Outer": {
+            "PinCategory": "Object",
+            "PinSubCategory": "Object",
+            "PinSubCategoryObject": "/Script/kards.BaseCardObject"
+          },
+          "Variable Name": "CallFunc_GetRandomCard_randomCard"
+        },
+        "SkipOffsetForNull": 9,
+        "RValuePropertyOuter": "##NOT SERIALIZED##",
+        "RValuePropertyName": "name",
+        "Expression": {
+          "Inst": "InstanceVariable",
+          "Variable Outer": "##NOT SERIALIZED##",
+          "Variable Name": "name"
+        }
+      },
+      "syntactic_kind": "receiver_name_projection",
+      "receiver_or_value_variable": "CallFunc_GetRandomCard_randomCard",
+      "candidate_assignments": [],
+      "argument_occurrences_not_proven_outputs": [
+        {
+          "function": "ExecuteUbergraph_card_event_seac",
+          "path": "$/22/Expression",
+          "symbol": "GetRandomCard",
+          "argument_slots": [
+            2
+          ]
+        }
+      ],
+      "status": "open; no reaching-definition or runtime-target proof"
+    },
+    {
+      "source": "card_event_depot_raid",
+      "function": "ExecuteUbergraph_card_event_depot_raid",
+      "path": "$/2/Expression",
+      "symbol": "SpawnCardInHandBySide",
+      "argument": {
+        "Inst": "Context",
+        "Context": {
+          "Inst": "LocalVariable",
+          "Variable Outer": {
+            "PinCategory": "Object",
+            "PinSubCategory": "Object",
+            "PinSubCategoryObject": "/Script/kards.BaseCardObject"
+          },
+          "Variable Name": "K2Node_Event_targetCard"
+        },
+        "SkipOffsetForNull": 9,
+        "RValuePropertyOuter": "##NOT SERIALIZED##",
+        "RValuePropertyName": "name",
+        "Expression": {
+          "Inst": "InstanceVariable",
+          "Variable Outer": "##NOT SERIALIZED##",
+          "Variable Name": "name"
+        }
+      },
+      "syntactic_kind": "receiver_name_projection",
+      "receiver_or_value_variable": "K2Node_Event_targetCard",
+      "candidate_assignments": [],
+      "argument_occurrences_not_proven_outputs": [
+        {
+          "function": "ExecuteUbergraph_card_event_depot_raid",
+          "path": "$/1/Expression",
+          "symbol": "MoveUnitFromBoardToOwnersHand",
+          "argument_slots": [
+            0
+          ]
+        }
+      ],
+      "status": "open; no reaching-definition or runtime-target proof"
+    },
+    {
+      "source": "card_event_motti_tactic",
+      "function": "ExecuteUbergraph_card_event_motti_tactic",
+      "path": "$/4/Expression",
+      "symbol": "SpawnCardInHandBySide",
+      "argument": {
+        "Inst": "Context",
+        "Context": {
+          "Inst": "LocalVariable",
+          "Variable Outer": {
+            "PinCategory": "Object",
+            "PinSubCategory": "Object",
+            "PinSubCategoryObject": "/Script/kards.BaseCardObject"
+          },
+          "Variable Name": "K2Node_Event_targetCard"
+        },
+        "SkipOffsetForNull": 9,
+        "RValuePropertyOuter": "##NOT SERIALIZED##",
+        "RValuePropertyName": "name",
+        "Expression": {
+          "Inst": "InstanceVariable",
+          "Variable Outer": "##NOT SERIALIZED##",
+          "Variable Name": "name"
+        }
+      },
+      "syntactic_kind": "receiver_name_projection",
+      "receiver_or_value_variable": "K2Node_Event_targetCard",
+      "candidate_assignments": [],
+      "argument_occurrences_not_proven_outputs": [
+        {
+          "function": "ExecuteUbergraph_card_event_motti_tactic",
+          "path": "$/1/Expression",
+          "symbol": "IsValid",
+          "argument_slots": [
+            0
+          ]
+        },
+        {
+          "function": "ExecuteUbergraph_card_event_motti_tactic",
+          "path": "$/3/Expression",
+          "symbol": "DestroyCard",
+          "argument_slots": [
+            0
+          ]
+        }
+      ],
+      "status": "open; no reaching-definition or runtime-target proof"
+    },
+    {
+      "source": "card_unit_ju_88_g6",
+      "function": "ExecuteUbergraph_card_unit_ju_88_g6",
+      "path": "$/7/Expression",
+      "symbol": "SpawnCardInHandBySide",
+      "argument": {
+        "Inst": "Context",
+        "Context": {
+          "Inst": "LocalVariable",
+          "Variable Outer": {
+            "PinCategory": "Object",
+            "PinSubCategory": "Object",
+            "PinSubCategoryObject": "/Script/kards.BaseCardObject"
+          },
+          "Variable Name": "K2Node_Event_cardDestroyed"
+        },
+        "SkipOffsetForNull": 9,
+        "RValuePropertyOuter": "##NOT SERIALIZED##",
+        "RValuePropertyName": "name",
+        "Expression": {
+          "Inst": "InstanceVariable",
+          "Variable Outer": "##NOT SERIALIZED##",
+          "Variable Name": "name"
+        }
+      },
+      "syntactic_kind": "receiver_name_projection",
+      "receiver_or_value_variable": "K2Node_Event_cardDestroyed",
+      "candidate_assignments": [],
+      "argument_occurrences_not_proven_outputs": [],
+      "status": "open; no reaching-definition or runtime-target proof"
+    },
+    {
+      "source": "card_unit_ju_88_g6",
+      "function": "OnCardDealDamage",
+      "path": "$/9/Expression",
+      "symbol": "SpawnCardInHandBySide",
+      "argument": {
+        "Inst": "InstanceVariable",
+        "Variable Outer": "##NOT SERIALIZED##",
+        "Variable Name": "name"
+      },
+      "syntactic_kind": "instance_name_value",
+      "receiver_or_value_variable": "name",
+      "candidate_assignments": [],
+      "argument_occurrences_not_proven_outputs": [
+        {
+          "function": "OnCardDealDamage",
+          "path": "$/9/Expression",
+          "symbol": "SpawnCardInHandBySide",
+          "argument_slots": [
+            1
+          ]
+        }
+      ],
+      "status": "open; no reaching-definition or runtime-target proof"
+    },
+    {
+      "source": "card_event_harass",
+      "function": "ExecuteUbergraph_card_event_harass",
+      "path": "$/28/Expression",
+      "symbol": "ConvertCard",
+      "argument": {
+        "Inst": "InstanceVariable",
+        "Variable Outer": {
+          "PinCategory": "Name",
+          "PinSubCategory": "Name"
+        },
+        "Variable Name": "cardToConvertTo"
+      },
+      "syntactic_kind": "instance_name_value",
+      "receiver_or_value_variable": "cardToConvertTo",
+      "candidate_assignments": [
+        {
+          "function": "ExecuteUbergraph_card_event_harass",
+          "path": "$/23",
+          "expression": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Name",
+              "PinSubCategory": "Name"
+            },
+            "Variable Name": "CallFunc_PickRandomCard_cardToSpawn"
+          }
+        }
+      ],
+      "argument_occurrences_not_proven_outputs": [
+        {
+          "function": "ExecuteUbergraph_card_event_harass",
+          "path": "$/24/Expression",
+          "symbol": "EqualEqual_NameName",
+          "argument_slots": [
+            0
+          ]
+        },
+        {
+          "function": "ExecuteUbergraph_card_event_harass",
+          "path": "$/28/Expression",
+          "symbol": "ConvertCard",
+          "argument_slots": [
+            2
+          ]
+        }
+      ],
+      "status": "open; no reaching-definition or runtime-target proof"
+    },
+    {
+      "source": "card_event_desert_push_cam1",
+      "function": "ExecuteUbergraph_card_event_desert_push_cam1",
+      "path": "$/29/Expression",
+      "symbol": "SpawnCardInHandBySide",
+      "argument": {
+        "Inst": "Context",
+        "Context": {
+          "Inst": "InstanceVariable",
+          "Variable Outer": {
+            "PinCategory": "Object",
+            "PinSubCategory": "Object",
+            "PinSubCategoryObject": "/Script/kards.BaseCardObject"
+          },
+          "Variable Name": "tempCard"
+        },
+        "SkipOffsetForNull": 9,
+        "RValuePropertyOuter": "##NOT SERIALIZED##",
+        "RValuePropertyName": "name",
+        "Expression": {
+          "Inst": "InstanceVariable",
+          "Variable Outer": "##NOT SERIALIZED##",
+          "Variable Name": "name"
+        }
+      },
+      "syntactic_kind": "receiver_name_projection",
+      "receiver_or_value_variable": "tempCard",
+      "candidate_assignments": [
+        {
+          "function": "ExecuteUbergraph_card_event_desert_push_cam1",
+          "path": "$/116",
+          "expression": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Object",
+              "PinSubCategory": "Object",
+              "PinSubCategoryObject": "/Script/kards.BaseCardObject"
+            },
+            "Variable Name": "K2Node_Event_targetCard"
+          }
+        }
+      ],
+      "argument_occurrences_not_proven_outputs": [
+        {
+          "function": "ExecuteUbergraph_card_event_desert_push_cam1",
+          "path": "$/2/Expression",
+          "symbol": "IsValid",
+          "argument_slots": [
+            0
+          ]
+        },
+        {
+          "function": "ExecuteUbergraph_card_event_desert_push_cam1",
+          "path": "$/30/Expression",
+          "symbol": "FullyHealCard",
+          "argument_slots": [
+            0
+          ]
+        },
+        {
+          "function": "ExecuteUbergraph_card_event_desert_push_cam1",
+          "path": "$/31/Expression",
+          "symbol": "RemovePin",
+          "argument_slots": [
+            0
+          ]
+        },
+        {
+          "function": "ExecuteUbergraph_card_event_desert_push_cam1",
+          "path": "$/37/Expression",
+          "symbol": "ChangeAttack",
+          "argument_slots": [
+            0
+          ]
+        },
+        {
+          "function": "ExecuteUbergraph_card_event_desert_push_cam1",
+          "path": "$/38/Expression",
+          "symbol": "ChangeDefense",
+          "argument_slots": [
+            0
+          ]
+        }
+      ],
+      "status": "open; no reaching-definition or runtime-target proof"
+    },
+    {
+      "source": "card_unit_ki_27_nate",
+      "function": "ExecuteUbergraph_card_unit_ki_27_nate",
+      "path": "$/16/Expression",
+      "symbol": "SpawnCardInHandBySide",
+      "argument": {
+        "Inst": "Context",
+        "Context": {
+          "Inst": "LocalVariable",
+          "Variable Outer": {
+            "PinCategory": "Object",
+            "PinSubCategory": "Object",
+            "PinSubCategoryObject": "/Script/kards.BaseCardObject"
+          },
+          "Variable Name": "CallFunc_GetRandomCard_randomCard"
+        },
+        "SkipOffsetForNull": 9,
+        "RValuePropertyOuter": "##NOT SERIALIZED##",
+        "RValuePropertyName": "name",
+        "Expression": {
+          "Inst": "InstanceVariable",
+          "Variable Outer": "##NOT SERIALIZED##",
+          "Variable Name": "name"
+        }
+      },
+      "syntactic_kind": "receiver_name_projection",
+      "receiver_or_value_variable": "CallFunc_GetRandomCard_randomCard",
+      "candidate_assignments": [],
+      "argument_occurrences_not_proven_outputs": [
+        {
+          "function": "ExecuteUbergraph_card_unit_ki_27_nate",
+          "path": "$/15/Expression",
+          "symbol": "GetRandomCard",
+          "argument_slots": [
+            2
+          ]
+        }
+      ],
+      "status": "open; no reaching-definition or runtime-target proof"
+    },
+    {
+      "source": "card_event_experimental_flight",
+      "function": "ExecuteUbergraph_card_event_experimental_flight",
+      "path": "$/21/Expression",
+      "symbol": "SpawnCardInHandBySide",
+      "argument": {
+        "Inst": "Context",
+        "Context": {
+          "Inst": "LocalVariable",
+          "Variable Outer": {
+            "PinCategory": "Object",
+            "PinSubCategory": "Object",
+            "PinSubCategoryObject": "/Script/kards.BaseCardObject"
+          },
+          "Variable Name": "CallFunc_GetRandomCard_randomCard"
+        },
+        "SkipOffsetForNull": 9,
+        "RValuePropertyOuter": "##NOT SERIALIZED##",
+        "RValuePropertyName": "name",
+        "Expression": {
+          "Inst": "InstanceVariable",
+          "Variable Outer": "##NOT SERIALIZED##",
+          "Variable Name": "name"
+        }
+      },
+      "syntactic_kind": "receiver_name_projection",
+      "receiver_or_value_variable": "CallFunc_GetRandomCard_randomCard",
+      "candidate_assignments": [],
+      "argument_occurrences_not_proven_outputs": [
+        {
+          "function": "ExecuteUbergraph_card_event_experimental_flight",
+          "path": "$/18/Expression",
+          "symbol": "GetRandomCard",
+          "argument_slots": [
+            2
+          ]
+        },
+        {
+          "function": "ExecuteUbergraph_card_event_experimental_flight",
+          "path": "$/19/Expression",
+          "symbol": "IsValid",
+          "argument_slots": [
+            0
+          ]
+        }
+      ],
+      "status": "open; no reaching-definition or runtime-target proof"
+    },
+    {
+      "source": "card_event_rain1_mist",
+      "function": "ExecuteUbergraph_card_event_rain1_mist",
+      "path": "$/10/Expression",
+      "symbol": "SpawnCardInHandBySide",
+      "argument": {
+        "Inst": "Context",
+        "Context": {
+          "Inst": "InstanceVariable",
+          "Variable Outer": {
+            "PinCategory": "Object",
+            "PinSubCategory": "Object",
+            "PinSubCategoryObject": "/Script/kards.BaseCardObject"
+          },
+          "Variable Name": "weatherCardChosen"
+        },
+        "SkipOffsetForNull": 9,
+        "RValuePropertyOuter": "##NOT SERIALIZED##",
+        "RValuePropertyName": "name",
+        "Expression": {
+          "Inst": "InstanceVariable",
+          "Variable Outer": "##NOT SERIALIZED##",
+          "Variable Name": "name"
+        }
+      },
+      "syntactic_kind": "receiver_name_projection",
+      "receiver_or_value_variable": "weatherCardChosen",
+      "candidate_assignments": [
+        {
+          "function": "ExecuteUbergraph_card_event_rain1_mist",
+          "path": "$/4",
+          "expression": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Object",
+              "PinSubCategory": "Object",
+              "PinSubCategoryObject": "/Script/kards.BaseCardObject"
+            },
+            "Variable Name": "CallFunc_GetCardFromID_card"
+          }
+        },
+        {
+          "function": "ExecuteUbergraph_card_event_rain1_mist",
+          "path": "$/11",
+          "expression": {
+            "Inst": "NoObject"
+          }
+        }
+      ],
+      "argument_occurrences_not_proven_outputs": [
+        {
+          "function": "ExecuteUbergraph_card_event_rain1_mist",
+          "path": "$/7/Expression",
+          "symbol": "IsValid",
+          "argument_slots": [
+            0
+          ]
+        }
+      ],
+      "status": "open; no reaching-definition or runtime-target proof"
+    },
+    {
+      "source": "card_event_storm1_gale",
+      "function": "ExecuteUbergraph_card_event_storm1_gale",
+      "path": "$/10/Expression",
+      "symbol": "SpawnCardInHandBySide",
+      "argument": {
+        "Inst": "Context",
+        "Context": {
+          "Inst": "InstanceVariable",
+          "Variable Outer": {
+            "PinCategory": "Object",
+            "PinSubCategory": "Object",
+            "PinSubCategoryObject": "/Script/kards.BaseCardObject"
+          },
+          "Variable Name": "weatherCardChosen"
+        },
+        "SkipOffsetForNull": 9,
+        "RValuePropertyOuter": "##NOT SERIALIZED##",
+        "RValuePropertyName": "name",
+        "Expression": {
+          "Inst": "InstanceVariable",
+          "Variable Outer": "##NOT SERIALIZED##",
+          "Variable Name": "name"
+        }
+      },
+      "syntactic_kind": "receiver_name_projection",
+      "receiver_or_value_variable": "weatherCardChosen",
+      "candidate_assignments": [
+        {
+          "function": "ExecuteUbergraph_card_event_storm1_gale",
+          "path": "$/4",
+          "expression": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Object",
+              "PinSubCategory": "Object",
+              "PinSubCategoryObject": "/Script/kards.BaseCardObject"
+            },
+            "Variable Name": "CallFunc_GetCardFromID_card"
+          }
+        },
+        {
+          "function": "ExecuteUbergraph_card_event_storm1_gale",
+          "path": "$/11",
+          "expression": {
+            "Inst": "NoObject"
+          }
+        }
+      ],
+      "argument_occurrences_not_proven_outputs": [
+        {
+          "function": "ExecuteUbergraph_card_event_storm1_gale",
+          "path": "$/7/Expression",
+          "symbol": "IsValid",
+          "argument_slots": [
+            0
+          ]
+        }
+      ],
+      "status": "open; no reaching-definition or runtime-target proof"
+    },
+    {
+      "source": "card_event_sunny1_blue_sky",
+      "function": "ExecuteUbergraph_card_event_sunny1_blue_sky",
+      "path": "$/10/Expression",
+      "symbol": "SpawnCardInHandBySide",
+      "argument": {
+        "Inst": "Context",
+        "Context": {
+          "Inst": "InstanceVariable",
+          "Variable Outer": {
+            "PinCategory": "Object",
+            "PinSubCategory": "Object",
+            "PinSubCategoryObject": "/Script/kards.BaseCardObject"
+          },
+          "Variable Name": "weatherCardChosen"
+        },
+        "SkipOffsetForNull": 9,
+        "RValuePropertyOuter": "##NOT SERIALIZED##",
+        "RValuePropertyName": "name",
+        "Expression": {
+          "Inst": "InstanceVariable",
+          "Variable Outer": "##NOT SERIALIZED##",
+          "Variable Name": "name"
+        }
+      },
+      "syntactic_kind": "receiver_name_projection",
+      "receiver_or_value_variable": "weatherCardChosen",
+      "candidate_assignments": [
+        {
+          "function": "ExecuteUbergraph_card_event_sunny1_blue_sky",
+          "path": "$/4",
+          "expression": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Object",
+              "PinSubCategory": "Object",
+              "PinSubCategoryObject": "/Script/kards.BaseCardObject"
+            },
+            "Variable Name": "CallFunc_GetCardFromID_card"
+          }
+        },
+        {
+          "function": "ExecuteUbergraph_card_event_sunny1_blue_sky",
+          "path": "$/11",
+          "expression": {
+            "Inst": "NoObject"
+          }
+        }
+      ],
+      "argument_occurrences_not_proven_outputs": [
+        {
+          "function": "ExecuteUbergraph_card_event_sunny1_blue_sky",
+          "path": "$/7/Expression",
+          "symbol": "IsValid",
+          "argument_slots": [
+            0
+          ]
+        }
+      ],
+      "status": "open; no reaching-definition or runtime-target proof"
+    },
+    {
+      "source": "card_event_agency_africa",
+      "function": "ExecuteUbergraph_card_event_agency_africa",
+      "path": "$/18/Expression",
+      "symbol": "SpawnCardInHandBySide",
+      "argument": {
+        "Inst": "Context",
+        "Context": {
+          "Inst": "LocalVariable",
+          "Variable Outer": {
+            "PinCategory": "Object",
+            "PinSubCategory": "Object",
+            "PinSubCategoryObject": "/Script/kards.BaseCardObject"
+          },
+          "Variable Name": "CallFunc_GetRandomCard_randomCard"
+        },
+        "SkipOffsetForNull": 9,
+        "RValuePropertyOuter": "##NOT SERIALIZED##",
+        "RValuePropertyName": "name",
+        "Expression": {
+          "Inst": "InstanceVariable",
+          "Variable Outer": "##NOT SERIALIZED##",
+          "Variable Name": "name"
+        }
+      },
+      "syntactic_kind": "receiver_name_projection",
+      "receiver_or_value_variable": "CallFunc_GetRandomCard_randomCard",
+      "candidate_assignments": [],
+      "argument_occurrences_not_proven_outputs": [
+        {
+          "function": "ExecuteUbergraph_card_event_agency_africa",
+          "path": "$/17/Expression",
+          "symbol": "GetRandomCard",
+          "argument_slots": [
+            2
+          ]
+        }
+      ],
+      "status": "open; no reaching-definition or runtime-target proof"
+    },
+    {
+      "source": "card_event_orp_blyskawica",
+      "function": "ExecuteUbergraph_card_event_orp_blyskawica",
+      "path": "$/37/Expression",
+      "symbol": "SpawnCardInHandBySide",
+      "argument": {
+        "Inst": "Context",
+        "Context": {
+          "Inst": "LocalVariable",
+          "Variable Outer": {
+            "PinCategory": "Object",
+            "PinSubCategory": "Object",
+            "PinSubCategoryObject": "/Script/kards.BaseCardObject"
+          },
+          "Variable Name": "CallFunc_GetRandomCard_randomCard"
+        },
+        "SkipOffsetForNull": 9,
+        "RValuePropertyOuter": "##NOT SERIALIZED##",
+        "RValuePropertyName": "name",
+        "Expression": {
+          "Inst": "InstanceVariable",
+          "Variable Outer": "##NOT SERIALIZED##",
+          "Variable Name": "name"
+        }
+      },
+      "syntactic_kind": "receiver_name_projection",
+      "receiver_or_value_variable": "CallFunc_GetRandomCard_randomCard",
+      "candidate_assignments": [],
+      "argument_occurrences_not_proven_outputs": [
+        {
+          "function": "ExecuteUbergraph_card_event_orp_blyskawica",
+          "path": "$/36/Expression",
+          "symbol": "GetRandomCard",
+          "argument_slots": [
+            2
+          ]
+        }
+      ],
+      "status": "open; no reaching-definition or runtime-target proof"
+    },
+    {
+      "source": "card_unit_p37los",
+      "function": "ExecuteUbergraph_card_unit_p37los",
+      "path": "$/45/Expression",
+      "symbol": "SpawnCardInHandBySide",
+      "argument": {
+        "Inst": "Context",
+        "Context": {
+          "Inst": "LocalVariable",
+          "Variable Outer": {
+            "PinCategory": "Object",
+            "PinSubCategory": "Object",
+            "PinSubCategoryObject": "/Script/kards.BaseCardObject"
+          },
+          "Variable Name": "CallFunc_GetRandomCard_randomCard"
+        },
+        "SkipOffsetForNull": 9,
+        "RValuePropertyOuter": "##NOT SERIALIZED##",
+        "RValuePropertyName": "name",
+        "Expression": {
+          "Inst": "InstanceVariable",
+          "Variable Outer": "##NOT SERIALIZED##",
+          "Variable Name": "name"
+        }
+      },
+      "syntactic_kind": "receiver_name_projection",
+      "receiver_or_value_variable": "CallFunc_GetRandomCard_randomCard",
+      "candidate_assignments": [],
+      "argument_occurrences_not_proven_outputs": [
+        {
+          "function": "ExecuteUbergraph_card_unit_p37los",
+          "path": "$/42/Expression",
+          "symbol": "GetRandomCard",
+          "argument_slots": [
+            2
+          ]
+        },
+        {
+          "function": "ExecuteUbergraph_card_unit_p37los",
+          "path": "$/43/Expression",
+          "symbol": "IsValid",
+          "argument_slots": [
+            0
+          ]
+        }
+      ],
+      "status": "open; no reaching-definition or runtime-target proof"
+    },
+    {
+      "source": "card_event_parade",
+      "function": "ExecuteUbergraph_card_event_parade",
+      "path": "$/29/Expression",
+      "symbol": "SpawnCardInHandBySide",
+      "argument": {
+        "Inst": "Context",
+        "Context": {
+          "Inst": "InstanceVariable",
+          "Variable Outer": {
+            "PinCategory": "Object",
+            "PinSubCategory": "Object",
+            "PinSubCategoryObject": "/Script/kards.BaseCardObject"
+          },
+          "Variable Name": "Unit_ToBeDrawn"
+        },
+        "SkipOffsetForNull": 9,
+        "RValuePropertyOuter": "##NOT SERIALIZED##",
+        "RValuePropertyName": "name",
+        "Expression": {
+          "Inst": "InstanceVariable",
+          "Variable Outer": "##NOT SERIALIZED##",
+          "Variable Name": "name"
+        }
+      },
+      "syntactic_kind": "receiver_name_projection",
+      "receiver_or_value_variable": "Unit_ToBeDrawn",
+      "candidate_assignments": [
+        {
+          "function": "ExecuteUbergraph_card_event_parade",
+          "path": "$/27",
+          "expression": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Object",
+              "PinSubCategory": "Object",
+              "PinSubCategoryObject": "/Script/kards.BaseCardObject"
+            },
+            "Variable Name": "CallFunc_GetRandomCard_randomCard"
+          }
+        }
+      ],
+      "argument_occurrences_not_proven_outputs": [],
+      "status": "open; no reaching-definition or runtime-target proof"
+    },
+    {
+      "source": "card_event_mother_russia",
+      "function": "ExecuteUbergraph_card_event_mother_russia",
+      "path": "$/5/Expression",
+      "symbol": "SpawnCardInHandBySide",
+      "argument": {
+        "Inst": "Context",
+        "Context": {
+          "Inst": "LocalVariable",
+          "Variable Outer": {
+            "PinCategory": "Object",
+            "PinSubCategory": "Object",
+            "PinSubCategoryObject": "/Script/kards.BaseCardObject"
+          },
+          "Variable Name": "CallFunc_GetCardFromID_card"
+        },
+        "SkipOffsetForNull": 9,
+        "RValuePropertyOuter": "##NOT SERIALIZED##",
+        "RValuePropertyName": "name",
+        "Expression": {
+          "Inst": "InstanceVariable",
+          "Variable Outer": "##NOT SERIALIZED##",
+          "Variable Name": "name"
+        }
+      },
+      "syntactic_kind": "receiver_name_projection",
+      "receiver_or_value_variable": "CallFunc_GetCardFromID_card",
+      "candidate_assignments": [],
+      "argument_occurrences_not_proven_outputs": [
+        {
+          "function": "ExecuteUbergraph_card_event_mother_russia",
+          "path": "$/4/Expression",
+          "symbol": "GetCardFromID",
+          "argument_slots": [
+            1
+          ]
+        }
+      ],
+      "status": "open; no reaching-definition or runtime-target proof"
+    },
+    {
+      "source": "card_unit_13th_rifle_regiment",
+      "function": "ExecuteUbergraph_card_unit_13th_rifle_regiment",
+      "path": "$/18/Expression",
+      "symbol": "SpawnCardInHandBySide",
+      "argument": {
+        "Inst": "Context",
+        "Context": {
+          "Inst": "LocalVariable",
+          "Variable Outer": {
+            "PinCategory": "Object",
+            "PinSubCategory": "Object",
+            "PinSubCategoryObject": "/Script/kards.BaseCardObject"
+          },
+          "Variable Name": "CallFunc_GetRandomCard_randomCard"
+        },
+        "SkipOffsetForNull": 9,
+        "RValuePropertyOuter": "##NOT SERIALIZED##",
+        "RValuePropertyName": "name",
+        "Expression": {
+          "Inst": "InstanceVariable",
+          "Variable Outer": "##NOT SERIALIZED##",
+          "Variable Name": "name"
+        }
+      },
+      "syntactic_kind": "receiver_name_projection",
+      "receiver_or_value_variable": "CallFunc_GetRandomCard_randomCard",
+      "candidate_assignments": [],
+      "argument_occurrences_not_proven_outputs": [
+        {
+          "function": "ExecuteUbergraph_card_unit_13th_rifle_regiment",
+          "path": "$/15/Expression",
+          "symbol": "GetRandomCard",
+          "argument_slots": [
+            2
+          ]
+        },
+        {
+          "function": "ExecuteUbergraph_card_unit_13th_rifle_regiment",
+          "path": "$/16/Expression",
+          "symbol": "IsValid",
+          "argument_slots": [
+            0
+          ]
+        }
+      ],
+      "status": "open; no reaching-definition or runtime-target proof"
+    },
+    {
+      "source": "card_event_spy_ring",
+      "function": "ExecuteUbergraph_card_event_spy_ring",
+      "path": "$/24/Expression",
+      "symbol": "SpawnCardInHandBySide",
+      "argument": {
+        "Inst": "InstanceVariable",
+        "Variable Outer": {
+          "PinCategory": "Name",
+          "PinSubCategory": "Name"
+        },
+        "Variable Name": "card to spawn"
+      },
+      "syntactic_kind": "instance_name_value",
+      "receiver_or_value_variable": "card to spawn",
+      "candidate_assignments": [
+        {
+          "function": "ExecuteUbergraph_card_event_spy_ring",
+          "path": "$/2",
+          "expression": {
+            "Inst": "NameConst",
+            "Value": "card_event_royal_research"
+          }
+        },
+        {
+          "function": "ExecuteUbergraph_card_event_spy_ring",
+          "path": "$/6",
+          "expression": {
+            "Inst": "NameConst",
+            "Value": "card_event_soviet_military_research"
+          }
+        },
+        {
+          "function": "ExecuteUbergraph_card_event_spy_ring",
+          "path": "$/10",
+          "expression": {
+            "Inst": "NameConst",
+            "Value": "card_event_imperial_research"
+          }
+        },
+        {
+          "function": "ExecuteUbergraph_card_event_spy_ring",
+          "path": "$/14",
+          "expression": {
+            "Inst": "NameConst",
+            "Value": "card_event_reich_research"
+          }
+        },
+        {
+          "function": "ExecuteUbergraph_card_event_spy_ring",
+          "path": "$/18",
+          "expression": {
+            "Inst": "NameConst",
+            "Value": "card_event_us_military_research"
+          }
+        }
+      ],
+      "argument_occurrences_not_proven_outputs": [
+        {
+          "function": "ExecuteUbergraph_card_event_spy_ring",
+          "path": "$/24/Expression",
+          "symbol": "SpawnCardInHandBySide",
+          "argument_slots": [
+            1
+          ]
+        }
+      ],
+      "status": "open; no reaching-definition or runtime-target proof"
+    },
+    {
+      "source": "card_event_victory_banners",
+      "function": "ExecuteUbergraph_card_event_victory_banners",
+      "path": "$/15/Expression",
+      "symbol": "ConvertCard",
+      "argument": {
+        "Inst": "Context",
+        "Context": {
+          "Inst": "InstanceVariable",
+          "Variable Outer": {
+            "PinCategory": "Object",
+            "PinSubCategory": "Object",
+            "PinSubCategoryObject": "/Script/kards.BaseCardObject"
+          },
+          "Variable Name": "tmpCard"
+        },
+        "SkipOffsetForNull": 9,
+        "RValuePropertyOuter": "##NOT SERIALIZED##",
+        "RValuePropertyName": "name",
+        "Expression": {
+          "Inst": "InstanceVariable",
+          "Variable Outer": "##NOT SERIALIZED##",
+          "Variable Name": "name"
+        }
+      },
+      "syntactic_kind": "receiver_name_projection",
+      "receiver_or_value_variable": "tmpCard",
+      "candidate_assignments": [
+        {
+          "function": "ExecuteUbergraph_card_event_victory_banners",
+          "path": "$/24",
+          "expression": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Object",
+              "PinSubCategory": "Object",
+              "PinSubCategoryObject": "/Script/kards.BaseCardObject"
+            },
+            "Variable Name": "K2Node_Event_targetCard"
+          }
+        }
+      ],
+      "argument_occurrences_not_proven_outputs": [],
+      "status": "open; no reaching-definition or runtime-target proof"
+    },
+    {
+      "source": "card_event_special_reinforcements",
+      "function": "ExecuteUbergraph_card_event_special_reinforcements",
+      "path": "$/33/Expression",
+      "symbol": "SpawnCardInHandBySide",
+      "argument": {
+        "Inst": "LocalVariable",
+        "Variable Outer": {
+          "PinCategory": "Name",
+          "PinSubCategory": "Name"
+        },
+        "Variable Name": "CallFunc_Conv_StringToName_ReturnValue_1"
+      },
+      "syntactic_kind": "local_name_value",
+      "receiver_or_value_variable": "CallFunc_Conv_StringToName_ReturnValue_1",
+      "candidate_assignments": [
+        {
+          "function": "ExecuteUbergraph_card_event_special_reinforcements",
+          "path": "$/29",
+          "expression": {
+            "Inst": "CallMath",
+            "Function": "Conv_StringToName",
+            "ContextClass": "/Script/Engine.KismetStringLibrary",
+            "Parameters": [
+              {
+                "Inst": "LocalVariable",
+                "Variable Outer": {
+                  "PinCategory": "String",
+                  "PinSubCategory": "String"
+                },
+                "Variable Name": "CallFunc_Split_LeftS"
+              }
+            ]
+          }
+        }
+      ],
+      "argument_occurrences_not_proven_outputs": [
+        {
+          "function": "ExecuteUbergraph_card_event_special_reinforcements",
+          "path": "$/33/Expression",
+          "symbol": "SpawnCardInHandBySide",
+          "argument_slots": [
+            1
+          ]
+        }
+      ],
+      "status": "open; no reaching-definition or runtime-target proof"
+    },
+    {
+      "source": "card_event_ural_factories_cam1",
+      "function": "ExecuteUbergraph_card_event_ural_factories_cam1",
+      "path": "$/124/Expression",
+      "symbol": "SpawnCardInHandBySide",
+      "argument": {
+        "Inst": "InstanceVariable",
+        "Variable Outer": {
+          "PinCategory": "Name",
+          "PinSubCategory": "Name"
+        },
+        "Variable Name": "cardToSpawn"
+      },
+      "syntactic_kind": "instance_name_value",
+      "receiver_or_value_variable": "cardToSpawn",
+      "candidate_assignments": [
+        {
+          "function": "ExecuteUbergraph_card_event_ural_factories_cam1",
+          "path": "$/121",
+          "expression": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Name",
+              "PinSubCategory": "Name"
+            },
+            "Variable Name": "CallFunc_Random_Card_cardToSpawn"
+          }
+        }
+      ],
+      "argument_occurrences_not_proven_outputs": [
+        {
+          "function": "ExecuteUbergraph_card_event_ural_factories_cam1",
+          "path": "$/124/Expression",
+          "symbol": "SpawnCardInHandBySide",
+          "argument_slots": [
+            1
+          ]
+        },
+        {
+          "function": "ExecuteUbergraph_card_event_ural_factories_cam1",
+          "path": "$/131/Expression",
+          "symbol": "SpawnCardOnBattlefield",
+          "argument_slots": [
+            2
+          ]
+        }
+      ],
+      "status": "open; no reaching-definition or runtime-target proof"
+    },
+    {
+      "source": "card_event_uncle_sam",
+      "function": "ExecuteUbergraph_card_event_uncle_sam",
+      "path": "$/24/Expression",
+      "symbol": "SpawnCardInHandBySide",
+      "argument": {
+        "Inst": "Context",
+        "Context": {
+          "Inst": "LocalVariable",
+          "Variable Outer": {
+            "PinCategory": "Object",
+            "PinSubCategory": "Object",
+            "PinSubCategoryObject": "/Script/kards.BaseCardObject"
+          },
+          "Variable Name": "CallFunc_GetRandomCard_randomCard"
+        },
+        "SkipOffsetForNull": 9,
+        "RValuePropertyOuter": "##NOT SERIALIZED##",
+        "RValuePropertyName": "name",
+        "Expression": {
+          "Inst": "InstanceVariable",
+          "Variable Outer": "##NOT SERIALIZED##",
+          "Variable Name": "name"
+        }
+      },
+      "syntactic_kind": "receiver_name_projection",
+      "receiver_or_value_variable": "CallFunc_GetRandomCard_randomCard",
+      "candidate_assignments": [],
+      "argument_occurrences_not_proven_outputs": [
+        {
+          "function": "ExecuteUbergraph_card_event_uncle_sam",
+          "path": "$/23/Expression",
+          "symbol": "GetRandomCard",
+          "argument_slots": [
+            2
+          ]
+        }
+      ],
+      "status": "open; no reaching-definition or runtime-target proof"
+    },
+    {
+      "source": "card_unit_cyclone_division",
+      "function": "SpawnShermanInHand",
+      "path": "$/24/Expression",
+      "symbol": "SpawnCardInHandBySide",
+      "argument": {
+        "Inst": "Context",
+        "Context": {
+          "Inst": "LocalVariable",
+          "Variable Outer": {
+            "PinCategory": "Object",
+            "PinSubCategory": "Object",
+            "PinSubCategoryObject": "/Script/kards.BaseCardObject"
+          },
+          "Variable Name": "CallFunc_GetRandomCard_randomCard"
+        },
+        "SkipOffsetForNull": 9,
+        "RValuePropertyOuter": "##NOT SERIALIZED##",
+        "RValuePropertyName": "name",
+        "Expression": {
+          "Inst": "InstanceVariable",
+          "Variable Outer": "##NOT SERIALIZED##",
+          "Variable Name": "name"
+        }
+      },
+      "syntactic_kind": "receiver_name_projection",
+      "receiver_or_value_variable": "CallFunc_GetRandomCard_randomCard",
+      "candidate_assignments": [],
+      "argument_occurrences_not_proven_outputs": [
+        {
+          "function": "SpawnShermanInHand",
+          "path": "$/21/Expression",
+          "symbol": "GetRandomCard",
+          "argument_slots": [
+            2
+          ]
+        },
+        {
+          "function": "SpawnShermanInHand",
+          "path": "$/22/Expression",
+          "symbol": "IsValid",
+          "argument_slots": [
+            0
+          ]
+        }
+      ],
+      "status": "open; no reaching-definition or runtime-target proof"
+    },
+    {
+      "source": "card_event_allied_research_effort",
+      "function": "ExecuteUbergraph_card_event_allied_research_effort",
+      "path": "$/20/Expression",
+      "symbol": "SpawnCardInHandBySide",
+      "argument": {
+        "Inst": "Context",
+        "Context": {
+          "Inst": "LocalVariable",
+          "Variable Outer": {
+            "PinCategory": "Object",
+            "PinSubCategory": "Object",
+            "PinSubCategoryObject": "/Script/kards.BaseCardObject"
+          },
+          "Variable Name": "CallFunc_GetRandomCard_randomCard"
+        },
+        "SkipOffsetForNull": 9,
+        "RValuePropertyOuter": "##NOT SERIALIZED##",
+        "RValuePropertyName": "name",
+        "Expression": {
+          "Inst": "InstanceVariable",
+          "Variable Outer": "##NOT SERIALIZED##",
+          "Variable Name": "name"
+        }
+      },
+      "syntactic_kind": "receiver_name_projection",
+      "receiver_or_value_variable": "CallFunc_GetRandomCard_randomCard",
+      "candidate_assignments": [],
+      "argument_occurrences_not_proven_outputs": [
+        {
+          "function": "ExecuteUbergraph_card_event_allied_research_effort",
+          "path": "$/17/Expression",
+          "symbol": "GetRandomCard",
+          "argument_slots": [
+            2
+          ]
+        },
+        {
+          "function": "ExecuteUbergraph_card_event_allied_research_effort",
+          "path": "$/18/Expression",
+          "symbol": "IsValid",
+          "argument_slots": [
+            0
+          ]
+        }
+      ],
+      "status": "open; no reaching-definition or runtime-target proof"
+    },
+    {
+      "source": "card_event_semper_fi",
+      "function": "ExecuteUbergraph_card_event_semper_fi",
+      "path": "$/19/Expression",
+      "symbol": "ConvertCard",
+      "argument": {
+        "Inst": "InstanceVariable",
+        "Variable Outer": {
+          "PinCategory": "Name",
+          "PinSubCategory": "Name"
+        },
+        "Variable Name": "cardNameToConvertInto"
+      },
+      "syntactic_kind": "instance_name_value",
+      "receiver_or_value_variable": "cardNameToConvertInto",
+      "candidate_assignments": [
+        {
+          "function": "ExecuteUbergraph_card_event_semper_fi",
+          "path": "$/18",
+          "expression": {
+            "Inst": "NameConst",
+            "Value": "card_unit_22nd_marines"
+          }
+        }
+      ],
+      "argument_occurrences_not_proven_outputs": [
+        {
+          "function": "ExecuteUbergraph_card_event_semper_fi",
+          "path": "$/19/Expression",
+          "symbol": "ConvertCard",
+          "argument_slots": [
+            2
+          ]
+        }
+      ],
+      "status": "open; no reaching-definition or runtime-target proof"
+    },
+    {
+      "source": "card_unit_the_123s",
+      "function": "ExecuteUbergraph_card_unit_the_123s",
+      "path": "$/12/Expression",
+      "symbol": "ConvertCard",
+      "argument": {
+        "Inst": "Context",
+        "Context": {
+          "Inst": "InstanceVariable",
+          "Variable Outer": {
+            "PinCategory": "Object",
+            "PinSubCategory": "Object",
+            "PinSubCategoryObject": "/Script/kards.BaseCardObject"
+          },
+          "Variable Name": "otherCardPlayed"
+        },
+        "SkipOffsetForNull": 9,
+        "RValuePropertyOuter": "##NOT SERIALIZED##",
+        "RValuePropertyName": "name",
+        "Expression": {
+          "Inst": "InstanceVariable",
+          "Variable Outer": "##NOT SERIALIZED##",
+          "Variable Name": "name"
+        }
+      },
+      "syntactic_kind": "receiver_name_projection",
+      "receiver_or_value_variable": "otherCardPlayed",
+      "candidate_assignments": [
+        {
+          "function": "ExecuteUbergraph_card_unit_the_123s",
+          "path": "$/33",
+          "expression": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Object",
+              "PinSubCategory": "Object",
+              "PinSubCategoryObject": "/Script/kards.BaseCardObject"
+            },
+            "Variable Name": "K2Node_Event_cardPlayed"
+          }
+        }
+      ],
+      "argument_occurrences_not_proven_outputs": [],
+      "status": "open; no reaching-definition or runtime-target proof"
+    },
+    {
+      "source": "card_unit_the_123s",
+      "function": "ExecuteUbergraph_card_unit_the_123s",
+      "path": "$/24/Expression",
+      "symbol": "ConvertCard",
+      "argument": {
+        "Inst": "Context",
+        "Context": {
+          "Inst": "InstanceVariable",
+          "Variable Outer": {
+            "PinCategory": "Object",
+            "PinSubCategory": "Object",
+            "PinSubCategoryObject": "/Script/kards.BaseCardObject"
+          },
+          "Variable Name": "otherCardPlayed"
+        },
+        "SkipOffsetForNull": 9,
+        "RValuePropertyOuter": "##NOT SERIALIZED##",
+        "RValuePropertyName": "name",
+        "Expression": {
+          "Inst": "InstanceVariable",
+          "Variable Outer": "##NOT SERIALIZED##",
+          "Variable Name": "name"
+        }
+      },
+      "syntactic_kind": "receiver_name_projection",
+      "receiver_or_value_variable": "otherCardPlayed",
+      "candidate_assignments": [
+        {
+          "function": "ExecuteUbergraph_card_unit_the_123s",
+          "path": "$/33",
+          "expression": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Object",
+              "PinSubCategory": "Object",
+              "PinSubCategoryObject": "/Script/kards.BaseCardObject"
+            },
+            "Variable Name": "K2Node_Event_cardPlayed"
+          }
+        }
+      ],
+      "argument_occurrences_not_proven_outputs": [],
+      "status": "open; no reaching-definition or runtime-target proof"
+    },
+    {
+      "source": "card_event_retribution7",
+      "function": "ExecuteUbergraph_card_event_retribution7",
+      "path": "$/11/Expression",
+      "symbol": "SpawnCardInHandBySide",
+      "argument": {
+        "Inst": "Context",
+        "Context": {
+          "Inst": "InstanceVariable",
+          "Variable Outer": {
+            "PinCategory": "Object",
+            "PinSubCategory": "Object",
+            "PinSubCategoryObject": "/Script/kards.BaseCardObject"
+          },
+          "Variable Name": "cardDestroyed"
+        },
+        "SkipOffsetForNull": 9,
+        "RValuePropertyOuter": "##NOT SERIALIZED##",
+        "RValuePropertyName": "name",
+        "Expression": {
+          "Inst": "InstanceVariable",
+          "Variable Outer": "##NOT SERIALIZED##",
+          "Variable Name": "name"
+        }
+      },
+      "syntactic_kind": "receiver_name_projection",
+      "receiver_or_value_variable": "cardDestroyed",
+      "candidate_assignments": [
+        {
+          "function": "ExecuteUbergraph_card_event_retribution7",
+          "path": "$/8",
+          "expression": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Object",
+              "PinSubCategory": "Object",
+              "PinSubCategoryObject": "/Script/kards.BaseCardObject"
+            },
+            "Variable Name": "K2Node_Event_cardDestroyed"
+          }
+        }
+      ],
+      "argument_occurrences_not_proven_outputs": [],
+      "status": "open; no reaching-definition or runtime-target proof"
+    }
+  ],
+  "id_conversion_candidates": [
+    {
+      "source": "card_unit_5th_wilno_regiment",
+      "function": "ExecuteUbergraph_card_unit_5th_wilno_regiment",
+      "path": "$/4/Expression",
+      "id_argument": {
+        "Inst": "Context",
+        "Context": {
+          "Inst": "LocalVariable",
+          "Variable Outer": {
+            "PinCategory": "Object",
+            "PinSubCategory": "Object",
+            "PinSubCategoryObject": "/Script/kards.BaseCardObject"
+          },
+          "Variable Name": "K2Node_Event_targetCard"
+        },
+        "SkipOffsetForNull": 9,
+        "RValuePropertyOuter": "##NOT SERIALIZED##",
+        "RValuePropertyName": "cardID",
+        "Expression": {
+          "Inst": "InstanceVariable",
+          "Variable Outer": "##NOT SERIALIZED##",
+          "Variable Name": "cardID"
+        }
+      },
+      "status": "Name None plus dynamic ID argument; actual positive ID and target remain unverified"
+    },
+    {
+      "source": "card_event_honorifics",
+      "function": "ExecuteUbergraph_card_event_honorifics",
+      "path": "$/33/Expression",
+      "id_argument": {
+        "Inst": "LocalVariable",
+        "Variable Outer": {
+          "PinCategory": "Int",
+          "PinSubCategory": "Int"
+        },
+        "Variable Name": "CallFunc_JSON_GetInt_value"
+      },
+      "status": "Name None plus dynamic ID argument; actual positive ID and target remain unverified"
+    },
+    {
+      "source": "card_event_surveil",
+      "function": "ExecuteUbergraph_card_event_surveil",
+      "path": "$/4/Expression",
+      "id_argument": {
+        "Inst": "InstanceVariable",
+        "Variable Outer": {
+          "PinCategory": "Int",
+          "PinSubCategory": "Int"
+        },
+        "Variable Name": "unitTargeted"
+      },
+      "status": "Name None plus dynamic ID argument; actual positive ID and target remain unverified"
+    },
+    {
+      "source": "card_unit_kv_85",
+      "function": "ExecuteUbergraph_card_unit_kv_85",
+      "path": "$/59/Expression",
+      "id_argument": {
+        "Inst": "LocalVariable",
+        "Variable Outer": {
+          "PinCategory": "Int",
+          "PinSubCategory": "Int"
+        },
+        "Variable Name": "CallFunc_JSON_GetInt_value"
+      },
+      "status": "Name None plus dynamic ID argument; actual positive ID and target remain unverified"
+    },
+    {
+      "source": "card_unit_the_american_guard",
+      "function": "ExecuteUbergraph_card_unit_the_american_guard",
+      "path": "$/8/Expression",
+      "id_argument": {
+        "Inst": "InstanceVariable",
+        "Variable Outer": {
+          "PinCategory": "Int",
+          "PinSubCategory": "Int"
+        },
+        "Variable Name": "cardNameToConvertInto"
+      },
+      "status": "Name None plus dynamic ID argument; actual positive ID and target remain unverified"
+    }
+  ],
+  "conversion_name_selection_tests": [
+    [
+      -1,
+      "None",
+      "None"
+    ],
+    [
+      -1,
+      "fixture-name",
+      "fixture-name"
+    ],
+    [
+      -1,
+      "different-name",
+      "different-name"
+    ],
+    [
+      0,
+      "None",
+      "None"
+    ],
+    [
+      0,
+      "fixture-name",
+      "fixture-name"
+    ],
+    [
+      0,
+      "different-name",
+      "different-name"
+    ],
+    [
+      1,
+      "None",
+      "fixture-reference-name"
+    ],
+    [
+      1,
+      "fixture-name",
+      "fixture-reference-name"
+    ],
+    [
+      1,
+      "different-name",
+      "fixture-reference-name"
+    ],
+    [
+      7,
+      "None",
+      "fixture-reference-name"
+    ],
+    [
+      7,
+      "fixture-name",
+      "fixture-reference-name"
+    ],
+    [
+      7,
+      "different-name",
+      "fixture-reference-name"
+    ]
+  ],
+  "conversion_runtime_evidence": {
+    "function_sha256": "dcb5f0ffc0cbb4a22c92e61e197dffac6cbffe39a5aeb8fa71df901d549c841d",
+    "statements": [
+      {
+        "Inst": "LetBool",
+        "Variable": {
+          "Inst": "LocalVariable",
+          "Variable Name": "CallFunc_Greater_IntInt_ReturnValue_2"
+        },
+        "Expression": {
+          "Inst": "CallMath",
+          "Function": "Greater_IntInt",
+          "Parameters": [
+            {
+              "Inst": "LocalVariable",
+              "Variable Name": "convertIntoCardID"
+            },
+            {
+              "Inst": "IntConst",
+              "Value": 0
+            }
+          ]
+        },
+        "StatementIndex": 1668
+      },
+      {
+        "Inst": "JumpIfNot",
+        "Offset": 1767,
+        "Condition": {
+          "Inst": "LocalVariable",
+          "Variable Name": "CallFunc_Greater_IntInt_ReturnValue_2"
+        },
+        "StatementIndex": 1702
+      },
+      {
+        "Inst": "LocalVirtualFunction",
+        "FunctionName": "GetCardFromID",
+        "Parameters": [
+          {
+            "Inst": "LocalVariable",
+            "Variable Name": "convertIntoCardID"
+          },
+          {
+            "Inst": "LocalVariable",
+            "Variable Name": "CallFunc_GetCardFromID_card_2"
+          }
+        ],
+        "StatementIndex": 1716
+      },
+      {
+        "Inst": "LetObj",
+        "Variable": {
+          "Inst": "LocalVariable",
+          "Variable Name": "converIntoCardID_Ref"
+        },
+        "Expression": {
+          "Inst": "LocalVariable",
+          "Variable Name": "CallFunc_GetCardFromID_card_2"
+        },
+        "StatementIndex": 1748
+      },
+      {
+        "Inst": "LetBool",
+        "Variable": {
+          "Inst": "LocalVariable",
+          "Variable Name": "CallFunc_Greater_IntInt_ReturnValue"
+        },
+        "Expression": {
+          "Inst": "CallMath",
+          "Function": "Greater_IntInt",
+          "Parameters": [
+            {
+              "Inst": "LocalVariable",
+              "Variable Name": "convertIntoCardID"
+            },
+            {
+              "Inst": "IntConst",
+              "Value": 0
+            }
+          ]
+        },
+        "StatementIndex": 1953
+      },
+      {
+        "Inst": "LetBool",
+        "Variable": {
+          "Inst": "LocalVariable",
+          "Variable Name": "Temp_bool_Variable_2"
+        },
+        "Expression": {
+          "Inst": "LocalVariable",
+          "Variable Name": "CallFunc_Greater_IntInt_ReturnValue"
+        },
+        "StatementIndex": 2265
+      },
+      {
+        "Inst": "LocalVirtualFunction",
+        "FunctionName": "CreateCard",
+        "Parameters": [
+          {
+            "Inst": "Context",
+            "Context": {
+              "Inst": "LocalVariable",
+              "Variable Name": "_oldCard"
+            },
+            "SkipOffsetForNull": 9,
+            "RValuePropertyName": "side",
+            "Expression": {
+              "Inst": "InstanceVariable",
+              "Variable Name": "side"
+            }
+          },
+          {
+            "Inst": "SwitchValue",
+            "Expression": {
+              "Inst": "LocalVariable",
+              "Variable Name": "Temp_bool_Variable_2"
+            },
+            "OffsetToSwitchEnd": 2503,
+            "Cases": [
+              {
+                "CaseValue": {
+                  "Inst": "False"
+                },
+                "OffsetToNextCase": 2458,
+                "CaseResult": {
+                  "Inst": "LocalVariable",
+                  "Variable Name": "convertToCardName"
+                }
+              },
+              {
+                "CaseValue": {
+                  "Inst": "True"
+                },
+                "OffsetToNextCase": 2494,
+                "CaseResult": {
+                  "Inst": "Context",
+                  "Context": {
+                    "Inst": "LocalVariable",
+                    "Variable Name": "converIntoCardID_Ref"
+                  },
+                  "SkipOffsetForNull": 9,
+                  "RValuePropertyName": "Name",
+                  "Expression": {
+                    "Inst": "InstanceVariable",
+                    "Variable Name": "Name"
+                  }
+                }
+              }
+            ],
+            "DefaultResult": {
+              "Inst": "LocalVariable",
+              "Variable Name": "K2Node_Select_Default_2"
+            }
+          },
+          {
+            "Inst": "LocalVariable",
+            "Variable Name": "_oldLocation"
+          },
+          {
+            "Inst": "IntConst",
+            "Value": 0
+          },
+          {
+            "Inst": "LocalVariable",
+            "Variable Name": "_oldLocationNumber"
+          },
+          {
+            "Inst": "LocalVariable",
+            "Variable Name": "CallFunc_BooleanOR_ReturnValue"
+          },
+          {
+            "Inst": "Context",
+            "Context": {
+              "Inst": "LocalVariable",
+              "Variable Name": "_oldCard"
+            },
+            "SkipOffsetForNull": 9,
+            "RValuePropertyName": "isGoldCard",
+            "Expression": {
+              "Inst": "InstanceVariable",
+              "Variable Name": "isGoldCard"
+            }
+          },
+          {
+            "Inst": "StringConst",
+            "Value": ""
+          },
+          {
+            "Inst": "False"
+          },
+          {
+            "Inst": "False"
+          },
+          {
+            "Inst": "LocalVariable",
+            "Variable Name": "instigatorID"
+          },
+          {
+            "Inst": "False"
+          },
+          {
+            "Inst": "SwitchValue",
+            "Expression": {
+              "Inst": "LocalVariable",
+              "Variable Name": "Temp_bool_Variable"
+            },
+            "OffsetToSwitchEnd": 2633,
+            "Cases": [
+              {
+                "CaseValue": {
+                  "Inst": "False"
+                },
+                "OffsetToNextCase": 2610,
+                "CaseResult": {
+                  "Inst": "LocalVariable",
+                  "Variable Name": "Temp_struct_Variable"
+                }
+              },
+              {
+                "CaseValue": {
+                  "Inst": "True"
+                },
+                "OffsetToNextCase": 2624,
+                "CaseResult": {
+                  "Inst": "LocalVariable",
+                  "Variable Name": "K2Node_MakeStruct_S_SalvagedCardInfo"
+                }
+              }
+            ],
+            "DefaultResult": {
+              "Inst": "LocalVariable",
+              "Variable Name": "K2Node_Select_Default_1"
+            }
+          },
+          {
+            "Inst": "True"
+          },
+          {
+            "Inst": "False"
+          },
+          {
+            "Inst": "False"
+          },
+          {
+            "Inst": "LocalVariable",
+            "Variable Name": "CallFunc_CreateCard_cardID"
+          }
+        ],
+        "StatementIndex": 2384
+      }
+    ]
+  },
+  "findings": [
+    "All five unresolved literal-name sites pass Name None with a separate dynamic conversion ID. No missing card definition is inferred.",
+    "Captured conversion uses ID>0 to select the referenced object Name over the supplied name. Valid target lookup, null handling and full conversion lifecycle remain open.",
+    "Mode exception flags at these sites are checked via JsonHasField, including present false under supplied JSON helper semantics; actual helper and policy schema remain unverified.",
+    "Model executes captured control flow with an explicit aggregation replacement. No static card lookups, ownership derivation or custom-rule internals are certified.",
+    "Dynamic variable names and matching assignments are syntax candidates only; no reaching definitions, interprocedural return mapping or PvP reachability proven."
+  ],
+  "evidence_bindings": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\scope001-pool-and-reference-functions-20261029.json",
+      "sha256": "ed4a2cf33b9897377be5f44d9faeb630c114b0923f1a056e29501176418c83c7"
+    },
+    {
+      "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
+      "sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\out\\audit\\pvp-scope\\evidence-summary.json",
+      "sha256": "5d2847566f877a4c859471a3e1225dacaa21949191612386e8f6fade6a4befc1"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\cards.definitions.json",
+      "sha256": "122e051175ba711975269838fe1097946fe23bab41cbe0db535b3ec5f539f65e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\out\\audit\\pvp-scope\\creation_calls.tsv",
+      "sha256": "4917ed02ed68021e52630349c6f27e1ff78f9e7fa736792ed4190880dce73ac3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\out\\audit\\pvp-scope\\deck-validation-phase.json",
+      "sha256": "92b77adc423429fcb75a4e11c1bedb725c43093e75e1e7264a1f007a1908cf8c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\model-deck-validation-phase.py",
+      "sha256": "aa15abe834a4789336ee3883374f2d7c10447055898a2ac23790e53360cd02c2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\test-deck-validation-phase.py",
+      "sha256": "10506a5959bd8fc1bf912656bfa8aeddd701dd5f112f5d8a618f6af9c81d5f76"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\scope002-worker\\input.json",
+      "sha256": "5290323c4b98dadb77e5e29eb39a3e3a875fd7a26aca5bc184a80ce9593c4492"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\scope002-worker\\output.json",
+      "sha256": "8ed016850cc5b22d84fe783af5b57a8fe774a56dfa0ea8010372d0faa9d9048b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\scope002-worker\\extract.py",
+      "sha256": "dc75e5aa929428d167a3f0dd91f62a9b72247d7442b13441489e50260d874770"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\build-scope002-report.py",
+      "sha256": "62a6eadcf2865ed82a20115fe700940bdfbe2eec65f2f915b3ee2e4d85f1fd7d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Poland\\events\\card_event_agency_africa.functions.json",
+      "sha256": "a625c605b76101a38e2b4728f5aba62890e364c1a938997e3dfb18586302e4c2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\USA\\Breakthrough\\events\\card_event_allied_research_effort.functions.json",
+      "sha256": "034f0a51a4901c7b859550ca194ac2c6893fd1b36616edbab6317abb1659ecba"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Britain\\Base\\events\\card_event_atlantic_convoy.functions.json",
+      "sha256": "f5414b531a5bb28712fc5d5cb5ae67d5b3cebeb987f913fe19834799b9090651"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Britain\\OceaniaStorm\\events\\card_event_colossus.functions.json",
+      "sha256": "1d5ca4b1e35988c03a6fb74eddb61b93940433124191e1191e849462453877a3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Finland\\events\\card_event_depot_raid.functions.json",
+      "sha256": "15d660fa135c243ddb6a99a95b77613b22b1bab56e4a790cd0284b002dbed611"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Italy\\specialCards\\card_event_desert_push_cam1.functions.json",
+      "sha256": "cb26ea967dbd65535c9e58cb81b81da2d0a8828eba47b99e7cfa9ee7d46aa735"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Britain\\Legions\\events\\card_event_double_strength.functions.json",
+      "sha256": "23fe367f15fdd4cff13541554a67958a211b91596d93bdb468fe9e35edd842dd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BrawlCards\\card_event_espionage_skirm.functions.json",
+      "sha256": "9cd6fd23a9da7d54b8537e0283c0fb5d5043ba4e95a86806961a83b56399ffe8"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Japan\\Breakthrough\\events\\card_event_experimental_flight.functions.json",
+      "sha256": "beb748969d72e0f326e6a7e46fa5606440ea8c28473dae1ab61ff0368972d31b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Britain\\Breakthrough\\events\\card_event_fog_of_war.functions.json",
+      "sha256": "8d89173e5f2a1c3056e6e7678b852339209efdb5951b07309c77f41b658bb6af"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Germany\\WorldAtWar\\events\\card_event_harass.functions.json",
+      "sha256": "56382201a8112627a3fea0608528b9c504c0c83e01469299c807ee5da8c4d696"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Soviet\\NavalWarfare\\events\\card_event_honorifics.functions.json",
+      "sha256": "5a5cf2a7663c2e905ecde2295ab3092288e4d60e57cc0dc0c219737ac9a0bbe3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Soviet\\Base\\events\\card_event_mother_russia.functions.json",
+      "sha256": "b3669f30780dbea39db209bc3ea88078f3bdf04ea53fa97124ac32e24d8477d5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Finland\\events\\card_event_motti_tactic.functions.json",
+      "sha256": "b64e1b2a6f164564311ab996200073ea503e17f3da612d32d4dfaf4727d29864"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Britain\\Base\\events\\card_event_night_raid.functions.json",
+      "sha256": "d69fb7d2a3c8fec2ec0b107648bff0ccaabc10de0d9cbfb7b85f3bd241191437"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Poland\\events\\card_event_orp_blyskawica.functions.json",
+      "sha256": "1ee2e78a9f945478078ef0a43a501fbc3bb61171b32907ccb94c8047b07a91b4"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Soviet\\Allegiance\\events\\card_event_parade.functions.json",
+      "sha256": "df0dc5742370006ddb1d61e025ed7ac0f926457ee0884a6e1990b7563a5024b5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Neutral\\events\\card_event_rain1_mist.functions.json",
+      "sha256": "875d8af844becbde5477d2223f79151dd62181c8457d5fc7d31649fc1eac4a51"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Britain\\Base\\events\\card_event_rescue_mission.functions.json",
+      "sha256": "57248be0b29803c19b10c6f280a83bc9ebb36a5f43a86ae770a652f997a48bf5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\USA\\specialCards\\card_event_retribution7.functions.json",
+      "sha256": "0c61d735559aae678dff6a09e156a54eea254ea3d2a89ad1b64e8aacb1b343fb"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Britain\\OceaniaStorm\\events\\card_event_seac.functions.json",
+      "sha256": "f81062e750f920430cc0b4db74a7e209419c94600c792ef0eb633d055a4b5297"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\USA\\NavalWarfare\\events\\card_event_semper_fi.functions.json",
+      "sha256": "38303811e55427de148daf6bf400c5a91378d3620c3cfc1093cb2b1ea1e22995"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Soviet\\WinterWar\\events\\card_event_special_reinforcements.functions.json",
+      "sha256": "71860e8015afa51231f996cedaf891f13d8672729aa30d85430ef76e87ae5686"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Soviet\\Breakthrough\\events\\card_event_spy_ring.functions.json",
+      "sha256": "3a893be1d2f6ef2db52b0ca4617688feba0e71e6857092f046aa0bee5ace4c8c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Neutral\\events\\card_event_storm1_gale.functions.json",
+      "sha256": "7791699bef8080a9e78cb4d5ae54e53061f034eb732b04c7c849fd605c248d23"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Neutral\\events\\card_event_sunny1_blue_sky.functions.json",
+      "sha256": "49c00f8353e6cb93cc90500cb005ba74c479564c9c4978c59974c398a7f6ad26"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Soviet\\NavalWarfare\\events\\card_event_surveil.functions.json",
+      "sha256": "8350e3d4fdb1bc3fda005aa39cf3ec8249eaddff3fb9f270845c053f8c4809b9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\USA\\Base\\events\\card_event_uncle_sam.functions.json",
+      "sha256": "5f2ffafecb0e80523947bc8c0b88c22c183a32700559699e4a7c76c8f7105ac0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Soviet\\specialCards\\card_event_ural_factories_cam1.functions.json",
+      "sha256": "954f2933b3225dffb3a7f56efc05c83ca03961b078473b20e6d9da9bd0679090"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Soviet\\NavalWarfare\\events\\card_event_victory_banners.functions.json",
+      "sha256": "62359fe15e0e8f93f09170d9435db5f7f163305e4a1f6f1f229da54d5488d4f7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Soviet\\Base\\units\\card_unit_13th_rifle_regiment.functions.json",
+      "sha256": "22d1d19c773157b11a5066f1db338dd764b4f2c8e836ea1a51e1ad3bbc74375f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Poland\\units\\card_unit_5th_wilno_regiment.functions.json",
+      "sha256": "f1e8dbd9b0ca347d0954758eeda9d43b8733579ef3172ae5ddf047e63cdbd534"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\USA\\BloodIron\\units\\card_unit_cyclone_division.functions.json",
+      "sha256": "8629be51669de3d5bd17426c50ae157f86e2e6dc8dec42e868f0901fb2c3c84f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Germany\\Legions\\units\\card_unit_ju_88_g6.functions.json",
+      "sha256": "a205066e51010c3af0ba058ea46d0f8e96b5c3ed51baf91a886af7ce2fcff8d1"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Japan\\Base\\units\\card_unit_ki_27_nate.functions.json",
+      "sha256": "b452097ceb9778ffbfaa53b60143366718b443fb5ebe370004ae0340451485dd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Soviet\\NavalWarfare\\units\\card_unit_kv_85.functions.json",
+      "sha256": "fbd5e98fd866d22f82558cd8726b369dcaf3c4032b06ef23cbbf55aa8b2859d6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Poland\\units\\card_unit_p37los.functions.json",
+      "sha256": "ebbc55d3187f7ab9f1413c63d3a468ce63870364891213ccf588a44e7563e7a8"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Britain\\NavalWarfare\\units\\card_unit_sherwood_foresters.functions.json",
+      "sha256": "28c165859305e45dec7219568f5e1eb6fd25bad7ef33d6d3aba7e8e081e7a8ea"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\USA\\NavalWarfare\\units\\card_unit_the_123s.functions.json",
+      "sha256": "3adf3ddfd41b93fc586652bc4f942495f5aa0f6e8438f0cc6f20613ead44a6a0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\USA\\NavalWarfare\\units\\card_unit_the_american_guard.functions.json",
+      "sha256": "50eb38d0050a67a75da6ae4ad351ce88ede2c34dee3e0a52aba015c5280ba047"
+    }
+  ]
+}
