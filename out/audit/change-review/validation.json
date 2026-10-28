@@ -1,0 +1,40 @@
+{
+  "date": "2026-10-29",
+  "counts": {
+    "changed_files": 26,
+    "source_snapshot_pairs": 524,
+    "recovered_pairs": 523,
+    "pair_classifications": {
+      "json_values_changed": 5,
+      "python_ast_changed": 4,
+      "historical_bytes_not_recovered": 1,
+      "member_or_context_tokens_changed": 511,
+      "trivia_only_for_this_exact_file_pair": 3
+    }
+  },
+  "roslyn_documents_verified": 534,
+  "parse_errors": 0,
+  "exact_reconstruction_independently_verified": 523,
+  "worker": {
+    "job": "20261029-024807-history-json-pointer-diffs-33fc60bc",
+    "json_pairs_verified": 5
+  },
+  "tests": {
+    "python_history": 13,
+    "roslyn_fixtures": 13,
+    "baseline": 20,
+    "matrix": 16
+  },
+  "production_rule_code_changed": false,
+  "no_semantic_certification_promotion": true,
+  "evidence_sha256": {
+    "D:\\Codex Workshop\\kards-install-review\\source-history-cache\\recovery.json": "2fb8d6779eb02d0767373402937e71126012e1bfe915337ff63ee907f27ef1cf",
+    "D:\\Codex Workshop\\kards-install-review\\source-history-cache\\roslyn-output.json": "21ed7d2566c3256df7242905b6ba2198b8ae1c8d7ae7b23b6a38747e0f905d8e",
+    "D:\\Codex Workshop\\kards-install-review\\history-json-worker\\input.json": "338c44d4d15e4fb7db394fd46cc4372713b1023512f51f131c7f70274827d443",
+    "D:\\Codex Workshop\\kards-install-review\\history-json-worker\\output.json": "3f72a7f2eec4d31ced32af20cf3a0993dc3f0d1ad7373302ddab1d36eb7499ed",
+    "D:\\Codex Workshop\\KLink-bot\\tools\\analyze-audit-history.py": "15351cd010e4aa6d37cd472b7d32dc341d701c475c1c4edf95d982461e30e669",
+    "D:\\Codex Workshop\\KLink-bot\\tools\\AuditHistory\\Program.cs": "dd5653c0401443a4f2f9929c60093c8b36d8e4756ea97b13d645d3b783b13161",
+    "D:\\Codex Workshop\\KLink-bot\\tools\\AuditHistory\\AuditHistory.csproj": "085b239eda5a89374fbd7ef818f5415b515bd4e7dd7c6638e57e74264cef9fc1",
+    "D:\\Codex Workshop\\KLink-bot\\out\\audit\\change-review\\review.json": "657ac7f333f746f5962c988d4e4714f4173ca9278bf5f8679ace42e55a35743e"
+  }
+}

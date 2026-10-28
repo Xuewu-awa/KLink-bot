@@ -303,6 +303,7 @@ def write(result, output):
         '- [reports.tsv](reports.tsv)：报告声称的范围、EXE版本声明及文件证据状态。',
         '- [bindings.tsv](bindings.tsv)：每个文件声明的预期/当前哈希和具体变动，保留报告来源。',
         '- [changed_files.tsv](changed_files.tsv)：归并后的变动文件及受影响报告，避免把重复引用算作独立缺陷。',
+        '- [文件/成员变动复核](../change-review/README.md)：从精确旧指纹恢复源码后，定位成员与数据差异；结论使用前核对快照指纹。',
         '- [remaining_claims.tsv](remaining_claims.tsv)：历史陈述与人工处置；已被后续部分处理的内容不再重复算成全新缺陷。',
         '- [work_units.tsv](work_units.tsv)：当前工作域、依赖、验收条件和交付物。',
         '- [scope_candidates.tsv](scope_candidates.tsv)：按权威导出显式字段分组的资产候选；不按名称排除战役或衍生卡。', '',

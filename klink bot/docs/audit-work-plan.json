@@ -58,7 +58,18 @@
         "remaining_claims.tsv"
       ],
       "effort_estimate": "not_sized",
-      "status_basis": "planning taxonomy; historical partial evidence is not domain completion"
+      "status_basis": "planning taxonomy; historical partial evidence is not domain completion",
+      "progress_notes": [
+        "已精确恢复524个仓库历史指纹版本中的523个；24个仓库文件已做成员/数据变化定位。",
+        "其中三对C#版本为同一固定解析配置下非trivia令牌与上下文不变，仍不自动认证调用依赖。",
+        "一个CardBlacklistPolicy旧指纹及两个外部文件仍未获得精确旧字节；不能按时间挑相近版本。",
+        "仓库卡表差异覆盖六个卡ID，IR差异仅一个卡ID；这些是仓库历史差异，不是当前客户端完整改动清单。"
+      ],
+      "current_deliverables": [
+        "out/audit/change-review/README.md",
+        "out/audit/change-review/source_pairs.tsv",
+        "out/audit/change-review/json_differences.tsv"
+      ]
     },
     {
       "id": "VM-01",

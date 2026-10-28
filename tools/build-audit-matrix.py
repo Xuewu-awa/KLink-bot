@@ -343,6 +343,7 @@ def write_outputs(result, output):
         '- [open_items.tsv](open_items.tsv)：明确整理的当前待办，和历史remaining分开。',
         '- [work_units.tsv](work_units.tsv)：工作域、依赖、验收条件及交付物；不以分组数量估计总体工作量。',
         '- [进度基线](../progress-baseline/README.md)：台账/报告对齐、文件指纹复核和历史陈述去重。',
+        '- [成员变动复核](../change-review/README.md)：精确旧指纹对应的C#成员、数据变化和仍待恢复项。',
         '- [matrix.json](matrix.json)：完整机器可读数据与输入SHA-256。', '',
         'TSV中的null表示缺失/未知值；复杂字段为JSON单元格，完整类型以matrix.json为准。', '',
         '## 优先整理的公共依赖', '',

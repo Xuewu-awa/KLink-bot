@@ -23,10 +23,10 @@
   },
   "no_semantic_certification_promotion": true,
   "files_sha256": {
-    "tools/build-audit-baseline.py": "9631d81adc9d307fa8ff89320284e69339f2e0f2d410ae0748e3897dc2f4dd27",
+    "tools/build-audit-baseline.py": "794ae3efcf8fb8028ab313b427d606155d276745b74dccec6f76200da724ebc7",
     "tools/test-audit-baseline.py": "0ee2b904f32e167ab9cf170264823c06ec096cc5e5c7b276050aa02a4e8fc4a7",
-    "klink bot/docs/audit-work-plan.json": "20484a1bc85cc6009e9932834242ddac5a522d7ac3c5011245d7a3ecc0721f8d",
-    "out/audit/progress-baseline/baseline.json": "1b604b5b94c31c03d16ec7dab1bf436e9bc7611722c5c98b9c46c3eef968a23c"
+    "klink bot/docs/audit-work-plan.json": "d22494e0d7c8efaaa99952bc65b8ccd19885b4e89453aeb456cdd84ccb83c894",
+    "out/audit/progress-baseline/baseline.json": "f72d864b7a3c6b3860d7590248806f61efe29da3054d659e5c9b3850ee0e258e"
   },
   "worker_files_sha256": {
     "D:\\Codex Workshop\\kards-install-review\\audit-baseline-worker\\input.json": "f486dd0b8baf1fb241c20df8d3b3eed8ad3659309289dcb2e7ff762bba466733",
