@@ -1,0 +1,54 @@
+{
+  "rule_id": "RULE-519",
+  "date": "2026-10-28",
+  "status": "已修复GiveAlpineBonus的两处raw读取，动态来源可触发加成并计入友方山地数量；未认证整个山地机制",
+  "authority": {
+    "pid": 24220,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "read_only": true,
+    "client_writes": 0,
+    "real_client_function_calls": 0,
+    "historical_replays_used_as_authority": false
+  },
+  "findings": [
+    "当前只读复获GiveAlpineBonus1178B/39节点和GetAllUnitsOnBoard1014B，两者完整AST解码。另捕获CardFunctionsStub.GetAllUnitsOnBoard无脚本声明0B，单独保留，未视为已解码实现。",
+    "目标47和候选562均调用原生getHasAlpine。结合RULE516独立原生getter验证，原始标志或非空正式来源数组均构成有效山地。原模拟器两处Keywords.Contains只读raw；RULE518授予正来源后不会设置raw，因此原加成函数会漏算该目标或同阵营动态山地候选。现两处改用HasKeyword。",
+    "5/37资格门，47..280目标有效山地/在场/总防御>0；290仅查询一次GetAllUnitsOnBoard(false)。360每次循环测试重读数组长度，562/603/685到799筛有效山地、同side且不是自己，809到878每个匹配候选加1；906/940零加成早退。950先ChangeAttack、1025后ChangeDefense，两个参数均是同一预先求得bonus，来源为card.CardID、mode1、skipAction=false。",
+    "GetAllUnitsOnBoard1014B按当前全局battle数组顺序查询，候选必须原始解密防御>0、在场、是单位，且未揭示Covert在includeCovertCards=false时排除。该函数本身多次读GetAllCardInBattle；本轮离线组合供给稳定battle数组，未证明并发或重入改变此数组时的全部行为。",
+    "1200组实际两个AST组合执行，覆盖目标/候选raw、无Map/空Map/含0/含负数重复源，双方、目标正/零/负防御、位置、资格、以及首次数值调用后模拟修改全场山地标志。验证调用门、数量、参数、攻击先于防御且不重新计数；原生getter/资格/容器/算术、全局数组和ChangeAttack/ChangeDefense函数体为供给边界。修改是离线回调探针，未操作游戏。",
+    "新增400组C#矩阵验证双方向、目标/候选5种山地状态、抑制标志、位置、防御0/3；包括隐藏/已揭示Covert、死亡/手牌/敌方/总部非单位排除，检查实际数值、攻击后防御通知和以自身ID记账，不回写raw。另验证真实GiveAlpine正来源授予后接通加成、关键词账本和数值账本独立，撤销其他山地来源不回算旧增益。",
+    "修复前新增用例失败：raw山地目标+含0动态来源友方候选，预期+2实际只+1（Left/1/3/False/True/3）。修复后932/932全部通过，构建0警告0错误。历史回归仅作兼容性检查，不作为权威规则来源。",
+    "删除旧注释中资格门恒真、只允许调用一次及五调用点穷尽等未在本轮验证的表述，改写为当前直接函数体可证明的顺序、有效getter和预计算快照；本函数无一次性guard，全局调用点完整性仍待审计。",
+    "DeepSeek在私有包完成节点提取；主agent独立验证39节点计数及5个请求调用的名称/索引。其calls[].callOrder和F3长度只缓存一次的说法错误，另有F4读取范围表述不准，已在worker-verification中记录拒绝；未将助手文本当权威。"
+  ],
+  "validation": {
+    "actual_blueprint_ast_cases": 1200,
+    "new_csharp_matrix_cases": 400,
+    "named_give_integration_scenario": 1,
+    "selftest_passed": 932,
+    "selftest_total": 932,
+    "build_warnings": 0,
+    "build_errors": 0
+  },
+  "remaining": [
+    "所有GiveAlpineBonus调用点的动作流程门、等待路径互斥及恰当次数仍需全量当前字节码核对。",
+    "ChangeAttack/ChangeDefense内的真实回调重入、修改/移除目标及来源对象解析等长链未因本轮两个调用被整体认证。",
+    "通用type6账本、抑制/恢复和来源移除的全局消费链仍需独立核对；其他关键词不能套用山地规则。",
+    "所有未还原卡牌逻辑的穷尽清单仍需全量卡池、函数、原语及调用覆盖证明。"
+  ],
+  "fully_certified_cards": 0,
+  "evidence_sha256": {
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule519-alpine-bonus-functions-20261028.json": "a750db4ccff6ebfc3feda287a9fed31f3107dec39cc4bb66b51494b2c4790064",
+    "D:\\Codex Workshop\\kards-install-review\\capture-rule519-alpine-bonus.py": "62f5e979ae120b876398a87b47fae1bb32bfc63614f436b6fef27815e604d468",
+    "D:\\Codex Workshop\\kards-install-review\\capture-rule518-dependencies.py": "b050188fc0fec33af5330eec7d15e0799efb67781d7694f4ffa4676435338148",
+    "D:\\Codex Workshop\\kards-install-review\\capture-rule508-candidates.py": "74ad930fac960e2b87aabed35ec8c4327a6befe625500b0dd21150d8ea624588",
+    "D:\\Codex Workshop\\kards-install-review\\verify-rule519-alpine-bonus.py": "f468b168c74592ff6cb03b7eda761cc5c06d4c794d8447455dd3055b936bf0aa",
+    "D:\\Codex Workshop\\kards-install-review\\rule519-alpine-bonus-verification-20261028.json": "55020bfa23d07da644cd61a4874dce4d45f898733d256d75c7be74f7944868f4",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-rule519-before-20261028.txt": "0f2054e34a1850c2e1f26b73dc2364499b1e9d9c14fbfd8de29d90979531aa72",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-rule519-after-20261028.txt": "ad2b85f1069958888e488bd3fa54d57402122a2076169e36636d8001264df978",
+    "D:\\Codex Workshop\\kards-install-review\\build-rule519-final-20261028.txt": "aa9de55c5ba4ad306873dbb9bbb67ef4a07bf17df5ab26d4c0b59ca4910de0f9",
+    "D:\\Codex Workshop\\kards-install-review\\rule519-worker\\input.json": "40f751f1e8e0c12be591de8b0d83a3b787f2eefd06187d6e4c5ab79dde990a43",
+    "D:\\Codex Workshop\\kards-install-review\\rule519-worker\\output.json": "b5e261f5f6e72a84bfc9ef933aed91104ed31d56cb12cbadf8f52b2a4b20bd74",
+    "D:\\Codex Workshop\\kards-install-review\\rule519-worker-verification-20261028.json": "abb3b0457d4c71970ab555749507bc1c248a751b25a199678562f5dc0059f9a4"
+  }
+}

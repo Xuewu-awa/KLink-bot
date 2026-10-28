@@ -2579,73 +2579,26 @@ public sealed partial class CardApi
     }
 
     /// <summary>
-    /// **山地（Alpine）加成** —— `BP_CardFunctions::GiveAlpineBonus`（39 条语句）。
-    ///
-    /// 出处 `out/bp-cardfn.json`（`si` = StatementIndex；`Jump`/`JumpIfNot` 的 `Offset`
-    /// 就是目标 `StatementIndex`）：
-    /// <code>
-    /// si=0     PushExecutionFlow(1175)                       ; 返回哨兵
-    /// si=5     CanCardBeBuffed(card, out CanBeBuffed)
-    /// si=37    PopExecutionFlowIfNot(CanBeBuffed)            ; 假 ⇒ 返回
-    /// si=47/88/129  card.getHasAlpine / card.IsLocatedOnBoard / card.getTotalDefense
-    /// si=170..242   and = IsLocatedOnBoard && totalDefense &gt; 0 && hasAlpine
-    /// si=280   PopExecutionFlowIfNot(and)                    ; 假 ⇒ 返回
-    /// si=290   GetAllUnitsOnBoard(includeCovertCards=False, out cards)
-    /// si=314..457   for (i = 0; i &lt; len; i++)
-    /// si=562..761       item.getHasAlpine && item != card && item.side == card.side
-    /// si=799            PopExecutionFlowIfNot(…)             ; 假 ⇒ continue
-    /// si=809            bonus += 1
-    /// si=906   if (bonus &gt; 0)
-    /// si=950       ChangeAttack (card, card.cardID, bonus, changeType=1, False, out)
-    /// si=1025      ChangeDefense(card, card.cardID, bonus, changeType=1, False, out)
-    /// </code>
-    /// 规则一句话：**带 Alpine 的单位在场上且防御 &gt; 0 时，得到 +N/+N，
-    /// N = 场上其它同阵营 Alpine 单位的数量**。
-    ///
-    /// ⚠️ **`changeType = 1` 是「加」不是「设」** —— `ChangeAttack` 里那张
-    /// `K2Node_SwitchEnum`（si=584/629/674/719/764/809 六次 `NotEqual_ByteByte(localChangeType, N)`）
-    /// 的 **case 1** 落到 si=1224 那一支：si=1325 `Add_IntInt(getAndDecryptAttack(card), localInputAmount)`
-    /// ⇒ 加法，si=1371 再 `Clamp(.., 0, 99)`。
-    /// ⇒ **这个函数只能在一个单位「刚进场」那一刻调一次**，重复调会叠加。
-    ///
-    /// ⚠️ **调用点只有 5 个，全在「单位进入战场」的路径上**（`GiveAlpineBonus` 不在派发表里、
-    /// `card-ir.json` 里调用它的卡 = **0** —— 它是引擎内函数，得由内核在部署流程里主动调）：
-    /// <code>
-    /// SpawnCardToBoard              si=872    ↔ 内核 CardApi.SpawnOnBattlefield
-    /// SpawnMultipleCardsOnBattlefield si=2968 ↔ CardApiDispatch 的批量生成第二阶段
-    /// PlayCardFromHand              si=2207   ↔ 内核 MatchEngine.PlayCard 那条链
-    /// PlayCardDirectlyFromHand      si=3053   ↔ 内核 MatchEngine 直接出牌路径
-    /// AfterWaitCardPlayFromHand     si=974    ↔ 内核没有；IR 里 0 个调用点
-    /// </code>
-    /// `PlayCardFromHand` 那一路还有个互斥门：si=2147 `GameStateRef.GetExecuteWaitPlayFromHand`
-    /// → si=2192 `JumpIfNot → 2207`，也就是「**没走 wait 路径**才在这里给加成」；
-    /// 走 wait 路径的由 `AfterWaitCardPlayFromHand` si=974 自己给。两条互斥，不会双给。
-    ///
-    /// ⚠️ **「位置必须先设好」这一条核实过**（任务书点名要确认的那一步）：
-    /// `SpawnCardToBoard` 里 si=872 排在 si=895 `SetSet` / si=919 `RefreshLocationStatus`
-    /// **之前**，但那两条不是设这张卡自己的位置（si=895 建的是一个 location 集合，
-    /// si=919 拿它去 `RearrangeLocation`/`UpdateGuarded`）。真正设位置的是
-    /// si=1838 `InjectCardIntoLocation` → `SetCardLocationAndLocNumber` si=94
-    /// `tmpCardToSet.location = Location`，而 si=1838 在 si=872 **之前**可达
-    /// （si=1838 → si=1879 `Jump` → si=496 `GetCardFromID` → … → si=734 → si=872）。
-    /// ⇒ 到 si=872 那一刻 `IsLocatedOnBoard` **已经是真**。内核在 `State.Move` 之后调，同序。
-    ///
-    /// ⚠️ **已知近似（写清楚，别当成完整实现）**：蓝图里没有 `RemoveAlpineBonus` 这种东西，
-    /// 5 个调用点全在进场路径上 ⇒ 这是**进场那一刻的一次性快照**：
-    /// 之后友方 Alpine 单位再进场 / 离场都不会重算已有的加成。
-    /// 内核照蓝图实现，**不自己发明"离场重算"**（那需要另一条证据）。
+    /// RULE-519: current GiveAlpineBonus (1178 bytes), StatementIndex 5/37:
+    /// CanCardBeBuffed; 47..280: effective Alpine, on board, total defense > 0.
+    /// 290 queries GetAllUnitsOnBoard(false); 562..905 counts other same-side
+    /// units with effective Alpine. Both keyword reads include registered sources.
+    /// 950 then 1025 call ChangeAttack/ChangeDefense with the precomputed count,
+    /// this card's own ID, changeType=1 and skipAction=false. The second gain
+    /// uses that same count even if the first gain's callbacks change the board.
+    /// This method has no once-only guard or continuous aura recomputation;
+    /// callers determine when it runs. Full caller coverage remains under audit.
     /// </summary>
     public void GiveAlpineBonus(CardInstance card)
     {
-        // si=5 / si=37。修好极性之后这道门在本内核**恒真**（见 CanCardBeBuffed 的注释），
-        // 照蓝图留着：Covert 的揭示状态一落地，它就会真的开始挡人。
+        // Eligibility precedes the effective-keyword/position/health checks.
         if (!CanCardBeBuffed(card))
         {
             return;
         }
 
         // si=47..280：hasAlpine && 在场上 && getTotalDefense > 0
-        if (!card.Keywords.Contains(Keyword.Alpine) || !card.Location.IsBoard() || card.Defense <= 0)
+        if (!card.HasKeyword(Keyword.Alpine) || !card.Location.IsBoard() || card.Defense <= 0)
         {
             return;
         }
@@ -2657,7 +2610,7 @@ public sealed partial class CardApi
         foreach (var item in GetAllUnitsOnBoard())
         {
             if (!ReferenceEquals(item, card)
-                && item.Keywords.Contains(Keyword.Alpine)
+                && item.HasKeyword(Keyword.Alpine)
                 && item.Owner == card.Owner)
             {
                 bonus++;

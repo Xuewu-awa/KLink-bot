@@ -1103,6 +1103,7 @@ internal static class SelfTest
         // ---- P1：山地 Alpine（2026-09-30）----
         // `GiveAlpineBonus`（39 条语句）：进场时 +N/+N，N = 场上其它同阵营 Alpine 数。
         // `changeType=1` 是加法 ⇒ 一次进场只能加一次（数值恰好等于 +N 就是这条断言）。
+        new("RULE-519：山地加成读取有效来源并排除隐藏、死亡和敌方候选", AlpineBonusEffectiveSources),
         new("山地：新部署的 Alpine 单位得到 +N/+N（手牌打出 + 效果生成两条路），且一次部署只加一次",
             AlpineBonusOnEntry),
 
@@ -40510,6 +40511,76 @@ internal static class SelfTest
     /// 与效果生成（`SpawnOnBattlefield` ↔ `SpawnCardToBoard` si=872）。
     /// 「一次部署只加一次」由数值**恰好**等于 +N 保证（加法重复调会变 +2N）。
     /// </summary>
+    private static string? AlpineBonusEffectiveSources(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (int targetMode in Enumerable.Range(0, 5))
+        foreach (int peerMode in Enumerable.Range(0, 5))
+        foreach (bool suppressed in new[] { false, true })
+        foreach (bool onBoard in new[] { false, true })
+        foreach (int defense in new[] { 0, 3 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            CardInstance Make(int id, Side owner, CardLocation location)
+            {
+                var unit = state.CreateWithId("card_unit_2nd_parachute", owner, id, location, id);
+                unit.Keywords.Clear(); unit.Attack = 2; unit.Defense = 3; unit.MaxDefense = 3;
+                return unit;
+            }
+            void Mode(CardInstance unit, int mode)
+            {
+                if (mode == 1) unit.Keywords.Add(Keyword.Alpine);
+                if (mode >= 2) unit.ReceivedAbilitiesFromCards["alpine"] = mode switch {
+                    2 => new List<int>(), 3 => new List<int> { 0 }, _ => new List<int> { 7, -3, 7 } };
+            }
+            var target = Make(60, side, onBoard ? side.HqOf() : side.HandOf());
+            var peer = Make(61, side, side.HqOf());
+            Mode(target, targetMode); Mode(peer, peerMode); target.Defense = defense;
+            if (suppressed) { target.Keywords.Add(Keyword.Suppressed); peer.Keywords.Add(Keyword.Suppressed); }
+            var hidden = Make(62, side, side.HqOf()); hidden.Keywords.Add(Keyword.Alpine);
+            hidden.Keywords.Add(Keyword.Covert); hidden.IsRevealed = false;
+            var dead = Make(63, side, side.HqOf()); dead.Keywords.Add(Keyword.Alpine); dead.Defense = 0;
+            var inHand = Make(64, side, side.HandOf()); inHand.Keywords.Add(Keyword.Alpine);
+            var enemy = Make(65, side.Opposite(), side.Opposite().HqOf()); enemy.Keywords.Add(Keyword.Alpine);
+            state.Hq(side).Keywords.Add(Keyword.Alpine); // On-board nonunit must be excluded.
+            var revealed = Make(66, side, side.HqOf()); revealed.Keywords.Add(Keyword.Alpine);
+            revealed.Keywords.Add(Keyword.Covert); revealed.IsRevealed = true;
+            state.ActionLog.Clear();
+            int expected = onBoard && defense > 0 && targetMode is 1 or 3 or 4
+                ? 1 + (peerMode is 1 or 3 or 4 ? 1 : 0) : 0;
+            engine.Api.GiveAlpineBonus(target);
+            if (target.Attack != 2 + expected || target.Defense != defense + expected
+                || peer.Attack != 2 || revealed.Attack != 2)
+                return $"山地有效来源计数错误：{side}/{targetMode}/{peerMode}/{suppressed}/{onBoard}/{defense}，期望+{expected}，实际{target.Attack}/{target.Defense}";
+            if (target.Keywords.Contains(Keyword.Alpine) != (targetMode == 1))
+                return "山地加成不得将来源投影写回raw标志";
+            var gains = state.ActionLog.SelectMany(a => a.SubActions)
+                .Where(a => a.Name is "ZActionGainAttack" or "ZActionGainDefense").Select(a => a.Name).ToArray();
+            if (!gains.SequenceEqual(expected > 0 ? new[] { "ZActionGainAttack", "ZActionGainDefense" } : Array.Empty<string>()))
+                return "山地快照加成须先攻击后防御，零加成不通知";
+            int ledgerAttack = target.BuffsBySource.GetValueOrDefault((60, false))?.Attack ?? 0;
+            int ledgerDefense = target.BuffsBySource.GetValueOrDefault((60, false))?.Defense ?? 0;
+            if (ledgerAttack != expected || ledgerDefense != expected) return "山地数值增益须以目标自身ID分别记账";
+        }
+        {
+            var (engine, state) = EmptyBoard(db);
+            var source = state.CreateWithId("card_unit_10_5_cm_lefh", Side.Left, 9, CardLocation.DeckLeft, 0);
+            var peer = state.CreateWithId("card_unit_2nd_parachute", Side.Left, 61, CardLocation.BoardHqLeft, 1);
+            var target = state.CreateWithId("card_unit_2nd_parachute", Side.Left, 60, CardLocation.BoardHqLeft, 2);
+            peer.Keywords.Clear(); target.Keywords.Clear();
+            engine.Api.GiveAlpine(peer, 9); engine.Api.GiveAlpine(target, 9);
+            int attack = target.Attack, defense = target.Defense;
+            engine.Api.GiveAlpineBonus(target);
+            if (target.Attack != attack + 1 || target.Defense != defense + 1
+                || target.Keywords.Contains(Keyword.Alpine) || peer.Keywords.Contains(Keyword.Alpine)
+                || target.BuffsBySource[(9, false)].Alpine != 1 || target.BuffsBySource[(60, false)].Attack != 1)
+                return "真实授予原语须接通山地加成，关键词账本与数值账本保持独立";
+            engine.Api.RemoveAlpine(peer, 9);
+            if (target.Attack != attack + 1 || target.Defense != defense + 1) return "撤销其他山地不应回算已有入场快照";
+        }
+        return null;
+    }
+
     private static string? AlpineBonusOnEntry(CardDatabase db)
     {
         const string a1 = "card_unit_3rd_alpini";                 // 1/2，无文本，hasAlpine
