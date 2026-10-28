@@ -1,0 +1,5593 @@
+{
+  "rule_id": "RULE-517",
+  "date": "2026-10-28",
+  "status": "确认山地写入端待修复差异；Give/Remove完整控制流在声明边界下已验证，账本/通知链未闭合",
+  "findings": [
+    "当前复读Give/Remove Alpine/Ambush/Shock/Immune八个BP_CardFunctions函数，均完整语法解码；八个CardFunctionsStub原生声明无脚本单列，不算蓝图解析成功。本轮执行限定GiveAlpine955B和RemoveAlpine2008B，不能把其分支无条件推广到其他三个关键词。",
+    "GiveAlpine先按显式CardID查对象，再CanCardBeBuffed。giverID>0时171/302读receivedAbilitiesFromCards.alpine，已有同来源则无操作；新来源678追加、746调用ChangeBuffsFromCards(card,+1,giver,6,8,\"alpine\")、866写回正式来源Map，原始hasAlpine不置true。非正来源只在raw=false时549置true。成功路径action-process真才619 NotifyGiveAlpine，未看到该函数直接执行通用AbilitiesChanged。",
+    "RemoveAlpine先IsValid。giver<=0时只有有效getHasAlpine为真才继续，逐原来源723调用账本-1，1785清原始标志、1844移除来源键；这会去掉raw标志，并不以Definition.Keywords重建。giver>0只在Map含该来源时1258 RemoveItem、1318账本-1，空则移除键、否则1699写剩余来源，原始标志保持。最终action-process真才1582 HandleRemoveAlpine。",
+    "320组实际两函数AST执行覆盖raw真假、缺Map/空Map/单源/双源/重复源、giver0/-7/7/9、CanBeBuffed和action-process真假。状态、账本调用参数/次序及通知匹配独立模型。Map/Array/FStruct复制、资格/有效性、原生getter布尔、账本函数体和通知接收者供给；Map和raw写入按实际AST执行，账本/通知仅记录，真实回调重入尚未验证。",
+    "只读对照确认当前适配器仍将正Alpine来源写到CustomJson.alpineGivers，再走通用GiveKeyword令raw=true；RemoveAlpine也读该JSON，而非正式ReceivedAbilitiesFromCards。由此与当前蓝图的raw/来源分离及正式Map写入不同。RULE516只修getter读取，不能视作已修复这些写入差异。",
+    "现有RemoveAlpine回归主要检查有效标志与多来源/固有关键词保留，没有锁定正来源授予后raw必须保持或正式来源Map与类型6账本同步，因此此前930/930不排除此缺口。未改写现有测试来迎合近似实现。",
+    "本轮保留待修复清单：正式来源Map替代私有JSON的状态投影、正源/非正源raw分支、精确Type6 Alpine账本及来源关系、NotifyGiveAlpine/HandleRemoveAlpine真实接收链和额外触发边界。需一并连通后再落地写入修复，当前未声称完成，也未作部分语义替换。其他三类作者含不同giver分支（观察到Conv_IntToBool等），仍需各自验证。",
+    "DeepSeek机械提取raw写/账本/通知索引，主agent独立逐字段核对。未修改产品、C#未重跑，930/930是RULE516既有回归结果而非本轮新验证。完整认证卡数0，游戏写入/注入/真实函数调用0。"
+  ],
+  "confirmed_unfixed_differences": [
+    "正Alpine来源应保留raw标志，现有通用GiveKeyword写raw=true。",
+    "正式receivedAbilitiesFromCards.alpine与现有CustomJson.alpineGivers存储不一致。",
+    "RemoveAlpine全清/指定源、账本和通知链需同时对齐。"
+  ],
+  "verification": {
+    "rule": "RULE-517",
+    "alpine_writer_cases": 320,
+    "scope": "Actual GiveAlpine955B/RemoveAlpine2008B AST control flow. Existing card pointer preserved by reference for LetObj. Eligibility/validity, action-process flag, native getter truth, Map/Array copies, buff ledger body and notifier callbacks supplied. Ledger calls and notifications recorded in order; no full buff ledger mutation, real notifier binding or grant/removal of other three keywords certified.",
+    "game_writes": 0,
+    "real_game_function_calls": 0,
+    "fully_certified_cards": 0,
+    "case_sha256": "95bc670ed918d49ec4063eeb4ab9d9bebdb673c74198b52793e0efcb8e6e644f",
+    "profile_summaries": [
+      {
+        "giving": false,
+        "raw": false,
+        "prior": null,
+        "giver": 0,
+        "eligible": false,
+        "action": false,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": false,
+        "prior": null,
+        "giver": 0,
+        "eligible": false,
+        "action": true,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": false,
+        "prior": null,
+        "giver": 0,
+        "eligible": true,
+        "action": false,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": false,
+        "prior": null,
+        "giver": 0,
+        "eligible": true,
+        "action": true,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": false,
+        "prior": null,
+        "giver": -7,
+        "eligible": false,
+        "action": false,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": false,
+        "prior": null,
+        "giver": -7,
+        "eligible": false,
+        "action": true,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": false,
+        "prior": null,
+        "giver": -7,
+        "eligible": true,
+        "action": false,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": false,
+        "prior": null,
+        "giver": -7,
+        "eligible": true,
+        "action": true,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": false,
+        "prior": null,
+        "giver": 7,
+        "eligible": false,
+        "action": false,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": false,
+        "prior": null,
+        "giver": 7,
+        "eligible": false,
+        "action": true,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": false,
+        "prior": null,
+        "giver": 7,
+        "eligible": true,
+        "action": false,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": false,
+        "prior": null,
+        "giver": 7,
+        "eligible": true,
+        "action": true,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": false,
+        "prior": null,
+        "giver": 9,
+        "eligible": false,
+        "action": false,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": false,
+        "prior": null,
+        "giver": 9,
+        "eligible": false,
+        "action": true,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": false,
+        "prior": null,
+        "giver": 9,
+        "eligible": true,
+        "action": false,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": false,
+        "prior": null,
+        "giver": 9,
+        "eligible": true,
+        "action": true,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": false,
+        "prior": [],
+        "giver": 0,
+        "eligible": false,
+        "action": false,
+        "expected_raw": false,
+        "expected_sources": [],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": false,
+        "prior": [],
+        "giver": 0,
+        "eligible": false,
+        "action": true,
+        "expected_raw": false,
+        "expected_sources": [],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": false,
+        "prior": [],
+        "giver": 0,
+        "eligible": true,
+        "action": false,
+        "expected_raw": false,
+        "expected_sources": [],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": false,
+        "prior": [],
+        "giver": 0,
+        "eligible": true,
+        "action": true,
+        "expected_raw": false,
+        "expected_sources": [],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": false,
+        "prior": [],
+        "giver": -7,
+        "eligible": false,
+        "action": false,
+        "expected_raw": false,
+        "expected_sources": [],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": false,
+        "prior": [],
+        "giver": -7,
+        "eligible": false,
+        "action": true,
+        "expected_raw": false,
+        "expected_sources": [],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": false,
+        "prior": [],
+        "giver": -7,
+        "eligible": true,
+        "action": false,
+        "expected_raw": false,
+        "expected_sources": [],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": false,
+        "prior": [],
+        "giver": -7,
+        "eligible": true,
+        "action": true,
+        "expected_raw": false,
+        "expected_sources": [],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": false,
+        "prior": [],
+        "giver": 7,
+        "eligible": false,
+        "action": false,
+        "expected_raw": false,
+        "expected_sources": [],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": false,
+        "prior": [],
+        "giver": 7,
+        "eligible": false,
+        "action": true,
+        "expected_raw": false,
+        "expected_sources": [],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": false,
+        "prior": [],
+        "giver": 7,
+        "eligible": true,
+        "action": false,
+        "expected_raw": false,
+        "expected_sources": [],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": false,
+        "prior": [],
+        "giver": 7,
+        "eligible": true,
+        "action": true,
+        "expected_raw": false,
+        "expected_sources": [],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": false,
+        "prior": [],
+        "giver": 9,
+        "eligible": false,
+        "action": false,
+        "expected_raw": false,
+        "expected_sources": [],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": false,
+        "prior": [],
+        "giver": 9,
+        "eligible": false,
+        "action": true,
+        "expected_raw": false,
+        "expected_sources": [],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": false,
+        "prior": [],
+        "giver": 9,
+        "eligible": true,
+        "action": false,
+        "expected_raw": false,
+        "expected_sources": [],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": false,
+        "prior": [],
+        "giver": 9,
+        "eligible": true,
+        "action": true,
+        "expected_raw": false,
+        "expected_sources": [],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": false,
+        "prior": [
+          7
+        ],
+        "giver": 0,
+        "eligible": false,
+        "action": false,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [
+          [
+            -1,
+            7
+          ]
+        ],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": false,
+        "prior": [
+          7
+        ],
+        "giver": 0,
+        "eligible": false,
+        "action": true,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [
+          [
+            -1,
+            7
+          ]
+        ],
+        "notify": true
+      },
+      {
+        "giving": false,
+        "raw": false,
+        "prior": [
+          7
+        ],
+        "giver": 0,
+        "eligible": true,
+        "action": false,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [
+          [
+            -1,
+            7
+          ]
+        ],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": false,
+        "prior": [
+          7
+        ],
+        "giver": 0,
+        "eligible": true,
+        "action": true,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [
+          [
+            -1,
+            7
+          ]
+        ],
+        "notify": true
+      },
+      {
+        "giving": false,
+        "raw": false,
+        "prior": [
+          7
+        ],
+        "giver": -7,
+        "eligible": false,
+        "action": false,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [
+          [
+            -1,
+            7
+          ]
+        ],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": false,
+        "prior": [
+          7
+        ],
+        "giver": -7,
+        "eligible": false,
+        "action": true,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [
+          [
+            -1,
+            7
+          ]
+        ],
+        "notify": true
+      },
+      {
+        "giving": false,
+        "raw": false,
+        "prior": [
+          7
+        ],
+        "giver": -7,
+        "eligible": true,
+        "action": false,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [
+          [
+            -1,
+            7
+          ]
+        ],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": false,
+        "prior": [
+          7
+        ],
+        "giver": -7,
+        "eligible": true,
+        "action": true,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [
+          [
+            -1,
+            7
+          ]
+        ],
+        "notify": true
+      },
+      {
+        "giving": false,
+        "raw": false,
+        "prior": [
+          7
+        ],
+        "giver": 7,
+        "eligible": false,
+        "action": false,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [
+          [
+            -1,
+            7
+          ]
+        ],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": false,
+        "prior": [
+          7
+        ],
+        "giver": 7,
+        "eligible": false,
+        "action": true,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [
+          [
+            -1,
+            7
+          ]
+        ],
+        "notify": true
+      },
+      {
+        "giving": false,
+        "raw": false,
+        "prior": [
+          7
+        ],
+        "giver": 7,
+        "eligible": true,
+        "action": false,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [
+          [
+            -1,
+            7
+          ]
+        ],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": false,
+        "prior": [
+          7
+        ],
+        "giver": 7,
+        "eligible": true,
+        "action": true,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [
+          [
+            -1,
+            7
+          ]
+        ],
+        "notify": true
+      },
+      {
+        "giving": false,
+        "raw": false,
+        "prior": [
+          7
+        ],
+        "giver": 9,
+        "eligible": false,
+        "action": false,
+        "expected_raw": false,
+        "expected_sources": [
+          7
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": false,
+        "prior": [
+          7
+        ],
+        "giver": 9,
+        "eligible": false,
+        "action": true,
+        "expected_raw": false,
+        "expected_sources": [
+          7
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": false,
+        "prior": [
+          7
+        ],
+        "giver": 9,
+        "eligible": true,
+        "action": false,
+        "expected_raw": false,
+        "expected_sources": [
+          7
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": false,
+        "prior": [
+          7
+        ],
+        "giver": 9,
+        "eligible": true,
+        "action": true,
+        "expected_raw": false,
+        "expected_sources": [
+          7
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": false,
+        "prior": [
+          7,
+          8
+        ],
+        "giver": 0,
+        "eligible": false,
+        "action": false,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [
+          [
+            -1,
+            7
+          ],
+          [
+            -1,
+            8
+          ]
+        ],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": false,
+        "prior": [
+          7,
+          8
+        ],
+        "giver": 0,
+        "eligible": false,
+        "action": true,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [
+          [
+            -1,
+            7
+          ],
+          [
+            -1,
+            8
+          ]
+        ],
+        "notify": true
+      },
+      {
+        "giving": false,
+        "raw": false,
+        "prior": [
+          7,
+          8
+        ],
+        "giver": 0,
+        "eligible": true,
+        "action": false,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [
+          [
+            -1,
+            7
+          ],
+          [
+            -1,
+            8
+          ]
+        ],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": false,
+        "prior": [
+          7,
+          8
+        ],
+        "giver": 0,
+        "eligible": true,
+        "action": true,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [
+          [
+            -1,
+            7
+          ],
+          [
+            -1,
+            8
+          ]
+        ],
+        "notify": true
+      },
+      {
+        "giving": false,
+        "raw": false,
+        "prior": [
+          7,
+          8
+        ],
+        "giver": -7,
+        "eligible": false,
+        "action": false,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [
+          [
+            -1,
+            7
+          ],
+          [
+            -1,
+            8
+          ]
+        ],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": false,
+        "prior": [
+          7,
+          8
+        ],
+        "giver": -7,
+        "eligible": false,
+        "action": true,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [
+          [
+            -1,
+            7
+          ],
+          [
+            -1,
+            8
+          ]
+        ],
+        "notify": true
+      },
+      {
+        "giving": false,
+        "raw": false,
+        "prior": [
+          7,
+          8
+        ],
+        "giver": -7,
+        "eligible": true,
+        "action": false,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [
+          [
+            -1,
+            7
+          ],
+          [
+            -1,
+            8
+          ]
+        ],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": false,
+        "prior": [
+          7,
+          8
+        ],
+        "giver": -7,
+        "eligible": true,
+        "action": true,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [
+          [
+            -1,
+            7
+          ],
+          [
+            -1,
+            8
+          ]
+        ],
+        "notify": true
+      },
+      {
+        "giving": false,
+        "raw": false,
+        "prior": [
+          7,
+          8
+        ],
+        "giver": 7,
+        "eligible": false,
+        "action": false,
+        "expected_raw": false,
+        "expected_sources": [
+          8
+        ],
+        "deltas": [
+          [
+            -1,
+            7
+          ]
+        ],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": false,
+        "prior": [
+          7,
+          8
+        ],
+        "giver": 7,
+        "eligible": false,
+        "action": true,
+        "expected_raw": false,
+        "expected_sources": [
+          8
+        ],
+        "deltas": [
+          [
+            -1,
+            7
+          ]
+        ],
+        "notify": true
+      },
+      {
+        "giving": false,
+        "raw": false,
+        "prior": [
+          7,
+          8
+        ],
+        "giver": 7,
+        "eligible": true,
+        "action": false,
+        "expected_raw": false,
+        "expected_sources": [
+          8
+        ],
+        "deltas": [
+          [
+            -1,
+            7
+          ]
+        ],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": false,
+        "prior": [
+          7,
+          8
+        ],
+        "giver": 7,
+        "eligible": true,
+        "action": true,
+        "expected_raw": false,
+        "expected_sources": [
+          8
+        ],
+        "deltas": [
+          [
+            -1,
+            7
+          ]
+        ],
+        "notify": true
+      },
+      {
+        "giving": false,
+        "raw": false,
+        "prior": [
+          7,
+          8
+        ],
+        "giver": 9,
+        "eligible": false,
+        "action": false,
+        "expected_raw": false,
+        "expected_sources": [
+          7,
+          8
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": false,
+        "prior": [
+          7,
+          8
+        ],
+        "giver": 9,
+        "eligible": false,
+        "action": true,
+        "expected_raw": false,
+        "expected_sources": [
+          7,
+          8
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": false,
+        "prior": [
+          7,
+          8
+        ],
+        "giver": 9,
+        "eligible": true,
+        "action": false,
+        "expected_raw": false,
+        "expected_sources": [
+          7,
+          8
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": false,
+        "prior": [
+          7,
+          8
+        ],
+        "giver": 9,
+        "eligible": true,
+        "action": true,
+        "expected_raw": false,
+        "expected_sources": [
+          7,
+          8
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": false,
+        "prior": [
+          7,
+          7
+        ],
+        "giver": 0,
+        "eligible": false,
+        "action": false,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [
+          [
+            -1,
+            7
+          ],
+          [
+            -1,
+            7
+          ]
+        ],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": false,
+        "prior": [
+          7,
+          7
+        ],
+        "giver": 0,
+        "eligible": false,
+        "action": true,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [
+          [
+            -1,
+            7
+          ],
+          [
+            -1,
+            7
+          ]
+        ],
+        "notify": true
+      },
+      {
+        "giving": false,
+        "raw": false,
+        "prior": [
+          7,
+          7
+        ],
+        "giver": 0,
+        "eligible": true,
+        "action": false,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [
+          [
+            -1,
+            7
+          ],
+          [
+            -1,
+            7
+          ]
+        ],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": false,
+        "prior": [
+          7,
+          7
+        ],
+        "giver": 0,
+        "eligible": true,
+        "action": true,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [
+          [
+            -1,
+            7
+          ],
+          [
+            -1,
+            7
+          ]
+        ],
+        "notify": true
+      },
+      {
+        "giving": false,
+        "raw": false,
+        "prior": [
+          7,
+          7
+        ],
+        "giver": -7,
+        "eligible": false,
+        "action": false,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [
+          [
+            -1,
+            7
+          ],
+          [
+            -1,
+            7
+          ]
+        ],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": false,
+        "prior": [
+          7,
+          7
+        ],
+        "giver": -7,
+        "eligible": false,
+        "action": true,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [
+          [
+            -1,
+            7
+          ],
+          [
+            -1,
+            7
+          ]
+        ],
+        "notify": true
+      },
+      {
+        "giving": false,
+        "raw": false,
+        "prior": [
+          7,
+          7
+        ],
+        "giver": -7,
+        "eligible": true,
+        "action": false,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [
+          [
+            -1,
+            7
+          ],
+          [
+            -1,
+            7
+          ]
+        ],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": false,
+        "prior": [
+          7,
+          7
+        ],
+        "giver": -7,
+        "eligible": true,
+        "action": true,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [
+          [
+            -1,
+            7
+          ],
+          [
+            -1,
+            7
+          ]
+        ],
+        "notify": true
+      },
+      {
+        "giving": false,
+        "raw": false,
+        "prior": [
+          7,
+          7
+        ],
+        "giver": 7,
+        "eligible": false,
+        "action": false,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [
+          [
+            -1,
+            7
+          ]
+        ],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": false,
+        "prior": [
+          7,
+          7
+        ],
+        "giver": 7,
+        "eligible": false,
+        "action": true,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [
+          [
+            -1,
+            7
+          ]
+        ],
+        "notify": true
+      },
+      {
+        "giving": false,
+        "raw": false,
+        "prior": [
+          7,
+          7
+        ],
+        "giver": 7,
+        "eligible": true,
+        "action": false,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [
+          [
+            -1,
+            7
+          ]
+        ],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": false,
+        "prior": [
+          7,
+          7
+        ],
+        "giver": 7,
+        "eligible": true,
+        "action": true,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [
+          [
+            -1,
+            7
+          ]
+        ],
+        "notify": true
+      },
+      {
+        "giving": false,
+        "raw": false,
+        "prior": [
+          7,
+          7
+        ],
+        "giver": 9,
+        "eligible": false,
+        "action": false,
+        "expected_raw": false,
+        "expected_sources": [
+          7,
+          7
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": false,
+        "prior": [
+          7,
+          7
+        ],
+        "giver": 9,
+        "eligible": false,
+        "action": true,
+        "expected_raw": false,
+        "expected_sources": [
+          7,
+          7
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": false,
+        "prior": [
+          7,
+          7
+        ],
+        "giver": 9,
+        "eligible": true,
+        "action": false,
+        "expected_raw": false,
+        "expected_sources": [
+          7,
+          7
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": false,
+        "prior": [
+          7,
+          7
+        ],
+        "giver": 9,
+        "eligible": true,
+        "action": true,
+        "expected_raw": false,
+        "expected_sources": [
+          7,
+          7
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": true,
+        "prior": null,
+        "giver": 0,
+        "eligible": false,
+        "action": false,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": true,
+        "prior": null,
+        "giver": 0,
+        "eligible": false,
+        "action": true,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [],
+        "notify": true
+      },
+      {
+        "giving": false,
+        "raw": true,
+        "prior": null,
+        "giver": 0,
+        "eligible": true,
+        "action": false,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": true,
+        "prior": null,
+        "giver": 0,
+        "eligible": true,
+        "action": true,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [],
+        "notify": true
+      },
+      {
+        "giving": false,
+        "raw": true,
+        "prior": null,
+        "giver": -7,
+        "eligible": false,
+        "action": false,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": true,
+        "prior": null,
+        "giver": -7,
+        "eligible": false,
+        "action": true,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [],
+        "notify": true
+      },
+      {
+        "giving": false,
+        "raw": true,
+        "prior": null,
+        "giver": -7,
+        "eligible": true,
+        "action": false,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": true,
+        "prior": null,
+        "giver": -7,
+        "eligible": true,
+        "action": true,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [],
+        "notify": true
+      },
+      {
+        "giving": false,
+        "raw": true,
+        "prior": null,
+        "giver": 7,
+        "eligible": false,
+        "action": false,
+        "expected_raw": true,
+        "expected_sources": null,
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": true,
+        "prior": null,
+        "giver": 7,
+        "eligible": false,
+        "action": true,
+        "expected_raw": true,
+        "expected_sources": null,
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": true,
+        "prior": null,
+        "giver": 7,
+        "eligible": true,
+        "action": false,
+        "expected_raw": true,
+        "expected_sources": null,
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": true,
+        "prior": null,
+        "giver": 7,
+        "eligible": true,
+        "action": true,
+        "expected_raw": true,
+        "expected_sources": null,
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": true,
+        "prior": null,
+        "giver": 9,
+        "eligible": false,
+        "action": false,
+        "expected_raw": true,
+        "expected_sources": null,
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": true,
+        "prior": null,
+        "giver": 9,
+        "eligible": false,
+        "action": true,
+        "expected_raw": true,
+        "expected_sources": null,
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": true,
+        "prior": null,
+        "giver": 9,
+        "eligible": true,
+        "action": false,
+        "expected_raw": true,
+        "expected_sources": null,
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": true,
+        "prior": null,
+        "giver": 9,
+        "eligible": true,
+        "action": true,
+        "expected_raw": true,
+        "expected_sources": null,
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": true,
+        "prior": [],
+        "giver": 0,
+        "eligible": false,
+        "action": false,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": true,
+        "prior": [],
+        "giver": 0,
+        "eligible": false,
+        "action": true,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [],
+        "notify": true
+      },
+      {
+        "giving": false,
+        "raw": true,
+        "prior": [],
+        "giver": 0,
+        "eligible": true,
+        "action": false,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": true,
+        "prior": [],
+        "giver": 0,
+        "eligible": true,
+        "action": true,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [],
+        "notify": true
+      },
+      {
+        "giving": false,
+        "raw": true,
+        "prior": [],
+        "giver": -7,
+        "eligible": false,
+        "action": false,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": true,
+        "prior": [],
+        "giver": -7,
+        "eligible": false,
+        "action": true,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [],
+        "notify": true
+      },
+      {
+        "giving": false,
+        "raw": true,
+        "prior": [],
+        "giver": -7,
+        "eligible": true,
+        "action": false,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": true,
+        "prior": [],
+        "giver": -7,
+        "eligible": true,
+        "action": true,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [],
+        "notify": true
+      },
+      {
+        "giving": false,
+        "raw": true,
+        "prior": [],
+        "giver": 7,
+        "eligible": false,
+        "action": false,
+        "expected_raw": true,
+        "expected_sources": [],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": true,
+        "prior": [],
+        "giver": 7,
+        "eligible": false,
+        "action": true,
+        "expected_raw": true,
+        "expected_sources": [],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": true,
+        "prior": [],
+        "giver": 7,
+        "eligible": true,
+        "action": false,
+        "expected_raw": true,
+        "expected_sources": [],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": true,
+        "prior": [],
+        "giver": 7,
+        "eligible": true,
+        "action": true,
+        "expected_raw": true,
+        "expected_sources": [],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": true,
+        "prior": [],
+        "giver": 9,
+        "eligible": false,
+        "action": false,
+        "expected_raw": true,
+        "expected_sources": [],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": true,
+        "prior": [],
+        "giver": 9,
+        "eligible": false,
+        "action": true,
+        "expected_raw": true,
+        "expected_sources": [],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": true,
+        "prior": [],
+        "giver": 9,
+        "eligible": true,
+        "action": false,
+        "expected_raw": true,
+        "expected_sources": [],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": true,
+        "prior": [],
+        "giver": 9,
+        "eligible": true,
+        "action": true,
+        "expected_raw": true,
+        "expected_sources": [],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": true,
+        "prior": [
+          7
+        ],
+        "giver": 0,
+        "eligible": false,
+        "action": false,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [
+          [
+            -1,
+            7
+          ]
+        ],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": true,
+        "prior": [
+          7
+        ],
+        "giver": 0,
+        "eligible": false,
+        "action": true,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [
+          [
+            -1,
+            7
+          ]
+        ],
+        "notify": true
+      },
+      {
+        "giving": false,
+        "raw": true,
+        "prior": [
+          7
+        ],
+        "giver": 0,
+        "eligible": true,
+        "action": false,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [
+          [
+            -1,
+            7
+          ]
+        ],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": true,
+        "prior": [
+          7
+        ],
+        "giver": 0,
+        "eligible": true,
+        "action": true,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [
+          [
+            -1,
+            7
+          ]
+        ],
+        "notify": true
+      },
+      {
+        "giving": false,
+        "raw": true,
+        "prior": [
+          7
+        ],
+        "giver": -7,
+        "eligible": false,
+        "action": false,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [
+          [
+            -1,
+            7
+          ]
+        ],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": true,
+        "prior": [
+          7
+        ],
+        "giver": -7,
+        "eligible": false,
+        "action": true,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [
+          [
+            -1,
+            7
+          ]
+        ],
+        "notify": true
+      },
+      {
+        "giving": false,
+        "raw": true,
+        "prior": [
+          7
+        ],
+        "giver": -7,
+        "eligible": true,
+        "action": false,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [
+          [
+            -1,
+            7
+          ]
+        ],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": true,
+        "prior": [
+          7
+        ],
+        "giver": -7,
+        "eligible": true,
+        "action": true,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [
+          [
+            -1,
+            7
+          ]
+        ],
+        "notify": true
+      },
+      {
+        "giving": false,
+        "raw": true,
+        "prior": [
+          7
+        ],
+        "giver": 7,
+        "eligible": false,
+        "action": false,
+        "expected_raw": true,
+        "expected_sources": null,
+        "deltas": [
+          [
+            -1,
+            7
+          ]
+        ],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": true,
+        "prior": [
+          7
+        ],
+        "giver": 7,
+        "eligible": false,
+        "action": true,
+        "expected_raw": true,
+        "expected_sources": null,
+        "deltas": [
+          [
+            -1,
+            7
+          ]
+        ],
+        "notify": true
+      },
+      {
+        "giving": false,
+        "raw": true,
+        "prior": [
+          7
+        ],
+        "giver": 7,
+        "eligible": true,
+        "action": false,
+        "expected_raw": true,
+        "expected_sources": null,
+        "deltas": [
+          [
+            -1,
+            7
+          ]
+        ],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": true,
+        "prior": [
+          7
+        ],
+        "giver": 7,
+        "eligible": true,
+        "action": true,
+        "expected_raw": true,
+        "expected_sources": null,
+        "deltas": [
+          [
+            -1,
+            7
+          ]
+        ],
+        "notify": true
+      },
+      {
+        "giving": false,
+        "raw": true,
+        "prior": [
+          7
+        ],
+        "giver": 9,
+        "eligible": false,
+        "action": false,
+        "expected_raw": true,
+        "expected_sources": [
+          7
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": true,
+        "prior": [
+          7
+        ],
+        "giver": 9,
+        "eligible": false,
+        "action": true,
+        "expected_raw": true,
+        "expected_sources": [
+          7
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": true,
+        "prior": [
+          7
+        ],
+        "giver": 9,
+        "eligible": true,
+        "action": false,
+        "expected_raw": true,
+        "expected_sources": [
+          7
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": true,
+        "prior": [
+          7
+        ],
+        "giver": 9,
+        "eligible": true,
+        "action": true,
+        "expected_raw": true,
+        "expected_sources": [
+          7
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": true,
+        "prior": [
+          7,
+          8
+        ],
+        "giver": 0,
+        "eligible": false,
+        "action": false,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [
+          [
+            -1,
+            7
+          ],
+          [
+            -1,
+            8
+          ]
+        ],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": true,
+        "prior": [
+          7,
+          8
+        ],
+        "giver": 0,
+        "eligible": false,
+        "action": true,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [
+          [
+            -1,
+            7
+          ],
+          [
+            -1,
+            8
+          ]
+        ],
+        "notify": true
+      },
+      {
+        "giving": false,
+        "raw": true,
+        "prior": [
+          7,
+          8
+        ],
+        "giver": 0,
+        "eligible": true,
+        "action": false,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [
+          [
+            -1,
+            7
+          ],
+          [
+            -1,
+            8
+          ]
+        ],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": true,
+        "prior": [
+          7,
+          8
+        ],
+        "giver": 0,
+        "eligible": true,
+        "action": true,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [
+          [
+            -1,
+            7
+          ],
+          [
+            -1,
+            8
+          ]
+        ],
+        "notify": true
+      },
+      {
+        "giving": false,
+        "raw": true,
+        "prior": [
+          7,
+          8
+        ],
+        "giver": -7,
+        "eligible": false,
+        "action": false,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [
+          [
+            -1,
+            7
+          ],
+          [
+            -1,
+            8
+          ]
+        ],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": true,
+        "prior": [
+          7,
+          8
+        ],
+        "giver": -7,
+        "eligible": false,
+        "action": true,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [
+          [
+            -1,
+            7
+          ],
+          [
+            -1,
+            8
+          ]
+        ],
+        "notify": true
+      },
+      {
+        "giving": false,
+        "raw": true,
+        "prior": [
+          7,
+          8
+        ],
+        "giver": -7,
+        "eligible": true,
+        "action": false,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [
+          [
+            -1,
+            7
+          ],
+          [
+            -1,
+            8
+          ]
+        ],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": true,
+        "prior": [
+          7,
+          8
+        ],
+        "giver": -7,
+        "eligible": true,
+        "action": true,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [
+          [
+            -1,
+            7
+          ],
+          [
+            -1,
+            8
+          ]
+        ],
+        "notify": true
+      },
+      {
+        "giving": false,
+        "raw": true,
+        "prior": [
+          7,
+          8
+        ],
+        "giver": 7,
+        "eligible": false,
+        "action": false,
+        "expected_raw": true,
+        "expected_sources": [
+          8
+        ],
+        "deltas": [
+          [
+            -1,
+            7
+          ]
+        ],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": true,
+        "prior": [
+          7,
+          8
+        ],
+        "giver": 7,
+        "eligible": false,
+        "action": true,
+        "expected_raw": true,
+        "expected_sources": [
+          8
+        ],
+        "deltas": [
+          [
+            -1,
+            7
+          ]
+        ],
+        "notify": true
+      },
+      {
+        "giving": false,
+        "raw": true,
+        "prior": [
+          7,
+          8
+        ],
+        "giver": 7,
+        "eligible": true,
+        "action": false,
+        "expected_raw": true,
+        "expected_sources": [
+          8
+        ],
+        "deltas": [
+          [
+            -1,
+            7
+          ]
+        ],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": true,
+        "prior": [
+          7,
+          8
+        ],
+        "giver": 7,
+        "eligible": true,
+        "action": true,
+        "expected_raw": true,
+        "expected_sources": [
+          8
+        ],
+        "deltas": [
+          [
+            -1,
+            7
+          ]
+        ],
+        "notify": true
+      },
+      {
+        "giving": false,
+        "raw": true,
+        "prior": [
+          7,
+          8
+        ],
+        "giver": 9,
+        "eligible": false,
+        "action": false,
+        "expected_raw": true,
+        "expected_sources": [
+          7,
+          8
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": true,
+        "prior": [
+          7,
+          8
+        ],
+        "giver": 9,
+        "eligible": false,
+        "action": true,
+        "expected_raw": true,
+        "expected_sources": [
+          7,
+          8
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": true,
+        "prior": [
+          7,
+          8
+        ],
+        "giver": 9,
+        "eligible": true,
+        "action": false,
+        "expected_raw": true,
+        "expected_sources": [
+          7,
+          8
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": true,
+        "prior": [
+          7,
+          8
+        ],
+        "giver": 9,
+        "eligible": true,
+        "action": true,
+        "expected_raw": true,
+        "expected_sources": [
+          7,
+          8
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": true,
+        "prior": [
+          7,
+          7
+        ],
+        "giver": 0,
+        "eligible": false,
+        "action": false,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [
+          [
+            -1,
+            7
+          ],
+          [
+            -1,
+            7
+          ]
+        ],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": true,
+        "prior": [
+          7,
+          7
+        ],
+        "giver": 0,
+        "eligible": false,
+        "action": true,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [
+          [
+            -1,
+            7
+          ],
+          [
+            -1,
+            7
+          ]
+        ],
+        "notify": true
+      },
+      {
+        "giving": false,
+        "raw": true,
+        "prior": [
+          7,
+          7
+        ],
+        "giver": 0,
+        "eligible": true,
+        "action": false,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [
+          [
+            -1,
+            7
+          ],
+          [
+            -1,
+            7
+          ]
+        ],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": true,
+        "prior": [
+          7,
+          7
+        ],
+        "giver": 0,
+        "eligible": true,
+        "action": true,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [
+          [
+            -1,
+            7
+          ],
+          [
+            -1,
+            7
+          ]
+        ],
+        "notify": true
+      },
+      {
+        "giving": false,
+        "raw": true,
+        "prior": [
+          7,
+          7
+        ],
+        "giver": -7,
+        "eligible": false,
+        "action": false,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [
+          [
+            -1,
+            7
+          ],
+          [
+            -1,
+            7
+          ]
+        ],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": true,
+        "prior": [
+          7,
+          7
+        ],
+        "giver": -7,
+        "eligible": false,
+        "action": true,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [
+          [
+            -1,
+            7
+          ],
+          [
+            -1,
+            7
+          ]
+        ],
+        "notify": true
+      },
+      {
+        "giving": false,
+        "raw": true,
+        "prior": [
+          7,
+          7
+        ],
+        "giver": -7,
+        "eligible": true,
+        "action": false,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [
+          [
+            -1,
+            7
+          ],
+          [
+            -1,
+            7
+          ]
+        ],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": true,
+        "prior": [
+          7,
+          7
+        ],
+        "giver": -7,
+        "eligible": true,
+        "action": true,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [
+          [
+            -1,
+            7
+          ],
+          [
+            -1,
+            7
+          ]
+        ],
+        "notify": true
+      },
+      {
+        "giving": false,
+        "raw": true,
+        "prior": [
+          7,
+          7
+        ],
+        "giver": 7,
+        "eligible": false,
+        "action": false,
+        "expected_raw": true,
+        "expected_sources": null,
+        "deltas": [
+          [
+            -1,
+            7
+          ]
+        ],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": true,
+        "prior": [
+          7,
+          7
+        ],
+        "giver": 7,
+        "eligible": false,
+        "action": true,
+        "expected_raw": true,
+        "expected_sources": null,
+        "deltas": [
+          [
+            -1,
+            7
+          ]
+        ],
+        "notify": true
+      },
+      {
+        "giving": false,
+        "raw": true,
+        "prior": [
+          7,
+          7
+        ],
+        "giver": 7,
+        "eligible": true,
+        "action": false,
+        "expected_raw": true,
+        "expected_sources": null,
+        "deltas": [
+          [
+            -1,
+            7
+          ]
+        ],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": true,
+        "prior": [
+          7,
+          7
+        ],
+        "giver": 7,
+        "eligible": true,
+        "action": true,
+        "expected_raw": true,
+        "expected_sources": null,
+        "deltas": [
+          [
+            -1,
+            7
+          ]
+        ],
+        "notify": true
+      },
+      {
+        "giving": false,
+        "raw": true,
+        "prior": [
+          7,
+          7
+        ],
+        "giver": 9,
+        "eligible": false,
+        "action": false,
+        "expected_raw": true,
+        "expected_sources": [
+          7,
+          7
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": true,
+        "prior": [
+          7,
+          7
+        ],
+        "giver": 9,
+        "eligible": false,
+        "action": true,
+        "expected_raw": true,
+        "expected_sources": [
+          7,
+          7
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": true,
+        "prior": [
+          7,
+          7
+        ],
+        "giver": 9,
+        "eligible": true,
+        "action": false,
+        "expected_raw": true,
+        "expected_sources": [
+          7,
+          7
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": false,
+        "raw": true,
+        "prior": [
+          7,
+          7
+        ],
+        "giver": 9,
+        "eligible": true,
+        "action": true,
+        "expected_raw": true,
+        "expected_sources": [
+          7,
+          7
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": false,
+        "prior": null,
+        "giver": 0,
+        "eligible": false,
+        "action": false,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": false,
+        "prior": null,
+        "giver": 0,
+        "eligible": false,
+        "action": true,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": false,
+        "prior": null,
+        "giver": 0,
+        "eligible": true,
+        "action": false,
+        "expected_raw": true,
+        "expected_sources": null,
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": false,
+        "prior": null,
+        "giver": 0,
+        "eligible": true,
+        "action": true,
+        "expected_raw": true,
+        "expected_sources": null,
+        "deltas": [],
+        "notify": true
+      },
+      {
+        "giving": true,
+        "raw": false,
+        "prior": null,
+        "giver": -7,
+        "eligible": false,
+        "action": false,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": false,
+        "prior": null,
+        "giver": -7,
+        "eligible": false,
+        "action": true,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": false,
+        "prior": null,
+        "giver": -7,
+        "eligible": true,
+        "action": false,
+        "expected_raw": true,
+        "expected_sources": null,
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": false,
+        "prior": null,
+        "giver": -7,
+        "eligible": true,
+        "action": true,
+        "expected_raw": true,
+        "expected_sources": null,
+        "deltas": [],
+        "notify": true
+      },
+      {
+        "giving": true,
+        "raw": false,
+        "prior": null,
+        "giver": 7,
+        "eligible": false,
+        "action": false,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": false,
+        "prior": null,
+        "giver": 7,
+        "eligible": false,
+        "action": true,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": false,
+        "prior": null,
+        "giver": 7,
+        "eligible": true,
+        "action": false,
+        "expected_raw": false,
+        "expected_sources": [
+          7
+        ],
+        "deltas": [
+          [
+            1,
+            7
+          ]
+        ],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": false,
+        "prior": null,
+        "giver": 7,
+        "eligible": true,
+        "action": true,
+        "expected_raw": false,
+        "expected_sources": [
+          7
+        ],
+        "deltas": [
+          [
+            1,
+            7
+          ]
+        ],
+        "notify": true
+      },
+      {
+        "giving": true,
+        "raw": false,
+        "prior": null,
+        "giver": 9,
+        "eligible": false,
+        "action": false,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": false,
+        "prior": null,
+        "giver": 9,
+        "eligible": false,
+        "action": true,
+        "expected_raw": false,
+        "expected_sources": null,
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": false,
+        "prior": null,
+        "giver": 9,
+        "eligible": true,
+        "action": false,
+        "expected_raw": false,
+        "expected_sources": [
+          9
+        ],
+        "deltas": [
+          [
+            1,
+            9
+          ]
+        ],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": false,
+        "prior": null,
+        "giver": 9,
+        "eligible": true,
+        "action": true,
+        "expected_raw": false,
+        "expected_sources": [
+          9
+        ],
+        "deltas": [
+          [
+            1,
+            9
+          ]
+        ],
+        "notify": true
+      },
+      {
+        "giving": true,
+        "raw": false,
+        "prior": [],
+        "giver": 0,
+        "eligible": false,
+        "action": false,
+        "expected_raw": false,
+        "expected_sources": [],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": false,
+        "prior": [],
+        "giver": 0,
+        "eligible": false,
+        "action": true,
+        "expected_raw": false,
+        "expected_sources": [],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": false,
+        "prior": [],
+        "giver": 0,
+        "eligible": true,
+        "action": false,
+        "expected_raw": true,
+        "expected_sources": [],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": false,
+        "prior": [],
+        "giver": 0,
+        "eligible": true,
+        "action": true,
+        "expected_raw": true,
+        "expected_sources": [],
+        "deltas": [],
+        "notify": true
+      },
+      {
+        "giving": true,
+        "raw": false,
+        "prior": [],
+        "giver": -7,
+        "eligible": false,
+        "action": false,
+        "expected_raw": false,
+        "expected_sources": [],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": false,
+        "prior": [],
+        "giver": -7,
+        "eligible": false,
+        "action": true,
+        "expected_raw": false,
+        "expected_sources": [],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": false,
+        "prior": [],
+        "giver": -7,
+        "eligible": true,
+        "action": false,
+        "expected_raw": true,
+        "expected_sources": [],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": false,
+        "prior": [],
+        "giver": -7,
+        "eligible": true,
+        "action": true,
+        "expected_raw": true,
+        "expected_sources": [],
+        "deltas": [],
+        "notify": true
+      },
+      {
+        "giving": true,
+        "raw": false,
+        "prior": [],
+        "giver": 7,
+        "eligible": false,
+        "action": false,
+        "expected_raw": false,
+        "expected_sources": [],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": false,
+        "prior": [],
+        "giver": 7,
+        "eligible": false,
+        "action": true,
+        "expected_raw": false,
+        "expected_sources": [],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": false,
+        "prior": [],
+        "giver": 7,
+        "eligible": true,
+        "action": false,
+        "expected_raw": false,
+        "expected_sources": [
+          7
+        ],
+        "deltas": [
+          [
+            1,
+            7
+          ]
+        ],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": false,
+        "prior": [],
+        "giver": 7,
+        "eligible": true,
+        "action": true,
+        "expected_raw": false,
+        "expected_sources": [
+          7
+        ],
+        "deltas": [
+          [
+            1,
+            7
+          ]
+        ],
+        "notify": true
+      },
+      {
+        "giving": true,
+        "raw": false,
+        "prior": [],
+        "giver": 9,
+        "eligible": false,
+        "action": false,
+        "expected_raw": false,
+        "expected_sources": [],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": false,
+        "prior": [],
+        "giver": 9,
+        "eligible": false,
+        "action": true,
+        "expected_raw": false,
+        "expected_sources": [],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": false,
+        "prior": [],
+        "giver": 9,
+        "eligible": true,
+        "action": false,
+        "expected_raw": false,
+        "expected_sources": [
+          9
+        ],
+        "deltas": [
+          [
+            1,
+            9
+          ]
+        ],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": false,
+        "prior": [],
+        "giver": 9,
+        "eligible": true,
+        "action": true,
+        "expected_raw": false,
+        "expected_sources": [
+          9
+        ],
+        "deltas": [
+          [
+            1,
+            9
+          ]
+        ],
+        "notify": true
+      },
+      {
+        "giving": true,
+        "raw": false,
+        "prior": [
+          7
+        ],
+        "giver": 0,
+        "eligible": false,
+        "action": false,
+        "expected_raw": false,
+        "expected_sources": [
+          7
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": false,
+        "prior": [
+          7
+        ],
+        "giver": 0,
+        "eligible": false,
+        "action": true,
+        "expected_raw": false,
+        "expected_sources": [
+          7
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": false,
+        "prior": [
+          7
+        ],
+        "giver": 0,
+        "eligible": true,
+        "action": false,
+        "expected_raw": true,
+        "expected_sources": [
+          7
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": false,
+        "prior": [
+          7
+        ],
+        "giver": 0,
+        "eligible": true,
+        "action": true,
+        "expected_raw": true,
+        "expected_sources": [
+          7
+        ],
+        "deltas": [],
+        "notify": true
+      },
+      {
+        "giving": true,
+        "raw": false,
+        "prior": [
+          7
+        ],
+        "giver": -7,
+        "eligible": false,
+        "action": false,
+        "expected_raw": false,
+        "expected_sources": [
+          7
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": false,
+        "prior": [
+          7
+        ],
+        "giver": -7,
+        "eligible": false,
+        "action": true,
+        "expected_raw": false,
+        "expected_sources": [
+          7
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": false,
+        "prior": [
+          7
+        ],
+        "giver": -7,
+        "eligible": true,
+        "action": false,
+        "expected_raw": true,
+        "expected_sources": [
+          7
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": false,
+        "prior": [
+          7
+        ],
+        "giver": -7,
+        "eligible": true,
+        "action": true,
+        "expected_raw": true,
+        "expected_sources": [
+          7
+        ],
+        "deltas": [],
+        "notify": true
+      },
+      {
+        "giving": true,
+        "raw": false,
+        "prior": [
+          7
+        ],
+        "giver": 7,
+        "eligible": false,
+        "action": false,
+        "expected_raw": false,
+        "expected_sources": [
+          7
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": false,
+        "prior": [
+          7
+        ],
+        "giver": 7,
+        "eligible": false,
+        "action": true,
+        "expected_raw": false,
+        "expected_sources": [
+          7
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": false,
+        "prior": [
+          7
+        ],
+        "giver": 7,
+        "eligible": true,
+        "action": false,
+        "expected_raw": false,
+        "expected_sources": [
+          7
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": false,
+        "prior": [
+          7
+        ],
+        "giver": 7,
+        "eligible": true,
+        "action": true,
+        "expected_raw": false,
+        "expected_sources": [
+          7
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": false,
+        "prior": [
+          7
+        ],
+        "giver": 9,
+        "eligible": false,
+        "action": false,
+        "expected_raw": false,
+        "expected_sources": [
+          7
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": false,
+        "prior": [
+          7
+        ],
+        "giver": 9,
+        "eligible": false,
+        "action": true,
+        "expected_raw": false,
+        "expected_sources": [
+          7
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": false,
+        "prior": [
+          7
+        ],
+        "giver": 9,
+        "eligible": true,
+        "action": false,
+        "expected_raw": false,
+        "expected_sources": [
+          7,
+          9
+        ],
+        "deltas": [
+          [
+            1,
+            9
+          ]
+        ],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": false,
+        "prior": [
+          7
+        ],
+        "giver": 9,
+        "eligible": true,
+        "action": true,
+        "expected_raw": false,
+        "expected_sources": [
+          7,
+          9
+        ],
+        "deltas": [
+          [
+            1,
+            9
+          ]
+        ],
+        "notify": true
+      },
+      {
+        "giving": true,
+        "raw": false,
+        "prior": [
+          7,
+          8
+        ],
+        "giver": 0,
+        "eligible": false,
+        "action": false,
+        "expected_raw": false,
+        "expected_sources": [
+          7,
+          8
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": false,
+        "prior": [
+          7,
+          8
+        ],
+        "giver": 0,
+        "eligible": false,
+        "action": true,
+        "expected_raw": false,
+        "expected_sources": [
+          7,
+          8
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": false,
+        "prior": [
+          7,
+          8
+        ],
+        "giver": 0,
+        "eligible": true,
+        "action": false,
+        "expected_raw": true,
+        "expected_sources": [
+          7,
+          8
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": false,
+        "prior": [
+          7,
+          8
+        ],
+        "giver": 0,
+        "eligible": true,
+        "action": true,
+        "expected_raw": true,
+        "expected_sources": [
+          7,
+          8
+        ],
+        "deltas": [],
+        "notify": true
+      },
+      {
+        "giving": true,
+        "raw": false,
+        "prior": [
+          7,
+          8
+        ],
+        "giver": -7,
+        "eligible": false,
+        "action": false,
+        "expected_raw": false,
+        "expected_sources": [
+          7,
+          8
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": false,
+        "prior": [
+          7,
+          8
+        ],
+        "giver": -7,
+        "eligible": false,
+        "action": true,
+        "expected_raw": false,
+        "expected_sources": [
+          7,
+          8
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": false,
+        "prior": [
+          7,
+          8
+        ],
+        "giver": -7,
+        "eligible": true,
+        "action": false,
+        "expected_raw": true,
+        "expected_sources": [
+          7,
+          8
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": false,
+        "prior": [
+          7,
+          8
+        ],
+        "giver": -7,
+        "eligible": true,
+        "action": true,
+        "expected_raw": true,
+        "expected_sources": [
+          7,
+          8
+        ],
+        "deltas": [],
+        "notify": true
+      },
+      {
+        "giving": true,
+        "raw": false,
+        "prior": [
+          7,
+          8
+        ],
+        "giver": 7,
+        "eligible": false,
+        "action": false,
+        "expected_raw": false,
+        "expected_sources": [
+          7,
+          8
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": false,
+        "prior": [
+          7,
+          8
+        ],
+        "giver": 7,
+        "eligible": false,
+        "action": true,
+        "expected_raw": false,
+        "expected_sources": [
+          7,
+          8
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": false,
+        "prior": [
+          7,
+          8
+        ],
+        "giver": 7,
+        "eligible": true,
+        "action": false,
+        "expected_raw": false,
+        "expected_sources": [
+          7,
+          8
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": false,
+        "prior": [
+          7,
+          8
+        ],
+        "giver": 7,
+        "eligible": true,
+        "action": true,
+        "expected_raw": false,
+        "expected_sources": [
+          7,
+          8
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": false,
+        "prior": [
+          7,
+          8
+        ],
+        "giver": 9,
+        "eligible": false,
+        "action": false,
+        "expected_raw": false,
+        "expected_sources": [
+          7,
+          8
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": false,
+        "prior": [
+          7,
+          8
+        ],
+        "giver": 9,
+        "eligible": false,
+        "action": true,
+        "expected_raw": false,
+        "expected_sources": [
+          7,
+          8
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": false,
+        "prior": [
+          7,
+          8
+        ],
+        "giver": 9,
+        "eligible": true,
+        "action": false,
+        "expected_raw": false,
+        "expected_sources": [
+          7,
+          8,
+          9
+        ],
+        "deltas": [
+          [
+            1,
+            9
+          ]
+        ],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": false,
+        "prior": [
+          7,
+          8
+        ],
+        "giver": 9,
+        "eligible": true,
+        "action": true,
+        "expected_raw": false,
+        "expected_sources": [
+          7,
+          8,
+          9
+        ],
+        "deltas": [
+          [
+            1,
+            9
+          ]
+        ],
+        "notify": true
+      },
+      {
+        "giving": true,
+        "raw": false,
+        "prior": [
+          7,
+          7
+        ],
+        "giver": 0,
+        "eligible": false,
+        "action": false,
+        "expected_raw": false,
+        "expected_sources": [
+          7,
+          7
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": false,
+        "prior": [
+          7,
+          7
+        ],
+        "giver": 0,
+        "eligible": false,
+        "action": true,
+        "expected_raw": false,
+        "expected_sources": [
+          7,
+          7
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": false,
+        "prior": [
+          7,
+          7
+        ],
+        "giver": 0,
+        "eligible": true,
+        "action": false,
+        "expected_raw": true,
+        "expected_sources": [
+          7,
+          7
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": false,
+        "prior": [
+          7,
+          7
+        ],
+        "giver": 0,
+        "eligible": true,
+        "action": true,
+        "expected_raw": true,
+        "expected_sources": [
+          7,
+          7
+        ],
+        "deltas": [],
+        "notify": true
+      },
+      {
+        "giving": true,
+        "raw": false,
+        "prior": [
+          7,
+          7
+        ],
+        "giver": -7,
+        "eligible": false,
+        "action": false,
+        "expected_raw": false,
+        "expected_sources": [
+          7,
+          7
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": false,
+        "prior": [
+          7,
+          7
+        ],
+        "giver": -7,
+        "eligible": false,
+        "action": true,
+        "expected_raw": false,
+        "expected_sources": [
+          7,
+          7
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": false,
+        "prior": [
+          7,
+          7
+        ],
+        "giver": -7,
+        "eligible": true,
+        "action": false,
+        "expected_raw": true,
+        "expected_sources": [
+          7,
+          7
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": false,
+        "prior": [
+          7,
+          7
+        ],
+        "giver": -7,
+        "eligible": true,
+        "action": true,
+        "expected_raw": true,
+        "expected_sources": [
+          7,
+          7
+        ],
+        "deltas": [],
+        "notify": true
+      },
+      {
+        "giving": true,
+        "raw": false,
+        "prior": [
+          7,
+          7
+        ],
+        "giver": 7,
+        "eligible": false,
+        "action": false,
+        "expected_raw": false,
+        "expected_sources": [
+          7,
+          7
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": false,
+        "prior": [
+          7,
+          7
+        ],
+        "giver": 7,
+        "eligible": false,
+        "action": true,
+        "expected_raw": false,
+        "expected_sources": [
+          7,
+          7
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": false,
+        "prior": [
+          7,
+          7
+        ],
+        "giver": 7,
+        "eligible": true,
+        "action": false,
+        "expected_raw": false,
+        "expected_sources": [
+          7,
+          7
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": false,
+        "prior": [
+          7,
+          7
+        ],
+        "giver": 7,
+        "eligible": true,
+        "action": true,
+        "expected_raw": false,
+        "expected_sources": [
+          7,
+          7
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": false,
+        "prior": [
+          7,
+          7
+        ],
+        "giver": 9,
+        "eligible": false,
+        "action": false,
+        "expected_raw": false,
+        "expected_sources": [
+          7,
+          7
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": false,
+        "prior": [
+          7,
+          7
+        ],
+        "giver": 9,
+        "eligible": false,
+        "action": true,
+        "expected_raw": false,
+        "expected_sources": [
+          7,
+          7
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": false,
+        "prior": [
+          7,
+          7
+        ],
+        "giver": 9,
+        "eligible": true,
+        "action": false,
+        "expected_raw": false,
+        "expected_sources": [
+          7,
+          7,
+          9
+        ],
+        "deltas": [
+          [
+            1,
+            9
+          ]
+        ],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": false,
+        "prior": [
+          7,
+          7
+        ],
+        "giver": 9,
+        "eligible": true,
+        "action": true,
+        "expected_raw": false,
+        "expected_sources": [
+          7,
+          7,
+          9
+        ],
+        "deltas": [
+          [
+            1,
+            9
+          ]
+        ],
+        "notify": true
+      },
+      {
+        "giving": true,
+        "raw": true,
+        "prior": null,
+        "giver": 0,
+        "eligible": false,
+        "action": false,
+        "expected_raw": true,
+        "expected_sources": null,
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": true,
+        "prior": null,
+        "giver": 0,
+        "eligible": false,
+        "action": true,
+        "expected_raw": true,
+        "expected_sources": null,
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": true,
+        "prior": null,
+        "giver": 0,
+        "eligible": true,
+        "action": false,
+        "expected_raw": true,
+        "expected_sources": null,
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": true,
+        "prior": null,
+        "giver": 0,
+        "eligible": true,
+        "action": true,
+        "expected_raw": true,
+        "expected_sources": null,
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": true,
+        "prior": null,
+        "giver": -7,
+        "eligible": false,
+        "action": false,
+        "expected_raw": true,
+        "expected_sources": null,
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": true,
+        "prior": null,
+        "giver": -7,
+        "eligible": false,
+        "action": true,
+        "expected_raw": true,
+        "expected_sources": null,
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": true,
+        "prior": null,
+        "giver": -7,
+        "eligible": true,
+        "action": false,
+        "expected_raw": true,
+        "expected_sources": null,
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": true,
+        "prior": null,
+        "giver": -7,
+        "eligible": true,
+        "action": true,
+        "expected_raw": true,
+        "expected_sources": null,
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": true,
+        "prior": null,
+        "giver": 7,
+        "eligible": false,
+        "action": false,
+        "expected_raw": true,
+        "expected_sources": null,
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": true,
+        "prior": null,
+        "giver": 7,
+        "eligible": false,
+        "action": true,
+        "expected_raw": true,
+        "expected_sources": null,
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": true,
+        "prior": null,
+        "giver": 7,
+        "eligible": true,
+        "action": false,
+        "expected_raw": true,
+        "expected_sources": [
+          7
+        ],
+        "deltas": [
+          [
+            1,
+            7
+          ]
+        ],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": true,
+        "prior": null,
+        "giver": 7,
+        "eligible": true,
+        "action": true,
+        "expected_raw": true,
+        "expected_sources": [
+          7
+        ],
+        "deltas": [
+          [
+            1,
+            7
+          ]
+        ],
+        "notify": true
+      },
+      {
+        "giving": true,
+        "raw": true,
+        "prior": null,
+        "giver": 9,
+        "eligible": false,
+        "action": false,
+        "expected_raw": true,
+        "expected_sources": null,
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": true,
+        "prior": null,
+        "giver": 9,
+        "eligible": false,
+        "action": true,
+        "expected_raw": true,
+        "expected_sources": null,
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": true,
+        "prior": null,
+        "giver": 9,
+        "eligible": true,
+        "action": false,
+        "expected_raw": true,
+        "expected_sources": [
+          9
+        ],
+        "deltas": [
+          [
+            1,
+            9
+          ]
+        ],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": true,
+        "prior": null,
+        "giver": 9,
+        "eligible": true,
+        "action": true,
+        "expected_raw": true,
+        "expected_sources": [
+          9
+        ],
+        "deltas": [
+          [
+            1,
+            9
+          ]
+        ],
+        "notify": true
+      },
+      {
+        "giving": true,
+        "raw": true,
+        "prior": [],
+        "giver": 0,
+        "eligible": false,
+        "action": false,
+        "expected_raw": true,
+        "expected_sources": [],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": true,
+        "prior": [],
+        "giver": 0,
+        "eligible": false,
+        "action": true,
+        "expected_raw": true,
+        "expected_sources": [],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": true,
+        "prior": [],
+        "giver": 0,
+        "eligible": true,
+        "action": false,
+        "expected_raw": true,
+        "expected_sources": [],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": true,
+        "prior": [],
+        "giver": 0,
+        "eligible": true,
+        "action": true,
+        "expected_raw": true,
+        "expected_sources": [],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": true,
+        "prior": [],
+        "giver": -7,
+        "eligible": false,
+        "action": false,
+        "expected_raw": true,
+        "expected_sources": [],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": true,
+        "prior": [],
+        "giver": -7,
+        "eligible": false,
+        "action": true,
+        "expected_raw": true,
+        "expected_sources": [],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": true,
+        "prior": [],
+        "giver": -7,
+        "eligible": true,
+        "action": false,
+        "expected_raw": true,
+        "expected_sources": [],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": true,
+        "prior": [],
+        "giver": -7,
+        "eligible": true,
+        "action": true,
+        "expected_raw": true,
+        "expected_sources": [],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": true,
+        "prior": [],
+        "giver": 7,
+        "eligible": false,
+        "action": false,
+        "expected_raw": true,
+        "expected_sources": [],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": true,
+        "prior": [],
+        "giver": 7,
+        "eligible": false,
+        "action": true,
+        "expected_raw": true,
+        "expected_sources": [],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": true,
+        "prior": [],
+        "giver": 7,
+        "eligible": true,
+        "action": false,
+        "expected_raw": true,
+        "expected_sources": [
+          7
+        ],
+        "deltas": [
+          [
+            1,
+            7
+          ]
+        ],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": true,
+        "prior": [],
+        "giver": 7,
+        "eligible": true,
+        "action": true,
+        "expected_raw": true,
+        "expected_sources": [
+          7
+        ],
+        "deltas": [
+          [
+            1,
+            7
+          ]
+        ],
+        "notify": true
+      },
+      {
+        "giving": true,
+        "raw": true,
+        "prior": [],
+        "giver": 9,
+        "eligible": false,
+        "action": false,
+        "expected_raw": true,
+        "expected_sources": [],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": true,
+        "prior": [],
+        "giver": 9,
+        "eligible": false,
+        "action": true,
+        "expected_raw": true,
+        "expected_sources": [],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": true,
+        "prior": [],
+        "giver": 9,
+        "eligible": true,
+        "action": false,
+        "expected_raw": true,
+        "expected_sources": [
+          9
+        ],
+        "deltas": [
+          [
+            1,
+            9
+          ]
+        ],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": true,
+        "prior": [],
+        "giver": 9,
+        "eligible": true,
+        "action": true,
+        "expected_raw": true,
+        "expected_sources": [
+          9
+        ],
+        "deltas": [
+          [
+            1,
+            9
+          ]
+        ],
+        "notify": true
+      },
+      {
+        "giving": true,
+        "raw": true,
+        "prior": [
+          7
+        ],
+        "giver": 0,
+        "eligible": false,
+        "action": false,
+        "expected_raw": true,
+        "expected_sources": [
+          7
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": true,
+        "prior": [
+          7
+        ],
+        "giver": 0,
+        "eligible": false,
+        "action": true,
+        "expected_raw": true,
+        "expected_sources": [
+          7
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": true,
+        "prior": [
+          7
+        ],
+        "giver": 0,
+        "eligible": true,
+        "action": false,
+        "expected_raw": true,
+        "expected_sources": [
+          7
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": true,
+        "prior": [
+          7
+        ],
+        "giver": 0,
+        "eligible": true,
+        "action": true,
+        "expected_raw": true,
+        "expected_sources": [
+          7
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": true,
+        "prior": [
+          7
+        ],
+        "giver": -7,
+        "eligible": false,
+        "action": false,
+        "expected_raw": true,
+        "expected_sources": [
+          7
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": true,
+        "prior": [
+          7
+        ],
+        "giver": -7,
+        "eligible": false,
+        "action": true,
+        "expected_raw": true,
+        "expected_sources": [
+          7
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": true,
+        "prior": [
+          7
+        ],
+        "giver": -7,
+        "eligible": true,
+        "action": false,
+        "expected_raw": true,
+        "expected_sources": [
+          7
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": true,
+        "prior": [
+          7
+        ],
+        "giver": -7,
+        "eligible": true,
+        "action": true,
+        "expected_raw": true,
+        "expected_sources": [
+          7
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": true,
+        "prior": [
+          7
+        ],
+        "giver": 7,
+        "eligible": false,
+        "action": false,
+        "expected_raw": true,
+        "expected_sources": [
+          7
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": true,
+        "prior": [
+          7
+        ],
+        "giver": 7,
+        "eligible": false,
+        "action": true,
+        "expected_raw": true,
+        "expected_sources": [
+          7
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": true,
+        "prior": [
+          7
+        ],
+        "giver": 7,
+        "eligible": true,
+        "action": false,
+        "expected_raw": true,
+        "expected_sources": [
+          7
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": true,
+        "prior": [
+          7
+        ],
+        "giver": 7,
+        "eligible": true,
+        "action": true,
+        "expected_raw": true,
+        "expected_sources": [
+          7
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": true,
+        "prior": [
+          7
+        ],
+        "giver": 9,
+        "eligible": false,
+        "action": false,
+        "expected_raw": true,
+        "expected_sources": [
+          7
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": true,
+        "prior": [
+          7
+        ],
+        "giver": 9,
+        "eligible": false,
+        "action": true,
+        "expected_raw": true,
+        "expected_sources": [
+          7
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": true,
+        "prior": [
+          7
+        ],
+        "giver": 9,
+        "eligible": true,
+        "action": false,
+        "expected_raw": true,
+        "expected_sources": [
+          7,
+          9
+        ],
+        "deltas": [
+          [
+            1,
+            9
+          ]
+        ],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": true,
+        "prior": [
+          7
+        ],
+        "giver": 9,
+        "eligible": true,
+        "action": true,
+        "expected_raw": true,
+        "expected_sources": [
+          7,
+          9
+        ],
+        "deltas": [
+          [
+            1,
+            9
+          ]
+        ],
+        "notify": true
+      },
+      {
+        "giving": true,
+        "raw": true,
+        "prior": [
+          7,
+          8
+        ],
+        "giver": 0,
+        "eligible": false,
+        "action": false,
+        "expected_raw": true,
+        "expected_sources": [
+          7,
+          8
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": true,
+        "prior": [
+          7,
+          8
+        ],
+        "giver": 0,
+        "eligible": false,
+        "action": true,
+        "expected_raw": true,
+        "expected_sources": [
+          7,
+          8
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": true,
+        "prior": [
+          7,
+          8
+        ],
+        "giver": 0,
+        "eligible": true,
+        "action": false,
+        "expected_raw": true,
+        "expected_sources": [
+          7,
+          8
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": true,
+        "prior": [
+          7,
+          8
+        ],
+        "giver": 0,
+        "eligible": true,
+        "action": true,
+        "expected_raw": true,
+        "expected_sources": [
+          7,
+          8
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": true,
+        "prior": [
+          7,
+          8
+        ],
+        "giver": -7,
+        "eligible": false,
+        "action": false,
+        "expected_raw": true,
+        "expected_sources": [
+          7,
+          8
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": true,
+        "prior": [
+          7,
+          8
+        ],
+        "giver": -7,
+        "eligible": false,
+        "action": true,
+        "expected_raw": true,
+        "expected_sources": [
+          7,
+          8
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": true,
+        "prior": [
+          7,
+          8
+        ],
+        "giver": -7,
+        "eligible": true,
+        "action": false,
+        "expected_raw": true,
+        "expected_sources": [
+          7,
+          8
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": true,
+        "prior": [
+          7,
+          8
+        ],
+        "giver": -7,
+        "eligible": true,
+        "action": true,
+        "expected_raw": true,
+        "expected_sources": [
+          7,
+          8
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": true,
+        "prior": [
+          7,
+          8
+        ],
+        "giver": 7,
+        "eligible": false,
+        "action": false,
+        "expected_raw": true,
+        "expected_sources": [
+          7,
+          8
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": true,
+        "prior": [
+          7,
+          8
+        ],
+        "giver": 7,
+        "eligible": false,
+        "action": true,
+        "expected_raw": true,
+        "expected_sources": [
+          7,
+          8
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": true,
+        "prior": [
+          7,
+          8
+        ],
+        "giver": 7,
+        "eligible": true,
+        "action": false,
+        "expected_raw": true,
+        "expected_sources": [
+          7,
+          8
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": true,
+        "prior": [
+          7,
+          8
+        ],
+        "giver": 7,
+        "eligible": true,
+        "action": true,
+        "expected_raw": true,
+        "expected_sources": [
+          7,
+          8
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": true,
+        "prior": [
+          7,
+          8
+        ],
+        "giver": 9,
+        "eligible": false,
+        "action": false,
+        "expected_raw": true,
+        "expected_sources": [
+          7,
+          8
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": true,
+        "prior": [
+          7,
+          8
+        ],
+        "giver": 9,
+        "eligible": false,
+        "action": true,
+        "expected_raw": true,
+        "expected_sources": [
+          7,
+          8
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": true,
+        "prior": [
+          7,
+          8
+        ],
+        "giver": 9,
+        "eligible": true,
+        "action": false,
+        "expected_raw": true,
+        "expected_sources": [
+          7,
+          8,
+          9
+        ],
+        "deltas": [
+          [
+            1,
+            9
+          ]
+        ],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": true,
+        "prior": [
+          7,
+          8
+        ],
+        "giver": 9,
+        "eligible": true,
+        "action": true,
+        "expected_raw": true,
+        "expected_sources": [
+          7,
+          8,
+          9
+        ],
+        "deltas": [
+          [
+            1,
+            9
+          ]
+        ],
+        "notify": true
+      },
+      {
+        "giving": true,
+        "raw": true,
+        "prior": [
+          7,
+          7
+        ],
+        "giver": 0,
+        "eligible": false,
+        "action": false,
+        "expected_raw": true,
+        "expected_sources": [
+          7,
+          7
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": true,
+        "prior": [
+          7,
+          7
+        ],
+        "giver": 0,
+        "eligible": false,
+        "action": true,
+        "expected_raw": true,
+        "expected_sources": [
+          7,
+          7
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": true,
+        "prior": [
+          7,
+          7
+        ],
+        "giver": 0,
+        "eligible": true,
+        "action": false,
+        "expected_raw": true,
+        "expected_sources": [
+          7,
+          7
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": true,
+        "prior": [
+          7,
+          7
+        ],
+        "giver": 0,
+        "eligible": true,
+        "action": true,
+        "expected_raw": true,
+        "expected_sources": [
+          7,
+          7
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": true,
+        "prior": [
+          7,
+          7
+        ],
+        "giver": -7,
+        "eligible": false,
+        "action": false,
+        "expected_raw": true,
+        "expected_sources": [
+          7,
+          7
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": true,
+        "prior": [
+          7,
+          7
+        ],
+        "giver": -7,
+        "eligible": false,
+        "action": true,
+        "expected_raw": true,
+        "expected_sources": [
+          7,
+          7
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": true,
+        "prior": [
+          7,
+          7
+        ],
+        "giver": -7,
+        "eligible": true,
+        "action": false,
+        "expected_raw": true,
+        "expected_sources": [
+          7,
+          7
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": true,
+        "prior": [
+          7,
+          7
+        ],
+        "giver": -7,
+        "eligible": true,
+        "action": true,
+        "expected_raw": true,
+        "expected_sources": [
+          7,
+          7
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": true,
+        "prior": [
+          7,
+          7
+        ],
+        "giver": 7,
+        "eligible": false,
+        "action": false,
+        "expected_raw": true,
+        "expected_sources": [
+          7,
+          7
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": true,
+        "prior": [
+          7,
+          7
+        ],
+        "giver": 7,
+        "eligible": false,
+        "action": true,
+        "expected_raw": true,
+        "expected_sources": [
+          7,
+          7
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": true,
+        "prior": [
+          7,
+          7
+        ],
+        "giver": 7,
+        "eligible": true,
+        "action": false,
+        "expected_raw": true,
+        "expected_sources": [
+          7,
+          7
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": true,
+        "prior": [
+          7,
+          7
+        ],
+        "giver": 7,
+        "eligible": true,
+        "action": true,
+        "expected_raw": true,
+        "expected_sources": [
+          7,
+          7
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": true,
+        "prior": [
+          7,
+          7
+        ],
+        "giver": 9,
+        "eligible": false,
+        "action": false,
+        "expected_raw": true,
+        "expected_sources": [
+          7,
+          7
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": true,
+        "prior": [
+          7,
+          7
+        ],
+        "giver": 9,
+        "eligible": false,
+        "action": true,
+        "expected_raw": true,
+        "expected_sources": [
+          7,
+          7
+        ],
+        "deltas": [],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": true,
+        "prior": [
+          7,
+          7
+        ],
+        "giver": 9,
+        "eligible": true,
+        "action": false,
+        "expected_raw": true,
+        "expected_sources": [
+          7,
+          7,
+          9
+        ],
+        "deltas": [
+          [
+            1,
+            9
+          ]
+        ],
+        "notify": false
+      },
+      {
+        "giving": true,
+        "raw": true,
+        "prior": [
+          7,
+          7
+        ],
+        "giver": 9,
+        "eligible": true,
+        "action": true,
+        "expected_raw": true,
+        "expected_sources": [
+          7,
+          7,
+          9
+        ],
+        "deltas": [
+          [
+            1,
+            9
+          ]
+        ],
+        "notify": true
+      }
+    ]
+  },
+  "worker_index": [
+    {
+      "name": "RemoveAlpine",
+      "raw_write_indexes": [
+        1785
+      ],
+      "ledger_call_indexes": [
+        723,
+        1318
+      ],
+      "notify_call_indexes": [
+        1582
+      ]
+    },
+    {
+      "name": "GiveAlpine",
+      "raw_write_indexes": [
+        549
+      ],
+      "ledger_call_indexes": [
+        746
+      ],
+      "notify_call_indexes": [
+        619
+      ]
+    }
+  ],
+  "captured_functions": [
+    {
+      "owner": "CardFunctionsStub",
+      "name": "GiveAlpine",
+      "script_size": 0,
+      "decode_complete": false,
+      "decode_status": "no-script; native/declaration not decoded"
+    },
+    {
+      "owner": "CardFunctionsStub",
+      "name": "GiveAmbush",
+      "script_size": 0,
+      "decode_complete": false,
+      "decode_status": "no-script; native/declaration not decoded"
+    },
+    {
+      "owner": "CardFunctionsStub",
+      "name": "GiveImmune",
+      "script_size": 0,
+      "decode_complete": false,
+      "decode_status": "no-script; native/declaration not decoded"
+    },
+    {
+      "owner": "CardFunctionsStub",
+      "name": "GiveShock",
+      "script_size": 0,
+      "decode_complete": false,
+      "decode_status": "no-script; native/declaration not decoded"
+    },
+    {
+      "owner": "CardFunctionsStub",
+      "name": "RemoveAlpine",
+      "script_size": 0,
+      "decode_complete": false,
+      "decode_status": "no-script; native/declaration not decoded"
+    },
+    {
+      "owner": "CardFunctionsStub",
+      "name": "RemoveAmbush",
+      "script_size": 0,
+      "decode_complete": false,
+      "decode_status": "no-script; native/declaration not decoded"
+    },
+    {
+      "owner": "CardFunctionsStub",
+      "name": "RemoveImmune",
+      "script_size": 0,
+      "decode_complete": false,
+      "decode_status": "no-script; native/declaration not decoded"
+    },
+    {
+      "owner": "CardFunctionsStub",
+      "name": "RemoveShock",
+      "script_size": 0,
+      "decode_complete": false,
+      "decode_status": "no-script; native/declaration not decoded"
+    },
+    {
+      "owner": "BP_CardFunctions_C",
+      "name": "RemoveShock",
+      "script_size": 1902,
+      "decode_complete": true,
+      "decode_status": null
+    },
+    {
+      "owner": "BP_CardFunctions_C",
+      "name": "GiveShock",
+      "script_size": 1150,
+      "decode_complete": true,
+      "decode_status": null
+    },
+    {
+      "owner": "BP_CardFunctions_C",
+      "name": "RemoveAlpine",
+      "script_size": 2008,
+      "decode_complete": true,
+      "decode_status": null
+    },
+    {
+      "owner": "BP_CardFunctions_C",
+      "name": "GiveAlpine",
+      "script_size": 955,
+      "decode_complete": true,
+      "decode_status": null
+    },
+    {
+      "owner": "BP_CardFunctions_C",
+      "name": "RemoveImmune",
+      "script_size": 1807,
+      "decode_complete": true,
+      "decode_status": null
+    },
+    {
+      "owner": "BP_CardFunctions_C",
+      "name": "GiveImmune",
+      "script_size": 1201,
+      "decode_complete": true,
+      "decode_status": null
+    },
+    {
+      "owner": "BP_CardFunctions_C",
+      "name": "GiveAmbush",
+      "script_size": 1103,
+      "decode_complete": true,
+      "decode_status": null
+    },
+    {
+      "owner": "BP_CardFunctions_C",
+      "name": "RemoveAmbush",
+      "script_size": 2207,
+      "decode_complete": true,
+      "decode_status": null
+    }
+  ],
+  "worker_job": "20261028-165043-rule517-alpine-writer-index-4f1276c9",
+  "evidence": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule517-writers.py",
+      "bytes": 538,
+      "sha256": "705aa527f7d93ecdac13d37d9118d9ffdae9bfaee1aec3a4ddf8c4585af74be1"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule517-keyword-writer-functions-20261028.json",
+      "bytes": 4989205,
+      "sha256": "b571e8d0c745063a07b672faa0f3595e1d56e9407f50dbef15f1e0edbb1c61a8"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule517-alpine.py",
+      "bytes": 15854,
+      "sha256": "33b581fc19e3cce55d43f796ed5449b0101366736c636f42447b657c6f8882de"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule517-alpine-verification-20261028.json",
+      "bytes": 229816,
+      "sha256": "f2171e54660361ea5b563c1c8f103695c69fc7bab49e2d14742cb75774d90a5a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule517-worker\\input.json",
+      "bytes": 26040,
+      "sha256": "d255253c169a669e9badf50911168cc13ace7fadb5eecbc60438fda08267a67e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule517-worker\\task.txt",
+      "bytes": 498,
+      "sha256": "2b85f61ef81ab3114306b3a7c97d39441095bda87c3218c9d0fe8f147f622360"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule517-worker\\output.json",
+      "bytes": 281,
+      "sha256": "b79e419af8e65065ab3920eec4ad067efc536642f5c9205074a266608658f362"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\CardApiDispatch.cs",
+      "bytes": 402458,
+      "sha256": "97e5d5efac6a97b575c4f74267ea13d898178fb250edcaf9fe0e756e9db67c9f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Engine\\CardInstance.cs",
+      "bytes": 79443,
+      "sha256": "fd697726ba8caae2079183860a832b33d491726a2f4a0403c62812ffe213ac37"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs",
+      "bytes": 3022405,
+      "sha256": "1f4974002c1a05e7911d122fd9f5a83b1b93e682dc57f99dc37f1ea2deacadac"
+    }
+  ],
+  "remaining": [
+    "优先闭合Type6 alpine账本与NotifyGiveAlpine/HandleRemoveAlpine接收链，随后修正山地写入适配器及回归。",
+    "Ambush/Shock/Immune各自Give/Remove控制流与模型投影。",
+    "压制及其他直接读Keywords的消费者；完整单卡/PvP语义仍未认证。"
+  ],
+  "game_writes": 0,
+  "real_game_function_calls": 0,
+  "fully_certified_cards": 0
+}
