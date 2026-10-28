@@ -3844,6 +3844,7 @@ public sealed partial class CardApi
         if (keyword == Keyword.Blitz) { GiveBlitz(target); return; }
         if (keyword == Keyword.Smokescreen) { GiveSmokescreen(target); return; }
         if (keyword == Keyword.Guard) { GiveGuard(target); return; }
+        if (keyword == Keyword.Alpine) { GiveAlpine(target); return; }
         GiveKeywordCore(target, keyword);
     }
 
@@ -4020,6 +4021,7 @@ public sealed partial class CardApi
         if (keyword == Keyword.Blitz) { RemoveBlitz(target); return; }
         if (keyword == Keyword.Smokescreen) { RemoveSmokescreen(target); return; }
         if (keyword == Keyword.Guard) { RemoveGuard(target); return; }
+        if (keyword == Keyword.Alpine) { RemoveAlpine(target); return; }
         RemoveKeywordCore(target, keyword);
     }
 
@@ -4101,6 +4103,60 @@ public sealed partial class CardApi
         if (target.Keywords.Contains(Keyword.Guard)) return;
         UpdateGuarded(target.Location);
         FireAbilitiesChanged(target);
+    }
+
+    // RULE-518: Alpine's positive source registration never sets the raw flag.
+    // The headless simulator uses the action-process branch for notifications.
+    public void GiveAlpine(CardInstance target, int giverId = 0)
+    {
+        if (!CanCardBeBuffed(target)) return;
+        if (giverId > 0)
+        {
+            if (target.ReceivedAbilitiesFromCards.TryGetValue("alpine", out var prior)
+                && prior.Contains(giverId)) return;
+            var sources = prior is null ? new List<int>() : new List<int>(prior);
+            sources.Add(giverId);
+            ChangeAlpineBuff(target, giverId, 1);
+            target.ReceivedAbilitiesFromCards["alpine"] = sources;
+        }
+        else if (!target.Keywords.Add(Keyword.Alpine)) return;
+        NotifyAlpine(target, giverId, giving: true);
+    }
+
+    public void RemoveAlpine(CardInstance target, int giverId = 0)
+    {
+        bool hasSources = target.ReceivedAbilitiesFromCards.TryGetValue("alpine", out var prior);
+        if (giverId <= 0)
+        {
+            if (!target.HasKeyword(Keyword.Alpine)) return;
+            foreach (int source in prior?.ToArray() ?? Array.Empty<int>())
+                ChangeAlpineBuff(target, source, -1);
+            target.Keywords.Remove(Keyword.Alpine);
+            target.ReceivedAbilitiesFromCards.Remove("alpine");
+        }
+        else
+        {
+            if (!hasSources || !prior!.Contains(giverId)) return;
+            var sources = prior!.Where(id => id != giverId).ToList();
+            ChangeAlpineBuff(target, giverId, -1);
+            if (sources.Count == 0) target.ReceivedAbilitiesFromCards.Remove("alpine");
+            else target.ReceivedAbilitiesFromCards["alpine"] = sources;
+        }
+        NotifyAlpine(target, giverId, giving: false);
+    }
+
+    private void ChangeAlpineBuff(CardInstance target, int sourceId, int amount)
+    {
+        var buff = GetOrCreateBuff(target, sourceId);
+        buff.Alpine += amount;
+        if (buff.IsEmpty) RemoveBuffEntry(target, (sourceId, false));
+    }
+
+    private void NotifyAlpine(CardInstance target, int giverId, bool giving)
+    {
+        var values = new List<ActionValue2> { ActionValue2.Int("cardID", target.CardId) };
+        if (giverId > 0) values.Add(ActionValue2.Int("giverID", giverId));
+        _engine.FireSubAction(giving ? "ZActionGiveAlpine" : "ZActionRemoveAlpine", values);
     }
 
     private void ChangeGuardBuff(CardInstance target, int sourceId, int amount)

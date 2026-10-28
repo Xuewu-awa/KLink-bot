@@ -1037,6 +1037,9 @@ public sealed class CardInstance
             DefenseSetValuesBySource = BuffsBySource.Where(kv => kv.Value.DefenseSetValue.HasValue)
                 .OrderBy(kv => kv.Key.SourceCardId).ThenBy(kv => kv.Key.Temporary)
                 .ToDictionary(kv => $"{kv.Key.SourceCardId}/{kv.Key.Temporary}", kv => kv.Value.DefenseSetValue!.Value),
+            AlpineBuffsBySource = BuffsBySource.Where(kv => kv.Value.Alpine != 0)
+                .OrderBy(kv => kv.Key.SourceCardId).ThenBy(kv => kv.Key.Temporary)
+                .ToDictionary(kv => $"{kv.Key.SourceCardId}/{kv.Key.Temporary}", kv => kv.Value.Alpine),
             GuardBuffsBySource = BuffsBySource.Where(kv => kv.Value.Guard != 0)
                 .OrderBy(kv => kv.Key.SourceCardId).ThenBy(kv => kv.Key.Temporary)
                 .ToDictionary(kv => $"{kv.Key.SourceCardId}/{kv.Key.Temporary}", kv => kv.Value.Guard),
@@ -1195,6 +1198,8 @@ public sealed class CardBuff
     public int Smokescreen { get; set; }
     /// <summary>Type-6 guard detail, independent of raw flag and source registration.</summary>
     public int Guard { get; set; }
+    /// <summary>combat_alpine amount; independent of raw flag and source registration.</summary>
+    public int Alpine { get; set; }
     /// <summary>type-6 destruction amount; independent of raw hasDestruction and source arrays.</summary>
     public int Destruction { get; set; }
     public int Pinned { get; set; }
@@ -1218,7 +1223,7 @@ public sealed class CardBuff
     public bool Temporary { get; set; }
 
     public bool IsEmpty => Attack == 0 && !AttackSetValue.HasValue && !HasSuppressLedgerEntry && Defense == 0 && !DefenseSetValue.HasValue && !DefenseEmptyDetail.HasValue && !HasNonOrdinaryDefenseEntry && KreditCost == 0
-                           && OperationCost == 0 && HeavyArmor == 0 && TemporaryHeavyArmorGive == 0 && !HeavyArmorSetValue.HasValue && !HeavyArmorEmptyDetail.HasValue && Fury == 0 && Blitz == 0 && Smokescreen == 0 && Guard == 0 && Destruction == 0 && Pinned == 0
+                           && OperationCost == 0 && HeavyArmor == 0 && TemporaryHeavyArmorGive == 0 && !HeavyArmorSetValue.HasValue && !HeavyArmorEmptyDetail.HasValue && Fury == 0 && Blitz == 0 && Smokescreen == 0 && Guard == 0 && Alpine == 0 && Destruction == 0 && Pinned == 0
                            && CustomAbilityDetails.Count == 0 && !KreditCostSetsAbsoluteValue
                            && !OperationCostSetsAbsoluteValue && !OperationCostSetValue.HasValue && !KreditCostSetValue.HasValue && !KreditCostEmptyDetail.HasValue && !HasZeroKreditCostEntry && !HasZeroAttackEntry && !HasZeroOperationCostEntry && !HasZeroDefenseEntry;
 
@@ -1254,6 +1259,7 @@ public sealed class CardBuff
         Blitz = Blitz,
         Smokescreen = Smokescreen,
         Guard = Guard,
+        Alpine = Alpine,
         Destruction = Destruction,
         Pinned = Pinned,
         CustomAbilityDetails = new HashSet<string>(CustomAbilityDetails, StringComparer.Ordinal),
@@ -1325,6 +1331,7 @@ public sealed record CardSnapshot(
     public string[] OperationCostZeroEntrySources { get; init; } = [];
     public string[] DefenseZeroEntrySources { get; init; } = [];
     public Dictionary<string, int> OperationCostSetValuesBySource { get; init; } = new(StringComparer.Ordinal);
+    public Dictionary<string, int> AlpineBuffsBySource { get; init; } = new(StringComparer.Ordinal);
     public Dictionary<string, int> GuardBuffsBySource { get; init; } = new(StringComparer.Ordinal);
     public Dictionary<string, int> SmokescreenBuffsBySource { get; init; } = new(StringComparer.Ordinal);
     public int[] CardsBuffedByThisCard { get; init; } = [];

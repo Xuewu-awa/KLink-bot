@@ -1,0 +1,52 @@
+{
+  "rule_id": "RULE-518",
+  "date": "2026-10-28",
+  "status": "已修复山地命名授予/移除原语的正式来源登记、独立账本、raw分叉和通知载荷；全局山地调用链尚未完成",
+  "authority": {
+    "pid": 24220,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "game_writes": 0,
+    "real_game_function_calls": 0,
+    "historical_replays_used_as_authority": false
+  },
+  "findings": [
+    "承接RULE517实际GiveAlpine955B/RemoveAlpine2008B及320组控制流结果。正来源授予只登记来源和账本，不设置raw；非正来源仅在raw=false时开启。正来源移除只移除该来源（重复来源数组全部删，账本仅-1）；非正来源按原数组逐项-1并清raw和Map，不能从Definition.Keywords重新恢复。",
+    "本轮复读ChangeBuffsFromCards6267B，完整AST。mode8在577到2307，以ECardBuffTypes的显示名拼接下划线和customDetail；1513到3025按旧值+amount更新，零时3316移除内键，1554到1842检查剩余BuffMap并删除或写回外层来源。2471到3024只对当前有效来源对象同步cardsBuffedByThisCard。",
+    "48组实际账本AST执行覆盖缺内键/负数/零/正数、±1、其他键有无和来源对象有效性。按实际AST验证账本及来源数组最终状态；显示名combat、Map/Array/FStruct复制、标量算术、GetCardFromID/IsValid/isBuffedByCard等为供给边界，并非原生容器或所有枚举实现认证。",
+    "Notifier两个58B封装分别调用OnlineMatchReceiver.HandleGiveAlpine/HandleRemoveAlpine。OnlineMatch54B入口将参数写持久帧并跳12352/12385；当前Ubergraph连续66B窗口分别调用AddSubActionGiveAlpine/RemoveAlpine后弹执行栈。两种AddSubAction完整264/266B，giverID>0保留giverID，否则仅cardID。未恢复真实实例接口绑定、重入或视觉/UI播放。",
+    "用ReceivedAbilitiesFromCards.alpine替代CustomJson.alpineGivers；引入CardBuff.Alpine并纳入IsEmpty、Clone和AlpineBuffsBySource快照。命名适配器只解析显式ID，不再对无效ID退回上下文。通用GiveKeyword/RemoveKeyword的Alpine分派也走同一实现；不调用通用AbilitiesChanged。无头流程沿用已有IsActionProcess=true模型。",
+    "新增C#160组矩阵及纯账本创建/归零/全清生命周期检查，覆盖双方、raw、来源空缺/空表/单源/双源/重复源、giver正/零/负、同来源其他增益保留、Clone、快照、精确通知和无效显式目标。修复前新回归失败（缺少独立账本），修复后新回归通过。",
+    "首轮修复后两项既有创建事件测试因直接断言raw Alpine失败；按当前权威分支改为检查有效HasKeyword，并增加raw必须保持false的断言，保留对创建事件接收/抑制时机的测试。既有RemoveAlpine多来源用例改为检查有效山地；固有raw在正来源单独移除时仍保留，全部清除另测。最终931/931通过，构建0警告0错误。",
+    "DeepSeek仅获私有输入和output.json写权限，任务300秒超时且无产物；未采纳其结论，本轮关键节点和全部48组账本验证均由主agent独立完成。"
+  ],
+  "validation": {
+    "ledger_ast_cases": 48,
+    "writer_ast_cases_from_rule517": 320,
+    "new_csharp_matrix_cases": 160,
+    "selftest_passed": 931,
+    "selftest_total": 931,
+    "build_warnings": 0,
+    "build_errors": 0
+  },
+  "remaining": [
+    "GiveAlpineBonus仍有直接Keywords.Contains(Alpine)读取；须继续对照其完整控制流，将有效getter消费路径和山地数值加成单独核对。本轮没有宣称整个Alpine机制完成。",
+    "全局通用ChangeBuffsFromCards的其他type6细项、抑制/撤销/来源对象销毁的各消费者仍需逐项核对。",
+    "其他关键词写入端不能照搬Alpine分支；真实Notifier接口绑定/回调重入及客户端非action-process路径尚未认证。",
+    "没有完成任意单卡全部语义的证明，fully_certified_cards仍为0。"
+  ],
+  "fully_certified_cards": 0,
+  "evidence_sha256": {
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule517-keyword-writer-functions-20261028.json": "b571e8d0c745063a07b672faa0f3595e1d56e9407f50dbef15f1e0edbb1c61a8",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule518-alpine-ledger-notifier-functions-20261028.json": "e6280646fda4a874793d88903e67cfdad79b92cf6d01c7dfcbe6e8aa7b8d5641",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule518-alpine-online-event-chain-20261028.json": "4d4585ce05d7d9f05720215032f4797ef32b0967078e25709510cd856a1a2ec5",
+    "D:\\Codex Workshop\\kards-install-review\\capture-rule518-dependencies.py": "b050188fc0fec33af5330eec7d15e0799efb67781d7694f4ffa4676435338148",
+    "D:\\Codex Workshop\\kards-install-review\\capture-rule518-online.py": "c3f58576bfb638d263e6dfeec458ed26052710fc3e3db776491b0ca8a6379497",
+    "D:\\Codex Workshop\\kards-install-review\\verify-rule518-ledger.py": "f2aa5f261b10bbac3673f2245ab4201bed4c6a66eb91b4268791ab41c0cc5039",
+    "D:\\Codex Workshop\\kards-install-review\\rule518-ledger-verification-20261028.json": "41dc178dec11ab67b44be707df6cd52f9789e8c8195eae40ae6420715cd39bac",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-rule518-before-20261028.txt": "dc862b14d97d23e9d3f2f9065fb61dcea6b87e968c973a2f101f539b83cbd7eb",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-rule518-after-20261028.txt": "ad35a7658237ef9f4de867159780483cee680c1d9b58e6a7f1d07eeffe517bbd",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-rule518-final-20261028.txt": "9023ee0e531a0bafd130e7ab202f61f2e75c901bc84868a772d76730c05c56bc",
+    "D:\\Codex Workshop\\kards-install-review\\build-rule518-final-20261028.txt": "aa9de55c5ba4ad306873dbb9bbb67ef4a07bf17df5ab26d4c0b59ca4910de0f9",
+    "C:\\Users\\AWQ\\.codex\\dsh-jobs\\20261028-170823-rule518-ledger-13c4b0f6\\job.json": "c97216e7ea02f8d563c8a72b7b8edeed622971018b2343671e6daba8e59eb0d2"
+  }
+}

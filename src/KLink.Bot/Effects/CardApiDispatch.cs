@@ -6558,29 +6558,11 @@ public sealed partial class CardApi
 
     private object? DoGiveKeyword(EffectContext c, object? r, object?[] a, string keyword)
     {
-        var target = keyword is Keyword.Fury or Keyword.Blitz or Keyword.Smokescreen or Keyword.Guard
+        var target = keyword is Keyword.Fury or Keyword.Blitz or Keyword.Smokescreen or Keyword.Guard or Keyword.Alpine
             ? AsCardOrId(c, a.ElementAtOrDefault(0)) : TargetArg(c, r, a);
         if (target is not null)
         {
-            if (keyword == Keyword.Alpine)
-            {
-                // `GiveAlpine(card, out qqq, giverID)` keeps the giver in the
-                // target's received-ability list.  The compact runtime stores
-                // that list in card-private JSON so RemoveAlpine can remove one
-                // source without stripping another source or an innate Alpine.
-                int giverId = IntArg(a, 2);
-                if (giverId > 0)
-                {
-                    const string key = "alpineGivers";
-                    var givers = JsonGetIntArray(target, key);
-                    if (!givers.Contains(giverId))
-                    {
-                        givers.Add(giverId);
-                        JsonSetIntArray(target, key, givers);
-                    }
-                }
-            }
-            else if (keyword == Keyword.Bond)
+            if (keyword == Keyword.Bond)
             {
                 c.Engine.Api.AddCustomGameplayTag(target, "ability.bond");
                 if (HasCustomAbility(target, "bond_removed"))
@@ -6593,6 +6575,7 @@ public sealed partial class CardApi
             else if (keyword == Keyword.Blitz) GiveBlitz(target, IntArg(a, 1));
             else if (keyword == Keyword.Smokescreen) GiveSmokescreen(target, IntArg(a, 1));
             else if (keyword == Keyword.Guard) GiveGuard(target, IntArg(a, 1));
+            else if (keyword == Keyword.Alpine) GiveAlpine(target, IntArg(a, 2));
             else GiveKeyword(target, keyword);
         }
 
@@ -6615,35 +6598,8 @@ public sealed partial class CardApi
 
     private object? DoRemoveAlpine(EffectContext c, object? r, object?[] a)
     {
-        var target = TargetArg(c, r, a);
-        if (target is null)
-        {
-            return 0;
-        }
-
-        const string key = "alpineGivers";
-        var givers = JsonGetIntArray(target, key);
-        int giverId = IntArg(a, 3);
-
-        if (giverId > 0)
-        {
-            givers.Remove(giverId);
-        }
-        else
-        {
-            givers.Clear();
-        }
-
-        JsonSetIntArray(target, key, givers);
-
-        // Keep card-defined Alpine and any remaining dynamic source. Only the
-        // final source removal should emit the normal keyword-change event.
-        bool innate = target.Definition.Keywords.Contains(Keyword.Alpine);
-        if (!innate && givers.Count == 0)
-        {
-            RemoveKeyword(target, Keyword.Alpine);
-        }
-
+        if (AsCardOrId(c, a.ElementAtOrDefault(0)) is { } target)
+            RemoveAlpine(target, IntArg(a, 3));
         return 0;
     }
 

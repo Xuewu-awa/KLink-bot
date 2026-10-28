@@ -1162,6 +1162,7 @@ internal static class SelfTest
             DestroyMultipleCardsBothShapes),
         new("AddDefenseToMultipleCards：按 ID 顺序改防御、同步 MaxDefense，降至 0 的单位被摧毁",
             AddDefenseToMultipleCards),
+        new("RULE-518：山地原始标志、来源账本和通知独立维护", AlpineWriterLedger),
         new("RemoveAlpine：按来源移除动态山地，保留其他来源和卡面自带山地",
             RemoveAlpine),
         new("Mobilize：按来源去重并触发 Gain/Lose 联动（48e Guard、43e 全军修复）",
@@ -16790,12 +16791,12 @@ internal static class SelfTest
         var ally = state.CreateWithId(lightInfantry, Side.Left, 62,
             CardLocation.BoardHqLeft, 2);
 
-        if (!ally.Keywords.Contains(Keyword.Alpine, StringComparer.Ordinal))
+        if (!ally.HasKeyword(Keyword.Alpine) || ally.Keywords.Contains(Keyword.Alpine))
         {
             return "67th BARANOVICHI 没有按 cardPlayed 载荷给己方 light infantry 授予 Alpine";
         }
 
-        if (enemy.Keywords.Contains(Keyword.Alpine, StringComparer.Ordinal))
+        if (enemy.HasKeyword(Keyword.Alpine))
         {
             return "OnOtherCardCreatedAlterCard 错把敌方 light infantry 当成己方目标并授予 Alpine";
         }
@@ -26586,8 +26587,9 @@ internal static class SelfTest
                 var created = state.Create("card_unit_light_infantry", Side.Left, CardLocation.HandLeft, 0);
                 bool received = trace.Any(x => x.StartsWith(trigger + " → card_unit_67th_baranovichi#21", StringComparison.Ordinal));
                 if (!later.IsSuppressed || received != !initiallySuppressed
-                    || created.Keywords.Contains(Keyword.Alpine) != !initiallySuppressed)
-                    return $"T35查询快照错误：查询前抑制={initiallySuppressed}，接收={received}，Alpine={created.Keywords.Contains(Keyword.Alpine)}";
+                    || created.HasKeyword(Keyword.Alpine) != !initiallySuppressed
+                    || created.Keywords.Contains(Keyword.Alpine))
+                    return $"T35查询快照错误：查询前抑制={initiallySuppressed}，接收={received}，Alpine={created.HasKeyword(Keyword.Alpine)}";
             }
             return null;
         }
@@ -42278,6 +42280,99 @@ internal static class SelfTest
         return null;
     }
 
+    private static string? AlpineWriterLedger(CardDatabase db)
+    {
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (bool giving in new[] { false, true })
+        foreach (bool raw in new[] { false, true })
+        foreach (int[]? initial in new int[]?[] { null, Array.Empty<int>(), new[] { 9 }, new[] { 9, 10 }, new[] { 9, 9 } })
+        foreach (int giver in new[] { -7, 0, 9, 99 })
+        {
+            var (engine, state) = DeploymentBoard(db);
+            var source = state.CreateWithId("card_unit_10_5_cm_lefh", side, 9, (side == Side.Left ? CardLocation.DeckLeft : CardLocation.DeckRight), 0);
+            state.CreateWithId("card_unit_10_5_cm_lefh", side, 10, (side == Side.Left ? CardLocation.DeckLeft : CardLocation.DeckRight), 0);
+            var target = state.CreateWithId("card_unit_2nd_parachute", side, 60, (side == Side.Left ? CardLocation.HandLeft : CardLocation.HandRight), 0);
+            target.Keywords.Clear();
+            if (raw) target.Keywords.Add(Keyword.Alpine);
+            if (initial is not null) target.ReceivedAbilitiesFromCards["alpine"] = initial.ToList();
+            foreach (int id in new[] { 9, 10, 99 })
+            {
+                var buff = new CardBuff { SourceCardId = id, Attack = 2 };
+                buff.Alpine = initial?.Count(x => x == id) ?? 0;
+                target.BuffsBySource[(id, false)] = buff;
+            }
+            source.CardsBuffedByThisCard.Add(60);
+            var expected = initial?.ToList(); bool endRaw = raw, active = false;
+            var deltas = new Dictionary<int, int> { [9] = 0, [10] = 0, [99] = 0 };
+            if (giving)
+            {
+                if (giver > 0 && !(initial?.Contains(giver) ?? false))
+                {
+                    expected ??= new(); expected.Add(giver); deltas[giver]++; active = true;
+                }
+                else if (giver <= 0 && !raw) { endRaw = true; active = true; }
+            }
+            else if (giver <= 0 && (raw || initial?.Length > 0))
+            {
+                endRaw = false; expected = null; active = true;
+                foreach (int id in initial ?? Array.Empty<int>()) deltas[id]--;
+            }
+            else if (giver > 0 && (initial?.Contains(giver) ?? false))
+            {
+                expected!.RemoveAll(id => id == giver); if (expected.Count == 0) expected = null;
+                deltas[giver]--; active = true;
+            }
+            var ctx = new EffectContext { Engine = engine, State = state, Self = source, Target = source, Controller = side };
+            engine.Api.InvokeByName(giving ? "GiveAlpine" : "RemoveAlpine", source,
+                giving ? new object?[] { 60, null, giver } : new object?[] { 60, null, false, giver }, ctx, out bool handled);
+            bool key = target.ReceivedAbilitiesFromCards.TryGetValue("alpine", out var actual);
+            if (!handled || target.Keywords.Contains(Keyword.Alpine) != endRaw
+                || key != (expected is not null) || (expected is not null && !actual!.SequenceEqual(expected))
+                || target.HasKeyword(Keyword.Alpine) != (endRaw || expected?.Count > 0))
+                return $"山地写入来源/原始分叉错误：{side}/{giving}/{raw}/{giver}/{string.Join(',', initial ?? Array.Empty<int>())}";
+            foreach (int id in new[] { 9, 10, 99 })
+            {
+                var buff = target.BuffsBySource[(id, false)];
+                int amount = (initial?.Count(x => x == id) ?? 0) + deltas[id];
+                if (buff.Alpine != amount || buff.Attack != 2
+                    || buff.Clone().Alpine != amount
+                    || target.Snapshot().AlpineBuffsBySource.GetValueOrDefault($"{id}/False") != amount)
+                    return "山地账本递增/递减/克隆不得影响同来源攻击增益";
+            }
+            var actions = state.ActionLog.SelectMany(a => a.SubActions).ToArray();
+            if (actions.Length != (active ? 1 : 0)) return "山地来源未命中或重复授予应无通知";
+            if (active && (actions[0].Name != (giving ? "ZActionGiveAlpine" : "ZActionRemoveAlpine")
+                || !actions[0].Values.Select(v => v.Name).SequenceEqual(giver > 0 ? new[] { "cardID", "giverID" } : new[] { "cardID" })
+                || actions[0].Values[0].Value != 60 || (giver > 0 && actions[0].Values[1].Value != giver)))
+                return "山地通知须保留正 giverID，非正来源只记录 cardID";
+            int before = state.ActionLog.Count;
+            engine.Api.InvokeByName(giving ? "GiveAlpine" : "RemoveAlpine", source,
+                giving ? new object?[] { -404, null, giver } : new object?[] { -404, null, false, giver }, ctx, out _);
+            if (state.ActionLog.Count != before || source.HasKeyword(Keyword.Alpine))
+                return "山地显式无效ID不能退回上下文目标";
+        }
+        {
+            var (engine, state) = DeploymentBoard(db);
+            var source = state.CreateWithId("card_unit_10_5_cm_lefh", Side.Left, 9, CardLocation.DeckLeft, 0);
+            var target = state.CreateWithId("card_unit_2nd_parachute", Side.Left, 60, CardLocation.HandLeft, 0);
+            target.Keywords.Clear();
+            engine.Api.GiveAlpine(target, 9);
+            if (target.Keywords.Contains(Keyword.Alpine) || !target.HasKeyword(Keyword.Alpine)
+                || target.BuffsBySource[(9, false)].IsEmpty || !source.CardsBuffedByThisCard.SequenceEqual(new[] { 60 }))
+                return "纯山地来源必须维持账本和反向关联";
+            engine.Api.RemoveAlpine(target, 9);
+            if (target.HasKeyword(Keyword.Alpine) || target.BuffsBySource.Count != 0
+                || source.CardsBuffedByThisCard.Count != 0) return "山地归零须删除空账本及反向关联";
+            engine.Api.GiveAlpine(target);
+            engine.Api.GiveAlpine(target, 9);
+            engine.Api.RemoveAlpine(target, 0);
+            if (target.HasKeyword(Keyword.Alpine) || target.ReceivedAbilitiesFromCards.ContainsKey("alpine")
+                || target.BuffsBySource.Count != 0 || source.CardsBuffedByThisCard.Count != 0)
+                return "非正来源撤销必须同时清除原始标志和全部来源";
+        }
+        return null;
+    }
+
     private static string? RemoveAlpine(CardDatabase db)
     {
         const string targetName = "card_unit_2nd_parachute";
@@ -42318,19 +42413,19 @@ internal static class SelfTest
 
         Give(sourceA.CardId);
         Give(sourceB.CardId);
-        if (!target.Keywords.Contains(Keyword.Alpine))
+        if (!target.HasKeyword(Keyword.Alpine))
         {
             return "GiveAlpine 后目标必须拥有 Alpine";
         }
 
         Remove(sourceA.CardId);
-        if (!target.Keywords.Contains(Keyword.Alpine))
+        if (!target.HasKeyword(Keyword.Alpine))
         {
             return "移除一个来源后仍有另一来源，不能摘掉 Alpine";
         }
 
         Remove(sourceB.CardId);
-        if (target.Keywords.Contains(Keyword.Alpine))
+        if (target.HasKeyword(Keyword.Alpine))
         {
             return "移除最后一个来源后必须摘掉动态 Alpine";
         }
