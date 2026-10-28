@@ -1107,6 +1107,8 @@ internal static class SelfTest
         new("RULE-520：直接出牌在入场回调后检查有效山地且只加成一次", DirectEntryAlpineSources),
         new("RULE-521：单卡生成传递闪击来源并登记账本", SingleSpawnBlitzSource),
         new("RULE-521：单卡生成区分隐藏入场并先事件后闪击与山地", SingleSpawnEntryLifecycle),
+        new("RULE-522：单卡生成初始化槽位和创建后可见字段", SingleSpawnInitialPlacement),
+        new("RULE-522：单卡生成分阶段解析ID并保留山地对象引用", SingleSpawnIdentityLookup),
         new("山地：新部署的 Alpine 单位得到 +N/+N（手牌打出 + 效果生成两条路），且一次部署只加一次",
             AlpineBonusOnEntry),
 
@@ -40514,6 +40516,104 @@ internal static class SelfTest
     /// 与效果生成（`SpawnOnBattlefield` ↔ `SpawnCardToBoard` si=872）。
     /// 「一次部署只加一次」由数值**恰好**等于 +N 保证（加法重复调会变 +2N）。
     /// </summary>
+    private static string? SingleSpawnInitialPlacement(CardDatabase db)
+    {
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (bool frontline in new[] { false, true })
+        foreach (int slot in new[] { -1, 0, 2 })
+        {
+            var (engine, state) = EmptyBoard(db);
+            var where = frontline ? CardLocation.BoardFrontline : side.HqOf();
+            state.CreateWithId(PlainUnit, side, 20, where, 19);
+            int expected = slot >= 0 ? slot : state.AllCardsInBattleOrder.Count(c => c.Location == where);
+            int observed = -1; var created = state.CardCreated;
+            state.CardCreated = made => { created?.Invoke(made); if (made.Name == "card_unit_typhoon_mk_ib") { observed = made.LocationNumber; made.CardSeen = true; } };
+            var card = engine.Api.SpawnOnBattlefield(side, "card_unit_typhoon_mk_ib", frontline, slot);
+            if (observed != expected || card.CardSeen) return $"单卡创建前槽位/创建后可见字段错误：{side}/{frontline}/{slot} expected={expected} actual={observed}/{card.CardSeen}";
+        }
+        return null;
+    }
+
+    private static string? SingleSpawnIdentityLookup(CardDatabase db)
+    {
+        using var entry = InstallEntryMethodProbe();
+        using var movement = InstallMovementObserverProbes();
+        using var abilities = InstallAbilitiesChangedProbes();
+        const string name = "card_unit_typhoon_mk_ib";
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (bool frontline in new[] { false, true })
+        foreach (int slot in new[] { -1, 0, 2 })
+        foreach (int phase in new[] { 1, 2, 3, 4 })
+        foreach (bool otherOwner in new[] { false, true })
+        foreach (bool discard in new[] { false, true })
+        {
+            var (engine, state) = EmptyBoard(db); state.Turn = 7;
+            var where = frontline ? CardLocation.BoardFrontline : side.HqOf();
+            var source = state.CreateWithId(PlainUnit, side, 9, side.DeckOf(), 0);
+            var peer = state.CreateWithId(PlainUnit, side, 20, side.HqOf(), 0); peer.Keywords.Clear(); peer.Keywords.Add(Keyword.Alpine);
+            var observer = state.CreateWithId("card_event_honorifics", side, 90, side.DeckOf(), 0);
+            observer.Definition = new CardDefinition { Name = observer.Name, UsedTriggers = new[] { "OnOtherCardAbilitiesChanged" } };
+            observer.BlueprintVariables["_auditT29Count"] = 0;
+            CardInstance? original = null, replacement = null; bool replacing = false;
+            void Replace()
+            {
+                if (original is null || replacement is not null) return;
+                // Isolate a map replacement while retaining the detached object's fields.
+                var oldLocation = original.Location; int oldNumber = original.LocationNumber;
+                state.Remove(original); original.Location = oldLocation; original.LocationNumber = oldNumber;
+                replacing = true;
+                replacement = state.CreateWithId(name, otherOwner ? side.Opposite() : side, original.CardId,
+                    discard ? CardLocation.Discard : where, 17);
+                replacing = false;
+                replacement.Keywords.Clear(); replacement.Attack = 4; replacement.Defense = replacement.MaxDefense = 7;
+                replacement.EnteredPlayOnTurn = 41; replacement.CardSeen = true;
+            }
+            var created = state.CardCreated;
+            state.CardCreated = made => {
+                created?.Invoke(made);
+                if (made.Name == name && !replacing && original is null)
+                {
+                    original = made; made.Keywords.Clear(); made.Keywords.Add(Keyword.Alpine);
+                    made.Attack = 2; made.Defense = made.MaxDefense = 5; made.CardSeen = true;
+                    if (phase == 1) Replace();
+                }
+                else if (made.Name == "card_unit_routed_troops" && original is not null && replacement is null)
+                {
+                    int t29 = Convert.ToInt32(observer.BlueprintVariables.GetValueOrDefault("_auditT29Count") ?? 0);
+                    bool moving = Equals(original.BlueprintVariables.GetValueOrDefault("_auditMovementCalled"), true);
+                    if ((phase == 3 && t29 == 0 && !moving) || (phase == 4 && t29 == 1)) Replace();
+                }
+            };
+            var modifiers = state.CardCreationModifiers;
+            state.CardCreationModifiers = made => {
+                modifiers?.Invoke(made);
+                if (phase == 2 && ReferenceEquals(made, original) && !replacing) Replace();
+            };
+            var result = engine.Api.InvokeByName("SpawnCardOnBattlefield", null,
+                new object?[] { (int)side, frontline, name, source.CardId, null, true, slot, 0, false, false },
+                new EffectContext { Engine = engine, State = state, Self = source, Controller = side }, out bool handled);
+            if (!handled || original is null || replacement is null || result is not CardInstance returned
+                || returned.CardId != original.CardId || !ReferenceEquals(state.ById(original.CardId), replacement))
+                return "单卡ID替换探针未完成";
+            var cached = phase <= 2 ? replacement : original;
+            var blitzTarget = phase == 4 ? original : replacement;
+            int bonus = phase >= 3 ? 1 : 0;
+            CardLocation expectedLocation = phase <= 2 && slot != -1 ? where : discard ? CardLocation.Discard : where;
+            if (original.EnteredPlayOnTurn != (phase <= 2 ? 0 : 7)
+                || replacement.EnteredPlayOnTurn != (phase <= 2 ? 7 : 41)
+                || Convert.ToInt32(cached.BlueprintVariables.GetValueOrDefault("_auditEntryMethod") ?? -1) != 3
+                || original.Attack != 2 + bonus || replacement.Attack != 4
+                || original.HasBlitz != ReferenceEquals(blitzTarget, original)
+                || replacement.HasBlitz != ReferenceEquals(blitzTarget, replacement)
+                || !Equals(replacement.BlueprintVariables.GetValueOrDefault("_auditMovementCalled"), true)
+                || Equals(original.BlueprintVariables.GetValueOrDefault("_auditMovementCalled"), true)
+                || replacement.Location != expectedLocation || replacement.Owner != (otherOwner ? side.Opposite() : side)
+                || original.CardSeen || !replacement.CardSeen)
+                return $"单卡阶段对象/位置错误：{side}/{frontline}/{slot}/{phase}/{otherOwner}/{discard}，turn={original.EnteredPlayOnTurn}/{replacement.EnteredPlayOnTurn}, attack={original.Attack}/{replacement.Attack}, blitz={original.HasBlitz}/{replacement.HasBlitz}, location={replacement.Location}";
+        }
+        return null;
+    }
+
     private static string? SingleSpawnBlitzSource(CardDatabase db)
     {
         foreach (Side side in new[] { Side.Left, Side.Right })

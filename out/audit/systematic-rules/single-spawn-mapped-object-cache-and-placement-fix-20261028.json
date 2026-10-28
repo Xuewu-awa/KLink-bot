@@ -1,0 +1,59 @@
+{
+  "rule_id": "RULE-522",
+  "date": "2026-10-28",
+  "status": "已修复有效同ID替代对象的单卡生成分阶段取对象、初始化槽位/可见字段及显式注入条件；映射缺失的空对象分支仍开放",
+  "authority": {
+    "pid": 24220,
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "read_only": true,
+    "client_writes": 0,
+    "real_client_function_calls": 0,
+    "historical_replays_used_as_authority": false
+  },
+  "findings": [
+    "当前完整复获SpawnCardToBoard1917B、CreateCard3115B、Inject139B、SetCardLocationAndLocNumber375B、GiveBlitz1335B、ExecuteOnCardLocationMoved856B、GetNextCardLocationNumber581B及CreateLocationNumberGapForCard1365B；另采集入场681B、前线1099B以整理后续边界。无脚本声明与RenderedCardCache同名函数不作为本规则函数认证。",
+    "CreateCard的三个CardID出参赋值492/603/2060均读取保存的_cardID；SpawnCardToBoard1806保存CreateCard出参为spawnedID，448/482仅locationNumber!=-1才1838按ID注入，之后496 GetCardFromID、528缓存cardSpawned、570写回合。785闪击用保存spawnedID，817/872山地用缓存对象，942移动用保存ID且被调函数38重新取对象；1024前线更新及1047输出也用保存ID。不能用一个最初创建对象贯穿各阶段。",
+    "CreateCard809..944初始化槽位：非负请求直接用原值，否则GetNextCardLocationNumber。当前GetNext581B对手牌/支援/前线3..7读取物理位置数量，其他已知枚举分支返回0；不是最大locationNumber+1。创建对象自身回调后400对原创建对象写cardSeen，再执行创建修正；替代对象不能被这次原对象写入误改。",
+    "显式注入139B先按位置排序取得ID，再1365B gap：若目标ID已在该位置，先将其他对象编号压紧；之后将非目标且编号>=请求值的对象+1。375B setter重新按ID取对象，只写Location和非弃牌位置的locationNumber，没有移动回调或RecalculateStats。追加(-1)不进入此注入路径，须保留替代对象回调后的位置。",
+    "已调整SpawnOnBattlefield在创建前选初始物理槽位，传cardSeenBeforeModifiers=false；保存生成ID，显式槽位才注入当前映射对象并保持直接字段写入；然后取当前映射作为入场/山地缓存。闪击、移动及前线更新分别按保存ID重新解析。通知的cardID继续使用保存值。未恢复完整最终生成通知载荷，仅固定其ID来源。",
+    "72组实际AST组合执行从Spawn448开始，连接实际Inject/gap/setter全体、GiveBlitz0..62与移动0..89查询前缀；覆盖三个物理位置、三槽位、四次替换时点和替代对象在场/弃牌。验证缓存对象、闪击先取目标后回调、山地保留引用、移动再次查ID、回合字段、注入条件和gap编号及保存ID输出；另44组GetNextSlot581B执行验证枚举0..10与数量0/1/3/99。分配/创建/T35结果、排序与容器、getter、回调和数值/关键词原语体及刷新/前线函数为供给。",
+    "新增C#12组初始槽位/创建后cardSeen，192组实际包装整合，覆盖双方/阵线/三槽位、自身创建/创建修正/入场/闪击回调四个替换时点、替代对象原/异控制方和在场/弃牌位置。以受控同ID映射替换隔离对象引用，旧对象的字段保留是探针供给结果，不声称所有真实移除效果均保留位置。检查入场/回合写入对象、山地旧引用、闪击缓存、移动当前对象、控制方/位置及原创建对象cardSeen。",
+    "修复前两项新回归失败：追加创建期预期物理槽位2实际0且CardSeen未清；创建回调替换后仍给旧对象写回合/山地、替代对象回合未更新。修复后首次与最终937/937通过，构建0警告0错误；既有回归未改写。",
+    "DeepSeek仅提取私有包中5函数16节点；所有raw JSON逐节点与当前权威AST完全匹配，主agent独立执行语义组合及整合验证。没有把机械节点转录当成全局可达性或全部卡牌认证。"
+  ],
+  "validation": {
+    "actual_identity_ast_compositions": 72,
+    "actual_initial_slot_ast_cases": 44,
+    "new_csharp_initialization_cases": 12,
+    "new_csharp_identity_cases": 192,
+    "selftest_passed": 937,
+    "selftest_total": 937,
+    "build_warnings": 0,
+    "build_errors": 0
+  },
+  "remaining": [
+    "优先开放：State.ById(spawnedId)完全缺失时，当前管理层仍保留原有created对象后备路径。客户端的空上下文、IsValid门、空主体入场/观察者回调及后续通知须组合验证后才能替换；本轮只证明有效同ID替代对象，绝非全部对象身份行为已一致。",
+    "托管CardId不可变，尚未证明客户端对象CardID字段改变、键与字段不一致或原生地址失效时的全部等价性。当前托管返回CardInstance投影到保存ID的兼容返回类型也不是原生ABI认证。",
+    "全局位置排序、稀疏位置同号/并列顺序、TSet/TMap迭代以及缺失注入对象的完整路径仍需核对；本轮gap模型供给稳定排序和有效映射。",
+    "创建取消/位置满/overrideCardID、分配与CreateCardObject完整链、移动回调体、前线更新完整体及最终生成通知的全部参数仍开放。",
+    "SpawnNextToCard等复用返回对象的后续消费者、批量生成及等待恢复的全局生命周期仍需继续逐项核查。"
+  ],
+  "fully_certified_cards": 0,
+  "evidence_sha256": {
+    "D:\\Codex Workshop\\kards-install-review\\capture-rule522-spawn-identity.py": "af6da8a70145e0da2f1cede713c5de1a98b8899c69dbb9d8ce9cfe55e8385f90",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule522-single-spawn-object-identity-20261028.json": "f13e04a1510f9ff5de62a587e00884f0a3bf76b29c4780b4d1fe5b05c6388543",
+    "D:\\Codex Workshop\\kards-install-review\\capture-rule522-dependencies.py": "9225b260d8aadefc535636c19ddccb2b3bc756cb797705e3a4482a1c29b85d45",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule522-spawn-identity-entry-dependencies-20261028.json": "0edba9f6efacd8f07388ef7878dafa921f73f4199ae4d9ebd15cf40d1ad88a6e",
+    "D:\\Codex Workshop\\kards-install-review\\capture-rule522-position.py": "892c985cf0f4c7e79a23470999def63b35542f79fa70a81db556d6f9be7e7dd0",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule522-spawn-position-dependencies-20261028.json": "233567357a6a9ce8aba97616c5208afb866ccaac3cbad9d6d933508a25d438d5",
+    "D:\\Codex Workshop\\kards-install-review\\verify-rule522-spawn-identity.py": "26a10dbe19e49ba4b044f6a97095056ebd9a659478edd12f010bffbcb7e06092",
+    "D:\\Codex Workshop\\kards-install-review\\rule522-spawn-identity-verification-20261028.json": "b30a6717486ab3bd78caa65826902d7cfaf2d8a2ecb5d624592ddf0db567c332",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-rule522-before-20261028.txt": "4e4b48ed8e0315667bccb587cef6fbad064882ec0df78b6b312d841c349c6234",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-rule522-after-20261028.txt": "2d23bfd0b83f8af66504fc07da62cc302b11f59227f59067f42b55f8765b8b64",
+    "D:\\Codex Workshop\\kards-install-review\\selftest-rule522-final-20261028.txt": "2d23bfd0b83f8af66504fc07da62cc302b11f59227f59067f42b55f8765b8b64",
+    "D:\\Codex Workshop\\kards-install-review\\build-rule522-final-20261028.txt": "7164fa35673251e68b41d54cc4c16553a485ff4c3e68f932fe8d5d46dfcb9e3d",
+    "D:\\Codex Workshop\\kards-install-review\\rule522-worker\\input.json": "be01c538f381b9a8f6f75cd8e6c9e5f5638e49c1598ab6c0b35f20989367c563",
+    "D:\\Codex Workshop\\kards-install-review\\rule522-worker\\output.json": "708b9c9d147f22dbb6764936a9988767cce091b52ad22250d6f3b3e596217f24",
+    "D:\\Codex Workshop\\kards-install-review\\rule522-worker-verification-20261028.json": "bce3346cdc3027493b5fabea99efb7c4b0ddebf60dbe074ac86ab692700ebef7"
+  }
+}

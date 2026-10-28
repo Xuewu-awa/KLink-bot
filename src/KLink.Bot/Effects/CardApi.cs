@@ -3538,16 +3538,38 @@ public sealed partial class CardApi
         // RULE-450: SpawnCardToBoard i=1468..1650 selects the salvage struct
         // before CreateCard; it must already be visible to creation callbacks.
         int salvage = unchecked((byte)salvageFaction);
-        var card = State.Create(cardName, side, where, 0, isGold: forceGoldCard,
+        // CreateCard chooses its initial physical slot before OnCreate/T35.
+        int initialSlot = locationNumber > -1 ? locationNumber
+            : State.AllCardsInBattleOrder.Count(c => c.Location == where);
+        var created = State.Create(cardName, side, where, initialSlot, isGold: forceGoldCard,
             isSalvaged: salvage != 0,
             salvageFaction: salvage == 0 ? null : salvage.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            cardSeenBeforeModifiers: false,
             beforeCreationModifiers: makeVeteran ? MakeVeteran : null);
-        card.EnteredPlayOnTurn = State.Turn;
+        int spawnedId = created.CardId;
 
-        int slot = locationNumber >= 0
-            ? locationNumber
-            : State.Cards(side, where).Where(c => c != card).Select(c => c.LocationNumber).DefaultIfEmpty(-1).Max() + 1;
-        State.Move(card, where, slot);
+        // RULE-522: only explicit placement reaches InjectCardIntoLocation.
+        // Resolve its ID after creation callbacks, then cache again at i=496.
+        if (locationNumber != -1 && State.ById(spawnedId) is { } injected)
+        {
+            var occupants = State.AllCardsInBattleOrder.Where(c => c.Location == where)
+                .OrderBy(c => c.LocationNumber).ToArray();
+            if (occupants.Any(c => c.CardId == spawnedId))
+            {
+                int number = 0;
+                foreach (var other in occupants.Where(c => c.CardId != spawnedId))
+                    other.LocationNumber = number++;
+            }
+            foreach (var other in occupants.Where(c => c.CardId != spawnedId))
+                if (other.LocationNumber >= locationNumber) other.LocationNumber++;
+            // SetCardLocationAndLocNumber only writes these two fields.
+            injected.Location = where;
+            injected.LocationNumber = locationNumber;
+        }
+        // A missing mapping retains the legacy managed fallback pending the
+        // separate null-context callback audit; valid replacements use the map.
+        var card = State.ById(spawnedId) ?? created;
+        card.EnteredPlayOnTurn = State.Turn;
 
         // RULE-521: current i=619..734 chooses one entry path before Blitz.
         // A hidden spawn dispatches T65; even if its callbacks reveal the card,
@@ -3557,20 +3579,21 @@ public sealed partial class CardApi
 
         // i=785 passes spawnedID and spawnerID to the formal primitive. Keep
         // the held card for Alpine after GiveBlitz callbacks (i=817..872).
-        if (newGiveBlitz && State.ById(card.CardId) is { } blitzTarget)
+        if (newGiveBlitz && State.ById(spawnedId) is { } blitzTarget)
             GiveBlitz(blitzTarget, spawnerId);
         if (card.HasKeyword(Keyword.Alpine)) GiveAlpineBonus(card);
         RefreshLocationStatus(new[] { where });
 
-        _engine.ExecuteOnCardLocationMoved(card, CardLocation.NotAvailable, where);
+        if (State.ById(spawnedId) is { } moved)
+            _engine.ExecuteOnCardLocationMoved(moved, CardLocation.NotAvailable, where);
         if (where == CardLocation.BoardFrontline)
         {
-            _engine.RefreshFrontlineOwner(card);
+            _engine.RefreshFrontlineOwnerById(spawnedId);
         }
 
         _engine.FireSubAction("ZActionSpawnCard", new[]
         {
-            ActionValue2.Int("cardID", card.CardId),
+            ActionValue2.Int("cardID", spawnedId),
             ActionValue2.Int("location", (int)where),
         });
         return card;
