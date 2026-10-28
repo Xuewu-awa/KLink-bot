@@ -1,0 +1,41 @@
+{
+  "date": "2026-10-29",
+  "counts": {
+    "cards": 2019,
+    "cards_with_own_ir": 1709,
+    "pvp_included": 0,
+    "excluded_non_pvp": 0,
+    "pvp_scope_unresolved": 2019,
+    "function_identities": 5585,
+    "headless_functions_excluded": 61,
+    "program_containers": 2626,
+    "dependency_edges": 18571,
+    "dependency_symbols": 440,
+    "secondary_reports": 402,
+    "explicit_partial_units": 3,
+    "partial_units_matching_bound_inputs": 3,
+    "authoritative_current_pvp_denominator_available": false,
+    "fully_certified_cards": 0,
+    "semantic_completion_percent": null,
+    "total_work_remaining_percent": null
+  },
+  "independent_call_site_count": 27124,
+  "worker": {
+    "job": "20261029-002532-audit-matrix-schema-042f320f",
+    "metadata_rows_verified": 402,
+    "distinct_fields_verified": 882
+  },
+  "validation": "Independent card/function set equality, all IR call/math sites, references, fingerprints, 8 TSV row counts, no semantic promotion; 16 fixture tests separately passed.",
+  "files_sha256": {
+    "tools\\build-audit-matrix.py": "9637c9cd55740aeb75c777c01de6e687b4b44b233b8eb7e6519c284d812f6ab0",
+    "tools\\test-audit-matrix.py": "3f8d743b4b4878c9509857586d08c4f223c2c5dd0697cfb540fc0db3de184287",
+    "klink bot\\docs\\audit-matrix-reviews.json": "1cb303e85f46ae735c4486eb88c4c0859e022376bf9e57d6df023f6fac8fbdfc",
+    "out\\audit\\coverage-matrix\\matrix.json": "4b455c7091db82910d22b3cd35957aab952b51bf285218b6ce7b80fde3ee1983"
+  },
+  "worker_files_sha256": {
+    "D:\\Codex Workshop\\kards-install-review\\coverage-matrix-worker\\input.json": "908ab045ddc0cfbd6253ace2a59fb39cf868190b4cb048ed3e35a1869d04f879",
+    "D:\\Codex Workshop\\kards-install-review\\coverage-matrix-worker\\output.json": "e1838765afe2fcf20ec4a0b1c767da6982f7e03e9cf2930cbd6ca95500db8fc3"
+  },
+  "actual_corpus_reproducible_files": 10,
+  "fixture_tests_passed": 16
+}

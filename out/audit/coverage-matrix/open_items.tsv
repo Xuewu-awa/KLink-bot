@@ -1,0 +1,9 @@
+﻿id	title	status	scope	source
+MATRIX-001	PvP资格与范围	open	逐资产用权威版本资料确认可构筑卡、衍生卡、总部及明确排除项，建立PvP分母。	primary reviewed matrix bootstrap; not exhaustive defect inventory
+MATRIX-002	旧审计证据整理	open	逐报告关联精确函数/分支及版本，处理历史remaining的已解决/重复/仍开放状态。	primary reviewed matrix bootstrap; not exhaustive defect inventory
+MATRIX-003	依赖闭包	open	解析调用接收者、继承和动态目标，补充卡牌隐式依赖的战斗、事件与原生默认规则。	primary reviewed matrix bootstrap; not exhaustive defect inventory
+RULE-NEXT-ATTACK	攻击其他模式	open	继续核对ChangeAttack模式6..255、局部默认状态和账本分支。	primary reviewed matrix bootstrap; not exhaustive defect inventory
+RULE-NATIVE-BOUNDARY	原生边界	open	qqq输出、空上下文、对象生命周期、容器顺序和回调重入。	primary reviewed matrix bootstrap; not exhaustive defect inventory
+RULE-SPAWN-BOUNDARY	生成边界	open	相邻缺来源/无效控制方/默认位置；共享满位置/overrideCardID及完整分配通知。	primary reviewed matrix bootstrap; not exhaustive defect inventory
+MATRIX-004	版本关联	open	保留当前EXE与资产版本指纹和失效状态；按用户工作安排逐步补齐，不将旧卡表当作当前权威。	primary reviewed matrix bootstrap; not exhaustive defect inventory
+MATRIX-005	逐卡闭合与准入	open	依赖闭合后执行逐卡全部路径及联动验证，建立独立完整认证准入记录。	primary reviewed matrix bootstrap; not exhaustive defect inventory

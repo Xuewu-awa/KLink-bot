@@ -1,0 +1,183 @@
+{
+  "schema_version": 1,
+  "description": "首批人工关联局部证据。旧报告其余成果待整理；禁止由引用或数量自动认证。",
+  "partial_evidence": [
+    {
+      "id": "RULE-525/ChangeAttack/ordinary",
+      "symbol": "ChangeAttack",
+      "modes": [
+        0,
+        1
+      ],
+      "status": "partial",
+      "validated_scope": "有效区域；普通零请求与零可见差；来源账本与通知/after，存在供给边界。",
+      "report": "out/audit/systematic-rules/ordinary-attack-valid-zones-zero-and-after-chain-fix-20261028.json",
+      "report_sha256": "7cf54dacd747c091f324db75e0e4be484277eb5d1226dbe9d7f36583c290ef5a",
+      "client_exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+      "source_bindings": {
+        "src/KLink.Bot/Effects/CardApi.cs": "4eb69641fc6ba73c4e3f3e6952dd8fd838b854d89122854320e5508cd38e36be",
+        "src/KLink.Bot/Effects/CardApiDispatch.cs": "c707a767c3555359d363f081f0f0ad7f9702f5560aa460b2aacb6dee3030dae1",
+        "klink bot/docs/card-ir.json": "526812fa8dc0934f1d6ecd3794053871fa6b701c2b5df3fd1edb3c38513ba2e9"
+      },
+      "limitations": [
+        "不等于函数所有分支或整卡认证；完整供给边界见对应报告。"
+      ],
+      "evidence_bindings": {
+        "D:\\Codex Workshop\\kards-install-review\\capture-rule525-change-attack.py": "1fe462af1d2b92d3a9af9a9e356b8d7e59fc3bacc622c4c19c2a5716e25937b8",
+        "D:\\Codex Workshop\\kards-install-review\\capture-rule525-attack-after.py": "46622248d2d9d0116044c27ca85cd17bf35328f969399556042cd517c658b463",
+        "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule525-change-attack-functions-20261028.json": "cd932e4282b2ef460a07330f1488f74698ba38aaba284f6574bd8140480340cb",
+        "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule525-attack-after-notify-functions-20261028.json": "3fd5e69ce7a763e4c07aba31a1b9ee954e639e4376bd0e607282ae817464392d",
+        "D:\\Codex Workshop\\kards-install-review\\verify-rule525-change-attack.py": "45937aa36b223e1c2c26558b146e65f73e2ee3cfc30c7c923dbf545679424f61",
+        "D:\\Codex Workshop\\kards-install-review\\rule525-attack-verification-20261028.json": "a641fc0cd6562abbf9b74dc8ce1d7246302876bfc082b878ae8aa16823ffc062",
+        "D:\\Codex Workshop\\kards-install-review\\verify-rule525-deck-native.py": "d2b0c957937199405ec7a156abba3b16b74e1877ef0ddd6dce6b2f688563cafe",
+        "D:\\Codex Workshop\\kards-install-review\\rule525-deck-native-verification-20261028.json": "fe0829fba0beebbbe956211d4c9c363f9a6c641e389f17b301352bccbb5a30fb",
+        "D:\\Codex Workshop\\kards-install-review\\verify-rule525-evidence.py": "0f3e9a76fdc47bea93689d0f41ec68cb99a00535d24ff7c9041c527cec12b5bc",
+        "D:\\Codex Workshop\\kards-install-review\\rule525-worker-verification-20261028.json": "7532f5f451dd16a713bbdc606780826f7222bfc644b546f65f40e3251b1638fd",
+        "D:\\Codex Workshop\\kards-install-review\\rule525-worker\\input.json": "2ab96e169f3427c844c2926d446b2b4b19da29f9f8305bcb187c3b6f5b93b522",
+        "D:\\Codex Workshop\\kards-install-review\\rule525-worker\\output.json": "e82f71bff325bccf2934ec263ebfca926f5837c647936d45049e8b5442c85aca",
+        "D:\\Codex Workshop\\kards-install-review\\selftest-rule525-corrected-before-20261028.txt": "bec83e474d8132aeb8f510171b948185771ffb9f96148a8270da45819d1da16a",
+        "D:\\Codex Workshop\\kards-install-review\\rule525-baseline-manifest-20261028.json": "c4e782602aef7c3f74540685d7b78ec918abca10bad507cf19657d9b705382f5",
+        "D:\\Codex Workshop\\kards-install-review\\selftest-rule525-final-20261028.txt": "c9035c8971925a48bd7c4eb3ec815c211089d7eb37d1656c4454949e63361d7e",
+        "D:\\Codex Workshop\\kards-install-review\\build-rule525-final-20261028.txt": "95010f787815f574c138cb0c6f2aa5c773013cb00ce6c2746982e2450ee806e9"
+      }
+    },
+    {
+      "id": "RULE-526/ChangeAttack/absolute",
+      "symbol": "ChangeAttack",
+      "modes": [
+        2,
+        3,
+        5
+      ],
+      "status": "partial",
+      "validated_scope": "有效区域；原始相等及绝对零请求；三模式账本与通知/after，存在供给边界。",
+      "report": "out/audit/systematic-rules/absolute-attack-valid-zones-raw-equality-and-ledger-fix-20261029.json",
+      "report_sha256": "f2c40e5c8e69fbb704cefe800c86eed7c29f2bee1db8c3f41cd5d7281d2a0ecd",
+      "client_exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+      "source_bindings": {
+        "src/KLink.Bot/Effects/CardApi.cs": "4eb69641fc6ba73c4e3f3e6952dd8fd838b854d89122854320e5508cd38e36be",
+        "src/KLink.Bot/Effects/CardApiDispatch.cs": "c707a767c3555359d363f081f0f0ad7f9702f5560aa460b2aacb6dee3030dae1",
+        "klink bot/docs/card-ir.json": "526812fa8dc0934f1d6ecd3794053871fa6b701c2b5df3fd1edb3c38513ba2e9"
+      },
+      "limitations": [
+        "不等于函数所有分支或整卡认证；完整供给边界见对应报告。"
+      ],
+      "evidence_bindings": {
+        "D:\\Codex Workshop\\kards-install-review\\capture-rule526-change-attack.py": "4116321900fec9598fe12473833509ad18ebe2934259488f5e2aaead37561d02",
+        "D:\\Codex Workshop\\kards-install-review\\capture-rule526-attack-after.py": "1b64958bb004cf3362ebf8dea959c0235575ade24ce5a744ebe7f710cccea41c",
+        "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule526-change-attack-functions-20261029.json": "9c0ebe86f1ad27e8a519cfefba24e02eb4eae7d7b5737c1a43c4949df744a464",
+        "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule526-attack-after-notify-functions-20261029.json": "12d604840b1a17b2ab4ee17db393c902e4f756cef56349319d5bf0ae306f2c9c",
+        "D:\\Codex Workshop\\kards-install-review\\verify-rule526-absolute.py": "051c8500c41d8e76f1b0755c8d4e36d8bbc123ebc3006ecc7740e1aaae187224",
+        "D:\\Codex Workshop\\kards-install-review\\rule526-absolute-verification-20261029.json": "ff8e0e41b340820fcdcd04a09daa3c728d88a0ac29b225e1e23786d75b1b42f3",
+        "D:\\Codex Workshop\\kards-install-review\\verify-rule525-change-attack.py": "45937aa36b223e1c2c26558b146e65f73e2ee3cfc30c7c923dbf545679424f61",
+        "D:\\Codex Workshop\\kards-install-review\\verify-rule518-ledger.py": "f2aa5f261b10bbac3673f2245ab4201bed4c6a66eb91b4268791ab41c0cc5039",
+        "D:\\Codex Workshop\\kards-install-review\\verify-rule526-deck-native.py": "3a2fc6a143af78467181815283353fc9f246a4a327cac0e1c7f38d191447b903",
+        "D:\\Codex Workshop\\kards-install-review\\rule526-deck-native-verification-20261029.json": "6d421e8882324151e961cbc388ac4975905574cfa4b59f9e7f121886b3b22fd7",
+        "D:\\Codex Workshop\\kards-install-review\\verify-rule526-evidence.py": "77c4ba5f036ec8b662a052069dc767dc54348e15cb216cddb22a876eabb17729",
+        "D:\\Codex Workshop\\kards-install-review\\rule526-worker-verification-20261029.json": "a33fb3bf10084a57d758173511bf0c5431eed3a5e9eeb517fa872c3e648a4fba",
+        "D:\\Codex Workshop\\kards-install-review\\rule526-worker\\input.json": "6b0af380597e344dc90612c7f4c08d2e5e7abde3632eb9f6236c40dcd415da1e",
+        "D:\\Codex Workshop\\kards-install-review\\rule526-worker\\output.json": "6c24a2936702b31773b043506dec9e6318c1369b346ec182b9aa19635b3f6585",
+        "D:\\Codex Workshop\\kards-install-review\\selftest-rule526-before-20261029.txt": "0c5a2320e5478607dc1bb058a5abbef01d82ac5a7f22721337b83264327db4c1",
+        "D:\\Codex Workshop\\kards-install-review\\selftest-rule526-final-20261029.txt": "95cdf48ca7a744c6a5739b8694e3473aa8caf8455e5d01ea15b3c47a4f2ec2f5",
+        "D:\\Codex Workshop\\kards-install-review\\build-rule526-final-20261029.txt": "935ab4911eb37759399cfbed59dd90abc883c9dfa93b733080a5e0de9d201ce4"
+      }
+    },
+    {
+      "id": "RULE-527/ChangeAttack/remove",
+      "symbol": "ChangeAttack",
+      "modes": [
+        4
+      ],
+      "status": "partial",
+      "validated_scope": "临时键撤销；来源清理及INT_MIN；通知/after，局部枚举0及其他原语供给。",
+      "report": "out/audit/systematic-rules/temporary-attack-removal-source-cleanup-and-int32-audit-20261029.json",
+      "report_sha256": "64f9176b6dcb05f5185d5267c81cb67dbffdf29623b1750bd181166fa09f0a9d",
+      "client_exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+      "source_bindings": {
+        "src/KLink.Bot/Effects/CardApi.cs": "4eb69641fc6ba73c4e3f3e6952dd8fd838b854d89122854320e5508cd38e36be",
+        "src/KLink.Bot/Effects/CardApiDispatch.cs": "c707a767c3555359d363f081f0f0ad7f9702f5560aa460b2aacb6dee3030dae1",
+        "klink bot/docs/card-ir.json": "526812fa8dc0934f1d6ecd3794053871fa6b701c2b5df3fd1edb3c38513ba2e9"
+      },
+      "limitations": [
+        "不等于函数所有分支或整卡认证；完整供给边界见对应报告。"
+      ],
+      "evidence_bindings": {
+        "D:\\Codex Workshop\\kards-install-review\\capture-rule527-change-attack.py": "bcb0407062639d53f70b7e844698aa9ec7e3cc26f3703afc53f88b13ab0730dd",
+        "D:\\Codex Workshop\\kards-install-review\\capture-rule527-attack-after.py": "6ae6d6a3741634502c413ec26a259169a6f1f59986f57a35a139e351bebdde19",
+        "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule527-change-attack-functions-20261029.json": "8c55c75a2e0d1c8f46943fb6df2121e0a2a15bd4cc4ce37ba172e99dbbc9f609",
+        "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule527-attack-after-notify-functions-20261029.json": "95634d79711473864411a002baee0f38f6def05c79bef1af1e89077d47b3c51a",
+        "D:\\Codex Workshop\\kards-install-review\\verify-rule527-remove.py": "101c143ca5d4afb7b1e8e594dd93ac0fa6b3b887ce69bf18258d3c7791199212",
+        "D:\\Codex Workshop\\kards-install-review\\rule527-remove-verification-20261029.json": "b50a46a1696f0360221fe5fc23d3b8e2c46d5e26abdeeb2ad27f92cbcc083737",
+        "D:\\Codex Workshop\\kards-install-review\\verify-rule525-change-attack.py": "45937aa36b223e1c2c26558b146e65f73e2ee3cfc30c7c923dbf545679424f61",
+        "D:\\Codex Workshop\\kards-install-review\\verify-rule518-ledger.py": "f2aa5f261b10bbac3673f2245ab4201bed4c6a66eb91b4268791ab41c0cc5039",
+        "D:\\Codex Workshop\\kards-install-review\\verify-rule527-deck-native.py": "82efbe716be91d007eafe458e99312cbb429c2822e8024a6de1c455e8d9ca1d7",
+        "D:\\Codex Workshop\\kards-install-review\\rule527-deck-native-verification-20261029.json": "4a08cef82efbc8aefcf8ca2f8784e455efa0cb07618256a6aa117e258dd8d8e6",
+        "D:\\Codex Workshop\\kards-install-review\\verify-rule527-evidence.py": "4ebcda329407cef744408f5de1b9aa79a93c123527a0431c01087c78bf9154e2",
+        "D:\\Codex Workshop\\kards-install-review\\rule527-worker-verification-20261029.json": "9a5e6fac87cb5b43ac97f2660a7fa7f00f6941abc9dc6b8dcae3ade45070b7e9",
+        "D:\\Codex Workshop\\kards-install-review\\rule527-worker\\input.json": "0e390e2e7ec0275f08fed15e6b2a1796fbf458442a01b322b936e4efcaec6359",
+        "D:\\Codex Workshop\\kards-install-review\\rule527-worker\\output.json": "d4ca055673fe3fe7debafc424203271af636dc0188ad74ec6af4e1e581e6c0d8",
+        "D:\\Codex Workshop\\kards-install-review\\selftest-rule527-final-20261029.txt": "d30b8c429bd7f18fa81be164bb7c01cac2e34c53f8bf70531bd1584840094f7b",
+        "D:\\Codex Workshop\\kards-install-review\\build-rule527-final-20261029.txt": "b9a55348b3ff7d5355d722b49d4916a417905df9d198af827e794eb1ae27e95b"
+      }
+    }
+  ],
+  "scope_reviews": {},
+  "open_items": [
+    {
+      "id": "MATRIX-001",
+      "title": "PvP资格与范围",
+      "status": "open",
+      "scope": "逐资产用权威版本资料确认可构筑卡、衍生卡、总部及明确排除项，建立PvP分母。",
+      "source": "primary reviewed matrix bootstrap; not exhaustive defect inventory"
+    },
+    {
+      "id": "MATRIX-002",
+      "title": "旧审计证据整理",
+      "status": "open",
+      "scope": "逐报告关联精确函数/分支及版本，处理历史remaining的已解决/重复/仍开放状态。",
+      "source": "primary reviewed matrix bootstrap; not exhaustive defect inventory"
+    },
+    {
+      "id": "MATRIX-003",
+      "title": "依赖闭包",
+      "status": "open",
+      "scope": "解析调用接收者、继承和动态目标，补充卡牌隐式依赖的战斗、事件与原生默认规则。",
+      "source": "primary reviewed matrix bootstrap; not exhaustive defect inventory"
+    },
+    {
+      "id": "RULE-NEXT-ATTACK",
+      "title": "攻击其他模式",
+      "status": "open",
+      "scope": "继续核对ChangeAttack模式6..255、局部默认状态和账本分支。",
+      "source": "primary reviewed matrix bootstrap; not exhaustive defect inventory"
+    },
+    {
+      "id": "RULE-NATIVE-BOUNDARY",
+      "title": "原生边界",
+      "status": "open",
+      "scope": "qqq输出、空上下文、对象生命周期、容器顺序和回调重入。",
+      "source": "primary reviewed matrix bootstrap; not exhaustive defect inventory"
+    },
+    {
+      "id": "RULE-SPAWN-BOUNDARY",
+      "title": "生成边界",
+      "status": "open",
+      "scope": "相邻缺来源/无效控制方/默认位置；共享满位置/overrideCardID及完整分配通知。",
+      "source": "primary reviewed matrix bootstrap; not exhaustive defect inventory"
+    },
+    {
+      "id": "MATRIX-004",
+      "title": "版本关联",
+      "status": "open",
+      "scope": "保留当前EXE与资产版本指纹和失效状态；按用户工作安排逐步补齐，不将旧卡表当作当前权威。",
+      "source": "primary reviewed matrix bootstrap; not exhaustive defect inventory"
+    },
+    {
+      "id": "MATRIX-005",
+      "title": "逐卡闭合与准入",
+      "status": "open",
+      "scope": "依赖闭合后执行逐卡全部路径及联动验证，建立独立完整认证准入记录。",
+      "source": "primary reviewed matrix bootstrap; not exhaustive defect inventory"
+    }
+  ]
+}
