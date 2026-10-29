@@ -482,14 +482,15 @@
     "active_plan": "klink bot/docs/训练闭环推进-20261030.md",
     "measurements": "out/training-readiness/baseline-20261030.json",
     "priority_order": [
-      "Decision-level adapter and choice contracts for headless training",
+      "Main-action candidate/execution boundary and per-decision sampling",
+      "Connect synchronous choice adapter andFaults to training driver quality manifest",
       "Observation/action/model contracts and admitted starter pool closure",
-      "ThreeQueenOwnlong-episode policy loops retained as rejection/regression seeds",
-      "New execution blockers only when observed"
+      "Async choice metadata and visibility limitations",
+      "ThreeQueenOwnlong episodes remain rejection/regression seeds"
     ],
     "deferred": "Unproven normal-PvP boundary refinements unless they block the active loop.",
     "batch_policy": "Integrate related changes and run complete tests/inventories once per completed batch.",
     "rule_scope_or_completion_denominator_changed": false,
-    "latest_result": "RULE-549 adds6exact empty played-event programs. Same1000 now997admitted/26148rows;3QueenOwnlong episodes stillreject. All500calls advance,pending0;selectedcurrent rawgraph agreeswithreturncall shape. No forcedwinner or policy change. Next:decision-level adapter."
+    "latest_result": "Synchronous choice-policy adapterv1 added with immutable options/actor observation,index validation andcallback ownership.100paired episodes/864choices match trace,RNG,outcome/diagnostics.991core+17admission checks. No native rule change or productionNNTrain adapter integration yet."
   }
 }

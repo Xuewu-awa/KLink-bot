@@ -60,7 +60,8 @@
         "D:\\Codex Workshop\\kards-install-review\\training-greedy-prior-scope-revalidation.json": "19c5ac691f8dff7a848cac9aeee34ddb275cb0aec0ae6457b25ea8c0569f5593",
         "D:\\Codex Workshop\\kards-install-review\\rule548-prior-scope-revalidation.json": "66fa2507363d30d828e93f7896d97b9baefe9f777bfd89b31025de82544d7503",
         "D:\\Codex Workshop\\kards-install-review\\rule549-prior-scope-revalidation.json": "6e3a260bbce33809c8b515fc0afeb5064ae86e6cc2fd805d67192b2ac79c0127",
-        "D:\\Codex Workshop\\kards-install-review\\rule550-prior-scope-revalidation.json": "679319a7d11347697d3b70d0fa0f3d043d9a91635d5d24210ffe9bbb2b4e53c4"
+        "D:\\Codex Workshop\\kards-install-review\\rule550-prior-scope-revalidation.json": "679319a7d11347697d3b70d0fa0f3d043d9a91635d5d24210ffe9bbb2b4e53c4",
+        "D:\\Codex Workshop\\kards-install-review\\choice-adapter-prior-scope-revalidation.json": "61f8b9b237aed866b4226e4918851d30e5ed43b8dfc257c5f299a200d9ee5fa9"
       },
       "revalidations": [
         {
@@ -286,6 +287,17 @@
           "rule": "RULE-549",
           "proof_path": "D:\\Codex Workshop\\kards-install-review\\rule550-prior-scope-revalidation.json",
           "proof_sha256": "679319a7d11347697d3b70d0fa0f3d043d9a91635d5d24210ffe9bbb2b4e53c4",
+          "previous_source_bindings": {
+            "src/KLink.Bot/Effects/CardApi.cs": "24197f2546532d82d4cdfe02de764ed6e5ae9347d529a7c42b0f172da77be49e",
+            "src/KLink.Bot/Effects/CardApiDispatch.cs": "03080524c38f087e41d8baf7e01c3de8ec2343742b1daedced9d02535ef838fb",
+            "src/KLink.Bot/Engine/CardInstance.cs": "350c5d79a51fe68af6af4769abd18764dcbfa36cdcae06cc91b7d553754551da",
+            "klink bot/docs/card-ir.json": "526812fa8dc0934f1d6ecd3794053871fa6b701c2b5df3fd1edb3c38513ba2e9"
+          }
+        },
+        {
+          "batch": "training-choice-policy-adapter",
+          "proof_path": "D:\\Codex Workshop\\kards-install-review\\choice-adapter-prior-scope-revalidation.json",
+          "proof_sha256": "61f8b9b237aed866b4226e4918851d30e5ed43b8dfc257c5f299a200d9ee5fa9",
           "previous_source_bindings": {
             "src/KLink.Bot/Effects/CardApi.cs": "24197f2546532d82d4cdfe02de764ed6e5ae9347d529a7c42b0f172da77be49e",
             "src/KLink.Bot/Effects/CardApiDispatch.cs": "03080524c38f087e41d8baf7e01c3de8ec2343742b1daedced9d02535ef838fb",
@@ -355,7 +367,8 @@
         "D:\\Codex Workshop\\kards-install-review\\training-greedy-prior-scope-revalidation.json": "19c5ac691f8dff7a848cac9aeee34ddb275cb0aec0ae6457b25ea8c0569f5593",
         "D:\\Codex Workshop\\kards-install-review\\rule548-prior-scope-revalidation.json": "66fa2507363d30d828e93f7896d97b9baefe9f777bfd89b31025de82544d7503",
         "D:\\Codex Workshop\\kards-install-review\\rule549-prior-scope-revalidation.json": "6e3a260bbce33809c8b515fc0afeb5064ae86e6cc2fd805d67192b2ac79c0127",
-        "D:\\Codex Workshop\\kards-install-review\\rule550-prior-scope-revalidation.json": "679319a7d11347697d3b70d0fa0f3d043d9a91635d5d24210ffe9bbb2b4e53c4"
+        "D:\\Codex Workshop\\kards-install-review\\rule550-prior-scope-revalidation.json": "679319a7d11347697d3b70d0fa0f3d043d9a91635d5d24210ffe9bbb2b4e53c4",
+        "D:\\Codex Workshop\\kards-install-review\\choice-adapter-prior-scope-revalidation.json": "61f8b9b237aed866b4226e4918851d30e5ed43b8dfc257c5f299a200d9ee5fa9"
       },
       "revalidations": [
         {
@@ -581,6 +594,17 @@
           "rule": "RULE-549",
           "proof_path": "D:\\Codex Workshop\\kards-install-review\\rule550-prior-scope-revalidation.json",
           "proof_sha256": "679319a7d11347697d3b70d0fa0f3d043d9a91635d5d24210ffe9bbb2b4e53c4",
+          "previous_source_bindings": {
+            "src/KLink.Bot/Effects/CardApi.cs": "24197f2546532d82d4cdfe02de764ed6e5ae9347d529a7c42b0f172da77be49e",
+            "src/KLink.Bot/Effects/CardApiDispatch.cs": "03080524c38f087e41d8baf7e01c3de8ec2343742b1daedced9d02535ef838fb",
+            "src/KLink.Bot/Engine/CardInstance.cs": "350c5d79a51fe68af6af4769abd18764dcbfa36cdcae06cc91b7d553754551da",
+            "klink bot/docs/card-ir.json": "526812fa8dc0934f1d6ecd3794053871fa6b701c2b5df3fd1edb3c38513ba2e9"
+          }
+        },
+        {
+          "batch": "training-choice-policy-adapter",
+          "proof_path": "D:\\Codex Workshop\\kards-install-review\\choice-adapter-prior-scope-revalidation.json",
+          "proof_sha256": "61f8b9b237aed866b4226e4918851d30e5ed43b8dfc257c5f299a200d9ee5fa9",
           "previous_source_bindings": {
             "src/KLink.Bot/Effects/CardApi.cs": "24197f2546532d82d4cdfe02de764ed6e5ae9347d529a7c42b0f172da77be49e",
             "src/KLink.Bot/Effects/CardApiDispatch.cs": "03080524c38f087e41d8baf7e01c3de8ec2343742b1daedced9d02535ef838fb",
@@ -647,7 +671,8 @@
         "D:\\Codex Workshop\\kards-install-review\\training-greedy-prior-scope-revalidation.json": "19c5ac691f8dff7a848cac9aeee34ddb275cb0aec0ae6457b25ea8c0569f5593",
         "D:\\Codex Workshop\\kards-install-review\\rule548-prior-scope-revalidation.json": "66fa2507363d30d828e93f7896d97b9baefe9f777bfd89b31025de82544d7503",
         "D:\\Codex Workshop\\kards-install-review\\rule549-prior-scope-revalidation.json": "6e3a260bbce33809c8b515fc0afeb5064ae86e6cc2fd805d67192b2ac79c0127",
-        "D:\\Codex Workshop\\kards-install-review\\rule550-prior-scope-revalidation.json": "679319a7d11347697d3b70d0fa0f3d043d9a91635d5d24210ffe9bbb2b4e53c4"
+        "D:\\Codex Workshop\\kards-install-review\\rule550-prior-scope-revalidation.json": "679319a7d11347697d3b70d0fa0f3d043d9a91635d5d24210ffe9bbb2b4e53c4",
+        "D:\\Codex Workshop\\kards-install-review\\choice-adapter-prior-scope-revalidation.json": "61f8b9b237aed866b4226e4918851d30e5ed43b8dfc257c5f299a200d9ee5fa9"
       },
       "revalidations": [
         {
@@ -873,6 +898,17 @@
           "rule": "RULE-549",
           "proof_path": "D:\\Codex Workshop\\kards-install-review\\rule550-prior-scope-revalidation.json",
           "proof_sha256": "679319a7d11347697d3b70d0fa0f3d043d9a91635d5d24210ffe9bbb2b4e53c4",
+          "previous_source_bindings": {
+            "src/KLink.Bot/Effects/CardApi.cs": "24197f2546532d82d4cdfe02de764ed6e5ae9347d529a7c42b0f172da77be49e",
+            "src/KLink.Bot/Effects/CardApiDispatch.cs": "03080524c38f087e41d8baf7e01c3de8ec2343742b1daedced9d02535ef838fb",
+            "src/KLink.Bot/Engine/CardInstance.cs": "350c5d79a51fe68af6af4769abd18764dcbfa36cdcae06cc91b7d553754551da",
+            "klink bot/docs/card-ir.json": "526812fa8dc0934f1d6ecd3794053871fa6b701c2b5df3fd1edb3c38513ba2e9"
+          }
+        },
+        {
+          "batch": "training-choice-policy-adapter",
+          "proof_path": "D:\\Codex Workshop\\kards-install-review\\choice-adapter-prior-scope-revalidation.json",
+          "proof_sha256": "61f8b9b237aed866b4226e4918851d30e5ed43b8dfc257c5f299a200d9ee5fa9",
           "previous_source_bindings": {
             "src/KLink.Bot/Effects/CardApi.cs": "24197f2546532d82d4cdfe02de764ed6e5ae9347d529a7c42b0f172da77be49e",
             "src/KLink.Bot/Effects/CardApiDispatch.cs": "03080524c38f087e41d8baf7e01c3de8ec2343742b1daedced9d02535ef838fb",
@@ -1184,7 +1220,8 @@
         "D:\\Codex Workshop\\kards-install-review\\training-greedy-prior-scope-revalidation.json": "19c5ac691f8dff7a848cac9aeee34ddb275cb0aec0ae6457b25ea8c0569f5593",
         "D:\\Codex Workshop\\kards-install-review\\rule548-prior-scope-revalidation.json": "66fa2507363d30d828e93f7896d97b9baefe9f777bfd89b31025de82544d7503",
         "D:\\Codex Workshop\\kards-install-review\\rule549-prior-scope-revalidation.json": "6e3a260bbce33809c8b515fc0afeb5064ae86e6cc2fd805d67192b2ac79c0127",
-        "D:\\Codex Workshop\\kards-install-review\\rule550-prior-scope-revalidation.json": "679319a7d11347697d3b70d0fa0f3d043d9a91635d5d24210ffe9bbb2b4e53c4"
+        "D:\\Codex Workshop\\kards-install-review\\rule550-prior-scope-revalidation.json": "679319a7d11347697d3b70d0fa0f3d043d9a91635d5d24210ffe9bbb2b4e53c4",
+        "D:\\Codex Workshop\\kards-install-review\\choice-adapter-prior-scope-revalidation.json": "61f8b9b237aed866b4226e4918851d30e5ed43b8dfc257c5f299a200d9ee5fa9"
       },
       "limitations": [
         "qqq的原生出参/拒绝路径与托管void派发、默认目标绑定、非字节强转和完整执行帧ABI仍未闭合。局部模型以valueChanged=false、Temp_int_Variable_1=0为普通新帧条件，不认证任意持久帧或异常初始化。",
@@ -1411,6 +1448,17 @@
             "src/KLink.Bot/Engine/CardInstance.cs": "350c5d79a51fe68af6af4769abd18764dcbfa36cdcae06cc91b7d553754551da",
             "klink bot/docs/card-ir.json": "526812fa8dc0934f1d6ecd3794053871fa6b701c2b5df3fd1edb3c38513ba2e9"
           }
+        },
+        {
+          "batch": "training-choice-policy-adapter",
+          "proof_path": "D:\\Codex Workshop\\kards-install-review\\choice-adapter-prior-scope-revalidation.json",
+          "proof_sha256": "61f8b9b237aed866b4226e4918851d30e5ed43b8dfc257c5f299a200d9ee5fa9",
+          "previous_source_bindings": {
+            "src/KLink.Bot/Effects/CardApi.cs": "24197f2546532d82d4cdfe02de764ed6e5ae9347d529a7c42b0f172da77be49e",
+            "src/KLink.Bot/Effects/CardApiDispatch.cs": "03080524c38f087e41d8baf7e01c3de8ec2343742b1daedced9d02535ef838fb",
+            "src/KLink.Bot/Engine/CardInstance.cs": "350c5d79a51fe68af6af4769abd18764dcbfa36cdcae06cc91b7d553754551da",
+            "klink bot/docs/card-ir.json": "526812fa8dc0934f1d6ecd3794053871fa6b701c2b5df3fd1edb3c38513ba2e9"
+          }
         }
       ]
     },
@@ -1431,7 +1479,7 @@
         "src/KLink.Bot/Effects/Blueprint/KismetVm.cs": "f831c4f23b4ca4db1db08df6b6f75a0d43e9a0dd96b6a8e1d63a3ceff1e2b150",
         "src/KLink.Bot/Engine/CardInstance.cs": "350c5d79a51fe68af6af4769abd18764dcbfa36cdcae06cc91b7d553754551da",
         "klink bot/docs/card-ir.json": "526812fa8dc0934f1d6ecd3794053871fa6b701c2b5df3fd1edb3c38513ba2e9",
-        "tools/BotSim/SelfTest.cs": "653953911bfc661c238a7ed31f2423771283309dfe699bd8a2a9f050cd3d8f98",
+        "tools/BotSim/SelfTest.cs": "f7910a4db53928ae99ea4881058e461bb9a43317eb454290308b69cd355d3d26",
         "tools/BotSim/SelfTest.Repair.cs": "ae428444d538bb3f7b977d2567e7c5dfc8cca72021bad6620b07ec043b56f9db"
       },
       "evidence_bindings": {
@@ -1516,7 +1564,8 @@
         "D:\\Codex Workshop\\kards-install-review\\training-greedy-prior-scope-revalidation.json": "19c5ac691f8dff7a848cac9aeee34ddb275cb0aec0ae6457b25ea8c0569f5593",
         "D:\\Codex Workshop\\kards-install-review\\rule548-prior-scope-revalidation.json": "66fa2507363d30d828e93f7896d97b9baefe9f777bfd89b31025de82544d7503",
         "D:\\Codex Workshop\\kards-install-review\\rule549-prior-scope-revalidation.json": "6e3a260bbce33809c8b515fc0afeb5064ae86e6cc2fd805d67192b2ac79c0127",
-        "D:\\Codex Workshop\\kards-install-review\\rule550-prior-scope-revalidation.json": "679319a7d11347697d3b70d0fa0f3d043d9a91635d5d24210ffe9bbb2b4e53c4"
+        "D:\\Codex Workshop\\kards-install-review\\rule550-prior-scope-revalidation.json": "679319a7d11347697d3b70d0fa0f3d043d9a91635d5d24210ffe9bbb2b4e53c4",
+        "D:\\Codex Workshop\\kards-install-review\\choice-adapter-prior-scope-revalidation.json": "61f8b9b237aed866b4226e4918851d30e5ed43b8dfc257c5f299a200d9ee5fa9"
       },
       "limitations": [
         "Per-card export call inventory is version-unconfirmed and includes campaign; not a PvP certification.",
@@ -1792,6 +1841,20 @@
             "tools/BotSim/SelfTest.cs": "783283f6ecb3c44dd3e27894dcf67b467d6a3af18ba7ebce54f5d6bdf27f2974",
             "tools/BotSim/SelfTest.Repair.cs": "ae428444d538bb3f7b977d2567e7c5dfc8cca72021bad6620b07ec043b56f9db"
           }
+        },
+        {
+          "batch": "training-choice-policy-adapter",
+          "proof_path": "D:\\Codex Workshop\\kards-install-review\\choice-adapter-prior-scope-revalidation.json",
+          "proof_sha256": "61f8b9b237aed866b4226e4918851d30e5ed43b8dfc257c5f299a200d9ee5fa9",
+          "previous_source_bindings": {
+            "src/KLink.Bot/Effects/CardApi.cs": "24197f2546532d82d4cdfe02de764ed6e5ae9347d529a7c42b0f172da77be49e",
+            "src/KLink.Bot/Effects/CardApiDispatch.cs": "03080524c38f087e41d8baf7e01c3de8ec2343742b1daedced9d02535ef838fb",
+            "src/KLink.Bot/Effects/Blueprint/KismetVm.cs": "f831c4f23b4ca4db1db08df6b6f75a0d43e9a0dd96b6a8e1d63a3ceff1e2b150",
+            "src/KLink.Bot/Engine/CardInstance.cs": "350c5d79a51fe68af6af4769abd18764dcbfa36cdcae06cc91b7d553754551da",
+            "klink bot/docs/card-ir.json": "526812fa8dc0934f1d6ecd3794053871fa6b701c2b5df3fd1edb3c38513ba2e9",
+            "tools/BotSim/SelfTest.cs": "653953911bfc661c238a7ed31f2423771283309dfe699bd8a2a9f050cd3d8f98",
+            "tools/BotSim/SelfTest.Repair.cs": "ae428444d538bb3f7b977d2567e7c5dfc8cca72021bad6620b07ec043b56f9db"
+          }
         }
       ]
     },
@@ -1814,7 +1877,7 @@
         "src/KLink.Bot/Engine/CardInstance.cs": "350c5d79a51fe68af6af4769abd18764dcbfa36cdcae06cc91b7d553754551da",
         "klink bot/docs/card-ir.json": "526812fa8dc0934f1d6ecd3794053871fa6b701c2b5df3fd1edb3c38513ba2e9",
         "tools/BotSim/Program.cs": "29788524c02a06dfb2a183be6a1898ebf580f52f5793e45c8525ff430be23eae",
-        "tools/BotSim/SelfTest.cs": "653953911bfc661c238a7ed31f2423771283309dfe699bd8a2a9f050cd3d8f98",
+        "tools/BotSim/SelfTest.cs": "f7910a4db53928ae99ea4881058e461bb9a43317eb454290308b69cd355d3d26",
         "tools/BotSim/SelfTest.EffectDamage.cs": "5251657d61d719131ab6777dfacf2ac2eb5f99313670b166f714d40e3872be24"
       },
       "evidence_bindings": {
@@ -2116,7 +2179,8 @@
         "D:\\Codex Workshop\\kards-install-review\\training-greedy-prior-scope-revalidation.json": "19c5ac691f8dff7a848cac9aeee34ddb275cb0aec0ae6457b25ea8c0569f5593",
         "D:\\Codex Workshop\\kards-install-review\\rule548-prior-scope-revalidation.json": "66fa2507363d30d828e93f7896d97b9baefe9f777bfd89b31025de82544d7503",
         "D:\\Codex Workshop\\kards-install-review\\rule549-prior-scope-revalidation.json": "6e3a260bbce33809c8b515fc0afeb5064ae86e6cc2fd805d67192b2ac79c0127",
-        "D:\\Codex Workshop\\kards-install-review\\rule550-prior-scope-revalidation.json": "679319a7d11347697d3b70d0fa0f3d043d9a91635d5d24210ffe9bbb2b4e53c4"
+        "D:\\Codex Workshop\\kards-install-review\\rule550-prior-scope-revalidation.json": "679319a7d11347697d3b70d0fa0f3d043d9a91635d5d24210ffe9bbb2b4e53c4",
+        "D:\\Codex Workshop\\kards-install-review\\choice-adapter-prior-scope-revalidation.json": "61f8b9b237aed866b4226e4918851d30e5ed43b8dfc257c5f299a200d9ee5fa9"
       },
       "limitations": [
         "Call inventory includes campaign/tutorial and export versions remain unconfirmed; not a PvP card count.",
@@ -2413,6 +2477,22 @@
             "tools/BotSim/SelfTest.cs": "783283f6ecb3c44dd3e27894dcf67b467d6a3af18ba7ebce54f5d6bdf27f2974",
             "tools/BotSim/SelfTest.EffectDamage.cs": "5251657d61d719131ab6777dfacf2ac2eb5f99313670b166f714d40e3872be24"
           }
+        },
+        {
+          "batch": "training-choice-policy-adapter",
+          "proof_path": "D:\\Codex Workshop\\kards-install-review\\choice-adapter-prior-scope-revalidation.json",
+          "proof_sha256": "61f8b9b237aed866b4226e4918851d30e5ed43b8dfc257c5f299a200d9ee5fa9",
+          "previous_source_bindings": {
+            "src/KLink.Bot/Effects/CardApi.cs": "24197f2546532d82d4cdfe02de764ed6e5ae9347d529a7c42b0f172da77be49e",
+            "src/KLink.Bot/Effects/CardApiDispatch.cs": "03080524c38f087e41d8baf7e01c3de8ec2343742b1daedced9d02535ef838fb",
+            "src/KLink.Bot/Effects/CardApi.EffectDamage.cs": "36f72925695728384f0fa9cb815f844149036bbb7828d1390304255bfebfb0c0",
+            "src/KLink.Bot/Effects/Blueprint/KismetVm.cs": "f831c4f23b4ca4db1db08df6b6f75a0d43e9a0dd96b6a8e1d63a3ceff1e2b150",
+            "src/KLink.Bot/Engine/CardInstance.cs": "350c5d79a51fe68af6af4769abd18764dcbfa36cdcae06cc91b7d553754551da",
+            "klink bot/docs/card-ir.json": "526812fa8dc0934f1d6ecd3794053871fa6b701c2b5df3fd1edb3c38513ba2e9",
+            "tools/BotSim/Program.cs": "29788524c02a06dfb2a183be6a1898ebf580f52f5793e45c8525ff430be23eae",
+            "tools/BotSim/SelfTest.cs": "653953911bfc661c238a7ed31f2423771283309dfe699bd8a2a9f050cd3d8f98",
+            "tools/BotSim/SelfTest.EffectDamage.cs": "5251657d61d719131ab6777dfacf2ac2eb5f99313670b166f714d40e3872be24"
+          }
         }
       ]
     },
@@ -2434,7 +2514,7 @@
         "src/KLink.Bot/Engine/CardInstance.cs": "350c5d79a51fe68af6af4769abd18764dcbfa36cdcae06cc91b7d553754551da",
         "klink bot/docs/card-ir.json": "526812fa8dc0934f1d6ecd3794053871fa6b701c2b5df3fd1edb3c38513ba2e9",
         "tools/BotSim/BotSim.csproj": "db6cc50ddeacd78dec69c303a2d455f882895793ff0f647ad96b193de82a331b",
-        "tools/BotSim/SelfTest.cs": "653953911bfc661c238a7ed31f2423771283309dfe699bd8a2a9f050cd3d8f98",
+        "tools/BotSim/SelfTest.cs": "f7910a4db53928ae99ea4881058e461bb9a43317eb454290308b69cd355d3d26",
         "tools/BotSim/SelfTest.DamageNumeric.cs": "4b23eb8c7420b82a4d792e5e17127ac8dbbb53d1c1e02c82572016adfe63a519",
         "tools/BotSim/Fixtures/damage-defense-clamp-reference-20261029.json": "6b90042832f84bcc80e261e419be74e5dd8f8f83323607b9223896a00e205b6a"
       },
@@ -2474,7 +2554,8 @@
         "D:\\Codex Workshop\\kards-install-review\\training-greedy-prior-scope-revalidation.json": "19c5ac691f8dff7a848cac9aeee34ddb275cb0aec0ae6457b25ea8c0569f5593",
         "D:\\Codex Workshop\\kards-install-review\\rule548-prior-scope-revalidation.json": "66fa2507363d30d828e93f7896d97b9baefe9f777bfd89b31025de82544d7503",
         "D:\\Codex Workshop\\kards-install-review\\rule549-prior-scope-revalidation.json": "6e3a260bbce33809c8b515fc0afeb5064ae86e6cc2fd805d67192b2ac79c0127",
-        "D:\\Codex Workshop\\kards-install-review\\rule550-prior-scope-revalidation.json": "679319a7d11347697d3b70d0fa0f3d043d9a91635d5d24210ffe9bbb2b4e53c4"
+        "D:\\Codex Workshop\\kards-install-review\\rule550-prior-scope-revalidation.json": "679319a7d11347697d3b70d0fa0f3d043d9a91635d5d24210ffe9bbb2b4e53c4",
+        "D:\\Codex Workshop\\kards-install-review\\choice-adapter-prior-scope-revalidation.json": "61f8b9b237aed866b4226e4918851d30e5ed43b8dfc257c5f299a200d9ee5fa9"
       },
       "limitations": [
         "Numeric fixture uses valid objects, stable raw getters, controlled before-receive callback and source-order/unit flags, and deferred destruction; no whole lifecycle certification.",
@@ -2755,6 +2836,22 @@
             "tools/BotSim/SelfTest.DamageNumeric.cs": "4b23eb8c7420b82a4d792e5e17127ac8dbbb53d1c1e02c82572016adfe63a519",
             "tools/BotSim/Fixtures/damage-defense-clamp-reference-20261029.json": "6b90042832f84bcc80e261e419be74e5dd8f8f83323607b9223896a00e205b6a"
           }
+        },
+        {
+          "batch": "training-choice-policy-adapter",
+          "proof_path": "D:\\Codex Workshop\\kards-install-review\\choice-adapter-prior-scope-revalidation.json",
+          "proof_sha256": "61f8b9b237aed866b4226e4918851d30e5ed43b8dfc257c5f299a200d9ee5fa9",
+          "previous_source_bindings": {
+            "src/KLink.Bot/Effects/CardApi.cs": "24197f2546532d82d4cdfe02de764ed6e5ae9347d529a7c42b0f172da77be49e",
+            "src/KLink.Bot/Effects/CardApi.EffectDamage.cs": "36f72925695728384f0fa9cb815f844149036bbb7828d1390304255bfebfb0c0",
+            "src/KLink.Bot/Effects/CardApiDispatch.cs": "03080524c38f087e41d8baf7e01c3de8ec2343742b1daedced9d02535ef838fb",
+            "src/KLink.Bot/Engine/CardInstance.cs": "350c5d79a51fe68af6af4769abd18764dcbfa36cdcae06cc91b7d553754551da",
+            "klink bot/docs/card-ir.json": "526812fa8dc0934f1d6ecd3794053871fa6b701c2b5df3fd1edb3c38513ba2e9",
+            "tools/BotSim/BotSim.csproj": "db6cc50ddeacd78dec69c303a2d455f882895793ff0f647ad96b193de82a331b",
+            "tools/BotSim/SelfTest.cs": "653953911bfc661c238a7ed31f2423771283309dfe699bd8a2a9f050cd3d8f98",
+            "tools/BotSim/SelfTest.DamageNumeric.cs": "4b23eb8c7420b82a4d792e5e17127ac8dbbb53d1c1e02c82572016adfe63a519",
+            "tools/BotSim/Fixtures/damage-defense-clamp-reference-20261029.json": "6b90042832f84bcc80e261e419be74e5dd8f8f83323607b9223896a00e205b6a"
+          }
         }
       ]
     },
@@ -2775,7 +2872,7 @@
         "src/KLink.Bot/Effects/CardApi.EffectDamage.cs": "36f72925695728384f0fa9cb815f844149036bbb7828d1390304255bfebfb0c0",
         "src/KLink.Bot/Engine/CardInstance.cs": "350c5d79a51fe68af6af4769abd18764dcbfa36cdcae06cc91b7d553754551da",
         "klink bot/docs/card-ir.json": "526812fa8dc0934f1d6ecd3794053871fa6b701c2b5df3fd1edb3c38513ba2e9",
-        "tools/BotSim/SelfTest.cs": "653953911bfc661c238a7ed31f2423771283309dfe699bd8a2a9f050cd3d8f98",
+        "tools/BotSim/SelfTest.cs": "f7910a4db53928ae99ea4881058e461bb9a43317eb454290308b69cd355d3d26",
         "tools/BotSim/SelfTest.DamageDeath.cs": "0cd9e44c070f5103ef128728e3b449462d1e270ffe3e78783d077e1759faedeb"
       },
       "evidence_bindings": {
@@ -2808,7 +2905,8 @@
         "D:\\Codex Workshop\\kards-install-review\\training-greedy-prior-scope-revalidation.json": "19c5ac691f8dff7a848cac9aeee34ddb275cb0aec0ae6457b25ea8c0569f5593",
         "D:\\Codex Workshop\\kards-install-review\\rule548-prior-scope-revalidation.json": "66fa2507363d30d828e93f7896d97b9baefe9f777bfd89b31025de82544d7503",
         "D:\\Codex Workshop\\kards-install-review\\rule549-prior-scope-revalidation.json": "6e3a260bbce33809c8b515fc0afeb5064ae86e6cc2fd805d67192b2ac79c0127",
-        "D:\\Codex Workshop\\kards-install-review\\rule550-prior-scope-revalidation.json": "679319a7d11347697d3b70d0fa0f3d043d9a91635d5d24210ffe9bbb2b4e53c4"
+        "D:\\Codex Workshop\\kards-install-review\\rule550-prior-scope-revalidation.json": "679319a7d11347697d3b70d0fa0f3d043d9a91635d5d24210ffe9bbb2b4e53c4",
+        "D:\\Codex Workshop\\kards-install-review\\choice-adapter-prior-scope-revalidation.json": "61f8b9b237aed866b4226e4918851d30e5ed43b8dfc257c5f299a200d9ee5fa9"
       },
       "limitations": [
         "Scoped to valid positive-ID retained non-HQ objects and normal action processing; missing/nonpositive IDs, object replacement and UObject lifetime are not certified.",
@@ -3040,6 +3138,20 @@
             "tools/BotSim/SelfTest.cs": "783283f6ecb3c44dd3e27894dcf67b467d6a3af18ba7ebce54f5d6bdf27f2974",
             "tools/BotSim/SelfTest.DamageDeath.cs": "0cd9e44c070f5103ef128728e3b449462d1e270ffe3e78783d077e1759faedeb"
           }
+        },
+        {
+          "batch": "training-choice-policy-adapter",
+          "proof_path": "D:\\Codex Workshop\\kards-install-review\\choice-adapter-prior-scope-revalidation.json",
+          "proof_sha256": "61f8b9b237aed866b4226e4918851d30e5ed43b8dfc257c5f299a200d9ee5fa9",
+          "previous_source_bindings": {
+            "src/KLink.Bot/Effects/CardApi.cs": "24197f2546532d82d4cdfe02de764ed6e5ae9347d529a7c42b0f172da77be49e",
+            "src/KLink.Bot/Engine/MatchEngine.cs": "8b32754076c45a546c4f39cf9971e909b254a705d675c2ca8a47eac13ac69cdd",
+            "src/KLink.Bot/Effects/CardApi.EffectDamage.cs": "36f72925695728384f0fa9cb815f844149036bbb7828d1390304255bfebfb0c0",
+            "src/KLink.Bot/Engine/CardInstance.cs": "350c5d79a51fe68af6af4769abd18764dcbfa36cdcae06cc91b7d553754551da",
+            "klink bot/docs/card-ir.json": "526812fa8dc0934f1d6ecd3794053871fa6b701c2b5df3fd1edb3c38513ba2e9",
+            "tools/BotSim/SelfTest.cs": "653953911bfc661c238a7ed31f2423771283309dfe699bd8a2a9f050cd3d8f98",
+            "tools/BotSim/SelfTest.DamageDeath.cs": "0cd9e44c070f5103ef128728e3b449462d1e270ffe3e78783d077e1759faedeb"
+          }
         }
       ],
       "limitations_history": [
@@ -3073,7 +3185,7 @@
         "src/KLink.Bot/Effects/CardApi.EffectDamage.cs": "36f72925695728384f0fa9cb815f844149036bbb7828d1390304255bfebfb0c0",
         "src/KLink.Bot/Engine/CardInstance.cs": "350c5d79a51fe68af6af4769abd18764dcbfa36cdcae06cc91b7d553754551da",
         "klink bot/docs/card-ir.json": "526812fa8dc0934f1d6ecd3794053871fa6b701c2b5df3fd1edb3c38513ba2e9",
-        "tools/BotSim/SelfTest.cs": "653953911bfc661c238a7ed31f2423771283309dfe699bd8a2a9f050cd3d8f98",
+        "tools/BotSim/SelfTest.cs": "f7910a4db53928ae99ea4881058e461bb9a43317eb454290308b69cd355d3d26",
         "tools/BotSim/SelfTest.DamageHq.cs": "0df50b78c5ed04855d7406ae727800a1326fc6d2ad9221e5675843de09b20b06",
         "tools/BotSim/SelfTest.DamageDeath.cs": "0cd9e44c070f5103ef128728e3b449462d1e270ffe3e78783d077e1759faedeb"
       },
@@ -3108,7 +3220,8 @@
         "D:\\Codex Workshop\\kards-install-review\\training-greedy-prior-scope-revalidation.json": "19c5ac691f8dff7a848cac9aeee34ddb275cb0aec0ae6457b25ea8c0569f5593",
         "D:\\Codex Workshop\\kards-install-review\\rule548-prior-scope-revalidation.json": "66fa2507363d30d828e93f7896d97b9baefe9f777bfd89b31025de82544d7503",
         "D:\\Codex Workshop\\kards-install-review\\rule549-prior-scope-revalidation.json": "6e3a260bbce33809c8b515fc0afeb5064ae86e6cc2fd805d67192b2ac79c0127",
-        "D:\\Codex Workshop\\kards-install-review\\rule550-prior-scope-revalidation.json": "679319a7d11347697d3b70d0fa0f3d043d9a91635d5d24210ffe9bbb2b4e53c4"
+        "D:\\Codex Workshop\\kards-install-review\\rule550-prior-scope-revalidation.json": "679319a7d11347697d3b70d0fa0f3d043d9a91635d5d24210ffe9bbb2b4e53c4",
+        "D:\\Codex Workshop\\kards-install-review\\choice-adapter-prior-scope-revalidation.json": "61f8b9b237aed866b4226e4918851d30e5ed43b8dfc257c5f299a200d9ee5fa9"
       },
       "limitations": [
         "RULE-534 now supplies explicit saved HQ ID/reference slots and opening bindings. Full match reset/reconnect, malformed slot states and native pointer lifetime remain separate boundaries; this prior unit itself does not certify those scopes.",
@@ -3357,6 +3470,22 @@
             "tools/BotSim/SelfTest.DamageHq.cs": "0df50b78c5ed04855d7406ae727800a1326fc6d2ad9221e5675843de09b20b06",
             "tools/BotSim/SelfTest.DamageDeath.cs": "0cd9e44c070f5103ef128728e3b449462d1e270ffe3e78783d077e1759faedeb"
           }
+        },
+        {
+          "batch": "training-choice-policy-adapter",
+          "proof_path": "D:\\Codex Workshop\\kards-install-review\\choice-adapter-prior-scope-revalidation.json",
+          "proof_sha256": "61f8b9b237aed866b4226e4918851d30e5ed43b8dfc257c5f299a200d9ee5fa9",
+          "previous_source_bindings": {
+            "src/KLink.Bot/Effects/CardApi.cs": "24197f2546532d82d4cdfe02de764ed6e5ae9347d529a7c42b0f172da77be49e",
+            "src/KLink.Bot/Engine/GameState.cs": "4de9bc66ae9e38684d129778cc7e220ba43e25205c7b9920b5e1b0aa2a31f143",
+            "src/KLink.Bot/Engine/MatchEngine.cs": "8b32754076c45a546c4f39cf9971e909b254a705d675c2ca8a47eac13ac69cdd",
+            "src/KLink.Bot/Effects/CardApi.EffectDamage.cs": "36f72925695728384f0fa9cb815f844149036bbb7828d1390304255bfebfb0c0",
+            "src/KLink.Bot/Engine/CardInstance.cs": "350c5d79a51fe68af6af4769abd18764dcbfa36cdcae06cc91b7d553754551da",
+            "klink bot/docs/card-ir.json": "526812fa8dc0934f1d6ecd3794053871fa6b701c2b5df3fd1edb3c38513ba2e9",
+            "tools/BotSim/SelfTest.cs": "653953911bfc661c238a7ed31f2423771283309dfe699bd8a2a9f050cd3d8f98",
+            "tools/BotSim/SelfTest.DamageHq.cs": "0df50b78c5ed04855d7406ae727800a1326fc6d2ad9221e5675843de09b20b06",
+            "tools/BotSim/SelfTest.DamageDeath.cs": "0cd9e44c070f5103ef128728e3b449462d1e270ffe3e78783d077e1759faedeb"
+          }
         }
       ],
       "limitations_history": [
@@ -3390,7 +3519,7 @@
         "src/KLink.Bot/Engine/GameState.cs": "4de9bc66ae9e38684d129778cc7e220ba43e25205c7b9920b5e1b0aa2a31f143",
         "src/KLink.Bot/Engine/MatchEngine.cs": "8b32754076c45a546c4f39cf9971e909b254a705d675c2ca8a47eac13ac69cdd",
         "src/KLink.Bot/Replay/ReplayRunner.cs": "525635c245e307d4dffd471f0d7352f8c73db5b0d22a215552895a8f8d2f7188",
-        "tools/BotSim/SelfTest.cs": "653953911bfc661c238a7ed31f2423771283309dfe699bd8a2a9f050cd3d8f98",
+        "tools/BotSim/SelfTest.cs": "f7910a4db53928ae99ea4881058e461bb9a43317eb454290308b69cd355d3d26",
         "tools/BotSim/SmokeAllCards.cs": "9bb2648d2187fcdf48c8a2835df321b0693e77d788c920652215ecf08cefe8bf",
         "src/KLink.Bot/Engine/CardInstance.cs": "350c5d79a51fe68af6af4769abd18764dcbfa36cdcae06cc91b7d553754551da",
         "klink bot/docs/card-ir.json": "526812fa8dc0934f1d6ecd3794053871fa6b701c2b5df3fd1edb3c38513ba2e9",
@@ -3431,7 +3560,8 @@
         "D:\\Codex Workshop\\kards-install-review\\training-greedy-prior-scope-revalidation.json": "19c5ac691f8dff7a848cac9aeee34ddb275cb0aec0ae6457b25ea8c0569f5593",
         "D:\\Codex Workshop\\kards-install-review\\rule548-prior-scope-revalidation.json": "66fa2507363d30d828e93f7896d97b9baefe9f777bfd89b31025de82544d7503",
         "D:\\Codex Workshop\\kards-install-review\\rule549-prior-scope-revalidation.json": "6e3a260bbce33809c8b515fc0afeb5064ae86e6cc2fd805d67192b2ac79c0127",
-        "D:\\Codex Workshop\\kards-install-review\\rule550-prior-scope-revalidation.json": "679319a7d11347697d3b70d0fa0f3d043d9a91635d5d24210ffe9bbb2b4e53c4"
+        "D:\\Codex Workshop\\kards-install-review\\rule550-prior-scope-revalidation.json": "679319a7d11347697d3b70d0fa0f3d043d9a91635d5d24210ffe9bbb2b4e53c4",
+        "D:\\Codex Workshop\\kards-install-review\\choice-adapter-prior-scope-revalidation.json": "61f8b9b237aed866b4226e4918851d30e5ed43b8dfc257c5f299a200d9ee5fa9"
       },
       "limitations": [
         "ClearLocationCardBindings models only the four HQ fields. The complete ClearGameStateVariables reset, reuse/reconnect ordering, network state restoration and all native/UObject lifetime cases are not certified.",
@@ -3706,6 +3836,25 @@
             "tools/BotSim/SelfTest.DamageHq.cs": "0df50b78c5ed04855d7406ae727800a1326fc6d2ad9221e5675843de09b20b06",
             "tools/BotSim/SelfTest.DamageDeath.cs": "0cd9e44c070f5103ef128728e3b449462d1e270ffe3e78783d077e1759faedeb"
           }
+        },
+        {
+          "batch": "training-choice-policy-adapter",
+          "proof_path": "D:\\Codex Workshop\\kards-install-review\\choice-adapter-prior-scope-revalidation.json",
+          "proof_sha256": "61f8b9b237aed866b4226e4918851d30e5ed43b8dfc257c5f299a200d9ee5fa9",
+          "previous_source_bindings": {
+            "src/KLink.Bot/Effects/CardApi.cs": "24197f2546532d82d4cdfe02de764ed6e5ae9347d529a7c42b0f172da77be49e",
+            "src/KLink.Bot/Effects/CardApiDispatch.cs": "03080524c38f087e41d8baf7e01c3de8ec2343742b1daedced9d02535ef838fb",
+            "src/KLink.Bot/Engine/GameState.cs": "4de9bc66ae9e38684d129778cc7e220ba43e25205c7b9920b5e1b0aa2a31f143",
+            "src/KLink.Bot/Engine/MatchEngine.cs": "8b32754076c45a546c4f39cf9971e909b254a705d675c2ca8a47eac13ac69cdd",
+            "src/KLink.Bot/Replay/ReplayRunner.cs": "525635c245e307d4dffd471f0d7352f8c73db5b0d22a215552895a8f8d2f7188",
+            "tools/BotSim/SelfTest.cs": "653953911bfc661c238a7ed31f2423771283309dfe699bd8a2a9f050cd3d8f98",
+            "tools/BotSim/SmokeAllCards.cs": "9bb2648d2187fcdf48c8a2835df321b0693e77d788c920652215ecf08cefe8bf",
+            "src/KLink.Bot/Engine/CardInstance.cs": "350c5d79a51fe68af6af4769abd18764dcbfa36cdcae06cc91b7d553754551da",
+            "klink bot/docs/card-ir.json": "526812fa8dc0934f1d6ecd3794053871fa6b701c2b5df3fd1edb3c38513ba2e9",
+            "tools/BotSim/SelfTest.HqSlots.cs": "c846f80b0cdace729fdb87839eb33b19eaff7d4e5b6cf435a333cf2bf2071b4f",
+            "tools/BotSim/SelfTest.DamageHq.cs": "0df50b78c5ed04855d7406ae727800a1326fc6d2ad9221e5675843de09b20b06",
+            "tools/BotSim/SelfTest.DamageDeath.cs": "0cd9e44c070f5103ef128728e3b449462d1e270ffe3e78783d077e1759faedeb"
+          }
         }
       ]
     },
@@ -3726,7 +3875,7 @@
         "src/KLink.Bot/Engine/GameState.cs": "4de9bc66ae9e38684d129778cc7e220ba43e25205c7b9920b5e1b0aa2a31f143",
         "src/KLink.Bot/Engine/CardInstance.cs": "350c5d79a51fe68af6af4769abd18764dcbfa36cdcae06cc91b7d553754551da",
         "klink bot/docs/card-ir.json": "526812fa8dc0934f1d6ecd3794053871fa6b701c2b5df3fd1edb3c38513ba2e9",
-        "tools/BotSim/SelfTest.cs": "653953911bfc661c238a7ed31f2423771283309dfe699bd8a2a9f050cd3d8f98",
+        "tools/BotSim/SelfTest.cs": "f7910a4db53928ae99ea4881058e461bb9a43317eb454290308b69cd355d3d26",
         "tools/BotSim/SelfTest.CombatDeath.cs": "68fb1d0a4a6efafe3d2930938c95ac932cb1887d7b5aab6eceb447fc5de60540",
         "tools/BotSim/SelfTest.HqSlots.cs": "c846f80b0cdace729fdb87839eb33b19eaff7d4e5b6cf435a333cf2bf2071b4f"
       },
@@ -3759,7 +3908,8 @@
         "D:\\Codex Workshop\\kards-install-review\\training-greedy-prior-scope-revalidation.json": "19c5ac691f8dff7a848cac9aeee34ddb275cb0aec0ae6457b25ea8c0569f5593",
         "D:\\Codex Workshop\\kards-install-review\\rule548-prior-scope-revalidation.json": "66fa2507363d30d828e93f7896d97b9baefe9f777bfd89b31025de82544d7503",
         "D:\\Codex Workshop\\kards-install-review\\rule549-prior-scope-revalidation.json": "6e3a260bbce33809c8b515fc0afeb5064ae86e6cc2fd805d67192b2ac79c0127",
-        "D:\\Codex Workshop\\kards-install-review\\rule550-prior-scope-revalidation.json": "679319a7d11347697d3b70d0fa0f3d043d9a91635d5d24210ffe9bbb2b4e53c4"
+        "D:\\Codex Workshop\\kards-install-review\\rule550-prior-scope-revalidation.json": "679319a7d11347697d3b70d0fa0f3d043d9a91635d5d24210ffe9bbb2b4e53c4",
+        "D:\\Codex Workshop\\kards-install-review\\choice-adapter-prior-scope-revalidation.json": "61f8b9b237aed866b4226e4918851d30e5ed43b8dfc257c5f299a200d9ee5fa9"
       },
       "limitations": [
         "Scoped to positive retained IDs, ordinary attack action mode and saved lethal flags. Captured-ID/object replacement, native pointer lifetime, nonpositive IDs and action/replay routing are not certified.",
@@ -3963,6 +4113,21 @@
             "tools/BotSim/SelfTest.CombatDeath.cs": "68fb1d0a4a6efafe3d2930938c95ac932cb1887d7b5aab6eceb447fc5de60540",
             "tools/BotSim/SelfTest.HqSlots.cs": "c846f80b0cdace729fdb87839eb33b19eaff7d4e5b6cf435a333cf2bf2071b4f"
           }
+        },
+        {
+          "batch": "training-choice-policy-adapter",
+          "proof_path": "D:\\Codex Workshop\\kards-install-review\\choice-adapter-prior-scope-revalidation.json",
+          "proof_sha256": "61f8b9b237aed866b4226e4918851d30e5ed43b8dfc257c5f299a200d9ee5fa9",
+          "previous_source_bindings": {
+            "src/KLink.Bot/Effects/CardApi.cs": "24197f2546532d82d4cdfe02de764ed6e5ae9347d529a7c42b0f172da77be49e",
+            "src/KLink.Bot/Engine/MatchEngine.cs": "8b32754076c45a546c4f39cf9971e909b254a705d675c2ca8a47eac13ac69cdd",
+            "src/KLink.Bot/Engine/GameState.cs": "4de9bc66ae9e38684d129778cc7e220ba43e25205c7b9920b5e1b0aa2a31f143",
+            "src/KLink.Bot/Engine/CardInstance.cs": "350c5d79a51fe68af6af4769abd18764dcbfa36cdcae06cc91b7d553754551da",
+            "klink bot/docs/card-ir.json": "526812fa8dc0934f1d6ecd3794053871fa6b701c2b5df3fd1edb3c38513ba2e9",
+            "tools/BotSim/SelfTest.cs": "653953911bfc661c238a7ed31f2423771283309dfe699bd8a2a9f050cd3d8f98",
+            "tools/BotSim/SelfTest.CombatDeath.cs": "68fb1d0a4a6efafe3d2930938c95ac932cb1887d7b5aab6eceb447fc5de60540",
+            "tools/BotSim/SelfTest.HqSlots.cs": "c846f80b0cdace729fdb87839eb33b19eaff7d4e5b6cf435a333cf2bf2071b4f"
+          }
         }
       ]
     },
@@ -3983,7 +4148,7 @@
         "src/KLink.Bot/Engine/GameState.cs": "4de9bc66ae9e38684d129778cc7e220ba43e25205c7b9920b5e1b0aa2a31f143",
         "src/KLink.Bot/Engine/CardInstance.cs": "350c5d79a51fe68af6af4769abd18764dcbfa36cdcae06cc91b7d553754551da",
         "klink bot/docs/card-ir.json": "526812fa8dc0934f1d6ecd3794053871fa6b701c2b5df3fd1edb3c38513ba2e9",
-        "tools/BotSim/SelfTest.cs": "653953911bfc661c238a7ed31f2423771283309dfe699bd8a2a9f050cd3d8f98",
+        "tools/BotSim/SelfTest.cs": "f7910a4db53928ae99ea4881058e461bb9a43317eb454290308b69cd355d3d26",
         "tools/BotSim/BotSim.csproj": "db6cc50ddeacd78dec69c303a2d455f882895793ff0f647ad96b193de82a331b",
         "tools/BotSim/SelfTest.CombatNumeric.cs": "905d1371249afae71a6ebb5cbd1f5a51948c378a0ec29f5e610498131552e894",
         "tools/BotSim/Fixtures/combat-defense-reference-20261029.json": "30e3b0eb9ebd0a96179af1bc9663318ebf4301b06acdcff99a76046de6a00861"
@@ -4019,7 +4184,8 @@
         "D:\\Codex Workshop\\kards-install-review\\training-greedy-prior-scope-revalidation.json": "19c5ac691f8dff7a848cac9aeee34ddb275cb0aec0ae6457b25ea8c0569f5593",
         "D:\\Codex Workshop\\kards-install-review\\rule548-prior-scope-revalidation.json": "66fa2507363d30d828e93f7896d97b9baefe9f777bfd89b31025de82544d7503",
         "D:\\Codex Workshop\\kards-install-review\\rule549-prior-scope-revalidation.json": "6e3a260bbce33809c8b515fc0afeb5064ae86e6cc2fd805d67192b2ac79c0127",
-        "D:\\Codex Workshop\\kards-install-review\\rule550-prior-scope-revalidation.json": "679319a7d11347697d3b70d0fa0f3d043d9a91635d5d24210ffe9bbb2b4e53c4"
+        "D:\\Codex Workshop\\kards-install-review\\rule550-prior-scope-revalidation.json": "679319a7d11347697d3b70d0fa0f3d043d9a91635d5d24210ffe9bbb2b4e53c4",
+        "D:\\Codex Workshop\\kards-install-review\\choice-adapter-prior-scope-revalidation.json": "61f8b9b237aed866b4226e4918851d30e5ed43b8dfc257c5f299a200d9ee5fa9"
       },
       "limitations": [
         "216 rows isolate ExecuteAttackCard numeric slice with counterdamage0, unit defender, optional excess, no lethal ability, supplied receive callback and stable getters. Full callback system, all card reachability and arbitrary combat input combinations are not certified.",
@@ -4221,6 +4387,22 @@
             "tools/BotSim/SelfTest.CombatNumeric.cs": "905d1371249afae71a6ebb5cbd1f5a51948c378a0ec29f5e610498131552e894",
             "tools/BotSim/Fixtures/combat-defense-reference-20261029.json": "30e3b0eb9ebd0a96179af1bc9663318ebf4301b06acdcff99a76046de6a00861"
           }
+        },
+        {
+          "batch": "training-choice-policy-adapter",
+          "proof_path": "D:\\Codex Workshop\\kards-install-review\\choice-adapter-prior-scope-revalidation.json",
+          "proof_sha256": "61f8b9b237aed866b4226e4918851d30e5ed43b8dfc257c5f299a200d9ee5fa9",
+          "previous_source_bindings": {
+            "src/KLink.Bot/Effects/CardApi.cs": "24197f2546532d82d4cdfe02de764ed6e5ae9347d529a7c42b0f172da77be49e",
+            "src/KLink.Bot/Engine/MatchEngine.cs": "8b32754076c45a546c4f39cf9971e909b254a705d675c2ca8a47eac13ac69cdd",
+            "src/KLink.Bot/Engine/GameState.cs": "4de9bc66ae9e38684d129778cc7e220ba43e25205c7b9920b5e1b0aa2a31f143",
+            "src/KLink.Bot/Engine/CardInstance.cs": "350c5d79a51fe68af6af4769abd18764dcbfa36cdcae06cc91b7d553754551da",
+            "klink bot/docs/card-ir.json": "526812fa8dc0934f1d6ecd3794053871fa6b701c2b5df3fd1edb3c38513ba2e9",
+            "tools/BotSim/SelfTest.cs": "653953911bfc661c238a7ed31f2423771283309dfe699bd8a2a9f050cd3d8f98",
+            "tools/BotSim/BotSim.csproj": "db6cc50ddeacd78dec69c303a2d455f882895793ff0f647ad96b193de82a331b",
+            "tools/BotSim/SelfTest.CombatNumeric.cs": "905d1371249afae71a6ebb5cbd1f5a51948c378a0ec29f5e610498131552e894",
+            "tools/BotSim/Fixtures/combat-defense-reference-20261029.json": "30e3b0eb9ebd0a96179af1bc9663318ebf4301b06acdcff99a76046de6a00861"
+          }
         }
       ]
     },
@@ -4240,7 +4422,7 @@
         "src/KLink.Bot/Engine/MatchEngine.cs": "8b32754076c45a546c4f39cf9971e909b254a705d675c2ca8a47eac13ac69cdd",
         "src/KLink.Bot/Engine/CardInstance.cs": "350c5d79a51fe68af6af4769abd18764dcbfa36cdcae06cc91b7d553754551da",
         "klink bot/docs/card-ir.json": "526812fa8dc0934f1d6ecd3794053871fa6b701c2b5df3fd1edb3c38513ba2e9",
-        "tools/BotSim/SelfTest.cs": "653953911bfc661c238a7ed31f2423771283309dfe699bd8a2a9f050cd3d8f98",
+        "tools/BotSim/SelfTest.cs": "f7910a4db53928ae99ea4881058e461bb9a43317eb454290308b69cd355d3d26",
         "tools/BotSim/BotSim.csproj": "db6cc50ddeacd78dec69c303a2d455f882895793ff0f647ad96b193de82a331b",
         "tools/BotSim/SelfTest.AmbushNumeric.cs": "9d492f98507eeecee87957f72c6f94b58f253f82eea31b315ec785b7f7855080",
         "tools/BotSim/Fixtures/ambush-defense-reference-20261029.json": "47954c3b5fe7d87b8bcd6b642b6f2c1749aebc8f04670d53ac2452d097be70a9"
@@ -4275,7 +4457,8 @@
         "D:\\Codex Workshop\\kards-install-review\\training-greedy-prior-scope-revalidation.json": "19c5ac691f8dff7a848cac9aeee34ddb275cb0aec0ae6457b25ea8c0569f5593",
         "D:\\Codex Workshop\\kards-install-review\\rule548-prior-scope-revalidation.json": "66fa2507363d30d828e93f7896d97b9baefe9f777bfd89b31025de82544d7503",
         "D:\\Codex Workshop\\kards-install-review\\rule549-prior-scope-revalidation.json": "6e3a260bbce33809c8b515fc0afeb5064ae86e6cc2fd805d67192b2ac79c0127",
-        "D:\\Codex Workshop\\kards-install-review\\rule550-prior-scope-revalidation.json": "679319a7d11347697d3b70d0fa0f3d043d9a91635d5d24210ffe9bbb2b4e53c4"
+        "D:\\Codex Workshop\\kards-install-review\\rule550-prior-scope-revalidation.json": "679319a7d11347697d3b70d0fa0f3d043d9a91635d5d24210ffe9bbb2b4e53c4",
+        "D:\\Codex Workshop\\kards-install-review\\choice-adapter-prior-scope-revalidation.json": "61f8b9b237aed866b4226e4918851d30e5ed43b8dfc257c5f299a200d9ee5fa9"
       },
       "limitations": [
         "216 rows isolate eligible ambush threshold in ordinary action mode: applyBeforeAttackBuffs=false, all ambush gates true, fixed dealer damage7, supplied T37 reverse damage0..99, valid armor0..3 and controlled passive return. All gating combinations, damage previews/before-attack buffs and full combat are not certified.",
@@ -4450,6 +4633,21 @@
             "tools/BotSim/SelfTest.AmbushNumeric.cs": "9d492f98507eeecee87957f72c6f94b58f253f82eea31b315ec785b7f7855080",
             "tools/BotSim/Fixtures/ambush-defense-reference-20261029.json": "47954c3b5fe7d87b8bcd6b642b6f2c1749aebc8f04670d53ac2452d097be70a9"
           }
+        },
+        {
+          "batch": "training-choice-policy-adapter",
+          "proof_path": "D:\\Codex Workshop\\kards-install-review\\choice-adapter-prior-scope-revalidation.json",
+          "proof_sha256": "61f8b9b237aed866b4226e4918851d30e5ed43b8dfc257c5f299a200d9ee5fa9",
+          "previous_source_bindings": {
+            "src/KLink.Bot/Effects/CardApi.cs": "24197f2546532d82d4cdfe02de764ed6e5ae9347d529a7c42b0f172da77be49e",
+            "src/KLink.Bot/Engine/MatchEngine.cs": "8b32754076c45a546c4f39cf9971e909b254a705d675c2ca8a47eac13ac69cdd",
+            "src/KLink.Bot/Engine/CardInstance.cs": "350c5d79a51fe68af6af4769abd18764dcbfa36cdcae06cc91b7d553754551da",
+            "klink bot/docs/card-ir.json": "526812fa8dc0934f1d6ecd3794053871fa6b701c2b5df3fd1edb3c38513ba2e9",
+            "tools/BotSim/SelfTest.cs": "653953911bfc661c238a7ed31f2423771283309dfe699bd8a2a9f050cd3d8f98",
+            "tools/BotSim/BotSim.csproj": "db6cc50ddeacd78dec69c303a2d455f882895793ff0f647ad96b193de82a331b",
+            "tools/BotSim/SelfTest.AmbushNumeric.cs": "9d492f98507eeecee87957f72c6f94b58f253f82eea31b315ec785b7f7855080",
+            "tools/BotSim/Fixtures/ambush-defense-reference-20261029.json": "47954c3b5fe7d87b8bcd6b642b6f2c1749aebc8f04670d53ac2452d097be70a9"
+          }
         }
       ]
     },
@@ -4469,7 +4667,7 @@
         "src/KLink.Bot/Engine/MatchEngine.cs": "8b32754076c45a546c4f39cf9971e909b254a705d675c2ca8a47eac13ac69cdd",
         "src/KLink.Bot/Engine/CardInstance.cs": "350c5d79a51fe68af6af4769abd18764dcbfa36cdcae06cc91b7d553754551da",
         "klink bot/docs/card-ir.json": "526812fa8dc0934f1d6ecd3794053871fa6b701c2b5df3fd1edb3c38513ba2e9",
-        "tools/BotSim/SelfTest.cs": "653953911bfc661c238a7ed31f2423771283309dfe699bd8a2a9f050cd3d8f98",
+        "tools/BotSim/SelfTest.cs": "f7910a4db53928ae99ea4881058e461bb9a43317eb454290308b69cd355d3d26",
         "tools/BotSim/BotSim.csproj": "db6cc50ddeacd78dec69c303a2d455f882895793ff0f647ad96b193de82a331b",
         "tools/BotSim/SelfTest.PassiveMitigation.cs": "45569827c867aa72290a75dcd6142ce40e6405f6933a5ec26487e892ee773a5c",
         "tools/BotSim/SelfTest.AmbushNumeric.cs": "9d492f98507eeecee87957f72c6f94b58f253f82eea31b315ec785b7f7855080",
@@ -4501,7 +4699,8 @@
         "D:\\Codex Workshop\\kards-install-review\\training-greedy-prior-scope-revalidation.json": "19c5ac691f8dff7a848cac9aeee34ddb275cb0aec0ae6457b25ea8c0569f5593",
         "D:\\Codex Workshop\\kards-install-review\\rule548-prior-scope-revalidation.json": "66fa2507363d30d828e93f7896d97b9baefe9f777bfd89b31025de82544d7503",
         "D:\\Codex Workshop\\kards-install-review\\rule549-prior-scope-revalidation.json": "6e3a260bbce33809c8b515fc0afeb5064ae86e6cc2fd805d67192b2ac79c0127",
-        "D:\\Codex Workshop\\kards-install-review\\rule550-prior-scope-revalidation.json": "679319a7d11347697d3b70d0fa0f3d043d9a91635d5d24210ffe9bbb2b4e53c4"
+        "D:\\Codex Workshop\\kards-install-review\\rule550-prior-scope-revalidation.json": "679319a7d11347697d3b70d0fa0f3d043d9a91635d5d24210ffe9bbb2b4e53c4",
+        "D:\\Codex Workshop\\kards-install-review\\choice-adapter-prior-scope-revalidation.json": "61f8b9b237aed866b4226e4918851d30e5ed43b8dfc257c5f299a200d9ee5fa9"
       },
       "limitations": [
         "288 rows supply neutral units, post-T37 damage0/1/3/6, ordinary false ignoreArmor/applyBeforeAttackBuffs flags, armor0..3 and a synthetic receiver passive callback. Seven gate cases cover named exits, not every combined ambush/retaliation condition or full calculation.",
@@ -4671,6 +4870,22 @@
             "tools/BotSim/SelfTest.AmbushNumeric.cs": "9d492f98507eeecee87957f72c6f94b58f253f82eea31b315ec785b7f7855080",
             "tools/BotSim/Fixtures/passive-mitigation-reference-20261029.json": "404c0b5a0ac612cf32359ad051879a7308d1d3deab2048a44ba8f35dfdf7ff8f"
           }
+        },
+        {
+          "batch": "training-choice-policy-adapter",
+          "proof_path": "D:\\Codex Workshop\\kards-install-review\\choice-adapter-prior-scope-revalidation.json",
+          "proof_sha256": "61f8b9b237aed866b4226e4918851d30e5ed43b8dfc257c5f299a200d9ee5fa9",
+          "previous_source_bindings": {
+            "src/KLink.Bot/Effects/CardApi.cs": "24197f2546532d82d4cdfe02de764ed6e5ae9347d529a7c42b0f172da77be49e",
+            "src/KLink.Bot/Engine/MatchEngine.cs": "8b32754076c45a546c4f39cf9971e909b254a705d675c2ca8a47eac13ac69cdd",
+            "src/KLink.Bot/Engine/CardInstance.cs": "350c5d79a51fe68af6af4769abd18764dcbfa36cdcae06cc91b7d553754551da",
+            "klink bot/docs/card-ir.json": "526812fa8dc0934f1d6ecd3794053871fa6b701c2b5df3fd1edb3c38513ba2e9",
+            "tools/BotSim/SelfTest.cs": "653953911bfc661c238a7ed31f2423771283309dfe699bd8a2a9f050cd3d8f98",
+            "tools/BotSim/BotSim.csproj": "db6cc50ddeacd78dec69c303a2d455f882895793ff0f647ad96b193de82a331b",
+            "tools/BotSim/SelfTest.PassiveMitigation.cs": "45569827c867aa72290a75dcd6142ce40e6405f6933a5ec26487e892ee773a5c",
+            "tools/BotSim/SelfTest.AmbushNumeric.cs": "9d492f98507eeecee87957f72c6f94b58f253f82eea31b315ec785b7f7855080",
+            "tools/BotSim/Fixtures/passive-mitigation-reference-20261029.json": "404c0b5a0ac612cf32359ad051879a7308d1d3deab2048a44ba8f35dfdf7ff8f"
+          }
         }
       ]
     },
@@ -4691,7 +4906,7 @@
         "src/KLink.Bot/Engine/CardInstance.cs": "350c5d79a51fe68af6af4769abd18764dcbfa36cdcae06cc91b7d553754551da",
         "src/KLink.Bot/Effects/Blueprint/KismetVm.cs": "f831c4f23b4ca4db1db08df6b6f75a0d43e9a0dd96b6a8e1d63a3ceff1e2b150",
         "klink bot/docs/card-ir.json": "526812fa8dc0934f1d6ecd3794053871fa6b701c2b5df3fd1edb3c38513ba2e9",
-        "tools/BotSim/SelfTest.cs": "653953911bfc661c238a7ed31f2423771283309dfe699bd8a2a9f050cd3d8f98",
+        "tools/BotSim/SelfTest.cs": "f7910a4db53928ae99ea4881058e461bb9a43317eb454290308b69cd355d3d26",
         "tools/BotSim/SelfTest.CalculationOutputs.cs": "b6c29678332b9f8014710af24db0be8be9faef305c9de6e66f285f21ae4bb14e",
         "tools/BotSim/SelfTest.AmbushNumeric.cs": "9d492f98507eeecee87957f72c6f94b58f253f82eea31b315ec785b7f7855080"
       },
@@ -4725,7 +4940,8 @@
         "D:\\Codex Workshop\\kards-install-review\\training-greedy-prior-scope-revalidation.json": "19c5ac691f8dff7a848cac9aeee34ddb275cb0aec0ae6457b25ea8c0569f5593",
         "D:\\Codex Workshop\\kards-install-review\\rule548-prior-scope-revalidation.json": "66fa2507363d30d828e93f7896d97b9baefe9f777bfd89b31025de82544d7503",
         "D:\\Codex Workshop\\kards-install-review\\rule549-prior-scope-revalidation.json": "6e3a260bbce33809c8b515fc0afeb5064ae86e6cc2fd805d67192b2ac79c0127",
-        "D:\\Codex Workshop\\kards-install-review\\rule550-prior-scope-revalidation.json": "679319a7d11347697d3b70d0fa0f3d043d9a91635d5d24210ffe9bbb2b4e53c4"
+        "D:\\Codex Workshop\\kards-install-review\\rule550-prior-scope-revalidation.json": "679319a7d11347697d3b70d0fa0f3d043d9a91635d5d24210ffe9bbb2b4e53c4",
+        "D:\\Codex Workshop\\kards-install-review\\choice-adapter-prior-scope-revalidation.json": "61f8b9b237aed866b4226e4918851d30e5ed43b8dfc257c5f299a200d9ee5fa9"
       },
       "limitations": [
         "Base native default proof is limited to fresh BaseCardObject CDO slot0x358 and its8B leaf on valid synthetic buffers. Full Unreal FFrame argument readers, ProcessEvent/inheritance/other CDO targets, malformed pointers, GC/lifetime and future client changes are not universally certified.",
@@ -4867,6 +5083,21 @@
             "src/KLink.Bot/Effects/Blueprint/KismetVm.cs": "f831c4f23b4ca4db1db08df6b6f75a0d43e9a0dd96b6a8e1d63a3ceff1e2b150",
             "klink bot/docs/card-ir.json": "526812fa8dc0934f1d6ecd3794053871fa6b701c2b5df3fd1edb3c38513ba2e9",
             "tools/BotSim/SelfTest.cs": "783283f6ecb3c44dd3e27894dcf67b467d6a3af18ba7ebce54f5d6bdf27f2974",
+            "tools/BotSim/SelfTest.CalculationOutputs.cs": "b6c29678332b9f8014710af24db0be8be9faef305c9de6e66f285f21ae4bb14e",
+            "tools/BotSim/SelfTest.AmbushNumeric.cs": "9d492f98507eeecee87957f72c6f94b58f253f82eea31b315ec785b7f7855080"
+          }
+        },
+        {
+          "batch": "training-choice-policy-adapter",
+          "proof_path": "D:\\Codex Workshop\\kards-install-review\\choice-adapter-prior-scope-revalidation.json",
+          "proof_sha256": "61f8b9b237aed866b4226e4918851d30e5ed43b8dfc257c5f299a200d9ee5fa9",
+          "previous_source_bindings": {
+            "src/KLink.Bot/Effects/CardApi.cs": "24197f2546532d82d4cdfe02de764ed6e5ae9347d529a7c42b0f172da77be49e",
+            "src/KLink.Bot/Engine/MatchEngine.cs": "8b32754076c45a546c4f39cf9971e909b254a705d675c2ca8a47eac13ac69cdd",
+            "src/KLink.Bot/Engine/CardInstance.cs": "350c5d79a51fe68af6af4769abd18764dcbfa36cdcae06cc91b7d553754551da",
+            "src/KLink.Bot/Effects/Blueprint/KismetVm.cs": "f831c4f23b4ca4db1db08df6b6f75a0d43e9a0dd96b6a8e1d63a3ceff1e2b150",
+            "klink bot/docs/card-ir.json": "526812fa8dc0934f1d6ecd3794053871fa6b701c2b5df3fd1edb3c38513ba2e9",
+            "tools/BotSim/SelfTest.cs": "653953911bfc661c238a7ed31f2423771283309dfe699bd8a2a9f050cd3d8f98",
             "tools/BotSim/SelfTest.CalculationOutputs.cs": "b6c29678332b9f8014710af24db0be8be9faef305c9de6e66f285f21ae4bb14e",
             "tools/BotSim/SelfTest.AmbushNumeric.cs": "9d492f98507eeecee87957f72c6f94b58f253f82eea31b315ec785b7f7855080"
           }
@@ -4890,7 +5121,7 @@
         "src/KLink.Bot/Engine/CardInstance.cs": "350c5d79a51fe68af6af4769abd18764dcbfa36cdcae06cc91b7d553754551da",
         "src/KLink.Bot/Effects/Blueprint/KismetVm.cs": "f831c4f23b4ca4db1db08df6b6f75a0d43e9a0dd96b6a8e1d63a3ceff1e2b150",
         "klink bot/docs/card-ir.json": "526812fa8dc0934f1d6ecd3794053871fa6b701c2b5df3fd1edb3c38513ba2e9",
-        "tools/BotSim/SelfTest.cs": "653953911bfc661c238a7ed31f2423771283309dfe699bd8a2a9f050cd3d8f98",
+        "tools/BotSim/SelfTest.cs": "f7910a4db53928ae99ea4881058e461bb9a43317eb454290308b69cd355d3d26",
         "tools/BotSim/SelfTest.CalculationOutputs.cs": "b6c29678332b9f8014710af24db0be8be9faef305c9de6e66f285f21ae4bb14e",
         "tools/BotSim/SelfTest.AmbushNumeric.cs": "9d492f98507eeecee87957f72c6f94b58f253f82eea31b315ec785b7f7855080"
       },
@@ -4924,7 +5155,8 @@
         "D:\\Codex Workshop\\kards-install-review\\training-greedy-prior-scope-revalidation.json": "19c5ac691f8dff7a848cac9aeee34ddb275cb0aec0ae6457b25ea8c0569f5593",
         "D:\\Codex Workshop\\kards-install-review\\rule548-prior-scope-revalidation.json": "66fa2507363d30d828e93f7896d97b9baefe9f777bfd89b31025de82544d7503",
         "D:\\Codex Workshop\\kards-install-review\\rule549-prior-scope-revalidation.json": "6e3a260bbce33809c8b515fc0afeb5064ae86e6cc2fd805d67192b2ac79c0127",
-        "D:\\Codex Workshop\\kards-install-review\\rule550-prior-scope-revalidation.json": "679319a7d11347697d3b70d0fa0f3d043d9a91635d5d24210ffe9bbb2b4e53c4"
+        "D:\\Codex Workshop\\kards-install-review\\rule550-prior-scope-revalidation.json": "679319a7d11347697d3b70d0fa0f3d043d9a91635d5d24210ffe9bbb2b4e53c4",
+        "D:\\Codex Workshop\\kards-install-review\\choice-adapter-prior-scope-revalidation.json": "61f8b9b237aed866b4226e4918851d30e5ed43b8dfc257c5f299a200d9ee5fa9"
       },
       "limitations": [
         "Base native default proof is limited to fresh BaseCardObject CDO slot0x358 and its8B leaf on valid synthetic buffers. Full Unreal FFrame argument readers, ProcessEvent/inheritance/other CDO targets, malformed pointers, GC/lifetime and future client changes are not universally certified.",
@@ -5066,6 +5298,21 @@
             "src/KLink.Bot/Effects/Blueprint/KismetVm.cs": "f831c4f23b4ca4db1db08df6b6f75a0d43e9a0dd96b6a8e1d63a3ceff1e2b150",
             "klink bot/docs/card-ir.json": "526812fa8dc0934f1d6ecd3794053871fa6b701c2b5df3fd1edb3c38513ba2e9",
             "tools/BotSim/SelfTest.cs": "783283f6ecb3c44dd3e27894dcf67b467d6a3af18ba7ebce54f5d6bdf27f2974",
+            "tools/BotSim/SelfTest.CalculationOutputs.cs": "b6c29678332b9f8014710af24db0be8be9faef305c9de6e66f285f21ae4bb14e",
+            "tools/BotSim/SelfTest.AmbushNumeric.cs": "9d492f98507eeecee87957f72c6f94b58f253f82eea31b315ec785b7f7855080"
+          }
+        },
+        {
+          "batch": "training-choice-policy-adapter",
+          "proof_path": "D:\\Codex Workshop\\kards-install-review\\choice-adapter-prior-scope-revalidation.json",
+          "proof_sha256": "61f8b9b237aed866b4226e4918851d30e5ed43b8dfc257c5f299a200d9ee5fa9",
+          "previous_source_bindings": {
+            "src/KLink.Bot/Effects/CardApi.cs": "24197f2546532d82d4cdfe02de764ed6e5ae9347d529a7c42b0f172da77be49e",
+            "src/KLink.Bot/Engine/MatchEngine.cs": "8b32754076c45a546c4f39cf9971e909b254a705d675c2ca8a47eac13ac69cdd",
+            "src/KLink.Bot/Engine/CardInstance.cs": "350c5d79a51fe68af6af4769abd18764dcbfa36cdcae06cc91b7d553754551da",
+            "src/KLink.Bot/Effects/Blueprint/KismetVm.cs": "f831c4f23b4ca4db1db08df6b6f75a0d43e9a0dd96b6a8e1d63a3ceff1e2b150",
+            "klink bot/docs/card-ir.json": "526812fa8dc0934f1d6ecd3794053871fa6b701c2b5df3fd1edb3c38513ba2e9",
+            "tools/BotSim/SelfTest.cs": "653953911bfc661c238a7ed31f2423771283309dfe699bd8a2a9f050cd3d8f98",
             "tools/BotSim/SelfTest.CalculationOutputs.cs": "b6c29678332b9f8014710af24db0be8be9faef305c9de6e66f285f21ae4bb14e",
             "tools/BotSim/SelfTest.AmbushNumeric.cs": "9d492f98507eeecee87957f72c6f94b58f253f82eea31b315ec785b7f7855080"
           }
@@ -5115,7 +5362,8 @@
         "D:\\Codex Workshop\\kards-install-review\\training-greedy-prior-scope-revalidation.json": "19c5ac691f8dff7a848cac9aeee34ddb275cb0aec0ae6457b25ea8c0569f5593",
         "D:\\Codex Workshop\\kards-install-review\\rule548-prior-scope-revalidation.json": "66fa2507363d30d828e93f7896d97b9baefe9f777bfd89b31025de82544d7503",
         "D:\\Codex Workshop\\kards-install-review\\rule549-prior-scope-revalidation.json": "6e3a260bbce33809c8b515fc0afeb5064ae86e6cc2fd805d67192b2ac79c0127",
-        "D:\\Codex Workshop\\kards-install-review\\rule550-prior-scope-revalidation.json": "679319a7d11347697d3b70d0fa0f3d043d9a91635d5d24210ffe9bbb2b4e53c4"
+        "D:\\Codex Workshop\\kards-install-review\\rule550-prior-scope-revalidation.json": "679319a7d11347697d3b70d0fa0f3d043d9a91635d5d24210ffe9bbb2b4e53c4",
+        "D:\\Codex Workshop\\kards-install-review\\choice-adapter-prior-scope-revalidation.json": "61f8b9b237aed866b4226e4918851d30e5ed43b8dfc257c5f299a200d9ee5fa9"
       },
       "limitations": [
         "This is a loaded reflected CDO/class/nearest-declaration census for GetPassiveDefenseBuff only. Native virtual slot equality does not mean absence of Blueprint overrides: two are explicitly present.",
@@ -5242,6 +5490,19 @@
             "tools/BotSim/SelfTest.AmbushNumeric.cs": "9d492f98507eeecee87957f72c6f94b58f253f82eea31b315ec785b7f7855080",
             "tools/BotSim/SelfTest.PassiveMitigation.cs": "45569827c867aa72290a75dcd6142ce40e6405f6933a5ec26487e892ee773a5c"
           }
+        },
+        {
+          "batch": "training-choice-policy-adapter",
+          "proof_path": "D:\\Codex Workshop\\kards-install-review\\choice-adapter-prior-scope-revalidation.json",
+          "proof_sha256": "61f8b9b237aed866b4226e4918851d30e5ed43b8dfc257c5f299a200d9ee5fa9",
+          "previous_source_bindings": {
+            "src/KLink.Bot/Effects/CardApi.cs": "24197f2546532d82d4cdfe02de764ed6e5ae9347d529a7c42b0f172da77be49e",
+            "src/KLink.Bot/Effects/Blueprint/KismetIr.cs": "94370376b702631289a4ff362e054e962d220f302dc13d9d2658a45cf72a3e86",
+            "klink bot/docs/card-ir.json": "526812fa8dc0934f1d6ecd3794053871fa6b701c2b5df3fd1edb3c38513ba2e9",
+            "tools/BotSim/SelfTest.CalculationOutputs.cs": "b6c29678332b9f8014710af24db0be8be9faef305c9de6e66f285f21ae4bb14e",
+            "tools/BotSim/SelfTest.AmbushNumeric.cs": "9d492f98507eeecee87957f72c6f94b58f253f82eea31b315ec785b7f7855080",
+            "tools/BotSim/SelfTest.PassiveMitigation.cs": "45569827c867aa72290a75dcd6142ce40e6405f6933a5ec26487e892ee773a5c"
+          }
         }
       ]
     },
@@ -5261,7 +5522,7 @@
         "src/KLink.Bot/Effects/CardApiDispatch.cs": "03080524c38f087e41d8baf7e01c3de8ec2343742b1daedced9d02535ef838fb",
         "src/KLink.Bot/Engine/MatchEngine.cs": "8b32754076c45a546c4f39cf9971e909b254a705d675c2ca8a47eac13ac69cdd",
         "tools/BotSim/SelfTest.CalculationOutputs.cs": "b6c29678332b9f8014710af24db0be8be9faef305c9de6e66f285f21ae4bb14e",
-        "tools/BotSim/SelfTest.cs": "653953911bfc661c238a7ed31f2423771283309dfe699bd8a2a9f050cd3d8f98"
+        "tools/BotSim/SelfTest.cs": "f7910a4db53928ae99ea4881058e461bb9a43317eb454290308b69cd355d3d26"
       },
       "evidence_bindings": {
         "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule541-calculation-callers-20261030.json": "f91f1762a76ef7ba354621aa00aa0be422ef5147f9afb4e8c82da2340ac54e50",
@@ -5289,7 +5550,8 @@
         "D:\\Codex Workshop\\kards-install-review\\training-greedy-prior-scope-revalidation.json": "19c5ac691f8dff7a848cac9aeee34ddb275cb0aec0ae6457b25ea8c0569f5593",
         "D:\\Codex Workshop\\kards-install-review\\rule548-prior-scope-revalidation.json": "66fa2507363d30d828e93f7896d97b9baefe9f777bfd89b31025de82544d7503",
         "D:\\Codex Workshop\\kards-install-review\\rule549-prior-scope-revalidation.json": "6e3a260bbce33809c8b515fc0afeb5064ae86e6cc2fd805d67192b2ac79c0127",
-        "D:\\Codex Workshop\\kards-install-review\\rule550-prior-scope-revalidation.json": "679319a7d11347697d3b70d0fa0f3d043d9a91635d5d24210ffe9bbb2b4e53c4"
+        "D:\\Codex Workshop\\kards-install-review\\rule550-prior-scope-revalidation.json": "679319a7d11347697d3b70d0fa0f3d043d9a91635d5d24210ffe9bbb2b4e53c4",
+        "D:\\Codex Workshop\\kards-install-review\\choice-adapter-prior-scope-revalidation.json": "61f8b9b237aed866b4226e4918851d30e5ed43b8dfc257c5f299a200d9ee5fa9"
       },
       "limitations": [
         "Loaded Blueprint literal-function-pointer and exact-FName candidates only. Native callers, reflected/name-generated calls, unloaded scripts, future versions and concurrent noncandidate replacement are not universally excluded.",
@@ -5407,6 +5669,18 @@
             "tools/BotSim/SelfTest.CalculationOutputs.cs": "b6c29678332b9f8014710af24db0be8be9faef305c9de6e66f285f21ae4bb14e",
             "tools/BotSim/SelfTest.cs": "783283f6ecb3c44dd3e27894dcf67b467d6a3af18ba7ebce54f5d6bdf27f2974"
           }
+        },
+        {
+          "batch": "training-choice-policy-adapter",
+          "proof_path": "D:\\Codex Workshop\\kards-install-review\\choice-adapter-prior-scope-revalidation.json",
+          "proof_sha256": "61f8b9b237aed866b4226e4918851d30e5ed43b8dfc257c5f299a200d9ee5fa9",
+          "previous_source_bindings": {
+            "src/KLink.Bot/Effects/CardApi.cs": "24197f2546532d82d4cdfe02de764ed6e5ae9347d529a7c42b0f172da77be49e",
+            "src/KLink.Bot/Effects/CardApiDispatch.cs": "03080524c38f087e41d8baf7e01c3de8ec2343742b1daedced9d02535ef838fb",
+            "src/KLink.Bot/Engine/MatchEngine.cs": "8b32754076c45a546c4f39cf9971e909b254a705d675c2ca8a47eac13ac69cdd",
+            "tools/BotSim/SelfTest.CalculationOutputs.cs": "b6c29678332b9f8014710af24db0be8be9faef305c9de6e66f285f21ae4bb14e",
+            "tools/BotSim/SelfTest.cs": "653953911bfc661c238a7ed31f2423771283309dfe699bd8a2a9f050cd3d8f98"
+          }
         }
       ]
     },
@@ -5423,7 +5697,7 @@
       "client_exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
       "source_bindings": {
         "src/KLink.Bot/Effects/CardApi.cs": "24197f2546532d82d4cdfe02de764ed6e5ae9347d529a7c42b0f172da77be49e",
-        "tools/BotSim/SelfTest.cs": "653953911bfc661c238a7ed31f2423771283309dfe699bd8a2a9f050cd3d8f98",
+        "tools/BotSim/SelfTest.cs": "f7910a4db53928ae99ea4881058e461bb9a43317eb454290308b69cd355d3d26",
         "tools/BotSim/BotSim.csproj": "db6cc50ddeacd78dec69c303a2d455f882895793ff0f647ad96b193de82a331b",
         "tools/BotSim/SelfTest.DamageModifierFloor.cs": "8a81c4282440039ab29364ef23259cc52d40752ed049f1acf6f05c9693a581d6",
         "tools/BotSim/Fixtures/damage-modifier-final-floor-20261030.json": "729b0c454cf8bf4ff12abe2f4244cd7dbe6a3ee844ff5f3f4a63051ca7534ed7"
@@ -5454,7 +5728,8 @@
         "D:\\Codex Workshop\\kards-install-review\\training-greedy-prior-scope-revalidation.json": "19c5ac691f8dff7a848cac9aeee34ddb275cb0aec0ae6457b25ea8c0569f5593",
         "D:\\Codex Workshop\\kards-install-review\\rule548-prior-scope-revalidation.json": "66fa2507363d30d828e93f7896d97b9baefe9f777bfd89b31025de82544d7503",
         "D:\\Codex Workshop\\kards-install-review\\rule549-prior-scope-revalidation.json": "6e3a260bbce33809c8b515fc0afeb5064ae86e6cc2fd805d67192b2ac79c0127",
-        "D:\\Codex Workshop\\kards-install-review\\rule550-prior-scope-revalidation.json": "679319a7d11347697d3b70d0fa0f3d043d9a91635d5d24210ffe9bbb2b4e53c4"
+        "D:\\Codex Workshop\\kards-install-review\\rule550-prior-scope-revalidation.json": "679319a7d11347697d3b70d0fa0f3d043d9a91635d5d24210ffe9bbb2b4e53c4",
+        "D:\\Codex Workshop\\kards-install-review\\choice-adapter-prior-scope-revalidation.json": "61f8b9b237aed866b4226e4918851d30e5ed43b8dfc257c5f299a200d9ee5fa9"
       },
       "limitations": [
         "Final output lower bound only, scoped to valid action-process calls. IsActionProcess=false, invalid UObject/default wrappers and receiver lifetime are not certified.",
@@ -5560,6 +5835,18 @@
             "tools/BotSim/SelfTest.DamageModifierFloor.cs": "8a81c4282440039ab29364ef23259cc52d40752ed049f1acf6f05c9693a581d6",
             "tools/BotSim/Fixtures/damage-modifier-final-floor-20261030.json": "729b0c454cf8bf4ff12abe2f4244cd7dbe6a3ee844ff5f3f4a63051ca7534ed7"
           }
+        },
+        {
+          "batch": "training-choice-policy-adapter",
+          "proof_path": "D:\\Codex Workshop\\kards-install-review\\choice-adapter-prior-scope-revalidation.json",
+          "proof_sha256": "61f8b9b237aed866b4226e4918851d30e5ed43b8dfc257c5f299a200d9ee5fa9",
+          "previous_source_bindings": {
+            "src/KLink.Bot/Effects/CardApi.cs": "24197f2546532d82d4cdfe02de764ed6e5ae9347d529a7c42b0f172da77be49e",
+            "tools/BotSim/SelfTest.cs": "653953911bfc661c238a7ed31f2423771283309dfe699bd8a2a9f050cd3d8f98",
+            "tools/BotSim/BotSim.csproj": "db6cc50ddeacd78dec69c303a2d455f882895793ff0f647ad96b193de82a331b",
+            "tools/BotSim/SelfTest.DamageModifierFloor.cs": "8a81c4282440039ab29364ef23259cc52d40752ed049f1acf6f05c9693a581d6",
+            "tools/BotSim/Fixtures/damage-modifier-final-floor-20261030.json": "729b0c454cf8bf4ff12abe2f4244cd7dbe6a3ee844ff5f3f4a63051ca7534ed7"
+          }
         }
       ]
     },
@@ -5576,7 +5863,7 @@
       "client_exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
       "source_bindings": {
         "src/KLink.Bot/Effects/CardApi.cs": "24197f2546532d82d4cdfe02de764ed6e5ae9347d529a7c42b0f172da77be49e",
-        "tools/BotSim/SelfTest.cs": "653953911bfc661c238a7ed31f2423771283309dfe699bd8a2a9f050cd3d8f98",
+        "tools/BotSim/SelfTest.cs": "f7910a4db53928ae99ea4881058e461bb9a43317eb454290308b69cd355d3d26",
         "tools/BotSim/BotSim.csproj": "db6cc50ddeacd78dec69c303a2d455f882895793ff0f647ad96b193de82a331b",
         "tools/BotSim/SelfTest.DamageModifierDefault.cs": "0cc8eeef6703e4705e6a681e3b3517bf11fd890c2d82f205d66405677f67a37c",
         "tools/BotSim/Fixtures/damage-modifier-default-order-20261030.json": "60a6706cb5a7894d99ec009a90d7f712be3231dff9ed7e343656746e1d8e30e0",
@@ -5609,7 +5896,8 @@
         "D:\\Codex Workshop\\kards-install-review\\training-greedy-prior-scope-revalidation.json": "19c5ac691f8dff7a848cac9aeee34ddb275cb0aec0ae6457b25ea8c0569f5593",
         "D:\\Codex Workshop\\kards-install-review\\rule548-prior-scope-revalidation.json": "66fa2507363d30d828e93f7896d97b9baefe9f777bfd89b31025de82544d7503",
         "D:\\Codex Workshop\\kards-install-review\\rule549-prior-scope-revalidation.json": "6e3a260bbce33809c8b515fc0afeb5064ae86e6cc2fd805d67192b2ac79c0127",
-        "D:\\Codex Workshop\\kards-install-review\\rule550-prior-scope-revalidation.json": "679319a7d11347697d3b70d0fa0f3d043d9a91635d5d24210ffe9bbb2b4e53c4"
+        "D:\\Codex Workshop\\kards-install-review\\rule550-prior-scope-revalidation.json": "679319a7d11347697d3b70d0fa0f3d043d9a91635d5d24210ffe9bbb2b4e53c4",
+        "D:\\Codex Workshop\\kards-install-review\\choice-adapter-prior-scope-revalidation.json": "61f8b9b237aed866b4226e4918851d30e5ed43b8dfc257c5f299a200d9ee5fa9"
       },
       "limitations": [
         "Native proof covers the current BaseCardObject implementation leaf and selected loaded CDO virtual targets, not complete FFrame argument readers, ProcessEvent, malformed pointers, lifetime/GC or all live instances.",
@@ -5711,6 +5999,19 @@
             "tools/BotSim/Fixtures/damage-modifier-default-order-20261030.json": "60a6706cb5a7894d99ec009a90d7f712be3231dff9ed7e343656746e1d8e30e0",
             "klink bot/docs/card-ir.json": "526812fa8dc0934f1d6ecd3794053871fa6b701c2b5df3fd1edb3c38513ba2e9"
           }
+        },
+        {
+          "batch": "training-choice-policy-adapter",
+          "proof_path": "D:\\Codex Workshop\\kards-install-review\\choice-adapter-prior-scope-revalidation.json",
+          "proof_sha256": "61f8b9b237aed866b4226e4918851d30e5ed43b8dfc257c5f299a200d9ee5fa9",
+          "previous_source_bindings": {
+            "src/KLink.Bot/Effects/CardApi.cs": "24197f2546532d82d4cdfe02de764ed6e5ae9347d529a7c42b0f172da77be49e",
+            "tools/BotSim/SelfTest.cs": "653953911bfc661c238a7ed31f2423771283309dfe699bd8a2a9f050cd3d8f98",
+            "tools/BotSim/BotSim.csproj": "db6cc50ddeacd78dec69c303a2d455f882895793ff0f647ad96b193de82a331b",
+            "tools/BotSim/SelfTest.DamageModifierDefault.cs": "0cc8eeef6703e4705e6a681e3b3517bf11fd890c2d82f205d66405677f67a37c",
+            "tools/BotSim/Fixtures/damage-modifier-default-order-20261030.json": "60a6706cb5a7894d99ec009a90d7f712be3231dff9ed7e343656746e1d8e30e0",
+            "klink bot/docs/card-ir.json": "526812fa8dc0934f1d6ecd3794053871fa6b701c2b5df3fd1edb3c38513ba2e9"
+          }
         }
       ]
     },
@@ -5726,7 +6027,7 @@
       "report_sha256": "26e66bc55748cf56a1ce07c851f3b17ed49886ebd8ab07bc895e039548948405",
       "client_exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
       "source_bindings": {
-        "tools/BotSim/SelfTest.cs": "653953911bfc661c238a7ed31f2423771283309dfe699bd8a2a9f050cd3d8f98",
+        "tools/BotSim/SelfTest.cs": "f7910a4db53928ae99ea4881058e461bb9a43317eb454290308b69cd355d3d26",
         "tools/BotSim/BotSim.csproj": "db6cc50ddeacd78dec69c303a2d455f882895793ff0f647ad96b193de82a331b",
         "tools/BotSim/SelfTest.DamageModifierOverrides.cs": "c1cca93c3bbe32c4b310f9b23c36d8bad2ad39b3b44504819b53a9425f85a74a",
         "tools/BotSim/Fixtures/damage-modifier-own-overrides-20261030.json": "a0cfed781ae4ae215802a5a973ce1e85c4e962f3220a6d7f9a9839511d2ec044",
@@ -5757,7 +6058,8 @@
         "D:\\Codex Workshop\\kards-install-review\\training-greedy-prior-scope-revalidation.json": "19c5ac691f8dff7a848cac9aeee34ddb275cb0aec0ae6457b25ea8c0569f5593",
         "D:\\Codex Workshop\\kards-install-review\\rule548-prior-scope-revalidation.json": "66fa2507363d30d828e93f7896d97b9baefe9f777bfd89b31025de82544d7503",
         "D:\\Codex Workshop\\kards-install-review\\rule549-prior-scope-revalidation.json": "6e3a260bbce33809c8b515fc0afeb5064ae86e6cc2fd805d67192b2ac79c0127",
-        "D:\\Codex Workshop\\kards-install-review\\rule550-prior-scope-revalidation.json": "679319a7d11347697d3b70d0fa0f3d043d9a91635d5d24210ffe9bbb2b4e53c4"
+        "D:\\Codex Workshop\\kards-install-review\\rule550-prior-scope-revalidation.json": "679319a7d11347697d3b70d0fa0f3d043d9a91635d5d24210ffe9bbb2b4e53c4",
+        "D:\\Codex Workshop\\kards-install-review\\choice-adapter-prior-scope-revalidation.json": "61f8b9b237aed866b4226e4918851d30e5ed43b8dfc257c5f299a200d9ee5fa9"
       },
       "limitations": [
         "Scope is the three current own OnDealDamageAddDamageAfterCalc bodies and supplied stable scalar/predicate cases. No whole-card, legal-deck/PvP eligibility or current card-value certification.",
@@ -5862,6 +6164,22 @@
             "src/KLink.Bot/Cards/CardDatabase.cs": "1a80df1c84f12e0ee362f41eb6949f34ea00d028bd954db2aa1ecf6dd34059a6",
             "klink bot/docs/card-ir.json": "526812fa8dc0934f1d6ecd3794053871fa6b701c2b5df3fd1edb3c38513ba2e9"
           }
+        },
+        {
+          "batch": "training-choice-policy-adapter",
+          "proof_path": "D:\\Codex Workshop\\kards-install-review\\choice-adapter-prior-scope-revalidation.json",
+          "proof_sha256": "61f8b9b237aed866b4226e4918851d30e5ed43b8dfc257c5f299a200d9ee5fa9",
+          "previous_source_bindings": {
+            "tools/BotSim/SelfTest.cs": "653953911bfc661c238a7ed31f2423771283309dfe699bd8a2a9f050cd3d8f98",
+            "tools/BotSim/BotSim.csproj": "db6cc50ddeacd78dec69c303a2d455f882895793ff0f647ad96b193de82a331b",
+            "tools/BotSim/SelfTest.DamageModifierOverrides.cs": "c1cca93c3bbe32c4b310f9b23c36d8bad2ad39b3b44504819b53a9425f85a74a",
+            "tools/BotSim/Fixtures/damage-modifier-own-overrides-20261030.json": "a0cfed781ae4ae215802a5a973ce1e85c4e962f3220a6d7f9a9839511d2ec044",
+            "src/KLink.Bot/Effects/CardApi.cs": "24197f2546532d82d4cdfe02de764ed6e5ae9347d529a7c42b0f172da77be49e",
+            "src/KLink.Bot/Effects/CardApiDispatch.cs": "03080524c38f087e41d8baf7e01c3de8ec2343742b1daedced9d02535ef838fb",
+            "src/KLink.Bot/Effects/Blueprint/KismetVm.cs": "f831c4f23b4ca4db1db08df6b6f75a0d43e9a0dd96b6a8e1d63a3ceff1e2b150",
+            "src/KLink.Bot/Cards/CardDatabase.cs": "1a80df1c84f12e0ee362f41eb6949f34ea00d028bd954db2aa1ecf6dd34059a6",
+            "klink bot/docs/card-ir.json": "526812fa8dc0934f1d6ecd3794053871fa6b701c2b5df3fd1edb3c38513ba2e9"
+          }
         }
       ]
     },
@@ -5878,7 +6196,7 @@
       "client_exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
       "source_bindings": {
         "src/KLink.Bot/Effects/CardApi.cs": "24197f2546532d82d4cdfe02de764ed6e5ae9347d529a7c42b0f172da77be49e",
-        "tools/BotSim/SelfTest.cs": "653953911bfc661c238a7ed31f2423771283309dfe699bd8a2a9f050cd3d8f98",
+        "tools/BotSim/SelfTest.cs": "f7910a4db53928ae99ea4881058e461bb9a43317eb454290308b69cd355d3d26",
         "tools/BotSim/BotSim.csproj": "db6cc50ddeacd78dec69c303a2d455f882895793ff0f647ad96b193de82a331b",
         "tools/BotSim/SelfTest.DamageObserverChain.cs": "def2edaf6dc710bd2a718d90248114a076ab22e7660df7ea7b0d377e93eb5fb1",
         "tools/BotSim/Fixtures/damage-observer-chain-20261030.json": "ee4978e4fc422b991aa6bcd3553d895a12ec6bb0f4fc7833320683802964f702",
@@ -5905,7 +6223,8 @@
         "D:\\Codex Workshop\\kards-install-review\\training-greedy-prior-scope-revalidation.json": "19c5ac691f8dff7a848cac9aeee34ddb275cb0aec0ae6457b25ea8c0569f5593",
         "D:\\Codex Workshop\\kards-install-review\\rule548-prior-scope-revalidation.json": "66fa2507363d30d828e93f7896d97b9baefe9f777bfd89b31025de82544d7503",
         "D:\\Codex Workshop\\kards-install-review\\rule549-prior-scope-revalidation.json": "6e3a260bbce33809c8b515fc0afeb5064ae86e6cc2fd805d67192b2ac79c0127",
-        "D:\\Codex Workshop\\kards-install-review\\rule550-prior-scope-revalidation.json": "679319a7d11347697d3b70d0fa0f3d043d9a91635d5d24210ffe9bbb2b4e53c4"
+        "D:\\Codex Workshop\\kards-install-review\\rule550-prior-scope-revalidation.json": "679319a7d11347697d3b70d0fa0f3d043d9a91635d5d24210ffe9bbb2b4e53c4",
+        "D:\\Codex Workshop\\kards-install-review\\choice-adapter-prior-scope-revalidation.json": "61f8b9b237aed866b4226e4918851d30e5ed43b8dfc257c5f299a200d9ee5fa9"
       },
       "limitations": [
         "The supplied-array chain is validated, not actual Unreal TSet registration iteration. Fixture logical labels20..22 are remapped to ascending simulator IDs to supply every requested permutation; this does not claim native iteration sorts IDs.",
@@ -5980,6 +6299,19 @@
             "tools/BotSim/Fixtures/damage-observer-chain-20261030.json": "ee4978e4fc422b991aa6bcd3553d895a12ec6bb0f4fc7833320683802964f702",
             "src/KLink.Bot/Engine/GameState.cs": "4de9bc66ae9e38684d129778cc7e220ba43e25205c7b9920b5e1b0aa2a31f143"
           }
+        },
+        {
+          "batch": "training-choice-policy-adapter",
+          "proof_path": "D:\\Codex Workshop\\kards-install-review\\choice-adapter-prior-scope-revalidation.json",
+          "proof_sha256": "61f8b9b237aed866b4226e4918851d30e5ed43b8dfc257c5f299a200d9ee5fa9",
+          "previous_source_bindings": {
+            "src/KLink.Bot/Effects/CardApi.cs": "24197f2546532d82d4cdfe02de764ed6e5ae9347d529a7c42b0f172da77be49e",
+            "tools/BotSim/SelfTest.cs": "653953911bfc661c238a7ed31f2423771283309dfe699bd8a2a9f050cd3d8f98",
+            "tools/BotSim/BotSim.csproj": "db6cc50ddeacd78dec69c303a2d455f882895793ff0f647ad96b193de82a331b",
+            "tools/BotSim/SelfTest.DamageObserverChain.cs": "def2edaf6dc710bd2a718d90248114a076ab22e7660df7ea7b0d377e93eb5fb1",
+            "tools/BotSim/Fixtures/damage-observer-chain-20261030.json": "ee4978e4fc422b991aa6bcd3553d895a12ec6bb0f4fc7833320683802964f702",
+            "src/KLink.Bot/Engine/GameState.cs": "4de9bc66ae9e38684d129778cc7e220ba43e25205c7b9920b5e1b0aa2a31f143"
+          }
         }
       ]
     },
@@ -5996,7 +6328,7 @@
       "client_exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
       "source_bindings": {
         "src/KLink.Bot/Effects/Blueprint/KismetIr.cs": "94370376b702631289a4ff362e054e962d220f302dc13d9d2658a45cf72a3e86",
-        "tools/BotSim/SelfTest.cs": "653953911bfc661c238a7ed31f2423771283309dfe699bd8a2a9f050cd3d8f98",
+        "tools/BotSim/SelfTest.cs": "f7910a4db53928ae99ea4881058e461bb9a43317eb454290308b69cd355d3d26",
         "tools/BotSim/SelfTest.EntryReturnClosure.cs": "5ba1193c27144a2a9e9553f8f82277a593fca0ce4e323b97dcc04072dfc93403",
         "src/KLink.Bot/Effects/Blueprint/KismetVm.cs": "f831c4f23b4ca4db1db08df6b6f75a0d43e9a0dd96b6a8e1d63a3ceff1e2b150",
         "klink bot/docs/card-ir.json": "526812fa8dc0934f1d6ecd3794053871fa6b701c2b5df3fd1edb3c38513ba2e9",
@@ -6034,7 +6366,8 @@
         "D:\\Codex Workshop\\kards-install-review\\training-greedy-prior-scope-revalidation.json": "19c5ac691f8dff7a848cac9aeee34ddb275cb0aec0ae6457b25ea8c0569f5593",
         "D:\\Codex Workshop\\kards-install-review\\rule548-prior-scope-revalidation.json": "66fa2507363d30d828e93f7896d97b9baefe9f777bfd89b31025de82544d7503",
         "D:\\Codex Workshop\\kards-install-review\\rule549-prior-scope-revalidation.json": "6e3a260bbce33809c8b515fc0afeb5064ae86e6cc2fd805d67192b2ac79c0127",
-        "D:\\Codex Workshop\\kards-install-review\\rule550-prior-scope-revalidation.json": "679319a7d11347697d3b70d0fa0f3d043d9a91635d5d24210ffe9bbb2b4e53c4"
+        "D:\\Codex Workshop\\kards-install-review\\rule550-prior-scope-revalidation.json": "679319a7d11347697d3b70d0fa0f3d043d9a91635d5d24210ffe9bbb2b4e53c4",
+        "D:\\Codex Workshop\\kards-install-review\\choice-adapter-prior-scope-revalidation.json": "61f8b9b237aed866b4226e4918851d30e5ed43b8dfc257c5f299a200d9ee5fa9"
       },
       "limitations": [
         "Static IR census covers current repository1609 cards with entrypoints:1339 affected entries on630 cards add exactly one existing terminal Return. Only two current client ubergraphs/event stubs were independently recaptured; no claim all630 current asset versions or full event semantics match.",
@@ -6100,6 +6433,20 @@
             "tools/NNTrain/Program.cs": "bc1aba6ff7a8ed0b0a5c5059dbf0c04fd9da99deb54cc50ea7acccc6dd31e6dd",
             "tools/NNTrain/TrainingAdmission.cs": "77b439193f835b6a10fa6839b310fc2d54c528ad37d66d40fb4f5f1e982b5c07"
           }
+        },
+        {
+          "batch": "training-choice-policy-adapter",
+          "proof_path": "D:\\Codex Workshop\\kards-install-review\\choice-adapter-prior-scope-revalidation.json",
+          "proof_sha256": "61f8b9b237aed866b4226e4918851d30e5ed43b8dfc257c5f299a200d9ee5fa9",
+          "previous_source_bindings": {
+            "src/KLink.Bot/Effects/Blueprint/KismetIr.cs": "94370376b702631289a4ff362e054e962d220f302dc13d9d2658a45cf72a3e86",
+            "tools/BotSim/SelfTest.cs": "653953911bfc661c238a7ed31f2423771283309dfe699bd8a2a9f050cd3d8f98",
+            "tools/BotSim/SelfTest.EntryReturnClosure.cs": "5ba1193c27144a2a9e9553f8f82277a593fca0ce4e323b97dcc04072dfc93403",
+            "src/KLink.Bot/Effects/Blueprint/KismetVm.cs": "f831c4f23b4ca4db1db08df6b6f75a0d43e9a0dd96b6a8e1d63a3ceff1e2b150",
+            "klink bot/docs/card-ir.json": "526812fa8dc0934f1d6ecd3794053871fa6b701c2b5df3fd1edb3c38513ba2e9",
+            "tools/NNTrain/Program.cs": "bc1aba6ff7a8ed0b0a5c5059dbf0c04fd9da99deb54cc50ea7acccc6dd31e6dd",
+            "tools/NNTrain/TrainingAdmission.cs": "77b439193f835b6a10fa6839b310fc2d54c528ad37d66d40fb4f5f1e982b5c07"
+          }
         }
       ]
     },
@@ -6118,7 +6465,7 @@
         "src/KLink.Bot/Effects/Blueprint/KismetIr.cs": "94370376b702631289a4ff362e054e962d220f302dc13d9d2658a45cf72a3e86",
         "src/KLink.Bot/Effects/Blueprint/KismetVm.cs": "f831c4f23b4ca4db1db08df6b6f75a0d43e9a0dd96b6a8e1d63a3ceff1e2b150",
         "src/KLink.Bot/KLink.Bot.csproj": "31477d90461cdd8791496ebef279b075845f52580d3ed369bead672dd94b94ef",
-        "tools/BotSim/SelfTest.cs": "653953911bfc661c238a7ed31f2423771283309dfe699bd8a2a9f050cd3d8f98",
+        "tools/BotSim/SelfTest.cs": "f7910a4db53928ae99ea4881058e461bb9a43317eb454290308b69cd355d3d26",
         "tools/BotSim/DispatchGap.cs": "9092a217505832ca66b40ffe0e2ef74ad9bfbe7a78575106c8ef081485463e3f",
         "src/KLink.Bot/Effects/Blueprint/KismetNativeDefaults.cs": "07f82fce7697c8654b123a1583c46470cbebdf27c94acc7a9716de4124f3009d",
         "tools/BotSim/SelfTest.LiteralAndNativeDefault.cs": "48421e683642513a1be05295bb2019467830d7300f13a5d653c3079ac4c16ec8",
@@ -6158,7 +6505,8 @@
         "D:\\Codex Workshop\\kards-install-review\\rule548-prior-scope-revalidation.json": "66fa2507363d30d828e93f7896d97b9baefe9f777bfd89b31025de82544d7503",
         "D:\\Codex Workshop\\kards-install-review\\record-rule548-batch.py": "a639b7643642f466a5367906a4efa1df856825111e0a01b9c2d1e8491c13f1d6",
         "D:\\Codex Workshop\\kards-install-review\\rule549-prior-scope-revalidation.json": "6e3a260bbce33809c8b515fc0afeb5064ae86e6cc2fd805d67192b2ac79c0127",
-        "D:\\Codex Workshop\\kards-install-review\\rule550-prior-scope-revalidation.json": "679319a7d11347697d3b70d0fa0f3d043d9a91635d5d24210ffe9bbb2b4e53c4"
+        "D:\\Codex Workshop\\kards-install-review\\rule550-prior-scope-revalidation.json": "679319a7d11347697d3b70d0fa0f3d043d9a91635d5d24210ffe9bbb2b4e53c4",
+        "D:\\Codex Workshop\\kards-install-review\\choice-adapter-prior-scope-revalidation.json": "61f8b9b237aed866b4226e4918851d30e5ed43b8dfc257c5f299a200d9ee5fa9"
       },
       "limitations": [
         "The empty-event contract covers only exact two card names and OnPlayedFromHand. Their selected current classes have no own reflected functions, share BaseCardObject and the same ProcessEvent target; copied-code tests establish the non-native scriptless early return. Keywords, other events, all PvP behavior and entire cards are not certified.",
@@ -6201,6 +6549,25 @@
             "src/KLink.Bot/Effects/Blueprint/KismetNativeDefaults.cs": "07f82fce7697c8654b123a1583c46470cbebdf27c94acc7a9716de4124f3009d",
             "tools/BotSim/SelfTest.LiteralAndNativeDefault.cs": "48421e683642513a1be05295bb2019467830d7300f13a5d653c3079ac4c16ec8",
             "klink bot/docs/card-ir-native-defaults.json": "41a37ceda71a5aa7c8a2fe853c4263f935b7fd8605970467b7cf1fe3d5f810af",
+            "klink bot/docs/card-ir.json": "526812fa8dc0934f1d6ecd3794053871fa6b701c2b5df3fd1edb3c38513ba2e9",
+            "klink bot/docs/cards.live.json": "3550dc76eb0414c500166875f45909077aeeb3ea4d229b9b0ba9c66a81987c4b",
+            "tools/NNTrain/TrainingAdmission.cs": "77b439193f835b6a10fa6839b310fc2d54c528ad37d66d40fb4f5f1e982b5c07",
+            "tools/NNTrain/Program.cs": "bc1aba6ff7a8ed0b0a5c5059dbf0c04fd9da99deb54cc50ea7acccc6dd31e6dd"
+          }
+        },
+        {
+          "batch": "training-choice-policy-adapter",
+          "proof_path": "D:\\Codex Workshop\\kards-install-review\\choice-adapter-prior-scope-revalidation.json",
+          "proof_sha256": "61f8b9b237aed866b4226e4918851d30e5ed43b8dfc257c5f299a200d9ee5fa9",
+          "previous_source_bindings": {
+            "src/KLink.Bot/Effects/Blueprint/KismetIr.cs": "94370376b702631289a4ff362e054e962d220f302dc13d9d2658a45cf72a3e86",
+            "src/KLink.Bot/Effects/Blueprint/KismetVm.cs": "f831c4f23b4ca4db1db08df6b6f75a0d43e9a0dd96b6a8e1d63a3ceff1e2b150",
+            "src/KLink.Bot/KLink.Bot.csproj": "31477d90461cdd8791496ebef279b075845f52580d3ed369bead672dd94b94ef",
+            "tools/BotSim/SelfTest.cs": "653953911bfc661c238a7ed31f2423771283309dfe699bd8a2a9f050cd3d8f98",
+            "tools/BotSim/DispatchGap.cs": "9092a217505832ca66b40ffe0e2ef74ad9bfbe7a78575106c8ef081485463e3f",
+            "src/KLink.Bot/Effects/Blueprint/KismetNativeDefaults.cs": "07f82fce7697c8654b123a1583c46470cbebdf27c94acc7a9716de4124f3009d",
+            "tools/BotSim/SelfTest.LiteralAndNativeDefault.cs": "48421e683642513a1be05295bb2019467830d7300f13a5d653c3079ac4c16ec8",
+            "klink bot/docs/card-ir-native-defaults.json": "3319fb2d114a76f38356a8c726caa4dd56fe13f9283e50cc0f0d56a95986455b",
             "klink bot/docs/card-ir.json": "526812fa8dc0934f1d6ecd3794053871fa6b701c2b5df3fd1edb3c38513ba2e9",
             "klink bot/docs/cards.live.json": "3550dc76eb0414c500166875f45909077aeeb3ea4d229b9b0ba9c66a81987c4b",
             "tools/NNTrain/TrainingAdmission.cs": "77b439193f835b6a10fa6839b310fc2d54c528ad37d66d40fb4f5f1e982b5c07",
@@ -6224,7 +6591,7 @@
         "src/KLink.Bot/Effects/Blueprint/KismetIr.cs": "94370376b702631289a4ff362e054e962d220f302dc13d9d2658a45cf72a3e86",
         "src/KLink.Bot/Effects/Blueprint/KismetVm.cs": "f831c4f23b4ca4db1db08df6b6f75a0d43e9a0dd96b6a8e1d63a3ceff1e2b150",
         "src/KLink.Bot/KLink.Bot.csproj": "31477d90461cdd8791496ebef279b075845f52580d3ed369bead672dd94b94ef",
-        "tools/BotSim/SelfTest.cs": "653953911bfc661c238a7ed31f2423771283309dfe699bd8a2a9f050cd3d8f98",
+        "tools/BotSim/SelfTest.cs": "f7910a4db53928ae99ea4881058e461bb9a43317eb454290308b69cd355d3d26",
         "tools/BotSim/DispatchGap.cs": "9092a217505832ca66b40ffe0e2ef74ad9bfbe7a78575106c8ef081485463e3f",
         "src/KLink.Bot/Effects/Blueprint/KismetNativeDefaults.cs": "07f82fce7697c8654b123a1583c46470cbebdf27c94acc7a9716de4124f3009d",
         "tools/BotSim/SelfTest.LiteralAndNativeDefault.cs": "48421e683642513a1be05295bb2019467830d7300f13a5d653c3079ac4c16ec8",
@@ -6264,7 +6631,8 @@
         "D:\\Codex Workshop\\kards-install-review\\rule548-prior-scope-revalidation.json": "66fa2507363d30d828e93f7896d97b9baefe9f777bfd89b31025de82544d7503",
         "D:\\Codex Workshop\\kards-install-review\\record-rule548-batch.py": "a639b7643642f466a5367906a4efa1df856825111e0a01b9c2d1e8491c13f1d6",
         "D:\\Codex Workshop\\kards-install-review\\rule549-prior-scope-revalidation.json": "6e3a260bbce33809c8b515fc0afeb5064ae86e6cc2fd805d67192b2ac79c0127",
-        "D:\\Codex Workshop\\kards-install-review\\rule550-prior-scope-revalidation.json": "679319a7d11347697d3b70d0fa0f3d043d9a91635d5d24210ffe9bbb2b4e53c4"
+        "D:\\Codex Workshop\\kards-install-review\\rule550-prior-scope-revalidation.json": "679319a7d11347697d3b70d0fa0f3d043d9a91635d5d24210ffe9bbb2b4e53c4",
+        "D:\\Codex Workshop\\kards-install-review\\choice-adapter-prior-scope-revalidation.json": "61f8b9b237aed866b4226e4918851d30e5ed43b8dfc257c5f299a200d9ee5fa9"
       },
       "limitations": [
         "The empty-event contract covers only exact two card names and OnPlayedFromHand. Their selected current classes have no own reflected functions, share BaseCardObject and the same ProcessEvent target; copied-code tests establish the non-native scriptless early return. Keywords, other events, all PvP behavior and entire cards are not certified.",
@@ -6312,6 +6680,25 @@
             "tools/NNTrain/TrainingAdmission.cs": "77b439193f835b6a10fa6839b310fc2d54c528ad37d66d40fb4f5f1e982b5c07",
             "tools/NNTrain/Program.cs": "bc1aba6ff7a8ed0b0a5c5059dbf0c04fd9da99deb54cc50ea7acccc6dd31e6dd"
           }
+        },
+        {
+          "batch": "training-choice-policy-adapter",
+          "proof_path": "D:\\Codex Workshop\\kards-install-review\\choice-adapter-prior-scope-revalidation.json",
+          "proof_sha256": "61f8b9b237aed866b4226e4918851d30e5ed43b8dfc257c5f299a200d9ee5fa9",
+          "previous_source_bindings": {
+            "src/KLink.Bot/Effects/Blueprint/KismetIr.cs": "94370376b702631289a4ff362e054e962d220f302dc13d9d2658a45cf72a3e86",
+            "src/KLink.Bot/Effects/Blueprint/KismetVm.cs": "f831c4f23b4ca4db1db08df6b6f75a0d43e9a0dd96b6a8e1d63a3ceff1e2b150",
+            "src/KLink.Bot/KLink.Bot.csproj": "31477d90461cdd8791496ebef279b075845f52580d3ed369bead672dd94b94ef",
+            "tools/BotSim/SelfTest.cs": "653953911bfc661c238a7ed31f2423771283309dfe699bd8a2a9f050cd3d8f98",
+            "tools/BotSim/DispatchGap.cs": "9092a217505832ca66b40ffe0e2ef74ad9bfbe7a78575106c8ef081485463e3f",
+            "src/KLink.Bot/Effects/Blueprint/KismetNativeDefaults.cs": "07f82fce7697c8654b123a1583c46470cbebdf27c94acc7a9716de4124f3009d",
+            "tools/BotSim/SelfTest.LiteralAndNativeDefault.cs": "48421e683642513a1be05295bb2019467830d7300f13a5d653c3079ac4c16ec8",
+            "klink bot/docs/card-ir-native-defaults.json": "3319fb2d114a76f38356a8c726caa4dd56fe13f9283e50cc0f0d56a95986455b",
+            "klink bot/docs/card-ir.json": "526812fa8dc0934f1d6ecd3794053871fa6b701c2b5df3fd1edb3c38513ba2e9",
+            "klink bot/docs/cards.live.json": "3550dc76eb0414c500166875f45909077aeeb3ea4d229b9b0ba9c66a81987c4b",
+            "tools/NNTrain/TrainingAdmission.cs": "77b439193f835b6a10fa6839b310fc2d54c528ad37d66d40fb4f5f1e982b5c07",
+            "tools/NNTrain/Program.cs": "bc1aba6ff7a8ed0b0a5c5059dbf0c04fd9da99deb54cc50ea7acccc6dd31e6dd"
+          }
         }
       ]
     },
@@ -6328,7 +6715,7 @@
       "client_exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
       "source_bindings": {
         "src/KLink.Bot/Effects/Blueprint/KismetVm.cs": "f831c4f23b4ca4db1db08df6b6f75a0d43e9a0dd96b6a8e1d63a3ceff1e2b150",
-        "tools/BotSim/SelfTest.cs": "653953911bfc661c238a7ed31f2423771283309dfe699bd8a2a9f050cd3d8f98",
+        "tools/BotSim/SelfTest.cs": "f7910a4db53928ae99ea4881058e461bb9a43317eb454290308b69cd355d3d26",
         "tools/BotSim/DispatchGap.cs": "9092a217505832ca66b40ffe0e2ef74ad9bfbe7a78575106c8ef081485463e3f",
         "klink bot/docs/card-ir-native-defaults.json": "3319fb2d114a76f38356a8c726caa4dd56fe13f9283e50cc0f0d56a95986455b",
         "src/KLink.Bot/Effects/Blueprint/KismetNativeDefaults.cs": "07f82fce7697c8654b123a1583c46470cbebdf27c94acc7a9716de4124f3009d",
@@ -6379,7 +6766,8 @@
         "D:\\Codex Workshop\\kards-install-review\\verify-rule549-gap.py": "d7998b583e13901841204ac02698dcf05ed5b2e3adeee9f24a0b2b8715e50568",
         "D:\\Codex Workshop\\kards-install-review\\rule549-prior-scope-revalidation.json": "6e3a260bbce33809c8b515fc0afeb5064ae86e6cc2fd805d67192b2ac79c0127",
         "D:\\Codex Workshop\\kards-install-review\\record-rule549-batch.py": "7a97bfcb82687a7ab68067f0ab9acffb4090fd833a9fff628c524ee42f711e6a",
-        "D:\\Codex Workshop\\kards-install-review\\rule550-prior-scope-revalidation.json": "679319a7d11347697d3b70d0fa0f3d043d9a91635d5d24210ffe9bbb2b4e53c4"
+        "D:\\Codex Workshop\\kards-install-review\\rule550-prior-scope-revalidation.json": "679319a7d11347697d3b70d0fa0f3d043d9a91635d5d24210ffe9bbb2b4e53c4",
+        "D:\\Codex Workshop\\kards-install-review\\choice-adapter-prior-scope-revalidation.json": "61f8b9b237aed866b4226e4918851d30e5ed43b8dfc257c5f299a200d9ee5fa9"
       },
       "limitations": [
         "Only exact8selected card names and their empty OnPlayedFromHand event are added. No own reflected functions, common base and sameProcessEvent target support this bounded default; no keyword, other-event, variant or whole-card certification.",
@@ -6400,6 +6788,24 @@
             "tools/BotSim/SelfTest.cs": "783283f6ecb3c44dd3e27894dcf67b467d6a3af18ba7ebce54f5d6bdf27f2974",
             "tools/BotSim/DispatchGap.cs": "9092a217505832ca66b40ffe0e2ef74ad9bfbe7a78575106c8ef081485463e3f",
             "klink bot/docs/card-ir-native-defaults.json": "41a37ceda71a5aa7c8a2fe853c4263f935b7fd8605970467b7cf1fe3d5f810af",
+            "src/KLink.Bot/Effects/Blueprint/KismetNativeDefaults.cs": "07f82fce7697c8654b123a1583c46470cbebdf27c94acc7a9716de4124f3009d",
+            "src/KLink.Bot/Effects/Blueprint/KismetIr.cs": "94370376b702631289a4ff362e054e962d220f302dc13d9d2658a45cf72a3e86",
+            "tools/BotSim/SelfTest.TrainingBatchDefaults.cs": "4f9ed2c9bdd1587d925e3d31a059ab89077448475699d9efd9d7f3d767c6788c",
+            "klink bot/docs/card-ir.json": "526812fa8dc0934f1d6ecd3794053871fa6b701c2b5df3fd1edb3c38513ba2e9",
+            "klink bot/docs/cards.live.json": "3550dc76eb0414c500166875f45909077aeeb3ea4d229b9b0ba9c66a81987c4b",
+            "tools/NNTrain/TrainingAdmission.cs": "77b439193f835b6a10fa6839b310fc2d54c528ad37d66d40fb4f5f1e982b5c07",
+            "tools/NNTrain/Program.cs": "bc1aba6ff7a8ed0b0a5c5059dbf0c04fd9da99deb54cc50ea7acccc6dd31e6dd"
+          }
+        },
+        {
+          "batch": "training-choice-policy-adapter",
+          "proof_path": "D:\\Codex Workshop\\kards-install-review\\choice-adapter-prior-scope-revalidation.json",
+          "proof_sha256": "61f8b9b237aed866b4226e4918851d30e5ed43b8dfc257c5f299a200d9ee5fa9",
+          "previous_source_bindings": {
+            "src/KLink.Bot/Effects/Blueprint/KismetVm.cs": "f831c4f23b4ca4db1db08df6b6f75a0d43e9a0dd96b6a8e1d63a3ceff1e2b150",
+            "tools/BotSim/SelfTest.cs": "653953911bfc661c238a7ed31f2423771283309dfe699bd8a2a9f050cd3d8f98",
+            "tools/BotSim/DispatchGap.cs": "9092a217505832ca66b40ffe0e2ef74ad9bfbe7a78575106c8ef081485463e3f",
+            "klink bot/docs/card-ir-native-defaults.json": "3319fb2d114a76f38356a8c726caa4dd56fe13f9283e50cc0f0d56a95986455b",
             "src/KLink.Bot/Effects/Blueprint/KismetNativeDefaults.cs": "07f82fce7697c8654b123a1583c46470cbebdf27c94acc7a9716de4124f3009d",
             "src/KLink.Bot/Effects/Blueprint/KismetIr.cs": "94370376b702631289a4ff362e054e962d220f302dc13d9d2658a45cf72a3e86",
             "tools/BotSim/SelfTest.TrainingBatchDefaults.cs": "4f9ed2c9bdd1587d925e3d31a059ab89077448475699d9efd9d7f3d767c6788c",
@@ -6424,7 +6830,7 @@
       "client_exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
       "source_bindings": {
         "src/KLink.Bot/Effects/Blueprint/KismetVm.cs": "f831c4f23b4ca4db1db08df6b6f75a0d43e9a0dd96b6a8e1d63a3ceff1e2b150",
-        "tools/BotSim/SelfTest.cs": "653953911bfc661c238a7ed31f2423771283309dfe699bd8a2a9f050cd3d8f98",
+        "tools/BotSim/SelfTest.cs": "f7910a4db53928ae99ea4881058e461bb9a43317eb454290308b69cd355d3d26",
         "tools/BotSim/DispatchGap.cs": "9092a217505832ca66b40ffe0e2ef74ad9bfbe7a78575106c8ef081485463e3f",
         "klink bot/docs/card-ir-native-defaults.json": "3319fb2d114a76f38356a8c726caa4dd56fe13f9283e50cc0f0d56a95986455b",
         "src/KLink.Bot/Effects/Blueprint/KismetNativeDefaults.cs": "07f82fce7697c8654b123a1583c46470cbebdf27c94acc7a9716de4124f3009d",
@@ -6475,7 +6881,8 @@
         "D:\\Codex Workshop\\kards-install-review\\verify-rule549-gap.py": "d7998b583e13901841204ac02698dcf05ed5b2e3adeee9f24a0b2b8715e50568",
         "D:\\Codex Workshop\\kards-install-review\\rule549-prior-scope-revalidation.json": "6e3a260bbce33809c8b515fc0afeb5064ae86e6cc2fd805d67192b2ac79c0127",
         "D:\\Codex Workshop\\kards-install-review\\record-rule549-batch.py": "7a97bfcb82687a7ab68067f0ab9acffb4090fd833a9fff628c524ee42f711e6a",
-        "D:\\Codex Workshop\\kards-install-review\\rule550-prior-scope-revalidation.json": "679319a7d11347697d3b70d0fa0f3d043d9a91635d5d24210ffe9bbb2b4e53c4"
+        "D:\\Codex Workshop\\kards-install-review\\rule550-prior-scope-revalidation.json": "679319a7d11347697d3b70d0fa0f3d043d9a91635d5d24210ffe9bbb2b4e53c4",
+        "D:\\Codex Workshop\\kards-install-review\\choice-adapter-prior-scope-revalidation.json": "61f8b9b237aed866b4226e4918851d30e5ed43b8dfc257c5f299a200d9ee5fa9"
       },
       "limitations": [
         "Only exact8selected card names and their empty OnPlayedFromHand event are added. No own reflected functions, common base and sameProcessEvent target support this bounded default; no keyword, other-event, variant or whole-card certification.",
@@ -6504,6 +6911,24 @@
             "tools/NNTrain/TrainingAdmission.cs": "77b439193f835b6a10fa6839b310fc2d54c528ad37d66d40fb4f5f1e982b5c07",
             "tools/NNTrain/Program.cs": "bc1aba6ff7a8ed0b0a5c5059dbf0c04fd9da99deb54cc50ea7acccc6dd31e6dd"
           }
+        },
+        {
+          "batch": "training-choice-policy-adapter",
+          "proof_path": "D:\\Codex Workshop\\kards-install-review\\choice-adapter-prior-scope-revalidation.json",
+          "proof_sha256": "61f8b9b237aed866b4226e4918851d30e5ed43b8dfc257c5f299a200d9ee5fa9",
+          "previous_source_bindings": {
+            "src/KLink.Bot/Effects/Blueprint/KismetVm.cs": "f831c4f23b4ca4db1db08df6b6f75a0d43e9a0dd96b6a8e1d63a3ceff1e2b150",
+            "tools/BotSim/SelfTest.cs": "653953911bfc661c238a7ed31f2423771283309dfe699bd8a2a9f050cd3d8f98",
+            "tools/BotSim/DispatchGap.cs": "9092a217505832ca66b40ffe0e2ef74ad9bfbe7a78575106c8ef081485463e3f",
+            "klink bot/docs/card-ir-native-defaults.json": "3319fb2d114a76f38356a8c726caa4dd56fe13f9283e50cc0f0d56a95986455b",
+            "src/KLink.Bot/Effects/Blueprint/KismetNativeDefaults.cs": "07f82fce7697c8654b123a1583c46470cbebdf27c94acc7a9716de4124f3009d",
+            "src/KLink.Bot/Effects/Blueprint/KismetIr.cs": "94370376b702631289a4ff362e054e962d220f302dc13d9d2658a45cf72a3e86",
+            "tools/BotSim/SelfTest.TrainingBatchDefaults.cs": "4f9ed2c9bdd1587d925e3d31a059ab89077448475699d9efd9d7f3d767c6788c",
+            "klink bot/docs/card-ir.json": "526812fa8dc0934f1d6ecd3794053871fa6b701c2b5df3fd1edb3c38513ba2e9",
+            "klink bot/docs/cards.live.json": "3550dc76eb0414c500166875f45909077aeeb3ea4d229b9b0ba9c66a81987c4b",
+            "tools/NNTrain/TrainingAdmission.cs": "77b439193f835b6a10fa6839b310fc2d54c528ad37d66d40fb4f5f1e982b5c07",
+            "tools/NNTrain/Program.cs": "bc1aba6ff7a8ed0b0a5c5059dbf0c04fd9da99deb54cc50ea7acccc6dd31e6dd"
+          }
         }
       ]
     },
@@ -6520,7 +6945,7 @@
       "client_exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
       "source_bindings": {
         "klink bot/docs/card-ir-native-defaults.json": "3319fb2d114a76f38356a8c726caa4dd56fe13f9283e50cc0f0d56a95986455b",
-        "tools/BotSim/SelfTest.cs": "653953911bfc661c238a7ed31f2423771283309dfe699bd8a2a9f050cd3d8f98",
+        "tools/BotSim/SelfTest.cs": "f7910a4db53928ae99ea4881058e461bb9a43317eb454290308b69cd355d3d26",
         "tools/BotSim/SelfTest.SixNativeDefaults.cs": "16e74c24120725a128c213ab805ad1f6d3ead9c656a1ad69f3312530e81aa257",
         "src/KLink.Bot/Bots/GreedyBot.cs": "0a8a90ba6a31ed999ae5846eaf2edf2827186c82e9ed43ca3da273e02c5c4d9c",
         "src/KLink.Bot/Effects/Blueprint/KismetNativeDefaults.cs": "07f82fce7697c8654b123a1583c46470cbebdf27c94acc7a9716de4124f3009d",
@@ -6565,7 +6990,8 @@
         "D:\\Codex Workshop\\kards-install-review\\patch-rule550.py": "d4b9a001873817b4d854ad7aecbf649432ffcc0cc000569da42ad1dbb3a7d08e",
         "D:\\Codex Workshop\\kards-install-review\\rule550-prior-scope-revalidation.json": "679319a7d11347697d3b70d0fa0f3d043d9a91635d5d24210ffe9bbb2b4e53c4",
         "D:\\Codex Workshop\\kards-install-review\\rule550-worker-verified.json": "5fd0b10b1b1abdb1382bdd93aec34e0b2ce0edbf1b5efcc24ba82d5cec73084f",
-        "D:\\Codex Workshop\\kards-install-review\\record-rule550-batch.py": "8734c1f9116cf9617a24ebfdf5dddf4b649424cfc53f61581187c3a6c73a746f"
+        "D:\\Codex Workshop\\kards-install-review\\record-rule550-batch.py": "8734c1f9116cf9617a24ebfdf5dddf4b649424cfc53f61581187c3a6c73a746f",
+        "D:\\Codex Workshop\\kards-install-review\\choice-adapter-prior-scope-revalidation.json": "61f8b9b237aed866b4226e4918851d30e5ed43b8dfc257c5f299a200d9ee5fa9"
       },
       "limitations": [
         "Only6exact selected names and emptyOnPlayedFromHand programs added; no keyword,other-event,variant or whole-card certification.28copied-code cases include base+6classes times4objectflag values; nativebody live==disk recheck remains limited to selected capture.",
@@ -6573,6 +6999,27 @@
         "The3long episodes are simulator policy reproductions, not authoritative client replays. All500calls advance turns to501,pending0;last16turns have constantHQ/deck/fatigue values and alternatingQueenOwn return/draw pairs. Current raw selected graph/stub confirm target return-call shape only; downstream helper/full rules not newly certified.",
         "No automatic draw,forcedwinner,fatigue modification or admission exemption. Long episodes remainunfinished and rejected. Constanttail diagnostics do not prove mathematical state equivalence forever:customJson/countdown counters still change.",
         "Same1000healthsample improves974->997accepted,25328->26148rows;turns/samplecounts/VMfaults/unsupported and non-card-marker call counters match old sample per episode. This does not certify rule semantics or model strength, nor establish global completion percentage."
+      ],
+      "revalidations": [
+        {
+          "batch": "training-choice-policy-adapter",
+          "proof_path": "D:\\Codex Workshop\\kards-install-review\\choice-adapter-prior-scope-revalidation.json",
+          "proof_sha256": "61f8b9b237aed866b4226e4918851d30e5ed43b8dfc257c5f299a200d9ee5fa9",
+          "previous_source_bindings": {
+            "klink bot/docs/card-ir-native-defaults.json": "3319fb2d114a76f38356a8c726caa4dd56fe13f9283e50cc0f0d56a95986455b",
+            "tools/BotSim/SelfTest.cs": "653953911bfc661c238a7ed31f2423771283309dfe699bd8a2a9f050cd3d8f98",
+            "tools/BotSim/SelfTest.SixNativeDefaults.cs": "16e74c24120725a128c213ab805ad1f6d3ead9c656a1ad69f3312530e81aa257",
+            "src/KLink.Bot/Bots/GreedyBot.cs": "0a8a90ba6a31ed999ae5846eaf2edf2827186c82e9ed43ca3da273e02c5c4d9c",
+            "src/KLink.Bot/Effects/Blueprint/KismetNativeDefaults.cs": "07f82fce7697c8654b123a1583c46470cbebdf27c94acc7a9716de4124f3009d",
+            "src/KLink.Bot/Effects/Blueprint/KismetIr.cs": "94370376b702631289a4ff362e054e962d220f302dc13d9d2658a45cf72a3e86",
+            "src/KLink.Bot/Effects/Blueprint/KismetVm.cs": "f831c4f23b4ca4db1db08df6b6f75a0d43e9a0dd96b6a8e1d63a3ceff1e2b150",
+            "src/KLink.Bot/Engine/MatchEngine.cs": "8b32754076c45a546c4f39cf9971e909b254a705d675c2ca8a47eac13ac69cdd",
+            "klink bot/docs/card-ir.json": "526812fa8dc0934f1d6ecd3794053871fa6b701c2b5df3fd1edb3c38513ba2e9",
+            "klink bot/docs/cards.live.json": "3550dc76eb0414c500166875f45909077aeeb3ea4d229b9b0ba9c66a81987c4b",
+            "tools/NNTrain/TrainingAdmission.cs": "77b439193f835b6a10fa6839b310fc2d54c528ad37d66d40fb4f5f1e982b5c07",
+            "tools/NNTrain/Program.cs": "bc1aba6ff7a8ed0b0a5c5059dbf0c04fd9da99deb54cc50ea7acccc6dd31e6dd"
+          }
+        }
       ]
     }
   ],

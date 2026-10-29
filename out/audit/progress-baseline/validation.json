@@ -1,9 +1,9 @@
 {
   "date": "2026-10-30",
-  "batch": "RULE-549",
+  "batch": "training-choice-policy-adapter",
   "documentation_records": 549,
   "reports": 424,
-  "verification_scope": "Six exact empty played-event contracts and diagnosis of3long episodes;old27scopes preserved by inverse test/JSON proof and full987;1new partial scope. No engine/policy/winner/admission source changes. No whole-card/full-ABI certification.",
+  "verification_scope": "New opt-in synchronous choice-policy adapter;existing28partial scopes preserved by exact4test registrations and full991.100paired episodes/864choices match action trace/RNG/outcome/diagnostics. Engine/VM/IR/encoder/NNTrain unchanged;no rule promotion.",
   "baseline_counts": {
     "ledger_rule_records": 549,
     "json_reports": 424,
@@ -12,13 +12,13 @@
     "distinct_declared_file_paths": 5497,
     "file_binding_claims": 7788,
     "physical_files_hashed": 5466,
-    "bytes_hashed": 2125920053,
+    "bytes_hashed": 2125920423,
     "binding_states": {
-      "match": 7061,
-      "changed": 727
+      "match": 7060,
+      "changed": 728
     },
     "changed_binding_roles": {
-      "kernel_or_regression_source": 671,
+      "kernel_or_regression_source": 672,
       "other_audit_artifact": 16,
       "client_executable": 31,
       "captured_or_extracted_data": 1,
@@ -27,8 +27,8 @@
     },
     "distinct_changed_physical_files": 30,
     "report_provenance_states": {
-      "all_recognized_file_bindings_match": 174,
-      "declared_bindings_changed": 246,
+      "all_recognized_file_bindings_match": 173,
+      "declared_bindings_changed": 247,
       "no_recognized_file_bindings": 4
     },
     "report_version_states": {
@@ -70,15 +70,15 @@
     "remaining_work_percent": null
   },
   "tests": {
-    "core_selftest": 987,
+    "core_selftest": 991,
     "admission": 17,
     "baseline_tool": 20,
     "matrix_tool": 16
   },
   "no_semantic_certification_promotion": true,
   "files_sha256": {
-    "out/audit/progress-baseline/baseline.json": "684f70054a598a1c02b880b7fcfbdda414c6f0a52748039cd1417e697b8f88db",
-    "klink bot/docs/audit-work-plan.json": "45fafec60c3daee962347edd6584a5fafdc294c42b2612b3455896744962bb3d",
-    "out/training-readiness/six-default-events-progress-20261030.json": "6e187f3fe9787be3c73f2bc26b6bbea0b1ca64bd743c9dbc0ef28ae0eec34343"
+    "out/audit/progress-baseline/baseline.json": "464939b3a4b61a06df6e9ba48f3b9d1c0e9232c0502f3b1a5554d9d61ba6d0eb",
+    "klink bot/docs/audit-work-plan.json": "85ead1ff0d8b524da8af27c6742155c6c514b5f938fe8567dd3f2de134d637d4",
+    "out/training-readiness/choice-policy-adapter-20261030.json": "d7ddab2adfa53929c0fa7321ca6db80f0cb60614d68f0276f7c8ad3e5d6c00c8"
   }
 }

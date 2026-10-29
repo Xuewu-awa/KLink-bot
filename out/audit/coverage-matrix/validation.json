@@ -1,6 +1,6 @@
 {
   "date": "2026-10-30",
-  "batch": "RULE-549",
+  "batch": "training-choice-policy-adapter",
   "counts": {
     "cards": 2019,
     "cards_with_own_ir": 1709,
@@ -24,8 +24,8 @@
   },
   "tests": 16,
   "work_plan_synced": true,
-  "prior_partial_source_scopes_revalidated": 27,
-  "new_partial_units": 1,
-  "matrix_sha256": "3e9e0c5e26147df5bdd02f5984f1bc8968b64a3665f148440b649a530dd71442",
+  "prior_partial_source_scopes_revalidated": 28,
+  "new_partial_units": 0,
+  "matrix_sha256": "42c4ef48f86fd16006040edd108931319c0cfbb5351666d150b30ba3cf196226",
   "no_semantic_certification_promotion": true
 }

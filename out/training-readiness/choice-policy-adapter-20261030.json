@@ -1,0 +1,135 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-30",
+  "batch": "training-choice-policy-adapter",
+  "base_commit": "410170d77c4e7de517e81aac23e00550a8e3a1ba",
+  "game_rules_changed": false,
+  "production_dump_uses_adapter": false,
+  "rule_certification_promoted": false,
+  "interface": {
+    "version": 1,
+    "choice_kinds": [
+      "HandTarget",
+      "OfferedCard"
+    ],
+    "mode": "Synchronous callback, single thread, pure host policy",
+    "response": "Current offered index;HandTarget only:-1maps to existingID0reply",
+    "snapshot_fields": [
+      "index",
+      "cardID",
+      "name",
+      "attack",
+      "defense",
+      "kreditCost"
+    ],
+    "observation": "Read-only copy of StateEncoder.Encode(source.Owner),withSpec",
+    "ownership": "Reject existing5choice handlers or pending queue on attach;dispose removes only still-owned delegates",
+    "fault_contract": "Throw and incrementFaults on policy/index/reentry/actor errors;host must reject entire episode ifFaults>0 evenifVM catches"
+  },
+  "validation": {
+    "focused_groups": 4,
+    "core_selftests": 991,
+    "training_admission_checks": 17,
+    "paired_seeded_episodes": 100,
+    "action_trace_rng_turn_winner_diagnostics_observation_identical": true,
+    "completed_choices": 864,
+    "hand_choices": 93,
+    "offered_choices": 771,
+    "adapter_faults": 0,
+    "real_effect_paths": [
+      "handtarget includingID0/empty",
+      "multioffer deck",
+      "develop",
+      "forecast"
+    ],
+    "hidden_identity_invariance": "Opponent hand and both decks identity changes preserve actor observation;own-hand identity change is positivecontrol",
+    "worker_callbacks": 5,
+    "worker_literal_citations": 83,
+    "prior_partial_scopes_revalidated": 28
+  },
+  "limitations": [
+    "This is the synchronous choice sub-interface, not a complete decision environment. Existing NnPolicy enumerates a main-action superset, not a certified legal mask. No main-action stepping or every-decision training samples yet.",
+    "Inline/zero/singleton choices can bypass callbacks. Forecast is synchronous; no async suspension/resume/stale-response protocol. OfferedCard does not label deck/develop/forecast because existing hook lacks that metadata.",
+    "Host must monitorFaults and abort/reject erroneous episodes; NNTrain productiondump remains unchanged and does not yet record adapter-specific faults. No claim of integrated neural policy or complete RL pipeline.",
+    "Actor observations reuse existing745dim pooled encoder; this test does not certify complete information visibility,Intel/revealed-card handling,hidden counters or sufficient Markov state. Offered candidates are engine-supplied,not independently proven PvP-visible here.",
+    "Snapshot values/read-only collections prevent leaking mutable enginecards through the request. Hostdelegate can still capture arbitrary external references; this is not an OS/security sandbox. Policies must be synchronous,non-reentrant and pure.",
+    "100paired first-index runs are behavioral-preservation checks only,not rule fidelity or AI strength. Prior3QueenOwnlong episodes remain rejected; no winner/policy changes. Worker semantic labels from truncated excerpts are not adopted."
+  ],
+  "source_bindings": {
+    "src/KLink.Bot/Training/ChoicePolicyAdapter.cs": "fb29b28fc40d93dd3cc6a8d077c9dc5747aa982abeddbd1d6e78572fab3d0a4e",
+    "tools/BotSim/SelfTest.ChoicePolicyAdapter.cs": "d2a8180e63a6c45337fd615d60cee9b9c6f519b5ab66f4f028cfc06b0f8ee31b",
+    "tools/BotSim/SelfTest.cs": "f7910a4db53928ae99ea4881058e461bb9a43317eb454290308b69cd355d3d26",
+    "src/KLink.Bot/Engine/MatchEngine.cs": "8b32754076c45a546c4f39cf9971e909b254a705d675c2ca8a47eac13ac69cdd",
+    "src/KLink.Bot/Effects/CardApiDispatch.cs": "03080524c38f087e41d8baf7e01c3de8ec2343742b1daedced9d02535ef838fb",
+    "src/KLink.Bot/NN/StateEncoder.cs": "8da023351d65a32e1ca22ccf1dd9e86f86652316ffb6735b60374516752e90e7",
+    "src/KLink.Bot/Server/NnPolicy.cs": "e19ae39efd0660302652f6394cee7afcc1b72bc4e5e6807685efa87d114c0a13",
+    "tools/NNTrain/TrainingAdmission.cs": "77b439193f835b6a10fa6839b310fc2d54c528ad37d66d40fb4f5f1e982b5c07",
+    "tools/NNTrain/Program.cs": "bc1aba6ff7a8ed0b0a5c5059dbf0c04fd9da99deb54cc50ea7acccc6dd31e6dd"
+  },
+  "evidence_bindings": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\choice-adapter-worker\\MatchEngine-hooks.txt",
+      "sha256": "6881d01bac6270037bd61af334f8845227dfbd61b50cfbfd711e3b31739a7e87"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\choice-adapter-worker\\selection-call-sites.txt",
+      "sha256": "fb3efdd406ced20f38e9390b7384443b394b4e722a73fb5fefac4e042c56a213"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\choice-adapter-worker\\task.txt",
+      "sha256": "5669969d003504dc2751bd1d72ccc5102d7b0a8cf4ddc036baa69b1f358d08fe"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\choice-adapter-worker\\output.json",
+      "sha256": "c68637f3995d1efac182326c99514d6f24899f930542cf00ccddbae9cd41a70c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-choice-adapter-worker.py",
+      "sha256": "6e12a1faa3208d73d04988d683b4bc53c013c34256b94341a91af52c774a0230"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\choice-adapter-worker-verified.json",
+      "sha256": "8fd8c2b30af8b85d6896a0b5f45fb9f02fbb271df938a924f208da0aab4051b5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\ChoiceAdapterProbe\\Program.cs",
+      "sha256": "8b236aa7d025f1322af321ac10c88f6a5c9aeabd07a0c53e984e73ccfd489987"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\ChoiceAdapterProbe\\ChoiceAdapterProbe.csproj",
+      "sha256": "898fa414110d03a5d33cda4364e03bc1dbb3ea0042ba23aaaef0a6e78a6eb0e6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\choice-adapter-100-verified.json",
+      "sha256": "5a3e40f2495bce198d257fa8d3d6b4cdde2ac72cedf93c63fb1dc509f9674b35"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\choice-adapter-100.log",
+      "sha256": "718bed1fd72dc19d3801cc857e1b2bbbc0323a38a66f1918a0deca0c7e96d543"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\choice-adapter-focused.log",
+      "sha256": "7a19931f9806adc9d96afc83a1b58dd2fc1d7db9c2e3fec6ab7c42fa20edc811"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\choice-adapter-selftest.log",
+      "sha256": "2f166051608730151dbec5288ecad103cfd9d1983869f46db81eecd4d667f9b3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\choice-adapter-admission.log",
+      "sha256": "dfdbc57476e6274e3adb0e479837ffdb19aa367f13fcf3599c14a9c622842156"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule550-1000.bin.quality.json",
+      "sha256": "6a7a2878d483c2b2b305215aa10d2ddf8d3d3a7008068dd44d519c6984af7dfe"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\choice-adapter-prior-scope-revalidation.json",
+      "sha256": "61f8b9b237aed866b4226e4918851d30e5ed43b8dfc257c5f299a200d9ee5fa9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\record-choice-adapter.py",
+      "sha256": "dae82d2553bfcb5c785b7a8492e98f49cd2c66074330b83d660c54148983b1da"
+    }
+  ]
+}
