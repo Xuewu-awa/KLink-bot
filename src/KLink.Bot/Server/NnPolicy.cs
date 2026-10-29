@@ -69,6 +69,10 @@ public sealed class NnPolicy
 
     public NnPolicy(NnModel model, StateEncoder.CardVecs vecs, Side side, bool allowMoves, bool rollout)
     {
+        var contract = ValueTrainingContract.Read(model);
+        contract.RequireSampling(rollout ? "turn-end/v1" : "policy-and-choice-before/v1");
+        contract.RequireTarget("win");
+        contract.RequireRuntime();
         _model = model;
         _vecs = vecs;
         _side = side;

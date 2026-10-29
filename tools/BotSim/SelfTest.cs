@@ -20,6 +20,11 @@ internal static partial class SelfTest
 
     private static readonly List<Case> Cases = new()
     {
+        new("主动作与模型契约：结构候选与16维特征", MainCandidatesAreStructural),
+        new("主动作与模型契约：显式拒绝与错误", MainActionRejectionIsExplicit),
+        new("主动作与模型契约：四类根动作复现", MainActionsMirrorGreedy),
+        new("主动作与模型契约：模型分布与输入绑定", ValueModelDistributionChecks),
+        new("主动作与模型契约：模型头部规格拒绝", ValueModelHeaderChecks),
         new("决策采样驱动：单步主动作与待选门", GreedySingleStepBoundary),
         new("决策采样驱动：采样模式保持轨迹及every语义", DecisionSamplingPreservesEpisode),
         new("决策采样驱动：选牌错误独立上报", DecisionRunnerChoiceFault),

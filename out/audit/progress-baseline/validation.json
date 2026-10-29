@@ -1,9 +1,9 @@
 {
   "date": "2026-10-30",
-  "batch": "training-decision-sampling",
+  "batch": "main-action-model-contract",
   "documentation_records": 549,
   "reports": 424,
-  "verification_scope": "ProductionNNTrain synchronous adapter and bounded greedy-step sampling;old28partial scopes retained via exact source transformation proof/full994.100paired modes preserve frozen action traces/RNG/outcomes;turn2635bytesidentical,decision12610/every2=6329verified.Qualitygate2adds28testedchecks. No native rule promotion.",
+  "verification_scope": "Opt-in structural main-action API/16features and strict value-model contracts. Existing28partial scopes retained via exact source transforms/full999;engine/IR/VM/encoder unchanged.20mixed paired fixtures/3519roots match trace/RNG/outcome. Negative header regression and CLI sampling/legacy/runtime guards verified. No rule promotion.",
   "baseline_counts": {
     "ledger_rule_records": 549,
     "json_reports": 424,
@@ -12,20 +12,20 @@
     "distinct_declared_file_paths": 5497,
     "file_binding_claims": 7788,
     "physical_files_hashed": 5466,
-    "bytes_hashed": 2125924111,
+    "bytes_hashed": 2125926459,
     "binding_states": {
-      "match": 7051,
-      "changed": 737
+      "match": 7048,
+      "changed": 740
     },
     "changed_binding_roles": {
-      "kernel_or_regression_source": 673,
+      "kernel_or_regression_source": 676,
       "other_audit_artifact": 16,
       "client_executable": 31,
       "captured_or_extracted_data": 1,
       "parser_or_sdk_source": 12,
       "audit_tool_script": 4
     },
-    "distinct_changed_physical_files": 32,
+    "distinct_changed_physical_files": 34,
     "report_provenance_states": {
       "all_recognized_file_bindings_match": 173,
       "declared_bindings_changed": 247,
@@ -70,15 +70,15 @@
     "remaining_work_percent": null
   },
   "tests": {
-    "core_selftest": 994,
+    "core_selftest": 999,
     "admission": 28,
     "baseline_tool": 20,
     "matrix_tool": 16
   },
   "no_semantic_certification_promotion": true,
   "files_sha256": {
-    "out/audit/progress-baseline/baseline.json": "cb8853431955244fe1cefd02ecac1475aae8d5805c620dbf79621b0f57792e21",
-    "klink bot/docs/audit-work-plan.json": "c09e7376d2c4736154e02613ea9823f5c582b1fb401e7cd6e18ec2831f6ad257",
-    "out/training-readiness/decision-sampling-driver-20261030.json": "0c34c10b357642a900760eb729bbe424032af5121807109efdd26808eaaf455a"
+    "out/audit/progress-baseline/baseline.json": "e705880ba7aaab8eae4666c5d5743c69ba4d03b4f26698a416d4043f4480abf2",
+    "klink bot/docs/audit-work-plan.json": "6c4d9addb544b829d8a155561806d7835a6a50f67b3ada5321c93ad0d18b3aa1",
+    "out/training-readiness/main-action-model-contract-20261030.json": "021b9ebae750fd931ce73ae339c82fc8603c5dfb0d80d952340141a7c7eaedc9"
   }
 }

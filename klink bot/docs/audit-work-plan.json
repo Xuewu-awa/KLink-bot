@@ -482,15 +482,15 @@
     "active_plan": "klink bot/docs/训练闭环推进-20261030.md",
     "measurements": "out/training-readiness/baseline-20261030.json",
     "priority_order": [
-      "Generic main-action selection/execution contract and action features",
-      "Candidate-probe isolation and observation visibility contracts",
-      "Bind model metadata to sampling distribution and integrate learned policy",
-      "Async choice metadata and starterpoolclosure",
+      "Oracle-labeled main-action dataset and generic adapter rejection/fault admission",
+      "Runtime vector/data provenance and candidate-probe isolation",
+      "Action-policy model/features and observation visibility contracts",
+      "Complete ChooseOne/placement/target/async coverage",
       "QueenOwnlong seeds retained as unfinished diagnostics"
     ],
     "deferred": "Unproven normal-PvP boundary refinements unless they block the active loop.",
     "batch_policy": "Integrate related changes and run complete tests/inventories once per completed batch.",
     "rule_scope_or_completion_denominator_changed": false,
-    "latest_result": "NNTrain now uses synchronous choice adapter and boundedGreedyEpisodeRunner;explicit decision sampling andGate2choice/driver/pending rejection.100games:turn2635bytesidenticaltoold;decision12610rows(11746main+864choice);every2=6329recordsverifiedstride2.994core+28admission. Stillvalue data/fixedGreedy,not generic policy training."
+    "latest_result": "Generic main-action structural adapterv1 and16features added;20oracle-directed mixed games match all4roots/trace/RNG/outcome. Value models now bindsampling/objective/JSON/simulator;strict consumers rejectstale/unknown.999core+28admission. Productiondump stillfixedGreedy/value samples;nextaction-index labels."
   }
 }

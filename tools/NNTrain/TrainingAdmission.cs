@@ -33,7 +33,7 @@ internal static class TrainingAdmission
 
     internal static string Hash(string path) { using var stream=new FileStream(path,FileMode.Open,FileAccess.Read,FileShare.ReadWrite);return Convert.ToHexString(SHA256.HashData(stream)).ToLowerInvariant(); }
 
-    internal static void VerifyDataset(string path)
+    internal static QualityReport VerifyDataset(string path)
     {
         string manifest=path+".quality.json";
         if(!File.Exists(manifest))throw new InvalidDataException("训练数据缺少质量清单，请用当前 NNTrain dump 重新生成："+manifest);
@@ -62,6 +62,7 @@ internal static class TrainingAdmission
             || report.Dim<=0 || report.DeckCount<2 || reader.BaseStream.Length!=12+report.Rows*(report.Dim+3L)*sizeof(float)
             || !StringComparer.Ordinal.Equals(Hash(path),report.DataSha256))
             throw new InvalidDataException("训练数据格式、长度或 SHA-256 与质量清单不一致");
+        return report;
     }
 }
 

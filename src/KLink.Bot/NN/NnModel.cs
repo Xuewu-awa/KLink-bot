@@ -11,7 +11,7 @@ namespace KLink.Bot.NN;
 /// <item>维度（<see cref="Dim"/> / <see cref="Hidden"/> / 编码器的 3 个常量）</item>
 /// <item>编码规格字符串（<see cref="EncoderSpec"/>）—— 只存权重不存这个，加载时对不上是**静默错误**</item>
 /// <item>标准化参数 <see cref="Mean"/> / <see cref="Std"/> —— 训练时对特征做了 z-score，推理不带上就全错</item>
-/// <item>一段自由 JSON 元数据（<see cref="MetaJson"/>，含验证准确率等，仅供人看）</item>
+/// <item>JSON 元数据（<see cref="MetaJson"/>）：指标用于检查，trainingContract 由验证与策略入口强制校验</item>
 /// </list>
 ///
 /// 二进制布局（小端）：
@@ -193,6 +193,8 @@ public sealed class NnModel
 
         string spec = ReadString(br);
         string meta = ReadString(br);
+        if (spec != StateEncoder.Spec || activation != 0)
+            throw new FormatException("Model encoder specification or activation does not match this runtime.");
 
         var mean = new float[dim];
         var std = new float[dim];

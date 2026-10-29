@@ -1,0 +1,227 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-30",
+  "batch": "main-action-model-contract",
+  "base_commit": "0b8d9351f608c4c1dc33a4a1f6ed444958994fc4",
+  "game_rules_changed": false,
+  "production_dump_main_policy": "GreedyEpisodeRunner unchanged;generic adapter is opt-in,not yet action-policy training",
+  "rule_certification_promoted": false,
+  "implementation": {
+    "main_action_interface": "Read-only structural candidates;one synchronous index selects atmostone root enginecall;no legalmask or rollback",
+    "candidate_scope": "DefaultPlay(board targets/none),Attack(enemyboard),Move(frontline slots),EndTurn;ChooseOne skipped with explicit coveragegap",
+    "action_features": {
+      "version": 1,
+      "dim": 16,
+      "fields": "4kindbits;sourceAtk/def/kredit/operation;targetAtk/def/relation/HQ;slot,sourceBoard,sourceHand,sourceOrder",
+      "ids_as_network_features": false
+    },
+    "model_contract": {
+      "version": 1,
+      "binary_format_unchanged": "KLM1",
+      "sampling": true,
+      "observation": true,
+      "objective": true,
+      "json_input_hashes": true,
+      "simulator_binary_hash": true,
+      "dataset_hash_provenance": true
+    },
+    "consumers": "NNTrain train requiresGate2/current simulator;verify compares dataset sampling/inputs/simulator;NnPolicy requires declared rollout sampling,win objective,current simulator;NnModel.Load validatesSpec/activation"
+  },
+  "validation": {
+    "focused_groups": 5,
+    "core_selftests": 999,
+    "admission_checks": 28,
+    "header_regression_before_failed": true,
+    "header_regression_after_passed": true,
+    "paired_mixed_games": 20,
+    "root_counts": {
+      "Play": 1084,
+      "EndTurn": 940,
+      "Attack": 1236,
+      "Move": 259
+    },
+    "paired_trace_rng_winner_match": true,
+    "main_faults": 0,
+    "main_rejections": 0,
+    "turn100_rows": 2635,
+    "decision100_rows": 12610,
+    "binary_samples_unchanged": true,
+    "value_model_one_epoch_roundtrip": true,
+    "actual_bound_NnPolicy_inference_finite": true,
+    "cli_negative_rejections": [
+      "stale simulator data before training",
+      "sampling mismatch verify",
+      "legacy missing training contract verify"
+    ],
+    "unit_negative_rejections": [
+      "JSON inputs mismatch",
+      "runtime mismatch",
+      "pair objective in win consumer",
+      "headerSpec/activation mismatch"
+    ],
+    "worker_literal_quotes": 88,
+    "worker_old_metadata_fields": 18,
+    "prior_partial_scopes_revalidated": 28
+  },
+  "limitations": [
+    "Candidate interface is a structural superset,not a certified legal mask or completePvP action space. Default placement/boardtargets only;ChooseOne omitted. Candidate stats/observations do not certify all hidden-information rules or adequate Markov state.",
+    "Synchronous policy must be pure;clock/log/RNG guard is not a full mutation fingerprint or security sandbox. An engine rejection may have side effects;host must discard ratherthanretry. New generic counters are not yet integrated into productionNNTrain because its main policy remainsGreedy.",
+    "16actionfeatures are a separate schema. Existing valueMLP stays745stateinputs;no trained action network or action-index labels yet.20mixed-unit oracle-directed runs are software regression checks,not client rule authority.",
+    "Model binary hash binding is deliberately conservative:comments/build metadata/configuration may change the library hash. Regenerate data/retrain using the same runtime artifact after a binary change. JSON/hash metadata is not a signed authority or semantic rule proof.",
+    "RuntimeNnPolicy checkssampling/objective/library butdoesnotverify the actual suppliedCardVecs/runtimeJSON. NNTrain compares declared datasetJSON hashes;low-level Predict can be called without contract checks. Runtime data-source validation remains open.",
+    "Rollout-mode sampling family checks do not prove all evaluation states fall inside the training distribution,including terminal/budget-exit/side-effectful probes. Pair models are explicitly rejected as probability models here.",
+    "Old unbound models remain readable for inspection but strict consumers reject them. LegacyGate1 data must be regenerated for bound training. No inference of missing metadata.",
+    "No engine/IR/native rule or whole-card certification promoted;prior3QueenOwnlong seeds remain historical rejection seeds. One-epoch smoke and deterministic traces do not establish AI strength or total audit completion."
+  ],
+  "source_bindings": {
+    "src/KLink.Bot/NN/NnModel.cs": "7df11c3903e185e922059b1325daeb5db6e7be1ccc50b0f571b663dbff5547a3",
+    "src/KLink.Bot/Server/NnPolicy.cs": "edf69e93948c3c811ed379304ef621631738282e0b7300fb8453abfbcaaeac3f",
+    "tools/BotSim/SelfTest.cs": "925a90ae9df9b28868bd830a9fbf70053430ca5cf3bf897c2e6e0a0e67def57a",
+    "tools/NNTrain/Program.cs": "b758c0c2974e0d435b950e4185ed0aa9a9a95921f3eb3a39e95295d44efdc153",
+    "tools/NNTrain/TrainingAdmission.cs": "c5bb147de02d06480cf9689ea385f1e91fed975177a999311dd9f1f418f62428",
+    "src/KLink.Bot/Training/MainActionPolicyAdapter.cs": "b0f54f1f468b77953ce7f33b63db65c5a0c560302af0971d2f86ad5950657956",
+    "src/KLink.Bot/NN/ValueTrainingContract.cs": "260a7c607c2818b45ca9b045c2e42c1a54f29cf2ecb5ccee86afa1b17b5e0c06",
+    "tools/BotSim/SelfTest.MainActionContract.cs": "10186eaee58d616b10dfc695d441c0b2d0ec1c39314c844ddb9ae1f83112a18e",
+    "src/KLink.Bot/Training/GreedyEpisodeRunner.cs": "2ec0ef58e09361b33743ae5b4b4a8cf901f45868822ee5fac9b942df77ad75f7",
+    "src/KLink.Bot/NN/StateEncoder.cs": "8da023351d65a32e1ca22ccf1dd9e86f86652316ffb6735b60374516752e90e7",
+    "src/KLink.Bot/Engine/MatchEngine.cs": "8b32754076c45a546c4f39cf9971e909b254a705d675c2ca8a47eac13ac69cdd"
+  },
+  "evidence_bindings": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\main-action-contract-worker\\NnModel.cs",
+      "sha256": "a5f855520547bedc11091ed484c1ef582740de7f5afecb3ba28ec1d34b514b15"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\main-action-contract-worker\\NNTrain-model.txt",
+      "sha256": "8152a2b4bc1f24db86fb649f80a2ae827ccc617850b5601dcccb67cf1ba01626"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\main-action-contract-worker\\inventory.json",
+      "sha256": "f01c47fab8f7ebc66a628158febfb81fa10cdc1b6b13fd5bc108fd6ba22c08ab"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\main-action-contract-worker\\task.txt",
+      "sha256": "c50f9ab4e05d4a852bc0986c35da999c694787acb9fc737a4326fbadf6bb05fe"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-main-action-source.py",
+      "sha256": "c5ea2a40aebb8e316e32ad25ab5008c7f26eb7ed9e3df6b940375c3f7c33b123"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\main-action-source-verified.json",
+      "sha256": "9cce78bdd419a057ffdc913a3c7f317d887d5b4d9bcdc163a0f68090dc1d8cd0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-main-action-data.py",
+      "sha256": "84eeef822418b70dbefbb13c2bec391b78f92b9922e6219d2578afac70b0ad82"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\main-action-data-verified.json",
+      "sha256": "670abe01017f22649f4fc3194761cb28f7f872057741c68a20ead5b1419ff916"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\MainActionProbe\\Program.cs",
+      "sha256": "377642e83da93abfdd7ebf9c99f6bc216231940eff45b2fec47f515ac5da7dcd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\MainActionProbe\\MainActionProbe.csproj",
+      "sha256": "898fa414110d03a5d33cda4364e03bc1dbb3ea0042ba23aaaef0a6e78a6eb0e6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\main-action-20-verified.json",
+      "sha256": "6877ed850172ca15d63922b6e9dd08ad54b6dc2a2c67e5b2404bcc8357dde39f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\main-action-20.log",
+      "sha256": "47d731a73c4fb10dd557018057c922a7c194fcbd20d008ecdfa2fe1da79f6ab5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\model-runtime-bound-verified.json",
+      "sha256": "cf14c5b9c561ef390194a55806d91f1a06d44fb5dca58dd537c0139961e4af51"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\model-header-before.log",
+      "sha256": "b456cdde1991bf24d9475ef438351176daee8469489374b64b5b46a17f11cba4"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\main-action-focused.log",
+      "sha256": "70de9bdf7f5535cc624d93615082fcffaeefd10165b4906f84efad45315f65a2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\main-action-selftest.log",
+      "sha256": "5407cc099807bec7db3faff097962f81e87819135d8b3fa367779da4df16435c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\main-action-admission.log",
+      "sha256": "0adedb0e072267d3fed40b17f8a2d865ecdaebae4581df6c3b70f1cb6dc5a312"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\main-contract-decision-100.bin",
+      "sha256": "fc8718a776757d0fd815b905838e09402850512621874c6cbb5560032cb669e4"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\main-contract-decision-100.bin.quality.json",
+      "sha256": "f828211f9e75e8bcbb3c5ef1b7eb992af476060b36b60ec6b6976ca87d6581a2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\main-contract-decision-100.log",
+      "sha256": "cbb5f4af04ddc47a47b52f7de4fde70ba85162e6cd7bb141555cf3bbac50c42b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\main-contract-turn-100.bin",
+      "sha256": "6a167b614a1efe26adf577541d443c22836ae7292d57d83935ff84cd4e0063f6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\main-contract-turn-100.bin.quality.json",
+      "sha256": "3fd3f58a246220de7278c13d3830c64b3aa52cfd84793a14832c7b3100255808"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\main-contract-turn-100.log",
+      "sha256": "3b0098761bebe50173906ee85d2dd7accd6786f6a5417998c93787320dc2b033"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\main-contract-stale-data.bin",
+      "sha256": "fc8718a776757d0fd815b905838e09402850512621874c6cbb5560032cb669e4"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\main-contract-stale-data.bin.quality.json",
+      "sha256": "bcab9151d7df65ce0ae637a86089d436f5b791fc58bcaa863ac01bfce888fc80"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\bound-decision-model.bin",
+      "sha256": "8e8f4fcbcbd122e235b70c4e0b20ee10f8d90433752dee4a0f9749b5958ad5e7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\bound-model-train.log",
+      "sha256": "e219c712414d59a34c8a4c8436686cbb495494549485a99b85643df8c613d129"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\bound-model-verify.log",
+      "sha256": "9cb9c6ef18c48174ce6b38db7d119a97dc09f0bd59f90afdb2a50cc073374641"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\model-stale-data-rejected.log",
+      "sha256": "d522da5cd618e3fa39ff3fca9085b812e575d2a5e2fc999715c708e30d904087"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\bound-model-mismatch-rejected.log",
+      "sha256": "7e6bfede36358d67dbbc4d59c424d9fef6de8cd5bcc3d9ea47430db225f1ab87"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\legacy-model-rejected.log",
+      "sha256": "359c3903dedf958f3206728960f40ee3c155cc144d4ed2562975996699b4c53b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\patch-model-distribution-cli.py",
+      "sha256": "f5c09b06f4178e33eaf8b74dc731910c4777855975080d958a0e5c85a973f414"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\main-action-prior-scope-revalidation.json",
+      "sha256": "128a672684d844c62ee87b94f9a91ad51a8778c159f3fdb1c1c909a0ace169fb"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\record-main-action-contract.py",
+      "sha256": "1d36ebd79bb81342549d8568c3aff201ae25ecdca0f0c91e787248170b8066b7"
+    }
+  ]
+}

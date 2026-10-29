@@ -1,6 +1,6 @@
 {
   "date": "2026-10-30",
-  "batch": "training-decision-sampling",
+  "batch": "main-action-model-contract",
   "counts": {
     "cards": 2019,
     "cards_with_own_ir": 1709,
@@ -26,6 +26,6 @@
   "work_plan_synced": true,
   "prior_partial_source_scopes_revalidated": 28,
   "new_partial_units": 0,
-  "matrix_sha256": "2e24b72c2321f760bf9ec91c7b6b616d281477d9ac7b3f1b21ceda36e5c303de",
+  "matrix_sha256": "00ada6b3077f6eaa412d532929c871845e2461a02b94b1ae5642744a94af6170",
   "no_semantic_certification_promotion": true
 }

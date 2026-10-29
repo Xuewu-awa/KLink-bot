@@ -298,7 +298,11 @@ internal static class Program
     private static int Train(Dictionary<string, string> opts)
     {
         string path = opts.GetValueOrDefault("data", "nn-data.bin");
-        TrainingAdmission.VerifyDataset(path);
+        var quality = TrainingAdmission.VerifyDataset(path);
+        if (quality.GateVersion != 2) throw new InvalidDataException("Bound models require a Gate2 dataset; regenerate it with current dump.");
+        if (!quality.InputsSha256.TryGetValue("KLink.Bot.dll", out var simulatorHash)
+            || simulatorHash != ValueTrainingContract.CurrentSimulatorHash())
+            throw new InvalidDataException("Training data simulator differs from this runtime; regenerate data with current dump.");
         int epochs = GetInt(opts, "epochs", 30);
         // ⭐ 报告节奏（**纯日志开关，不参与任何训练算式**）。
         //    默认 5 = 历史行为（第五轮之前是 `ep % 5 == 0 || ep == epochs`，写死的）。
@@ -608,6 +612,14 @@ internal static class Program
         {
             tool = "NNTrain",
             encoderSpec = StateEncoder.Spec,
+            trainingContract = new ValueTrainingContract
+            {
+                Version=1, SamplingMode=quality.SamplingMode, ObservationSpec=quality.ObservationSpec,
+                ObservationPerspective=quality.ObservationPerspective, ChoicePolicy=quality.ChoicePolicy,
+                Target=target, DatasetSha256=quality.DataSha256,
+                SimulatorSha256=simulatorHash,
+                InputsSha256=ValueTrainingContract.SelectInputs(quality.InputsSha256)
+            },
             data = Path.GetFileName(path),
             samples = n,
             trainSamples = nTrain,
@@ -645,6 +657,7 @@ internal static class Program
             W2 = W2,
             B2 = 0f,
         };
+        ValueTrainingContract.Read(model).Validate();
         model.Save(modelPath);
 
         Console.WriteLine();
@@ -669,11 +682,14 @@ internal static class Program
     private static int Verify(Dictionary<string, string> opts)
     {
         string path = opts.GetValueOrDefault("data", "nn-data.bin");
-        TrainingAdmission.VerifyDataset(path);
+        var quality = TrainingAdmission.VerifyDataset(path);
+        if (quality.GateVersion != 2) throw new InvalidDataException("Bound models require a Gate2 dataset; regenerate it with current dump.");
         string modelPath = opts.GetValueOrDefault("model", "nn-model.bin");
         int splitSeed = GetInt(opts, "split-seed", -1);
 
         var model = NnModel.Load(modelPath);
+        ValueTrainingContract.Read(model).RequireDataset(quality.SamplingMode, quality.ObservationSpec,
+            quality.ObservationPerspective, quality.ChoicePolicy, quality.InputsSha256.GetValueOrDefault("KLink.Bot.dll", ""), quality.InputsSha256);
         Console.WriteLine($"模型: {model.Describe()}");
         Console.WriteLine($"编码规格: {model.EncoderSpec}");
         Console.WriteLine();
