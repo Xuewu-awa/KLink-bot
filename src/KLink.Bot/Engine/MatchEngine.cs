@@ -3243,11 +3243,17 @@ public sealed class MatchEngine
     internal void DestroyFromCardFunction(CardInstance card, CardInstance? destroyer)
         => DestroyCore(card, destroyer, false, true, useLegacyGuards: false);
 
+    // RULE-532: ApplyDamageToCard saves lethality before damage callbacks.
+    // Its retained victim still runs before-destroy/removal after those callbacks,
+    // without another availability check or explicit ZActionDestroyUnit notice.
+    internal void DestroyFromAppliedDamage(CardInstance card, CardInstance? destroyer)
+        => DestroyCore(card, destroyer, false, false, useLegacyGuards: false);
+
     private void DestroyCore(CardInstance card, CardInstance? destroyer, bool destroyedInCombat,
                              bool recordDestroyAction, bool useLegacyGuards)
     {
         // RULE-387: explicit native removal accepts HQ objects too. Automatic
-        // death/damage adapters keep their existing zone and HQ guards.
+        // legacy death adapters keep their existing zone and HQ guards.
         if (useLegacyGuards && (!card.IsAlive || card.IsHq)) return;
         var batch = new[] { card.CardId };
         // DestroyCard i=184 captures the action location before before-destroy

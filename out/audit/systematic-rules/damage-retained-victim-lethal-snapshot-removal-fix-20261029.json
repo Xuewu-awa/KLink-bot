@@ -1,0 +1,118 @@
+{
+  "rule": "RULE-532",
+  "date": "2026-10-29",
+  "publishing_branch": "DinkyPuffer",
+  "base_commit": "43a8666b31a21cbb3bb82bdd62d493189b0b866b",
+  "client_exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "kernel_changed": true,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "finding": "ApplyDamageToCard saves lethality before spill/deal callbacks, then calls before-destroy and removal without a fresh availability gate. Simulator routed this through legacy Destroy, which skipped retained Discard/NotAvailable victims and their death hooks.",
+  "authoritative_sequence": [
+    "ApplyDamageToCard i1304..1379 saves lethality; i1431 notifies, i1699 spills, i1808 deals callbacks; i1861 tests saved flag.",
+    "HQ identity branches use cached toCardID and stored side HQ identity; non-HQ branch i2015 before-destroy then i2049 ApplyRemoveCardFromBoard.",
+    "Before-destroy fetches victim/attacker, runs own unsuppressed callback then T15 query; no new location gate.",
+    "Removal has positive ID gate, fetches current old location, invokes leave/move/after-leave/destruction with no availability or repeated-removal gate."
+  ],
+  "changes": [
+    "Add damage-specific internal destroy adapter without legacy availability guard or explicit destroy notification.",
+    "Route only saved-lethal non-HQ ApplyDamageToCard removal to that adapter; keep ordinary Destroy behavior."
+  ],
+  "validation": {
+    "worker_calls_independently_verified": 62,
+    "script_bytes": {
+      "CardFunctionsStub:GetLocationCardBySide": 0,
+      "BP_GameState_Battle_C:GetLocationCardBySide": 195,
+      "BP_CardFunctions_C:HQ_DestroyedEndMatch": 335,
+      "BP_CardFunctions_C:ApplyRemoveCardFromBoard": 1009,
+      "BP_CardFunctions_C:ApplyDamageToCard": 2312,
+      "BP_CardFunctions_C:ExecuteOnBeforeOtherCardDestroyed": 788,
+      "BP_CardFunctions_C:GetLocationCardBySide": 112
+    },
+    "new_regression_cases": 2,
+    "controlled_scenarios": 22,
+    "focused_before": "1 failed / 1 passed on old production; failure first occurs for callback moving victim to Discard",
+    "focused_after": "2/2 passed",
+    "selftest_passed": 956,
+    "selftest_total": 956,
+    "prior_partial_units_scope_revalidated": 7
+  },
+  "scenarios": [
+    "Both sides, suppressed/unsuppressed, post-damage heal and board/Discard/NotAvailable/Hand moves, plus nested explicit destruction followed by saved-lethal removal.",
+    "Observe before/self/after death counts, retained identity, fresh removal location, repeated history and absence of extra explicit destroy notice.",
+    "Nonlethal snapshot does not become lethal when deal callback sets defense to0."
+  ],
+  "remaining": [
+    "Scoped to valid positive-ID retained non-HQ objects and normal action processing; missing/nonpositive IDs, object replacement and UObject lifetime are not certified.",
+    "Client identifies HQ by stored GameState HQ IDs/references, while simulator still uses type/owner-derived lookup; identity mutation cases remain open.",
+    "No whole combat, batch damage, global trigger ordering or individual card death-hook semantics certification.",
+    "New tests perturb shared callback state using synthetic IR probes; they do not establish that every perturbation is reachable from a current legal card combination. Existing actual-card IR regressions remain separate."
+  ],
+  "source_bindings": {
+    "src/KLink.Bot/Effects/CardApi.cs": "150ace049d8f8067784bbeae9c985556a398dd73053d1538a6a0416f82e1c93f",
+    "src/KLink.Bot/Engine/MatchEngine.cs": "50f1ab8e291881a79b9768eed03c6a8d75a13980940e6d2e2207e15494d65f86",
+    "src/KLink.Bot/Effects/CardApi.EffectDamage.cs": "36f72925695728384f0fa9cb815f844149036bbb7828d1390304255bfebfb0c0",
+    "src/KLink.Bot/Engine/CardInstance.cs": "350c5d79a51fe68af6af4769abd18764dcbfa36cdcae06cc91b7d553754551da",
+    "klink bot/docs/card-ir.json": "526812fa8dc0934f1d6ecd3794053871fa6b701c2b5df3fd1edb3c38513ba2e9",
+    "tools/BotSim/SelfTest.cs": "612912b8ca10234991812ce39b17c2e2c6c7fa6b559eb037ea4a6f471f2c37a2",
+    "tools/BotSim/SelfTest.DamageDeath.cs": "0cd9e44c070f5103ef128728e3b449462d1e270ffe3e78783d077e1759faedeb"
+  },
+  "evidence_bindings": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule532-damage-death-functions-20261029.json",
+      "sha256": "fdb99b6ef5ad5609d20943db607c8f17c3eef8fc3332a3bb609220dc5b7a8b61"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule532-damage-death.py",
+      "sha256": "9a36341a7b5d0a6fccf284efb242071d48c616a49caa5262ad95461bf1fb9291"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-498.py",
+      "sha256": "254664d0aa1146756993fda4ac54e58891709c0ec5bcdd2cfa852f874c4e67ef"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule532-worker\\input.json",
+      "sha256": "933b61b4e1a18c071239f932efd3e988c7c3d9a8a9502833c23f4703a572ca89"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule532-worker\\output.json",
+      "sha256": "5a6f03b2d911c876dfc400953051b4c51c7d9b6d836608467b63183164af2c7e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule532-worker\\extract.py",
+      "sha256": "3f7f35b315e0122bb903b90065cd7d271a574e83f614488be0bc9dcf38480d22"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule532.py",
+      "sha256": "a716c4182f66403ceae1d828acad39ef8d6d02311a223719ca9f5a231e04782d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule532-verified-20261029.json",
+      "sha256": "1517169eb7e1577a5ac26a495ac5a619e9c92bb0d35f06b2c8f5b0f95aafb6f2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule532-prior-unit-scope-revalidation.json",
+      "sha256": "66c30381e3180002ec34b18d8829a13c37c64b4584bbeddf24249a976ac4bf04"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\patch-rule532.py",
+      "sha256": "e2cf8befecd3c37db830792554b6e1f71aab4ee3dc1ad5698d3a7e3261a95e8e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule532-focused-before.log",
+      "sha256": "d49a7b08a5adeabe78564ad28282a7cb5044c76e9694a40c8c5e767c5d9e9780"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule532-focused-after.log",
+      "sha256": "8f32d753fe25c39c7004ad2fe844d83b9ef480f1ad8efa8c267e8853286c651a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule532-selftest-final.log",
+      "sha256": "a1ebfa1c853b5ea7bf349e0f4e2f53e38cb8b7fa0715b346edfdbe484a8457e1"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\report-rule532.py",
+      "sha256": "3d90e2d62d139b6f587a017f8ba07d56f7671c842ccd509473fccb1a3d390508"
+    }
+  ]
+}

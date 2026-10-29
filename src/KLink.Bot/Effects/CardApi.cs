@@ -2120,7 +2120,7 @@ public sealed partial class CardApi
         {
             // ApplyDamageToCard i=2049 removes the victim after its damage
             // notification; it does not generate another explicit destroy action.
-            _engine.Destroy(target, source, recordDestroyAction: false);
+            _engine.DestroyFromAppliedDamage(target, source);
         }
         // i=2225 checks the final damage only for surviving Mobilize removal.
         else if (!deferDestruction && resolvesDamage && amount > 0 && target.Keywords.Contains(Keyword.Mobilize))

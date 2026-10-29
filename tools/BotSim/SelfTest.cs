@@ -20,6 +20,8 @@ internal static partial class SelfTest
 
     private static readonly List<Case> Cases = new()
     {
+        new("伤害死亡：致死快照和保留对象的移除链", DamageDeathRetainedSnapshot),
+        new("伤害死亡：非致死快照不在回调后重算", DamageDeathNonlethalSnapshot),
         new("伤害数值：300组原始值、回调后读取、通知及溢出", DamageNumericClampReference),
         new("伤害数值：血腥镰刀真实IR以有界防御扣血并抽牌", BloodySickleBoundedDefenseIntegration),
         new("效果伤害入口：区域、零负请求、重定向和未知来源", EffectDamageEntryContract),
