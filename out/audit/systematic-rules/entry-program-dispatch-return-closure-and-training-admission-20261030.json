@@ -1,0 +1,164 @@
+{
+  "rule": "RULE-546",
+  "date": "2026-10-30",
+  "publishing_branch": "DinkyPuffer",
+  "base_commit": "e927274cd379281f52c54a28b200acc5774e0f1f",
+  "client_exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "kernel_changed": true,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "findings": [
+    "BuildEntryProgram adds a synthetic pushFlow(dispatchReturn) but only seeds reachable closure from the event entry. The synthetic edge target could be omitted, so final pop reports missing target despite Return existing in full card IR.",
+    "Independent primary/DeepSeek graph traversals identify1339 such entries on630 cards; every difference adds only the existing terminal Return. No dispatch target absent from the full card table in this census.",
+    "Current howitzer OnBeforeAttack stub calls ubergraph entry978 with dispatch return983; Double Sunrise OnPlayedFromHand calls entry2089 with dispatch return2094. Raw selected scripts/FNames independently decode. Real howitzer regression previously ended with unresolved jump1.",
+    "Seeding both event entry and indexed dispatch target restores the real landing site without hiding errors or rewriting card effect bodies."
+  ],
+  "changes": [
+    "Add the indexed dispatchReturn position as another initial reachable-closure root. Keep real missing-target diagnostics, all VM execution and local-program behavior unchanged."
+  ],
+  "validation": {
+    "affected_ir_cards": 630,
+    "affected_ir_events": 1339,
+    "current_raw_graphs": 2,
+    "current_raw_event_stubs": 2,
+    "focused_before": "1 failed, real howitzer dispatch return missing",
+    "focused_after": "1 passed, both real returns reached and genuine missing pop still reported",
+    "full_selftest": 980,
+    "default20_pop_before": 8283,
+    "default20_pop_after": 0,
+    "default20_extra_return_steps": 8283,
+    "random10_admitted_games": 3,
+    "random10_rows": 80,
+    "random10_rejected_games": 7,
+    "value_training_smoke_epochs": 1,
+    "value_model_verify": true,
+    "prior_partial_units_exact_scope_revalidated": 22
+  },
+  "source_bindings": {
+    "src/KLink.Bot/Effects/Blueprint/KismetIr.cs": "4a33ac34559e368e4a4e81a54ea4408e11d16de24c3ad12ab0f1f0a1385d36db",
+    "tools/BotSim/SelfTest.cs": "2660bb80b1218250d0043484bd83552238fe78eac30aa2f2a1769d0ed97fb8de",
+    "tools/BotSim/SelfTest.EntryReturnClosure.cs": "5ba1193c27144a2a9e9553f8f82277a593fca0ce4e323b97dcc04072dfc93403",
+    "src/KLink.Bot/Effects/Blueprint/KismetVm.cs": "9f412b103c4701413902a3def18a170bb2a8719a8901199f21e4ff6c40c9c173",
+    "klink bot/docs/card-ir.json": "526812fa8dc0934f1d6ecd3794053871fa6b701c2b5df3fd1edb3c38513ba2e9",
+    "tools/NNTrain/Program.cs": "bc1aba6ff7a8ed0b0a5c5059dbf0c04fd9da99deb54cc50ea7acccc6dd31e6dd",
+    "tools/NNTrain/TrainingAdmission.cs": "77b439193f835b6a10fa6839b310fc2d54c528ad37d66d40fb4f5f1e982b5c07"
+  },
+  "evidence_bindings": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule546-flow-return-functions-20261030.json",
+      "sha256": "824713e1179c4e4cdab4d79d531ac851a0c981675f85fb3848dedb6c23a90a3f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule546-dispatch-stubs-20261030.json",
+      "sha256": "5c279b6055fe99d9f871096074f142bbdc7a39dfdff52cff04f6309bd948d5e9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule546-flow.py",
+      "sha256": "77afe7cb18cd48202bb670724d89fd7b6cbb88cd7db5b8acdcce6248461753ca"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule546-stubs.py",
+      "sha256": "05d124580acd5f529ea18b2b9c1f4b6abfe683c0ac130986d11d8d15ecc41db4"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-498.py",
+      "sha256": "254664d0aa1146756993fda4ac54e58891709c0ec5bcdd2cfa852f874c4e67ef"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\prepare-flow-closure.py",
+      "sha256": "89f09ba1e19153798faad9ed95b48c39eb62bb67df4539850dd631abb174d745"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\inspect-flow-closure.py",
+      "sha256": "a4cc4c40aecfff011f506e54d60f88735a948bd50ce9ba754be0f37ede236b76"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\flow-closure-primary.json",
+      "sha256": "a865cb4dfe87d622dd7b5230de7b5eb278837aea846201f8a14f2349bc0f4f9a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\flow-closure-worker\\input.json",
+      "sha256": "490e442df12e885b6a28fc06c3d9a00153a4d2372eced5fa97a537e5ca633ff9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\flow-closure-worker\\output.json",
+      "sha256": "a865cb4dfe87d622dd7b5230de7b5eb278837aea846201f8a14f2349bc0f4f9a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\flow-closure-worker\\calculate.py",
+      "sha256": "9112a9d435fe89dd1b9ce3cadae208e4205d99b54980b5babe13b8e9074e3fee"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule546.py",
+      "sha256": "73736efbb9f85294cd289a0fa9726371a112ce7defeb949b1e65c1018441455e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule546-verified-20261030.json",
+      "sha256": "e7e12d66ccd995e323f016c7137acb273c70384f123c554ee2a5b1cf7203639b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule546-prior-unit-scope-revalidation.json",
+      "sha256": "5341c4a5634d03e6d3b18de5abff83a1707395b706fdd7b91711f69d6ab36dc9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\patch-rule546.py",
+      "sha256": "a1a38e4588ea7b6d81ab2b51c09f7e2db1ac09fe9c6acaa893c4d2f321e0ef60"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule546-before-test.log",
+      "sha256": "37d5d1fb81bc0c7ba9a6092b05fc039f8b6a2fab044876896f9e79d786492145"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule546-after-test.log",
+      "sha256": "1ad3c91c0d1abd391157743b3d95dcdf56a82c510706e30f5f22de8ffa033232"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule546-selftest.log",
+      "sha256": "318dd4b8e057c1ba0755607f20bd56f8081637a6ac1186ab435248c152093e1b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\training-loop-baseline-play-20261030.log",
+      "sha256": "0900597f83f6f75593f55e509ae208a6dada008aba1aba4d18bae5185ae6a9d1"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule546-play-after.log",
+      "sha256": "1d3c887199f59a981cc5e57c2317666dd0b2ab5400f14cda7bd2d48f049e1d30"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule546-dump.bin.quality.json",
+      "sha256": "360027f3f90558947a8c36af16ea5e0bda7cb84b94e908f8531ed314fa791561"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule546-dump.bin",
+      "sha256": "3aa013f5ea424262f1dfb97a29c9e3a301d1cfef2dceff79f27c85c1c0e6ea18"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule546-dump-after.log",
+      "sha256": "d2b6714fd87885033cf691f3aa4e1398378969602168a6bbfbd9efbb7a5faefb"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule546-train-smoke.log",
+      "sha256": "1ab3aab26d5bd744f0e9a35b54ff39db3a264291593aaaea81a406404b0ba0bd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule546-verify-smoke.log",
+      "sha256": "9b603c819f0826e4497d902432cd46d36e14e2c4554f2d4013b095321d934cff"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule546-model.bin",
+      "sha256": "8be87cec99946c36f63b46ac8f555b807d0e4824c8bb1c567d844de307732525"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\report-rule546.py",
+      "sha256": "3cd0bc4626e355800dd1e10ecce8c2fbee3aee42d96aa6aff17972ce70a95b03"
+    }
+  ],
+  "remaining": [
+    "Static IR census covers current repository1609 cards with entrypoints:1339 affected entries on630 cards add exactly one existing terminal Return. Only two current client ubergraphs/event stubs were independently recaptured; no claim all630 current asset versions or full event semantics match.",
+    "Fixed missing dispatch-return landing sites. VM still flags genuinely missing targets, as the negative regression verifies; training admission rules are unchanged. These terminal failures need not have changed all previous game outcomes.",
+    "Default20-game pair retains wins17:3, turns22.1, program count29628 and informational call counters; step count rises by exactly8283 terminal returns and pop-unresolved becomes0. This is a bounded deterministic run, not universal rule equivalence.",
+    "Random10-game sample now admits3 games/80 rows;4 unfinished and3 missing card-entry games remain rejected. Diagnostic admission is not rule/card certification or proof that training data has correct PvP semantics.",
+    "One745->8->1 value-model epoch and saved-model verify demonstrate executable interfaces only, using3 games and1 validation game. No statistically meaningful accuracy/strength conclusion; legacy console confidence prose is not endorsed.",
+    "Unfinished causes, missing invoked Red Devils/Ki-61 Hien entries, decision-level adapter, hidden-state/model contracts and complete card-pool dependency closure remain open."
+  ]
+}

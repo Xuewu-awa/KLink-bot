@@ -1,6 +1,6 @@
 {
   "date": "2026-10-30",
-  "batch": "training-loop-admission",
+  "batch": "RULE-546",
   "counts": {
     "cards": 2019,
     "cards_with_own_ir": 1709,
@@ -12,9 +12,9 @@
     "program_containers": 2626,
     "dependency_edges": 18571,
     "dependency_symbols": 440,
-    "secondary_reports": 420,
-    "explicit_partial_units": 22,
-    "partial_units_matching_bound_inputs": 22,
+    "secondary_reports": 421,
+    "explicit_partial_units": 23,
+    "partial_units_matching_bound_inputs": 23,
     "planning_work_domains": 14,
     "planning_acceptance_criteria": 42,
     "authoritative_current_pvp_denominator_available": false,
@@ -24,8 +24,8 @@
   },
   "tests": 16,
   "work_plan_synced": true,
-  "prior_partial_source_bindings_unchanged": 22,
-  "new_partial_units": 0,
-  "matrix_sha256": "d3295d37ca8ed3bb985f5e14e33ca5d7eacbd03544e8f10c8486dbe1f6074c7d",
+  "prior_partial_source_scopes_revalidated": 22,
+  "new_partial_units": 1,
+  "matrix_sha256": "90f578821a08931f0971c700227dfd90a797aeece7655c1e20558cbe94448129",
   "no_semantic_certification_promotion": true
 }

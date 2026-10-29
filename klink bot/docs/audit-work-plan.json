@@ -169,10 +169,12 @@
       "effort_estimate": "not_sized",
       "status_basis": "planning taxonomy; historical partial evidence is not domain completion",
       "progress_notes": [
-        "RULE-539确认基类被动默认体零输出；修复攻击后冲击取值过早及真实事件wasShockAttack参数未绑定的问题，第511空降团免疫案例不再误降行动费。30离线机器码实例、16原AST谓词及975项回归通过；完整原生派发/计算与其他事件名仍开放。"
+        "RULE-539确认基类被动默认体零输出；修复攻击后冲击取值过早及真实事件wasShockAttack参数未绑定的问题，第511空降团免疫案例不再误降行动费。30离线机器码实例、16原AST谓词及975项回归通过；完整原生派发/计算与其他事件名仍开放。",
+        "RULE-546修复事件重建闭包漏掉合成分派返回根，1339IR入口/630卡只补原Return；两组当前原始图/桩、真实事件回归及980项通过。20局pop误报8283归零，随机10局准入3局80行；完整VM/整卡及未结束/缺失卡入口仍开放。"
       ],
       "current_deliverables": [
-        "out/audit/systematic-rules/calculation-after-shock-output-and-native-default-proof-20261030.json"
+        "out/audit/systematic-rules/calculation-after-shock-output-and-native-default-proof-20261030.json",
+        "out/audit/systematic-rules/entry-program-dispatch-return-closure-and-training-admission-20261030.json"
       ]
     },
     {
@@ -480,14 +482,15 @@
     "active_plan": "klink bot/docs/训练闭环推进-20261030.md",
     "measurements": "out/training-readiness/baseline-20261030.json",
     "priority_order": [
-      "Unresolved Blueprint flow in ordinary self-play",
       "Unfinished episode root causes",
-      "Missing invoked card entries",
+      "Missing invoked Red Devils/Ki-61 Hien card entries",
       "Decision-level adapter and choice contracts",
-      "Admitted starter dependency closure"
+      "Observation/model contracts and admitted starter closure",
+      "Remaining unresolved flow cases if observed"
     ],
     "deferred": "Unproven normal-PvP boundary refinements unless they block the active loop.",
     "batch_policy": "Integrate related changes and run complete tests/inventories once per completed batch.",
-    "rule_scope_or_completion_denominator_changed": false
+    "rule_scope_or_completion_denominator_changed": false,
+    "latest_result": "RULE-546 repairs omitted dispatch-return landing sites. Default20 pop-unresolved8283->0; random10 now admits3/80rows, rejects7. One-epoch value-model smoke only; no rule/strength certification."
   }
 }

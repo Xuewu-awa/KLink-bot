@@ -1,0 +1,41 @@
+{
+  "date": "2026-10-30",
+  "batch": "RULE-546",
+  "default_pair": {
+    "games": 20,
+    "pop_unresolved_before": 8283,
+    "pop_unresolved_after": 0,
+    "extra_return_steps": 8283,
+    "wins": [
+      17,
+      3
+    ],
+    "unfinished": 0
+  },
+  "random_pair": {
+    "games": 10,
+    "seed": 20261030,
+    "accepted_before": 0,
+    "accepted_after": 3,
+    "rows": 80,
+    "rejected": 7,
+    "unfinished": 4,
+    "missing_card_entries": 3
+  },
+  "value_model_smoke": {
+    "epochs": 1,
+    "shape": [
+      745,
+      8,
+      1
+    ],
+    "games": 3,
+    "validation_games": 1,
+    "train_exit": 0,
+    "verify_exit": 0,
+    "statistical_strength_claim": false
+  },
+  "report": "out/audit/systematic-rules/entry-program-dispatch-return-closure-and-training-admission-20261030.json",
+  "report_sha256": "2650afb3a123b0fa7bdc95c1d82eb7e58c46c63e97986d5acf2e6cedd3219165",
+  "rule_certification_promoted": false
+}

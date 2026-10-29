@@ -294,6 +294,13 @@ public sealed class KismetLibrary
         var reachable = new HashSet<int> { entryPos };
         var queue = new Queue<int>();
         queue.Enqueue(entryPos);
+        // RULE-546: the synthetic dispatch push is a real incoming edge.
+        // Its return target may be unreachable from the event body itself.
+        if (dispatchReturn >= 0 && byIndex.TryGetValue(dispatchReturn, out int returnPos)
+            && reachable.Add(returnPos))
+        {
+            queue.Enqueue(returnPos);
+        }
 
         while (queue.Count > 0)
         {

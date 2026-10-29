@@ -1,45 +1,45 @@
 {
   "date": "2026-10-30",
-  "batch": "training-loop-admission",
-  "documentation_records": 545,
-  "reports": 420,
-  "verification_scope": "Training readiness baseline and fail-closed dataset admission only. No kernel rules changed;22 prior partial source bindings unchanged. Rule scope/denominator and whole-card certification unchanged.",
+  "batch": "RULE-546",
+  "documentation_records": 546,
+  "reports": 421,
+  "verification_scope": "Dispatch-return graph closure fix,1339 IR entries and two current raw graph/stub pairs. Full980 tests,17 admission checks,20-game diagnostic comparison and10-game gated dump; one-epoch value smoke only. Prior22 source scopes revalidated exactly.",
   "baseline_counts": {
-    "ledger_rule_records": 545,
-    "json_reports": 420,
-    "ledger_rules_with_explicit_json_report": 419,
-    "json_reports_with_explicit_rule_identity": 419,
-    "distinct_declared_file_paths": 5376,
-    "file_binding_claims": 7629,
-    "physical_files_hashed": 5346,
-    "bytes_hashed": 2096566734,
+    "ledger_rule_records": 546,
+    "json_reports": 421,
+    "ledger_rules_with_explicit_json_report": 420,
+    "json_reports_with_explicit_rule_identity": 420,
+    "distinct_declared_file_paths": 5403,
+    "file_binding_claims": 7661,
+    "physical_files_hashed": 5373,
+    "bytes_hashed": 2103527644,
     "binding_states": {
-      "match": 6920,
-      "changed": 709
+      "match": 6949,
+      "changed": 712
     },
     "changed_binding_roles": {
-      "kernel_or_regression_source": 655,
+      "kernel_or_regression_source": 658,
       "other_audit_artifact": 14,
       "client_executable": 31,
       "captured_or_extracted_data": 1,
       "parser_or_sdk_source": 4,
       "audit_tool_script": 4
     },
-    "distinct_changed_physical_files": 26,
+    "distinct_changed_physical_files": 27,
     "report_provenance_states": {
       "all_recognized_file_bindings_match": 174,
-      "declared_bindings_changed": 242,
+      "declared_bindings_changed": 243,
       "no_recognized_file_bindings": 4
     },
     "report_version_states": {
-      "declared_current_exe_hash": 260,
+      "declared_current_exe_hash": 261,
       "not_declared": 128,
       "declared_other_exe_hash": 32
     },
-    "historical_remaining_claims": 2234,
+    "historical_remaining_claims": 2240,
     "remaining_dispositions": {
       "partially_addressed": 4,
-      "historical_untriaged": 2230
+      "historical_untriaged": 2236
     },
     "work_units": 14,
     "acceptance_criteria": 42,
@@ -70,15 +70,15 @@
     "remaining_work_percent": null
   },
   "tests": {
-    "training_admission": 17,
-    "core_selftest": 979,
+    "core_selftest": 980,
+    "admission": 17,
     "baseline_tool": 20,
     "matrix_tool": 16
   },
   "no_semantic_certification_promotion": true,
   "files_sha256": {
-    "out/audit/progress-baseline/baseline.json": "05f8541fa40cf198d579dd86b8675666facbdbf8f26598a6a354b0580531548c",
-    "klink bot/docs/audit-work-plan.json": "f6aa9ed085e6f24b0b9faaa9959040407fedb1c23bea8f4a96e22d875cce4ef9",
-    "out/training-readiness/baseline-20261030.json": "d35887803ca9faffa32e5664fbfda093a6b3b3faa90e7130d41bb8373a779f7e"
+    "out/audit/progress-baseline/baseline.json": "5ba75fd92a4f8557fbfbfa113e36b1c4c1b5dbb551b40b9e47caa3004764e5ca",
+    "klink bot/docs/audit-work-plan.json": "414cad6764a7f8f16ffac037f01935480492d80e15d9ea6463cc4f382957b05a",
+    "out/training-readiness/flow-return-progress-20261030.json": "85ed610ef68c3ff7f9842ebda5cb9474399066d4fb94f28eb1ef6773212f611f"
   }
 }

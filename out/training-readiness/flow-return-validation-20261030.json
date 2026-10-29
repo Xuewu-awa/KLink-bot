@@ -1,0 +1,16 @@
+{
+  "date": "2026-10-30",
+  "tests": {
+    "core": 980,
+    "admission": 17,
+    "audit_tools": 36
+  },
+  "default20_pop_unresolved_before": 8283,
+  "default20_pop_unresolved_after": 0,
+  "random10_admitted": 3,
+  "rows": 80,
+  "rejected": 7,
+  "value_model_smoke_only": true,
+  "progress_sha256": "85ed610ef68c3ff7f9842ebda5cb9474399066d4fb94f28eb1ef6773212f611f",
+  "source_and_evidence_hashes_checked": true
+}
