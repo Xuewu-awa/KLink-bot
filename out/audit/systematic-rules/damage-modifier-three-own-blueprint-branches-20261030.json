@@ -1,0 +1,166 @@
+{
+  "rule": "RULE-544",
+  "date": "2026-10-30",
+  "publishing_branch": "DinkyPuffer",
+  "base_commit": "b06d6d9fff86239b44aa9bebc11231295858ed30",
+  "client_exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "kernel_changed": false,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "findings": [
+    "Fresh own-event capture contains22nd Marines295B,511th Regiment474B andFirebomb624B; raw scripts equal RULE-543 captures and independently decode.",
+    "22nd Marines: veteran and top-deck navy required; zero incoming damage returns additive0, otherwise additive is incoming damage plus bounded receiver heavy armor.",
+    "511th Regiment: non-veteran, source on board and same CardID as receiver required; when incoming>=bounded receiver defense, additive is bounded defense-incoming-1; other paths return0.",
+    "Firebomb: redirected input returns0 without resetting stored excess. Otherwise reset excess_damage=0; for unit receiver and incoming>bounded defense, store incoming-defense and return its negative as additive.",
+    "Existing repository IR yields matching final T38 results and JSON side effects for all320 authoritative AST rows on both sides; no new kernel discrepancy demonstrated."
+  ],
+  "validation": {
+    "ast_rows": 320,
+    "simulator_scenarios": 640,
+    "case_counts": {
+      "card_unit_22nd_marines": 60,
+      "card_unit_511th_regiment": 160,
+      "card_event_firebomb": 100
+    },
+    "visited_statement_offsets": {
+      "card_unit_22nd_marines": [
+        0,
+        20,
+        34,
+        88,
+        102,
+        136,
+        150,
+        173,
+        178,
+        219,
+        265,
+        292
+      ],
+      "card_unit_511th_regiment": [
+        0,
+        20,
+        49,
+        68,
+        106,
+        120,
+        180,
+        194,
+        235,
+        273,
+        287,
+        328,
+        374,
+        416,
+        443,
+        448,
+        471
+      ],
+      "card_event_firebomb": [
+        0,
+        14,
+        37,
+        42,
+        108,
+        149,
+        190,
+        228,
+        266,
+        280,
+        321,
+        367,
+        437,
+        478,
+        524,
+        566,
+        593,
+        598,
+        621
+      ]
+    },
+    "focused": "1 passed",
+    "full_selftest": 978,
+    "prior_partial_units_exact_scope_revalidated": 20
+  },
+  "evidence_method": "Fresh read-only UFunction scripts, raw hashes/FName independent re-decode, complete own-function branch interpreter with explicit stub predicates and scalar accessors. DeepSeek mechanical AST results independently reproduced. Both-side tests execute repository real card IR through T38. No client writes/calls/injection/match actions.",
+  "source_bindings": {
+    "tools/BotSim/SelfTest.cs": "560f20fc6dd397e10b0153cc34e30a373abf0a07d92b37ba6237390248354bdf",
+    "tools/BotSim/BotSim.csproj": "b4bea85d7a5fab96157b6dd1eeefc74a0430efcb0ccd953ff2134c1959817a5f",
+    "tools/BotSim/SelfTest.DamageModifierOverrides.cs": "c1cca93c3bbe32c4b310f9b23c36d8bad2ad39b3b44504819b53a9425f85a74a",
+    "tools/BotSim/Fixtures/damage-modifier-own-overrides-20261030.json": "a0cfed781ae4ae215802a5a973ce1e85c4e962f3220a6d7f9a9839511d2ec044",
+    "src/KLink.Bot/Effects/CardApi.cs": "049f5c3b4068617b9d8bac4f4c4c644d2a4593b099fa40236f4b32dd63333070",
+    "src/KLink.Bot/Effects/CardApiDispatch.cs": "03080524c38f087e41d8baf7e01c3de8ec2343742b1daedced9d02535ef838fb",
+    "src/KLink.Bot/Effects/Blueprint/KismetVm.cs": "9f412b103c4701413902a3def18a170bb2a8719a8901199f21e4ff6c40c9c173",
+    "src/KLink.Bot/Cards/CardDatabase.cs": "1a80df1c84f12e0ee362f41eb6949f34ea00d028bd954db2aa1ecf6dd34059a6",
+    "klink bot/docs/card-ir.json": "526812fa8dc0934f1d6ecd3794053871fa6b701c2b5df3fd1edb3c38513ba2e9"
+  },
+  "evidence_bindings": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule544-own-after-calc-functions-20261030.json",
+      "sha256": "15a52a41caefbb8969bb1373e4dffd801bfe647701bad15b6a5716037ca3a780"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule543-own-after-calc-functions-20261030.json",
+      "sha256": "7de8e6fbc1bd2a30ee5f299b021c065cc8453f3bab8b41737c4bb907dabfe8f1"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule508-candidates.py",
+      "sha256": "74ad930fac960e2b87aabed35ec8c4327a6befe625500b0dd21150d8ea624588"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-498.py",
+      "sha256": "254664d0aa1146756993fda4ac54e58891709c0ec5bcdd2cfa852f874c4e67ef"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\prepare-rule544.py",
+      "sha256": "ad180b5e46f18f2df70338f659bd3a78535f68f2e02a4e9e4499847433eae145"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule544-worker\\input.json",
+      "sha256": "4aa778ce60dcc032d4363710687a15b2145ba6fda065c773f30d480cccca6f8b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule544-worker\\output.json",
+      "sha256": "0443d84da0f52f826c260a611e2f1a3c654fc48333ebfe3e38c1831e5eb59ef9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule544-worker\\calculate.py",
+      "sha256": "d204f033ea39832c454ffa91c9e0e653e582699b48b352600479c88f5f9f153d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\Fixtures\\damage-modifier-own-overrides-20261030.json",
+      "sha256": "a0cfed781ae4ae215802a5a973ce1e85c4e962f3220a6d7f9a9839511d2ec044"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule544.py",
+      "sha256": "9a30a4b72362b3df04ead9da2d20e5b72c860b1f6cfabcca52baff2e99a8cf3b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule544-verified-20261030.json",
+      "sha256": "a777004239416765d3f2a2f1722c96e0ca3be617876d1b1f130fa45b7d921544"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule544-prior-unit-scope-revalidation.json",
+      "sha256": "a4ba53ef1e26a9ac6fafe96713d996f61eb5feba87d0df688ee318b96f6afdaa"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule544-focused.log",
+      "sha256": "f9394131f8098ebf408bcff8c99413e9bdf9dae34d428639f3b4b82e50c44351"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule544-selftest.log",
+      "sha256": "28e10a0a2d1357a54437401ffb83a53d0a975e49d452f4be8e880a780a8498a8"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\report-rule544.py",
+      "sha256": "8d54d2c88ffa1c2f8aa37b3c645143a8f9d790db84ab52e8b8c666140892dbe1"
+    }
+  ],
+  "remaining": [
+    "Scope is the three current own OnDealDamageAddDamageAfterCalc bodies and supplied stable scalar/predicate cases. No whole-card, legal-deck/PvP eligibility or current card-value certification.",
+    "Every executable top-level own-body statement is visited by the authoritative AST fixture, but this is not exhaustive path/interleaving/overflow coverage. Synthetic input includes negative values; legal current-card reachability remains unproven.",
+    "AST uses explicit stubs for veteran, top-deck navy, board/unit identity and bounded defense/armor. Real IR integration exercises current simulator helper implementations, not a new independent universal native-helper proof.",
+    "Integration asserts final T38 output and excess_damage JSON state; expectedAdd is an intermediate oracle field, not separately asserted before the final floor. No unrelated global observers were added.",
+    "Observer continuous accumulation, stopAdding/deferred/rerun behavior, mutable state between accessor calls, reentrancy and object lifetime remain separate scopes. No event-order or generic-ABI completion claim."
+  ]
+}

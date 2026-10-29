@@ -1,6 +1,6 @@
 {
   "date": "2026-10-30",
-  "batch": "RULE-543",
+  "batch": "RULE-544",
   "counts": {
     "cards": 2019,
     "cards_with_own_ir": 1709,
@@ -12,9 +12,9 @@
     "program_containers": 2626,
     "dependency_edges": 18571,
     "dependency_symbols": 440,
-    "secondary_reports": 418,
-    "explicit_partial_units": 20,
-    "partial_units_matching_bound_inputs": 20,
+    "secondary_reports": 419,
+    "explicit_partial_units": 21,
+    "partial_units_matching_bound_inputs": 21,
     "planning_work_domains": 14,
     "planning_acceptance_criteria": 42,
     "authoritative_current_pvp_denominator_available": false,
@@ -24,8 +24,8 @@
   },
   "tests": 16,
   "work_plan_synced": true,
-  "prior_partial_source_scopes_revalidated": 19,
+  "prior_partial_source_scopes_revalidated": 20,
   "new_partial_units": 1,
-  "matrix_sha256": "184d7e8d2847dfef6ef4a862d5045c64c407e2c590fc3fe44e2f6f0cfa8c3c2a",
+  "matrix_sha256": "707c40be8e6607367c49f3afb01cbd14706612b87a570877b304eb3729013ca8",
   "no_semantic_certification_promotion": true
 }
