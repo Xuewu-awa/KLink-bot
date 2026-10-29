@@ -1,0 +1,136 @@
+{
+  "rule": "RULE-540",
+  "date": "2026-10-30",
+  "publishing_branch": "DinkyPuffer",
+  "base_commit": "77f320959da817b61864c780a1a2528068120559",
+  "client_exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "kernel_changed": false,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "findings": [
+    "2020 selected loaded CDOs comprise2019 card classes plus BaseCardObject. Their native implementation slot0x358 all points to RVA0x15a3ee0, the previously verified8B zero leaf; freshly captured bytes equal current installed PE.",
+    "Nearest reflected GetPassiveDefenseBuff declarations:2018 BaseCardObject (including Base CDO),1 card_unit_511th_regiment_C (264B Blueprint),1 card_unit_48th_armored_infantry_C (53B Blueprint). Both Blueprint overrides belong directly to their own card class; no selected child inherits either override.",
+    "All2019 archived static-definition class names occur among selected CDOs, without an extra card class in this capture. This is class presence only and does not certify archived definitions or current PvP eligibility.",
+    "Repository IR contains exactly the same two local passive declaration owners. The simulator own-local lookup plus base-zero fallback has no newly demonstrated missing inherited passive in this selected scope."
+  ],
+  "validation": {
+    "grouping": {
+      "object_count": 2020,
+      "target_counts": {
+        "0x7ff70b7c3ee0": 2020
+      },
+      "nearest_owner_counts": {
+        "BaseCardObject": 2018,
+        "card_unit_511th_regiment_C": 1,
+        "card_unit_48th_armored_infantry_C": 1
+      },
+      "blueprint_objects": [
+        {
+          "class_name": "card_unit_48th_armored_infantry_C",
+          "card_name": "card_unit_48th_armored_infantry",
+          "nearest_owner": "card_unit_48th_armored_infantry_C",
+          "is_inherited": false
+        },
+        {
+          "class_name": "card_unit_511th_regiment_C",
+          "card_name": "card_unit_511th_regiment",
+          "nearest_owner": "card_unit_511th_regiment_C",
+          "is_inherited": false
+        }
+      ],
+      "inherited_blueprint_objects": []
+    },
+    "definition_class_presence": {
+      "static_definition_classes": 2019,
+      "loaded_card_classes": 2019,
+      "definition_classes_missing_loaded": [],
+      "loaded_classes_without_definition": []
+    },
+    "ir_passive_declaration_owners": [
+      "card_unit_48th_armored_infantry",
+      "card_unit_511th_regiment"
+    ],
+    "focused_tests_passed": 7,
+    "production_changes": false,
+    "prior_partial_source_bindings_unchanged": 16
+  },
+  "evidence_method": "Read-only UObject CDO enumeration and reflected ancestry/complete direct-child linked-list capture with repeated stability checks; class default-object links, nearest declaration, FNames and script decodes independently reconstructed from saved headers. Unique native target compared to current PE and prior bounded leaf proof. DeepSeek mechanical grouping checked independently. No client writes, injection, game-function calls or match actions.",
+  "source_bindings": {
+    "src/KLink.Bot/Effects/CardApi.cs": "7fd3ab67241d4368c8c2c3dcefc9b7e61764b8d23126d9dd9a163e6f979eac33",
+    "src/KLink.Bot/Effects/Blueprint/KismetIr.cs": "93d4db96852427ad24d656f01153c2c29439d9d80651a454e1435985317ee34c",
+    "klink bot/docs/card-ir.json": "526812fa8dc0934f1d6ecd3794053871fa6b701c2b5df3fd1edb3c38513ba2e9",
+    "tools/BotSim/SelfTest.CalculationOutputs.cs": "b6c29678332b9f8014710af24db0be8be9faef305c9de6e66f285f21ae4bb14e",
+    "tools/BotSim/SelfTest.AmbushNumeric.cs": "9d492f98507eeecee87957f72c6f94b58f253f82eea31b315ec785b7f7855080",
+    "tools/BotSim/SelfTest.PassiveMitigation.cs": "45569827c867aa72290a75dcd6142ce40e6405f6933a5ec26487e892ee773a5c"
+  },
+  "evidence_bindings": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule540-passive-inheritance-v2-20261030.json",
+      "sha256": "2c3ddfdf694798f5d2fc506e631a898ae68a6bfcc9f83987f4984429228bda22"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule540-passive-inheritance-20261030.json",
+      "sha256": "d5db08a13a216190e925cfd291cc058074663edb29e6651ebd66fb02d0066d92"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule540-passive-inheritance.py",
+      "sha256": "68c5e61d8455574f23047c08d448f063b07af6c963ac1baa6fe9fb3f7b530432"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-498.py",
+      "sha256": "254664d0aa1146756993fda4ac54e58891709c0ec5bcdd2cfa852f874c4e67ef"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\prepare-rule540-worker.py",
+      "sha256": "75ef9fd46c7082a644091f4af3872d00174b6cadc2ddf923c3c44aa6838bd3a6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule540-worker\\input.json",
+      "sha256": "c27e69982d07c38e7bc1c905238eb41532fba5bffc1ebd952d5bb106b6af2238"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule540-worker\\output.json",
+      "sha256": "2c6894f47265795f475148cf01cca20b23674bf703497f6e5bd3f1e3a997bf12"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule540-worker\\calculate.py",
+      "sha256": "e42d1ff938f59f0747cc51417c0bb03cded589d9b9c2d9483fc5ae6bbb3fb0be"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule540.py",
+      "sha256": "0c746d7b1615a9dbe86365650169f82066a6970807021ff89f83ebe0d1d73907"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule539-passive-default-native-20261029.json",
+      "sha256": "8b2e81fa9ade32640c4c4984e1a123d36dbf6965ebba6a2fbe55ffd22732f11f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule539-calculation-output-functions-20261029.json",
+      "sha256": "82732dd1587d4b32d0e8565781cc5c30cefc2f0ed07498d4d69e07a07db5be80"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\cards.definitions.json",
+      "sha256": "122e051175ba711975269838fe1097946fe23bab41cbe0db535b3ec5f539f65e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule540-verified-20261030.json",
+      "sha256": "a07158d93fc6552d202658cec15412251894366e9eaced0f420ed56ed24331b1"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule540-passive-tests.log",
+      "sha256": "7ae33b54461617ebf7da24ce1ebf2e39584892c5f21cbd76dfd9200b6f80326c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\report-rule540.py",
+      "sha256": "7b3427cbd5f96f81dc1201f7cb22227901e3cd8ea7a0d64fc0a7dfae5b2507a9"
+    }
+  ],
+  "remaining": [
+    "This is a loaded reflected CDO/class/nearest-declaration census for GetPassiveDefenseBuff only. Native virtual slot equality does not mean absence of Blueprint overrides: two are explicitly present.",
+    "The 2019 static-definition class names are all present, plus one BaseCardObject CDO. Class-name presence does not validate updated card values, asset versions, legal PvP scope, full card logic or the authoritative denominator.",
+    "No inherited non-base Blueprint passive was found among these CDO classes. This does not certify generic simulator inheritance resolution for other functions, unloaded/generated classes or future versions.",
+    "Actual match instances, per-instance dispatch, Unreal FFrame helpers, ProcessEvent, lifecycle/GC, reentrancy, malformed pointers and the full native wrapper remain open.",
+    "The two current Blueprint override byte streams equal the prior captured streams and independently decode. Existing bounded actual-card tests pass; full passive-body and adjacent-unit helper semantics are not newly certified.",
+    "No production code changed. Seven existing focused passive tests rerun this batch; the full975-test run belongs to RULE-539 and was not rerun here."
+  ]
+}

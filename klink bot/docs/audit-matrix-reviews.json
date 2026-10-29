@@ -2844,6 +2844,51 @@
         "511th Airborne repository IR and its current72B event stub/83B ubergraph are compared for this boolean-guarded operation-cost branch. No whole-card, legal-deck reachability, whole asset-version or end-to-end PvP certificate.",
         "Damage statistics, remaining T37/T38 arithmetic and all batch/death consumers are outside this output fix."
       ]
+    },
+    {
+      "id": "RULE-540/GetPassiveDefenseBuff/loaded-cdo-nearest-declaration",
+      "symbol": "GetPassiveDefenseBuff",
+      "modes": [
+        null
+      ],
+      "status": "partial",
+      "validated_scope": "当前已加载2019卡类及基类共2020个CDO的原生槽0x358、完整反射父类链和最近GetPassiveDefenseBuff声明；两处蓝图覆盖均为本类定义，未发现子类继承漏派发。只认证所列读取/映射范围，不认证全部ProcessEvent、单卡或PvP分母。",
+      "report": "out/audit/systematic-rules/passive-defense-loaded-cdo-inheritance-census-20261030.json",
+      "report_sha256": "82ef63d4dda671b8141dafd9ea43b85401cb358b55c2b0e5c1a7546d2c88854f",
+      "client_exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+      "source_bindings": {
+        "src/KLink.Bot/Effects/CardApi.cs": "7fd3ab67241d4368c8c2c3dcefc9b7e61764b8d23126d9dd9a163e6f979eac33",
+        "src/KLink.Bot/Effects/Blueprint/KismetIr.cs": "93d4db96852427ad24d656f01153c2c29439d9d80651a454e1435985317ee34c",
+        "klink bot/docs/card-ir.json": "526812fa8dc0934f1d6ecd3794053871fa6b701c2b5df3fd1edb3c38513ba2e9",
+        "tools/BotSim/SelfTest.CalculationOutputs.cs": "b6c29678332b9f8014710af24db0be8be9faef305c9de6e66f285f21ae4bb14e",
+        "tools/BotSim/SelfTest.AmbushNumeric.cs": "9d492f98507eeecee87957f72c6f94b58f253f82eea31b315ec785b7f7855080",
+        "tools/BotSim/SelfTest.PassiveMitigation.cs": "45569827c867aa72290a75dcd6142ce40e6405f6933a5ec26487e892ee773a5c"
+      },
+      "evidence_bindings": {
+        "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule540-passive-inheritance-v2-20261030.json": "2c3ddfdf694798f5d2fc506e631a898ae68a6bfcc9f83987f4984429228bda22",
+        "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule540-passive-inheritance-20261030.json": "d5db08a13a216190e925cfd291cc058074663edb29e6651ebd66fb02d0066d92",
+        "D:\\Codex Workshop\\kards-install-review\\capture-rule540-passive-inheritance.py": "68c5e61d8455574f23047c08d448f063b07af6c963ac1baa6fe9fb3f7b530432",
+        "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-498.py": "254664d0aa1146756993fda4ac54e58891709c0ec5bcdd2cfa852f874c4e67ef",
+        "D:\\Codex Workshop\\kards-install-review\\prepare-rule540-worker.py": "75ef9fd46c7082a644091f4af3872d00174b6cadc2ddf923c3c44aa6838bd3a6",
+        "D:\\Codex Workshop\\kards-install-review\\rule540-worker\\input.json": "c27e69982d07c38e7bc1c905238eb41532fba5bffc1ebd952d5bb106b6af2238",
+        "D:\\Codex Workshop\\kards-install-review\\rule540-worker\\output.json": "2c6894f47265795f475148cf01cca20b23674bf703497f6e5bd3f1e3a997bf12",
+        "D:\\Codex Workshop\\kards-install-review\\rule540-worker\\calculate.py": "e42d1ff938f59f0747cc51417c0bb03cded589d9b9c2d9483fc5ae6bbb3fb0be",
+        "D:\\Codex Workshop\\kards-install-review\\verify-rule540.py": "0c746d7b1615a9dbe86365650169f82066a6970807021ff89f83ebe0d1d73907",
+        "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule539-passive-default-native-20261029.json": "8b2e81fa9ade32640c4c4984e1a123d36dbf6965ebba6a2fbe55ffd22732f11f",
+        "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule539-calculation-output-functions-20261029.json": "82732dd1587d4b32d0e8565781cc5c30cefc2f0ed07498d4d69e07a07db5be80",
+        "D:\\Codex Workshop\\kards-install-review\\cards.definitions.json": "122e051175ba711975269838fe1097946fe23bab41cbe0db535b3ec5f539f65e",
+        "D:\\Codex Workshop\\kards-install-review\\rule540-verified-20261030.json": "a07158d93fc6552d202658cec15412251894366e9eaced0f420ed56ed24331b1",
+        "D:\\Codex Workshop\\kards-install-review\\rule540-passive-tests.log": "7ae33b54461617ebf7da24ce1ebf2e39584892c5f21cbd76dfd9200b6f80326c",
+        "D:\\Codex Workshop\\kards-install-review\\report-rule540.py": "7b3427cbd5f96f81dc1201f7cb22227901e3cd8ea7a0d64fc0a7dfae5b2507a9"
+      },
+      "limitations": [
+        "This is a loaded reflected CDO/class/nearest-declaration census for GetPassiveDefenseBuff only. Native virtual slot equality does not mean absence of Blueprint overrides: two are explicitly present.",
+        "The 2019 static-definition class names are all present, plus one BaseCardObject CDO. Class-name presence does not validate updated card values, asset versions, legal PvP scope, full card logic or the authoritative denominator.",
+        "No inherited non-base Blueprint passive was found among these CDO classes. This does not certify generic simulator inheritance resolution for other functions, unloaded/generated classes or future versions.",
+        "Actual match instances, per-instance dispatch, Unreal FFrame helpers, ProcessEvent, lifecycle/GC, reentrancy, malformed pointers and the full native wrapper remain open.",
+        "The two current Blueprint override byte streams equal the prior captured streams and independently decode. Existing bounded actual-card tests pass; full passive-body and adjacent-unit helper semantics are not newly certified.",
+        "No production code changed. Seven existing focused passive tests rerun this batch; the full975-test run belongs to RULE-539 and was not rerun here."
+      ]
     }
   ],
   "scope_reviews": {},
