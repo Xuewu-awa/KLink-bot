@@ -350,6 +350,8 @@ public sealed partial class CardApi
             RunTriggerProgram(library, attacker, attacker.Name, own, defender,
                 eventArgs: new object?[] { defender, afterShockAttack, attackCost },
                 namedArgs: new Dictionary<string, object?> {
+                    // Canonical reflected OnAfterAttack parameters, plus existing aliases.
+                    ["defenderCard"] = defender, ["wasShockAttack"] = afterShockAttack,
                     ["defender"] = defender, ["afterShockAttack"] = afterShockAttack, ["attackCost"] = attackCost });
         }
         var recipients = CaptureRegisteredTriggerSnapshot(other);
@@ -1946,11 +1948,11 @@ public sealed partial class CardApi
     }
 
     /// <summary>AttackCard calculates both directions, then ExecuteAttackCard resolves them in phases.</summary>
-    internal (int ToDefender, int ToAttacker) DealCombatDamagePair(
+    internal (int ToDefender, int ToAttacker, bool AfterShockAttack) DealCombatDamagePair(
         CardInstance attacker, CardInstance defender)
     {
         int toDefender = CalculateCombatDamage(attacker, defender, true);
-        int toAttacker = CalculateCombatDamage(defender, attacker, false);
+        int toAttacker = CalculateCombatDamageWithFlags(defender, attacker, false, out bool afterShockAttack);
         toDefender = ExecuteOnDealDamageAddDamageAfterCalc(attacker, defender, toDefender, true, true, false);
         toAttacker = ExecuteOnDealDamageAddDamageAfterCalc(defender, attacker, toAttacker, true, false, false);
         int defenderCardId = defender.CardId; // Cached before receive/deal callbacks.
@@ -2014,24 +2016,31 @@ public sealed partial class CardApi
         if (defenderDestroyed && State.GetLocationCardId(Side.Left) == defenderCardId)
         {
             State.Finish(Side.Right, "Victory_DestroyHQ");
-            return (toDefender, toAttacker);
+            return (toDefender, toAttacker, afterShockAttack);
         }
         if (defenderDestroyed && State.GetLocationCardId(Side.Right) == defenderCardId)
         {
             State.Finish(Side.Left, "Victory_DestroyHQ");
-            return (toDefender, toAttacker);
+            return (toDefender, toAttacker, afterShockAttack);
         }
         if (!defenderDestroyed && toDefender > 0 && defender.Keywords.Contains(Keyword.Mobilize)) RemoveMobilize(defender);
         if (attackerDestroyed && defenderDestroyed) _engine.DestroyCombatPair(defender, attacker, defenderOldLocation, attackerOldLocation);
         else if (attackerDestroyed) _engine.DestroyFromCombatDamage(attacker, defender);
         else if (defenderDestroyed) _engine.DestroyFromCombatDamage(defender, attacker);
         if (!attackerDestroyed && toAttacker > 0 && attacker.Keywords.Contains(Keyword.Mobilize)) RemoveMobilize(attacker);
-        return (toDefender, toAttacker);
+        return (toDefender, toAttacker, afterShockAttack);
     }
 
     /// <summary>CalculateDamageDealt with the four flags passed by ordinary AttackCard.</summary>
     private int CalculateCombatDamage(CardInstance dealer, CardInstance receiver, bool isAttacker)
+        => CalculateCombatDamageWithFlags(dealer, receiver, isAttacker, out _);
+
+    private int CalculateCombatDamageWithFlags(CardInstance dealer, CardInstance receiver, bool isAttacker,
+        out bool afterShockAttack)
     {
+        // RULE-539: receiver immunity returns wasShockAttack=false immediately;
+        // otherwise the retaliation Shock gate supplies this separate output.
+        afterShockAttack = false;
         if (receiver.Keywords.Contains(Keyword.Immune)) return 0;
         int damage = ExecuteOnDealDamageAddDamage(dealer, receiver, dealer.Attack, true, false, !isAttacker);
         int reverseDamage = ExecuteOnDealDamageAddDamage(receiver, dealer, receiver.Attack, true, false, isAttacker);
@@ -2054,8 +2063,14 @@ public sealed partial class CardApi
         }
         // i=2043..2853: artillery, bomber, anti-air and Shock retaliation gates.
         if (!isAttacker && (IsArtillery(receiver) || MatchEngine.IsBomber(dealer)
-            || MatchEngine.IsBomber(receiver) && dealer.Definition.Type != "fighter" && !IsAntiAir(dealer)
-            || IsUnit(dealer) && receiver.Keywords.Contains(Keyword.Shock))) damage = 0;
+            || MatchEngine.IsBomber(receiver) && dealer.Definition.Type != "fighter" && !IsAntiAir(dealer))) damage = 0;
+        // i=2656..2876 runs independently of the previous retaliation gates.
+        // AttackCard saves this output before T38 and damage/keyword removal.
+        if (!isAttacker && IsUnit(dealer) && receiver.Keywords.Contains(Keyword.Shock))
+        {
+            damage = 0;
+            afterShockAttack = true;
+        }
         if (damage <= 0) return damage;
         // RULE-538: i=2936 caches armor before i=3028 invokes the receiver's
         // passive function, even when armor will absorb all damage. Ordinary

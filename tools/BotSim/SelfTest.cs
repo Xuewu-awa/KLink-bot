@@ -20,6 +20,10 @@ internal static partial class SelfTest
 
     private static readonly List<Case> Cases = new()
     {
+        new("预计算输出：无蓝图覆盖的被动零回退", PassiveDefaultZeroContract),
+        new("预计算输出：攻击后冲击与通知标志分开", AfterShockOutputPayload),
+        new("预计算输出：冲击取伤害修正后的反击结果", AfterShockOutputTiming),
+        new("预计算输出：第511空降团真实IR行动费", Airborne511AfterShockIntegration),
         new("受伤方被动：288组调用、抑制和重甲快照", PassiveMitigationReference),
         new("受伤方被动：免疫反击限制先于调用，重甲减零仍调用", PassiveMitigationGates),
         new("受伤方被动：第48装甲步兵真实IR且不重复扣除", Armored48PassiveMitigationIntegration),

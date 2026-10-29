@@ -2827,12 +2827,11 @@ public sealed class MatchEngine
             return true;
         }
 
-        bool shockAttack = !defender.IsHq && attacker.Keywords.Contains(Keyword.Shock);
         Say($"⚔ {attacker} → {defender} 攻击，行动费 {attackCost}");
         var damage = Api.DealCombatDamagePair(attacker, defender);
 
         // Own after-attack event precedes the T4 query, including lethal HQ attacks.
-        Api.ExecuteAfterAttackEvents(attacker, defender, damage.ToDefender, shockAttack, attackCost);
+        Api.ExecuteAfterAttackEvents(attacker, defender, damage.ToDefender, damage.AfterShockAttack, attackCost);
         FireOperationKreditsSpent(attacker, attackCost);
         CheckDeaths();
         return true;

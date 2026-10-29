@@ -167,7 +167,13 @@
         "event-order-regressions.json"
       ],
       "effort_estimate": "not_sized",
-      "status_basis": "planning taxonomy; historical partial evidence is not domain completion"
+      "status_basis": "planning taxonomy; historical partial evidence is not domain completion",
+      "progress_notes": [
+        "RULE-539确认基类被动默认体零输出；修复攻击后冲击取值过早及真实事件wasShockAttack参数未绑定的问题，第511空降团免疫案例不再误降行动费。30离线机器码实例、16原AST谓词及975项回归通过；完整原生派发/计算与其他事件名仍开放。"
+      ],
+      "current_deliverables": [
+        "out/audit/systematic-rules/calculation-after-shock-output-and-native-default-proof-20261030.json"
+      ]
     },
     {
       "id": "TURN-01",
@@ -220,7 +226,8 @@
         "RULE-535修复普通战斗按类型/当前归属判总部及保留对象单死被区域守卫截断的问题，并开放双死离场的位置类型对象；20受控场景、24原AST分支及962项回归通过。战斗有界防御读取、溢出数值和完整触发链仍开放。",
         "RULE-536修复战斗原始防御读取、溢出及零伤害不写入；216原AST数值、16低层减法和M18真实IR通过，完整965项回归通过。伤害预计算/伏击、完整T37/T38、批量数值及HQ统计仍开放。",
         "RULE-537修复伏击阈值使用原始防御且在被动调用后读取防御/重甲的问题；216原AST数值、两种改值顺序及第511团IR通过，968项回归通过。Attack属性已投影0..99；T37/T38、预览/攻击前buff及完整计算输出仍开放。",
-        "RULE-538补齐普通攻击正伤害阶段受伤方GetPassiveDefenseBuff调用，先缓存重甲且不重复扣返回值；288输入、7门控、第48装甲步兵IR及971项回归通过。现有纯查询被动的普通数值影响未确立；原生默认派发、预览和完整计算仍开放。"
+        "RULE-538补齐普通攻击正伤害阶段受伤方GetPassiveDefenseBuff调用，先缓存重甲且不重复扣返回值；288输入、7门控、第48装甲步兵IR及971项回归通过。现有纯查询被动的普通数值影响未确立；原生默认派发、预览和完整计算仍开放。",
+        "RULE-539确认基类被动默认体零输出；修复攻击后冲击取值过早及真实事件wasShockAttack参数未绑定的问题，第511空降团免疫案例不再误降行动费。30离线机器码实例、16原AST谓词及975项回归通过；完整原生派发/计算与其他事件名仍开放。"
       ],
       "current_deliverables": [
         "out/audit/systematic-rules/effect-damage-entry-redirect-final-modifiers-and-bool-out-fix-20261029.json",
@@ -231,7 +238,8 @@
         "out/audit/systematic-rules/combat-saved-hq-id-and-retained-death-removal-fix-20261029.json",
         "out/audit/systematic-rules/combat-bounded-defense-excess-and-zero-write-fix-20261029.json",
         "out/audit/systematic-rules/ambush-bounded-defense-and-pre-passive-snapshot-fix-20261029.json",
-        "out/audit/systematic-rules/receiver-passive-call-and-cached-armor-mitigation-fix-20261029.json"
+        "out/audit/systematic-rules/receiver-passive-call-and-cached-armor-mitigation-fix-20261029.json",
+        "out/audit/systematic-rules/calculation-after-shock-output-and-native-default-proof-20261030.json"
       ]
     },
     {

@@ -1,0 +1,151 @@
+{
+  "rule": "RULE-539",
+  "date": "2026-10-30",
+  "publishing_branch": "DinkyPuffer",
+  "base_commit": "5b7f9d6139ce818cd06a23493bd34859070ac199",
+  "client_exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "kernel_changed": true,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "findings": [
+    "BaseCardObject GetPassiveDefenseBuff native thunk calls CDO virtual slot0x358; target RVA0x15a3ee0 is mov dword ptr[r8],0;ret. Current runtime bytes equal installed PE. Existing zero fallback needs no change for this base target.",
+    "CalculateDamageDealt returns wasShockAttack=false on receiver immunity; otherwise the separate reverse-unit/receiver-Shock gate sets it. AttackCard caches the reverse output before T38 and forwards it to after-attack events. Simulator used an earlier keyword/type guess.",
+    "Own OnAfterAttack native event parameters are defenderCard/wasShockAttack/attackCost; dispatcher only named defender/afterShockAttack/attackCost. The unknown bool alias fell through to a card object, making real card boolean conditions truthy even after the computed payload became false."
+  ],
+  "authoritative_sequence": [
+    "CalculateDamageDealt255 explicitly returns false on receiver immunity;2656..2876 sets local shockAttack under reverse unit/Shock gate;4007 returns it.",
+    "AttackCard4004 reverse call,4076 caches its output,4220/4398 run T38,4576 resolves attack and4626 forwards cached Shock to ExecuteOnAfterAttackEvents.",
+    "ExecuteAttackCard704 and NotifyAttackCard use a distinct local wasShockAttack describing Shock removal after CantLoseShock checks; it must not replace the after-attack result.",
+    "ExecuteOnAfterAttackEvents calls own OnAfterAttack(defender,afterShockAttack,attackCost). Current511th stub stores wasShockAttack into persistent frame; its ubergraph10/24 conditionally applies ChangeOperationCost -3.",
+    "Observed ordinary AttackCard does not consume either CalculateDamageDealt receiver-death/before-attack-kill output; this is a bounded caller finding."
+  ],
+  "changes": [
+    "Carry a separate AfterShockAttack boolean through internal combat result from reverse calculation to MatchEngine after-attack dispatcher.",
+    "Keep existing3-argument int-return calculation wrapper for current internal reflection tests; expose flags through separate core method.",
+    "Bind canonical defenderCard/wasShockAttack event names while retaining existing aliases. Do not change generic VM fallback or attack-notification Shock-removal semantics.",
+    "No simulator change for the verified base native zero default."
+  ],
+  "validation": {
+    "native_default_offline_vectors": 30,
+    "shock_ast_vectors": 16,
+    "script_bytes": {
+      "BP_CardFunctions_C:AttackCard": 4789,
+      "BP_CardFunctions_C:CalculateDamageDealt": 4784,
+      "BP_CardFunctions_C:ExecuteOnAfterAttackEvents": 717,
+      "card_unit_511th_airborne_C:ExecuteUbergraph_card_unit_511th_airborne": 83
+    },
+    "simulator_scenarios": 24,
+    "new_regression_cases": 4,
+    "focused_before": "1 parity case passed;3 regression cases failed on original production bytes using final tests",
+    "focused_after": "4/4 passed",
+    "selftest_passed": 975,
+    "selftest_total": 975,
+    "prior_partial_units_scope_revalidated": 14
+  },
+  "real_card_integration": "511th Airborne controlled starting operation cost5, Shock and no immunity: after-attack branch reduces cost to2. With attacker immunity the native computed flag is false and cost remains5. Old code incorrectly reduced cost to2 in the immune case.",
+  "evidence_method": "Fresh read-only native UFunction/CDO/vtable capture plus current-PE byte comparison;30 copied-leaf Unicorn executions with output/object/stack guards and independently checked DeepSeek rows. Raw Blueprint bytes/FNames independently decoded;16 Shock predicate vectors and caller/stub/ubergraph dataflow checked. Evidence filenames retain batch-start20261029 labels where created before completion date.",
+  "remaining": [
+    "Base native default proof is limited to fresh BaseCardObject CDO slot0x358 and its8B leaf on valid synthetic buffers. Full Unreal FFrame argument readers, ProcessEvent/inheritance/other CDO targets, malformed pointers, GC/lifetime and future client changes are not universally certified.",
+    "Shock output tests cover ordinary attack/reverse calculation with live field predicates and controlled T37 mutations, not all type/immunity/ambush/before-attack-buff combinations or every global callback ordering.",
+    "Canonical wasShockAttack/defenderCard binding is fixed only for own OnAfterAttack. The generic VM fallback for other unknown event names still needs event-by-event audit.",
+    "Unused receiver-death/before-attack-kill outputs were traced only in the observed ordinary AttackCard caller; previews, MakeCardsFight/other callers and complete calculation outputs remain separate scopes.",
+    "511th Airborne repository IR and its current72B event stub/83B ubergraph are compared for this boolean-guarded operation-cost branch. No whole-card, legal-deck reachability, whole asset-version or end-to-end PvP certificate.",
+    "Damage statistics, remaining T37/T38 arithmetic and all batch/death consumers are outside this output fix."
+  ],
+  "source_bindings": {
+    "src/KLink.Bot/Effects/CardApi.cs": "7fd3ab67241d4368c8c2c3dcefc9b7e61764b8d23126d9dd9a163e6f979eac33",
+    "src/KLink.Bot/Engine/MatchEngine.cs": "8b32754076c45a546c4f39cf9971e909b254a705d675c2ca8a47eac13ac69cdd",
+    "src/KLink.Bot/Engine/CardInstance.cs": "350c5d79a51fe68af6af4769abd18764dcbfa36cdcae06cc91b7d553754551da",
+    "src/KLink.Bot/Effects/Blueprint/KismetVm.cs": "9f412b103c4701413902a3def18a170bb2a8719a8901199f21e4ff6c40c9c173",
+    "klink bot/docs/card-ir.json": "526812fa8dc0934f1d6ecd3794053871fa6b701c2b5df3fd1edb3c38513ba2e9",
+    "tools/BotSim/SelfTest.cs": "60b4474b0b753d3d6932ba6f574d982a4ae4cadcf089a0235e4e3c83072bf871",
+    "tools/BotSim/SelfTest.CalculationOutputs.cs": "b6c29678332b9f8014710af24db0be8be9faef305c9de6e66f285f21ae4bb14e",
+    "tools/BotSim/SelfTest.AmbushNumeric.cs": "9d492f98507eeecee87957f72c6f94b58f253f82eea31b315ec785b7f7855080"
+  },
+  "evidence_bindings": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule539-calculation-output-functions-20261029.json",
+      "sha256": "82732dd1587d4b32d0e8565781cc5c30cefc2f0ed07498d4d69e07a07db5be80"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule539-calculation.py",
+      "sha256": "6d715e16a7a501fdd2ce59425672123070211511255c582feeb7b3492ef570a0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-498.py",
+      "sha256": "254664d0aa1146756993fda4ac54e58891709c0ec5bcdd2cfa852f874c4e67ef"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule539-passive-default-native-20261029.json",
+      "sha256": "8b2e81fa9ade32640c4c4984e1a123d36dbf6965ebba6a2fbe55ffd22732f11f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule539-passive-default.py",
+      "sha256": "edb741f93ce68b6819c2676f8f8cd37e17e2f25f18489cf40a00377d20f8ca26"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\export-runtime-native-bodies.py",
+      "sha256": "76fb7baa48ba52d02e15de5fd3d07e868d6c41eeffcb4f9705389026aaec2b9b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\prepare-rule539-worker.py",
+      "sha256": "38f2c9cc0e9d8c327132dc2e9cefb7160816d3e98dc455a4a0b5e66fc0cbcb22"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule539-worker\\input.json",
+      "sha256": "c2f957a6d6e7e292bb56f5f45f95107b65312e8415446e4b7d533f23470342ff"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule539-worker\\output.json",
+      "sha256": "01dacbbea1256d1d188a08631f1bf7eddee0915ad18428a90acf9b3ff864d030"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule539-worker\\calculate.py",
+      "sha256": "dc593cc3af505d8c4cfcb6ca95f6dedfbef2f535b2c06f86c2c3ed9027caefaa"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule539-native-default-emulation-20261030.json",
+      "sha256": "cf38a28d41bace75b8af40d00923960314fe5043b029544728254f7619a17b4d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule539-shock-output-reference.json",
+      "sha256": "f70677eaab281a4d28482907dd5ef6d49a9b1b4cf542aee646c5b46ae5f85554"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule539.py",
+      "sha256": "44ce72cfaa9159e45aa3bfd92281c0794660f1535a3f5487bbb3cb7144f20fbc"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule539-verified-20261030.json",
+      "sha256": "7f7c96c0da16c7eb99b453a1fe14b8fe59a0325155007e435135f528e277b5e0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule539-prior-unit-scope-revalidation.json",
+      "sha256": "c0312b7db442f21215e3c057cc51280487ed2dca44bc688ee8e5329952f8df3c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\patch-rule539.py",
+      "sha256": "69519e2988e68bd4be91b295107140287e7d07649da2c4004883319a8a97de78"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\retest-rule539-before.py",
+      "sha256": "cf02ce587c32b130eaab893a95c2dfde8bd46df8550b53d4cc15599aa9e62756"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule539-focused-before.log",
+      "sha256": "2416d3416f4f6491fb53d53d56143ae9b3b2b5f4c3f6a130df81ed12ae8b9b76"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule539-focused-after.log",
+      "sha256": "0dfbf1cfc2f574b91e69109f871c30d9f3250e10d6abd4d8f3a453c2d030e567"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule539-selftest-final.log",
+      "sha256": "7f78c4f80291e40b0c0e6c129e0e543a4ff69c70867b77f05c0fcc69c3a2fbd1"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\report-rule539.py",
+      "sha256": "38dd608392c81d1aef0658970600587dc286eaf4cd9cdef445f4fe4c18fa24bc"
+    }
+  ]
+}
