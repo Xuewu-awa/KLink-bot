@@ -11,6 +11,8 @@ public interface IPlayerPolicy
     string Name { get; }
 }
 
+public enum GreedyStepResult { ActionApplied, TurnEnded, Finished, NotActive, PendingSelection }
+
 /// <summary>
 /// 贪心策略（baseline）。规则很简单，目的只是让对局能跑完、能产出数据：
 /// 1. 能打牌就打（费用高的优先，单位优先于指令）
@@ -33,36 +35,28 @@ public sealed class GreedyBot : IPlayerPolicy
 
     public bool PlayTurn(MatchEngine engine, Side side)
     {
-        var state = engine.State;
-        int guard = 0;
-
-        while (!state.IsFinished && guard++ < _maxActionsPerTurn)
+        for (int guard = 0; !engine.State.IsFinished && guard < _maxActionsPerTurn; guard++)
         {
-            if (state.ActiveSide != side)
-            {
-                return true;
-            }
-
-            if (TryPlayCard(engine, side))
-            {
-                continue;
-            }
-
-            if (TryAttack(engine, side))
-            {
-                continue;
-            }
-
-            if (TryMove(engine, side))
-            {
-                continue;
-            }
-
-            engine.EndTurn(side);
-            return !state.IsFinished;
+            var result = PlayStep(engine, side);
+            if (result == GreedyStepResult.ActionApplied) continue;
+            return !engine.State.IsFinished;
         }
+        return !engine.State.IsFinished;
+    }
 
-        return !state.IsFinished;
+    /// <summary>
+    /// One greedy policy step, including its candidate probes. This is not a legal
+    /// action enumerator or a rollback boundary for rejected engine calls.
+    /// </summary>
+    public GreedyStepResult PlayStep(MatchEngine engine, Side side)
+    {
+        if (engine.State.IsFinished) return GreedyStepResult.Finished;
+        if (engine.State.ActiveSide != side) return GreedyStepResult.NotActive;
+        if (engine.PendingSelectionCount != 0) return GreedyStepResult.PendingSelection;
+        if (TryPlayCard(engine, side) || TryAttack(engine, side) || TryMove(engine, side))
+            return engine.State.IsFinished ? GreedyStepResult.Finished : GreedyStepResult.ActionApplied;
+        engine.EndTurn(side);
+        return engine.State.IsFinished ? GreedyStepResult.Finished : GreedyStepResult.TurnEnded;
     }
 
     private static bool TryPlayCard(MatchEngine engine, Side side)

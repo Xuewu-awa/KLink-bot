@@ -1,0 +1,214 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-30",
+  "batch": "training-decision-sampling",
+  "base_commit": "eec109d4a08c894e2d9650635f0a59dc4b65e528",
+  "game_rules_changed": false,
+  "production_dump_uses_adapter": true,
+  "rule_certification_promoted": false,
+  "implementation": {
+    "main_boundary": "GreedyBot.PlayStep:onegreedy policy step including candidate probes;pending/finished/inactive stops",
+    "sampling_modes": [
+      "turn-end/v1(default)",
+      "policy-and-choice-before/v1(explicit --sampling decision)"
+    ],
+    "sampling_every": "turn:currentTurn moduloN;decision:per-episode combined boundary indices0,N,2N",
+    "observation_perspective": "AlwaysLeft;Actor metadata does not change outcome label or pair orientation",
+    "budget": "500turn calls,atmost200steps each",
+    "quality_gate_version": 2,
+    "legacy_gate1_readable": true,
+    "new_reasons": [
+      "choice_fault",
+      "driver_fault",
+      "pending_choice"
+    ],
+    "row_metadata": "AcceptedSampleKinds/SampleActors align binary rows by game;0turnEnd/1mainBefore/2choiceBefore",
+    "assembly_provenance": [
+      "KLink.Bot.dll",
+      "NNTrain.dll"
+    ]
+  },
+  "validation": {
+    "focused_groups": 3,
+    "core_selftests": 994,
+    "admission_checks": 28,
+    "paired_modes": 100,
+    "paired_and_frozen_action_traces_rng_outcomes_diagnostics_match": true,
+    "turn_rows": 2635,
+    "turn_binary_identical_to_old": true,
+    "decision_rows": 12610,
+    "main_boundaries": 11746,
+    "choice_boundaries": 864,
+    "every2_rows": 6329,
+    "every2_binary_records_and_metadata_are_per_game_stride2": true,
+    "all_datasets_accepted_games": 100,
+    "all_new_fault_counts_zero": true,
+    "left_perspective_binary_labels_verified": true,
+    "value_model_smoke": {
+      "epochs": 1,
+      "shape": [
+        745,
+        8,
+        1
+      ],
+      "train_save_reload_verify": true,
+      "strength_claim": false
+    },
+    "prior_partial_scopes_revalidated": 28
+  },
+  "limitations": [
+    "Step API executes the fixedGreedy policy;candidate probes can mutate state on rejection. No generic external action executor,certified legalmask,action features or atomicrollback. Blocking pending choices is intentional;100finished episodes are bounded equivalence evidence.",
+    "Decisionbinary contains fixedLeft value observations/outcome labels,not action labels/rewards/masks or an RL policy trajectory. Samplingmodes have different distributions;downstream models still need explicit sampling-distribution binding.",
+    "Choicepolicy is first-index/v1,synchronous. Inline/singleton/zerooffer paths may bypass hooks;async choice andfull metadata/visibility contracts remain open.",
+    "Driver catches ordinary exceptions and rejects the episode;OutOfMemory is not swallowed. Errors are checked when control returns to driver,not guaranteed immediate interruption inside every legacy callback. Exception-partial state is diagnostic only,not a resumable transaction.",
+    "Gate2 adds error andmetadata consistency checks;legacyGate1 remains readable without inventing missing counters. JSON/data hashes are provenance/integrity checks,not a signed security boundary or rule fidelity proof.",
+    "No new game-rule/card certification. ThreehistoricalQueenOwnlong seeds remain unfinished regression seeds;not rerun as a new1000gameclaim.100samplebaseline andone-epochvaluefit do not establish strength,encoding quality or global audit completion."
+  ],
+  "source_bindings": {
+    "src/KLink.Bot/Bots/GreedyBot.cs": "c963c73462fde999093c0d3a15e4717b1e42afd023a229e235ffb43316e62d72",
+    "tools/BotSim/SelfTest.cs": "0bdf585752126a9a7b2f5c9701767c908fd453a905a38f8b53130718ee138686",
+    "tools/NNTrain/AdmissionSelfTest.cs": "433c5ccbf5b84c832715ef5dccee15b20efeec283de8ed6c218b88d6165c9475",
+    "tools/NNTrain/Program.cs": "7cb1dfc313012aed1896c9c6d6a71e7fef3b8cda9a9517407e13ed0ebcd3cd7d",
+    "tools/NNTrain/TrainingAdmission.cs": "32b1eb944bf75e3e4f96d4ef89696231a0bccdd0155a0ef842fa232ecad2ee29",
+    "src/KLink.Bot/Training/GreedyEpisodeRunner.cs": "2ec0ef58e09361b33743ae5b4b4a8cf901f45868822ee5fac9b942df77ad75f7",
+    "tools/BotSim/SelfTest.DecisionSampling.cs": "fdc1fae85cf80d7e0afc24d550f56149452a87b9e47b83d6fdc5fa0d0247fce2",
+    "src/KLink.Bot/Training/ChoicePolicyAdapter.cs": "fb29b28fc40d93dd3cc6a8d077c9dc5747aa982abeddbd1d6e78572fab3d0a4e",
+    "src/KLink.Bot/Engine/MatchEngine.cs": "8b32754076c45a546c4f39cf9971e909b254a705d675c2ca8a47eac13ac69cdd",
+    "src/KLink.Bot/Effects/Blueprint/KismetVm.cs": "f831c4f23b4ca4db1db08df6b6f75a0d43e9a0dd96b6a8e1d63a3ceff1e2b150",
+    "src/KLink.Bot/NN/StateEncoder.cs": "8da023351d65a32e1ca22ccf1dd9e86f86652316ffb6735b60374516752e90e7"
+  },
+  "evidence_bindings": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\prepare-decision-sampling.py",
+      "sha256": "f42a20cfd02f2c625a6d7c94162b3f5a517c2c5915fbf42019f0b5e7edf4edce"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\patch-decision-sampling-cli.py",
+      "sha256": "0142172cfe2706657d5730af35d63831d2f69d4f432adde8dba83cfaf24c9644"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\patch-decision-driver-provenance.py",
+      "sha256": "55f03ae054f639f3324a913d02df71ca417c5c37f7f4b0bbe4464189e03098e2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-decision-sampling-source.py",
+      "sha256": "d0a116c044346d1e75d384c7ee6b26af0ce68478df7d50a078b73d2202186f4f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\decision-sampling-source-verified.json",
+      "sha256": "6e4ff176d6a771180d406c56e02920dbae357d223980615d11b189d1507dcc9f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-decision-sampling-data.py",
+      "sha256": "4590907a7ed9019af547d691f841a97cf86e8da6695f29265f22b1b3fd627bfc"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\decision-sampling-data-verified.json",
+      "sha256": "05ee549fc26e6afff76e0cd9e721033712decae809e42bd12a8acbc447efb34b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\decision-sampling-worker\\TrainingAdmission.cs",
+      "sha256": "77b439193f835b6a10fa6839b310fc2d54c528ad37d66d40fb4f5f1e982b5c07"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\decision-sampling-worker\\AdmissionSelfTest.cs",
+      "sha256": "e9147ced4541438a7bbfb9dbe3b9007c26e28e14a4ecb87ebb24b719d43b06c7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\decision-sampling-worker\\inventory.json",
+      "sha256": "ab22a1de69cd7e5b31a8a9cf8e7ae0c18a1a33073800d5ea245a90b9b025b7a0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\decision-sampling-worker\\task.txt",
+      "sha256": "c6be4cf8b217ecc70ca531f47b0ea5c815841e350e34d460d78f63142923e644"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\decision-sampling-focused.log",
+      "sha256": "8dd3bff9c88449a33df0f6a38607fec0a8266f78455971e8bf6a6ff25de1b789"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\decision-sampling-selftest.log",
+      "sha256": "aead861163a3877b4ff3532652162a6d14336e6196b1cadbaeb27a8322a09c54"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\decision-sampling-admission.log",
+      "sha256": "7c33a645d702b02fbc40d08be47d2d1716dac79c29a899dc1e6636629025d4f1"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\sampling-turn-100.bin",
+      "sha256": "6a167b614a1efe26adf577541d443c22836ae7292d57d83935ff84cd4e0063f6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\sampling-turn-100.bin.quality.json",
+      "sha256": "8c457da3b68dff4d20498013312f79998abbe85462be18ff2fb55adcc05afb4a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\sampling-turn-100.log",
+      "sha256": "6234811a0bbcd01f9828e9fe9f8b188d5adb56f51a443f550cc88aac1cdca8eb"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\sampling-decision-100.bin",
+      "sha256": "fc8718a776757d0fd815b905838e09402850512621874c6cbb5560032cb669e4"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\sampling-decision-100.bin.quality.json",
+      "sha256": "4094792a2332e325b12cbb308880bc367c39695ce71f7e6c494189fc07758584"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\sampling-decision-100.log",
+      "sha256": "e87e3d48ea4fec6021b4416b323cd4ac509e50cbfa1ec74af005892c2573a5eb"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\sampling-decision-every2-100.bin",
+      "sha256": "9ceb912e8976f7b61f76745a931c950b44e11f25eb793deee42fbc793fa9fba7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\sampling-decision-every2-100.bin.quality.json",
+      "sha256": "cbd3be5f32e877fafc822e113725ef611569783a5933518633074e9fd92e6084"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\sampling-decision-every2-100.log",
+      "sha256": "a937624f27c71a29820dad9c45ab9da2ca0df8056b0b006b8f589b4bfc8bc30b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\sampling-decision-model.bin",
+      "sha256": "008dd3e022e2433d97318657a63c5682ac462eb2d1e9f5eee323028015075f67"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\sampling-decision-train.log",
+      "sha256": "eaa1dff5a51df61c2f5bae28f2d6a2fb76addaf389f527ac26dfef1383b59adb"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\sampling-decision-verify.log",
+      "sha256": "48f6b1ab911fc7c2e2b4baccff513b6702f55c13f0b409bca859199f5c75614e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\DecisionSamplingProbe\\Program.cs",
+      "sha256": "74ffae1ab70b0bb134b2d635f8aecfe8636c75760c4120b88996a332f6aed75c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\DecisionSamplingProbe\\DecisionSamplingProbe.csproj",
+      "sha256": "898fa414110d03a5d33cda4364e03bc1dbb3ea0042ba23aaaef0a6e78a6eb0e6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\decision-sampling-100-verified.json",
+      "sha256": "5cc2d1418a8c2feff0d78648935b4801e6499a623545346f8087470216087a50"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\decision-sampling-100.log",
+      "sha256": "7148b66335bc701ada2ee95691cab2031ab8b48b4b068444a4bb8d2dfe2577e8"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\choice-adapter-100-verified.json",
+      "sha256": "5a3e40f2495bce198d257fa8d3d6b4cdde2ac72cedf93c63fb1dc509f9674b35"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\decision-sampling-prior-scope-revalidation.json",
+      "sha256": "08d477a7521caef48e56d571274b7749fd3b2f559188249ab77e1c0542a99df5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\record-decision-sampling.py",
+      "sha256": "2abda41df9fa603d23b6ba8312608712f0bb33d013ba7ac2bcaaeb14cb0878d3"
+    }
+  ]
+}

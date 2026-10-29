@@ -20,6 +20,9 @@ internal static partial class SelfTest
 
     private static readonly List<Case> Cases = new()
     {
+        new("决策采样驱动：单步主动作与待选门", GreedySingleStepBoundary),
+        new("决策采样驱动：采样模式保持轨迹及every语义", DecisionSamplingPreservesEpisode),
+        new("决策采样驱动：选牌错误独立上报", DecisionRunnerChoiceFault),
         new("策略选择接口：手牌索引取消及快照", PolicyChoiceHand),
         new("策略选择接口：牌库和预报候选", PolicyChoiceOffered),
         new("策略选择接口：非法回答与回调所有权", PolicyChoiceInvalidAndOwnership),

@@ -482,15 +482,15 @@
     "active_plan": "klink bot/docs/训练闭环推进-20261030.md",
     "measurements": "out/training-readiness/baseline-20261030.json",
     "priority_order": [
-      "Main-action candidate/execution boundary and per-decision sampling",
-      "Connect synchronous choice adapter andFaults to training driver quality manifest",
-      "Observation/action/model contracts and admitted starter pool closure",
-      "Async choice metadata and visibility limitations",
-      "ThreeQueenOwnlong episodes remain rejection/regression seeds"
+      "Generic main-action selection/execution contract and action features",
+      "Candidate-probe isolation and observation visibility contracts",
+      "Bind model metadata to sampling distribution and integrate learned policy",
+      "Async choice metadata and starterpoolclosure",
+      "QueenOwnlong seeds retained as unfinished diagnostics"
     ],
     "deferred": "Unproven normal-PvP boundary refinements unless they block the active loop.",
     "batch_policy": "Integrate related changes and run complete tests/inventories once per completed batch.",
     "rule_scope_or_completion_denominator_changed": false,
-    "latest_result": "Synchronous choice-policy adapterv1 added with immutable options/actor observation,index validation andcallback ownership.100paired episodes/864choices match trace,RNG,outcome/diagnostics.991core+17admission checks. No native rule change or productionNNTrain adapter integration yet."
+    "latest_result": "NNTrain now uses synchronous choice adapter and boundedGreedyEpisodeRunner;explicit decision sampling andGate2choice/driver/pending rejection.100games:turn2635bytesidenticaltoold;decision12610rows(11746main+864choice);every2=6329recordsverifiedstride2.994core+28admission. Stillvalue data/fixedGreedy,not generic policy training."
   }
 }

@@ -4,6 +4,7 @@ using KLink.Bot.Bots;
 using KLink.Bot.Cards;
 using KLink.Bot.Engine;
 using KLink.Bot.NN;
+using KLink.Bot.Training;
 
 namespace KLink.Bot.NNTrain;
 
@@ -123,17 +124,25 @@ internal static class Program
         ulong seed = (ulong)GetInt(opts, "seed", 1);
         string outPath = opts.GetValueOrDefault("out", "nn-data.bin");
         int everyTurns = GetInt(opts, "every", 1);
+        var sampling = opts.GetValueOrDefault("sampling", "turn") switch
+        {
+            "turn" => EpisodeSampling.Turn,
+            "decision" => EpisodeSampling.Decision,
+            _ => throw new ArgumentException("--sampling 必须是 turn 或 decision")
+        };
 
         if (games <= 0 || everyTurns <= 0) throw new ArgumentException("--games 和 --every 必须大于零");
         if (KLink.Bot.Effects.Blueprint.KismetLibrary.Default is null)
             throw new InvalidOperationException("蓝图 IR 未加载，不能生成训练数据");
         var decks = MetaDecks.All;
         var expanded = decks.Select(d => ExpandDeck(db, d.Name)).ToArray();
-        var quality = new QualityReport { Seed=seed, RequestedGames=games, Dim=Dim, DeckCount=decks.Count };
+        var quality = new QualityReport { Seed=seed, RequestedGames=games, Dim=Dim, DeckCount=decks.Count,
+            SamplingMode=sampling==EpisodeSampling.Turn ? "turn-end/v1" : "policy-and-choice-before/v1" };
         string inputDir = FindDir("card-effects.json");
         foreach (string file in Directory.EnumerateFiles(inputDir,"*.json").OrderBy(x=>x,StringComparer.Ordinal))
             quality.InputsSha256[Path.GetFileName(file)] = TrainingAdmission.Hash(file);
         quality.InputsSha256["KLink.Bot.dll"] = TrainingAdmission.Hash(typeof(MatchEngine).Assembly.Location);
+        quality.InputsSha256["NNTrain.dll"] = TrainingAdmission.Hash(typeof(Program).Assembly.Location);
         Console.WriteLine($"自对弈 {games} 局；每局从 {decks.Count} 套元卡组里**随机抽 2 套不同的**"
                           + "（seed 派生的独立随机流）+ 左右随机互换，输出 " + outPath);
 
@@ -180,33 +189,23 @@ internal static class Program
             var right = expanded[rightIdx];
 
             var engine = new MatchEngine(db, left, right, seed + (ulong)g);
-            var botL = new GreedyBot("L");
-            var botR = new GreedyBot("R");
-            engine.Start();
-
-            var snapshots = new List<(float[] V, int Turn)>();
-            int guard = 0;
-            while (!engine.State.IsFinished && guard++ < 500)
-            {
-                var side = engine.State.ActiveSide;
-                if (side == Side.Left) botL.PlayTurn(engine, side);
-                else botR.PlayTurn(engine, side);
-
-                if (engine.State.Turn % everyTurns == 0)
-                {
-                    snapshots.Add((StateEncoder.Encode(engine.State, vecs, Side.Left), engine.State.Turn));
-                }
-            }
+            var result = GreedyEpisodeRunner.Run(engine, vecs, sampling, everyTurns);
+            var snapshots = result.Samples;
 
             if (!engine.State.IsFinished) unfinished++;
             var reasons = TrainingAdmission.Check(engine.State.IsFinished, engine.State.Winner,
                 engine.Api.Vm.FaultedPrograms, engine.Api.Vm.UnsupportedOps, engine.UnimplementedCalls,
                 KLink.Bot.Effects.Blueprint.KismetLibrary.Default is not null,
-                snapshots.Count, snapshots.All(s=>s.V.All(float.IsFinite)));
+                snapshots.Count, snapshots.All(s=>s.Observation.All(float.IsFinite)),
+                result.ChoiceFaults, result.DriverFaults, result.PendingChoices);
             var episode = new QualityGame { Game=g, Seed=seed+(ulong)g, LeftDeck=da, RightDeck=dbName,
                 Accepted=reasons.Length==0, Reasons=reasons, Turns=engine.State.Turn,
                 ObservedSamples=snapshots.Count, WrittenSamples=reasons.Length==0 ? snapshots.Count : 0,
                 VmFaults=engine.Api.Vm.FaultedPrograms,
+                ChoiceFaults=result.ChoiceFaults, DriverFaults=result.DriverFaults, PendingChoices=result.PendingChoices,
+                MainDecisions=result.MainDecisions, ChoiceDecisions=result.ChoiceDecisions, DriverError=result.DriverError ?? "",
+                SampleKinds=reasons.Length==0 ? snapshots.Select(s=>(int)s.Kind).ToArray() : [],
+                SampleActors=reasons.Length==0 ? snapshots.Select(s=>(int)s.Actor).ToArray() : [],
                 UnsupportedOps=engine.Api.Vm.UnsupportedOps.ToDictionary(p=>p.Key,p=>p.Value),
                 Calls=engine.UnimplementedCalls.ToDictionary(p=>p.Key,p=>p.Value) };
             quality.Games.Add(episode);
@@ -220,8 +219,9 @@ internal static class Program
             // pair = 左卡组下标 × deckCount + 右卡组下标。
             float pairId = leftIdx * decks.Count + rightIdx;
 
-            foreach (var (v, _) in snapshots)
+            foreach (var sample in snapshots)
             {
+                var v = sample.Observation;
                 foreach (float x in v) bw.Write(x);
                 bw.Write(label);      // 该视角方（= 左方）最终是否获胜
                 bw.Write((float)g);   // ⭐ 对局号 —— 切分必须按对局，不能按样本
@@ -926,7 +926,9 @@ internal static class Program
             dump 拒绝异常/未支持/未结束对局；有拒绝或无样本时返回2。
             train/verify 要求匹配的 .quality.json；诊断通过不等于规则已认证。
 
-              NNTrain dump   --games 10000 --out nn-data.bin [--seed 1] [--every 1]
+              NNTrain dump   --games 10000 --out nn-data.bin [--seed 1] [--every 1] [--sampling turn|decision]
+            sampling=turn保留回合末样本；decision在贪心步骤及选牌回答前采样，every按边界序号抽样。
+            两者均为左方视角的胜负价值样本；decision还不是动作标签/掩码数据。
               NNTrain train  --data nn-data.bin [--epochs 30] [--hidden 64]
                              [--out nn-model.bin] [--split-seed N] [--target win|pair]
               NNTrain verify --data nn-data.bin [--model nn-model.bin] [--split-seed N]
