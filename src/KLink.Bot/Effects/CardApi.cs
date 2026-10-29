@@ -1842,10 +1842,9 @@ public sealed partial class CardApi
         if (dealer is not null && !dealer.Keywords.Contains(Keyword.Suppressed))
         {
             var own = RunOwnLocal(dealer, "OnDealDamageAddDamageAfterCalc", seed, "damageToAdd");
-            if (own is not null)
-            {
-                finalDamage = Math.Max(finalDamage + AsInt(own.GetValueOrDefault("damageToAdd")), 0);
-            }
+            // RULE-543: the native default supplies additive zero; the
+            // Blueprint still floors damage before querying observers.
+            finalDamage = Math.Max(finalDamage + AsInt(own?.GetValueOrDefault("damageToAdd")), 0);
         }
 
         // National Fire Service is deliberately deferred by the Blueprint so a

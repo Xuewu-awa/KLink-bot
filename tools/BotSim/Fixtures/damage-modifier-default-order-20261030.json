@@ -1,0 +1,285 @@
+{
+  "scope": "Action context, valid dealer native additive0, one synthetic observer additive10; no overflow, deferred calls or full card certification.",
+  "rows": [
+    {
+      "damage": -2147483648,
+      "suppressed": false,
+      "immune": false,
+      "seen": 0,
+      "expected": 10
+    },
+    {
+      "damage": -2147483648,
+      "suppressed": false,
+      "immune": true,
+      "seen": null,
+      "expected": 0
+    },
+    {
+      "damage": -2147483648,
+      "suppressed": true,
+      "immune": false,
+      "seen": -2147483648,
+      "expected": 0
+    },
+    {
+      "damage": -2147483648,
+      "suppressed": true,
+      "immune": true,
+      "seen": null,
+      "expected": 0
+    },
+    {
+      "damage": -100,
+      "suppressed": false,
+      "immune": false,
+      "seen": 0,
+      "expected": 10
+    },
+    {
+      "damage": -100,
+      "suppressed": false,
+      "immune": true,
+      "seen": null,
+      "expected": 0
+    },
+    {
+      "damage": -100,
+      "suppressed": true,
+      "immune": false,
+      "seen": -100,
+      "expected": 0
+    },
+    {
+      "damage": -100,
+      "suppressed": true,
+      "immune": true,
+      "seen": null,
+      "expected": 0
+    },
+    {
+      "damage": -7,
+      "suppressed": false,
+      "immune": false,
+      "seen": 0,
+      "expected": 10
+    },
+    {
+      "damage": -7,
+      "suppressed": false,
+      "immune": true,
+      "seen": null,
+      "expected": 0
+    },
+    {
+      "damage": -7,
+      "suppressed": true,
+      "immune": false,
+      "seen": -7,
+      "expected": 3
+    },
+    {
+      "damage": -7,
+      "suppressed": true,
+      "immune": true,
+      "seen": null,
+      "expected": 0
+    },
+    {
+      "damage": -1,
+      "suppressed": false,
+      "immune": false,
+      "seen": 0,
+      "expected": 10
+    },
+    {
+      "damage": -1,
+      "suppressed": false,
+      "immune": true,
+      "seen": null,
+      "expected": 0
+    },
+    {
+      "damage": -1,
+      "suppressed": true,
+      "immune": false,
+      "seen": -1,
+      "expected": 9
+    },
+    {
+      "damage": -1,
+      "suppressed": true,
+      "immune": true,
+      "seen": null,
+      "expected": 0
+    },
+    {
+      "damage": 0,
+      "suppressed": false,
+      "immune": false,
+      "seen": 0,
+      "expected": 10
+    },
+    {
+      "damage": 0,
+      "suppressed": false,
+      "immune": true,
+      "seen": null,
+      "expected": 0
+    },
+    {
+      "damage": 0,
+      "suppressed": true,
+      "immune": false,
+      "seen": 0,
+      "expected": 10
+    },
+    {
+      "damage": 0,
+      "suppressed": true,
+      "immune": true,
+      "seen": null,
+      "expected": 0
+    },
+    {
+      "damage": 1,
+      "suppressed": false,
+      "immune": false,
+      "seen": 1,
+      "expected": 11
+    },
+    {
+      "damage": 1,
+      "suppressed": false,
+      "immune": true,
+      "seen": null,
+      "expected": 0
+    },
+    {
+      "damage": 1,
+      "suppressed": true,
+      "immune": false,
+      "seen": 1,
+      "expected": 11
+    },
+    {
+      "damage": 1,
+      "suppressed": true,
+      "immune": true,
+      "seen": null,
+      "expected": 0
+    },
+    {
+      "damage": 98,
+      "suppressed": false,
+      "immune": false,
+      "seen": 98,
+      "expected": 108
+    },
+    {
+      "damage": 98,
+      "suppressed": false,
+      "immune": true,
+      "seen": null,
+      "expected": 0
+    },
+    {
+      "damage": 98,
+      "suppressed": true,
+      "immune": false,
+      "seen": 98,
+      "expected": 108
+    },
+    {
+      "damage": 98,
+      "suppressed": true,
+      "immune": true,
+      "seen": null,
+      "expected": 0
+    },
+    {
+      "damage": 99,
+      "suppressed": false,
+      "immune": false,
+      "seen": 99,
+      "expected": 109
+    },
+    {
+      "damage": 99,
+      "suppressed": false,
+      "immune": true,
+      "seen": null,
+      "expected": 0
+    },
+    {
+      "damage": 99,
+      "suppressed": true,
+      "immune": false,
+      "seen": 99,
+      "expected": 109
+    },
+    {
+      "damage": 99,
+      "suppressed": true,
+      "immune": true,
+      "seen": null,
+      "expected": 0
+    },
+    {
+      "damage": 100,
+      "suppressed": false,
+      "immune": false,
+      "seen": 100,
+      "expected": 110
+    },
+    {
+      "damage": 100,
+      "suppressed": false,
+      "immune": true,
+      "seen": null,
+      "expected": 0
+    },
+    {
+      "damage": 100,
+      "suppressed": true,
+      "immune": false,
+      "seen": 100,
+      "expected": 110
+    },
+    {
+      "damage": 100,
+      "suppressed": true,
+      "immune": true,
+      "seen": null,
+      "expected": 0
+    },
+    {
+      "damage": 2147483637,
+      "suppressed": false,
+      "immune": false,
+      "seen": 2147483637,
+      "expected": 2147483647
+    },
+    {
+      "damage": 2147483637,
+      "suppressed": false,
+      "immune": true,
+      "seen": null,
+      "expected": 0
+    },
+    {
+      "damage": 2147483637,
+      "suppressed": true,
+      "immune": false,
+      "seen": 2147483637,
+      "expected": 2147483647
+    },
+    {
+      "damage": 2147483637,
+      "suppressed": true,
+      "immune": true,
+      "seen": null,
+      "expected": 0
+    }
+  ]
+}

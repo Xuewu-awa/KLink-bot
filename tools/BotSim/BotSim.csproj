@@ -10,6 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Update="Fixtures/damage-modifier-default-order-20261030.json" CopyToOutputDirectory="PreserveNewest" />
     <None Update="Fixtures/passive-mitigation-reference-20261029.json" CopyToOutputDirectory="PreserveNewest" />
     <None Update="Fixtures/ambush-defense-reference-20261029.json" CopyToOutputDirectory="PreserveNewest" />
     <None Update="Fixtures/combat-defense-reference-20261029.json" CopyToOutputDirectory="PreserveNewest" />

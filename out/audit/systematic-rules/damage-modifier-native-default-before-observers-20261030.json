@@ -1,0 +1,134 @@
+{
+  "rule": "RULE-543",
+  "date": "2026-10-30",
+  "publishing_branch": "DinkyPuffer",
+  "base_commit": "189c77995d056dbc3b235e99df83dd64d0b547ec",
+  "client_exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "kernel_changed": true,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "findings": [
+    "Native OnDealDamageAddDamageAfterCalc thunk calls vtable slot0x310. Base leaf RVA0x4b02f50 (12B) reads output pointer at[rsp+0x38], writes int32 zero, returns. Runtime bytes equal installed PE;40 copied-leaf runs preserve guard buffers, object and stack bytes.",
+    "All2020 selected CDOs share that native target. Nearest reflected declarations:2017 BaseCardObject, plus own Blueprint overrides in22nd Marines,511th Regiment andFirebomb. None of the selected classes inherits one of those Blueprint overrides; IR local declaration owner set matches.",
+    "T38 unsuppressed own call742 supplies additive0 when native default is selected;832/878/920 still add and floor before observer query225. Simulator skipped this pre-observer floor if no local program existed.",
+    "With input-7 and a synthetic observer adding10, a valid unsuppressed no-override dealer must expose0 and return10; suppressed dealer exposes-7 and returns3. Old simulator exposed negative input in both cases."
+  ],
+  "changes": [
+    "Inside the existing valid unsuppressed dealer branch, treat absent local own result as native additive0 and always execute the existing max(input+add,0). Preserve suppressed/null branches, other arithmetic, observer/deferred/stopAdding ordering and RULE-542 final floor."
+  ],
+  "validation": {
+    "ast_vectors": 40,
+    "simulator_scenarios": 80,
+    "offline_native_leaf_cases": 40,
+    "loaded_cdos": 2020,
+    "blueprint_override_owners": [
+      "card_event_firebomb",
+      "card_unit_22nd_marines",
+      "card_unit_511th_regiment"
+    ],
+    "focused_before": "1 failed on original production bytes: observer saw negative INT_MIN",
+    "focused_after": "1 passed",
+    "full_selftest": 977,
+    "prior_partial_units_exact_scope_revalidated": 19
+  },
+  "evidence_method": "Fresh read-only own UFunctions/native thunk/CDO slot capture, all selected ancestry/direct-child chains, independently saved-byte/FName decode and PE equality. Unicorn executes copied leaf only. DeepSeek mechanical arithmetic rows independently reproduced from AST; execution-flow stack/jumps checked, not numerical statement-order execution.",
+  "source_bindings": {
+    "src/KLink.Bot/Effects/CardApi.cs": "049f5c3b4068617b9d8bac4f4c4c644d2a4593b099fa40236f4b32dd63333070",
+    "tools/BotSim/SelfTest.cs": "8398a0e9800b8991d6f6c23880eb2f2f0648b3172431fbe2778f3ab0940f9935",
+    "tools/BotSim/BotSim.csproj": "2f40d2eb464b47c09fd42b8d8fb66860deba890a7cfe05de58ff4936b3836dea",
+    "tools/BotSim/SelfTest.DamageModifierDefault.cs": "0cc8eeef6703e4705e6a681e3b3517bf11fd890c2d82f205d66405677f67a37c",
+    "tools/BotSim/Fixtures/damage-modifier-default-order-20261030.json": "60a6706cb5a7894d99ec009a90d7f712be3231dff9ed7e343656746e1d8e30e0",
+    "klink bot/docs/card-ir.json": "526812fa8dc0934f1d6ecd3794053871fa6b701c2b5df3fd1edb3c38513ba2e9"
+  },
+  "evidence_bindings": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule542-damage-modifiers-20261030.json",
+      "sha256": "654105c7d97115afbb2f9572e079d7e0dee2688c66ef59b7ffc9f8c1557b91eb"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule543-own-after-calc-cdos-20261030.json",
+      "sha256": "0cdbc664f45e049fd88449c014485f15c3792fc5506720c862c704f262f77b83"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule543-own-after-calc-native-20261030.json",
+      "sha256": "a52f968f9b0274e37f5cb748fdfb27552ce0002b3c62f7de4383c1e9a78136c4"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule543-own-after-calc-functions-20261030.json",
+      "sha256": "7de8e6fbc1bd2a30ee5f299b021c065cc8453f3bab8b41737c4bb907dabfe8f1"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule543-default.py",
+      "sha256": "94ccc333470dd7958c039d442493629d2c9c26fec81256580978e2e164452cc8"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule543-cdos.py",
+      "sha256": "bd1938eae8c12c12be15637db324899070a6923b1d9c0ec41c9893fd2002b1ce"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-498.py",
+      "sha256": "254664d0aa1146756993fda4ac54e58891709c0ec5bcdd2cfa852f874c4e67ef"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\prepare-rule543.py",
+      "sha256": "5a4269ef6c2d6d6e8aefcb201a8edf2a396b38a44e57831e184f18a2abc23149"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule543-worker\\input.json",
+      "sha256": "38a002de2f3883361c4bd3539165b64b094dd038ea8279e716019f5373b9b54d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule543-worker\\output.json",
+      "sha256": "8a9304a71f23712eb2ec25d6bb7f78661ba1dc7baef5ba0bd9ecba0eb9461fe5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule543-worker\\calculate.py",
+      "sha256": "770879a99674a5a2c7a9d0369665430b3c99396b1d8e6d4d38a7c9852ee786b8"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule543.py",
+      "sha256": "c35ceb3b57bd81f4c7fa8e34c7c517a879c48bfe7e8338ecebb45c308aab6bc2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\Fixtures\\damage-modifier-default-order-20261030.json",
+      "sha256": "60a6706cb5a7894d99ec009a90d7f712be3231dff9ed7e343656746e1d8e30e0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule543-verified-20261030.json",
+      "sha256": "d39e8dfe9151f222e6d3eb36348db0a4807133b48105b209d49f1813dc36cf6a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule543-prior-unit-scope-revalidation.json",
+      "sha256": "6851664502fe084aa8ae4640aad7917182059fd5d40c012f80d62a48695a038a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\patch-rule543.py",
+      "sha256": "cf9bed7b434032549baa6674797ff95d0df954725fb596d6ab33a7d9dd79f05f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule543-before-test.log",
+      "sha256": "bbc228ac69ac4032f3ffb5b936a8850eb53cf01bb5eb3127e13a0608560c5e14"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule543-after-test.log",
+      "sha256": "330104187253f66f2993cea605525ec84e505e6abae636c208b0260e40faf622"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule543-selftest.log",
+      "sha256": "726255ba2ef4096b72a31fef3a59eb9b0ace6425d2b7c052b8a78c4d8fd95c5b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\report-rule543.py",
+      "sha256": "3c0ce986147d6caa377c4c136641ff401f16f2f5b60ddbbc4ebd79c0732fea16"
+    }
+  ],
+  "remaining": [
+    "Native proof covers the current BaseCardObject implementation leaf and selected loaded CDO virtual targets, not complete FFrame argument readers, ProcessEvent, malformed pointers, lifetime/GC or all live instances.",
+    "Three Blueprint own-event overrides match repository IR declaration owners; this is declaration/byte decode evidence, not whole-body or whole-card semantic certification. No selected descendant inherited a Blueprint override.",
+    "Simulator regression uses a valid source with no local own override and one synthetic registered observer additive10. Forty AST rows across both sides give80 scenarios; no addition overflow or full observer-container ordering certificate.",
+    "Suppressed sources intentionally retain raw input until observers; null-source behavior is unchanged and remains separately open. Legal current-card negative-entry reachability has not been established.",
+    "The copied12B leaf writes zero through the stack output pointer at entry RSP+0x38. It was executed only offline on valid synthetic buffers; no game process write/call/injection.",
+    "Capture reuses generic census field names direct_passive/nearest_passive_owner and historical eight-byte wording; actual function is OnDealDamageAddDamageAfterCalc and recorded/verified target length is12B. Reports use the explicit current function and byte count.",
+    "T37 arithmetic, T38 own overridden bodies, deferred/stopAdding reentrancy and full native ABI remain separate audit scopes."
+  ]
+}
