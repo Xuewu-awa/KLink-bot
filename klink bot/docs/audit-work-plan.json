@@ -232,7 +232,8 @@
         "RULE-541新鲜调用普查限定CalculateDamageDealt剩余死亡输出：普通AttackCard两次均未读取，两次其他调用在Do Units Die，其已观察到的上游为攻击箭头预览。无头动作无需补该预览分支；实际攻击前事件与共享T37/T38仍须审计。互斗/效果伤害当前字节证实独立链，8项既有相关回归通过，无内核改动。",
         "RULE-542修复T38漏掉的最终max(伤害,0)：抑制来源且无观察者时负输入不再外泄，100与INT_MAX仍保留。20原AST向量、双侧40场景，旧生产源回归失败、修复后完整976项通过。当前合法卡牌负输入可达性、原生无覆盖默认及其余T37/T38算术/回调仍开放。",
         "RULE-543确认T38自身默认原生体增量0，2020个CDO共享槽目标，三处蓝图覆盖；修复无本地覆盖时漏做观察者前限幅。输入-7加10：未压制返回10、压制返回3；40AST/80内核场景及40离线机器码实例，完整977项通过。合法负值可达性、null来源、完整ABI/覆盖体与其余回调顺序仍开放。",
-        "RULE-544逐分支核对三处自身T38覆盖：第22陆战队老兵/牌顶海军/零伤害，第511团同ID自伤/位置/老兵，燃烧弹重定向及excess_damage重置/保留；320原AST行及640双侧真实IR输出/JSON匹配，完整978项通过，无内核差异。辅助函数完整原生语义、连续观察者及所有联动仍开放。"
+        "RULE-544逐分支核对三处自身T38覆盖：第22陆战队老兵/牌顶海军/零伤害，第511团同ID自伤/位置/老兵，燃烧弹重定向及excess_damage重置/保留；320原AST行及640双侧真实IR输出/JSON匹配，完整978项通过，无内核差异。辅助函数完整原生语义、连续观察者及所有联动仍开放。",
+        "RULE-545验证给定数组内T38递进、逐步限幅、停止及已收集延后队列，修复普通观察者用CardID排除来源。432原AST行/864双侧合成回归，别名案例旧11现16；完整979项通过。逻辑标签映射到升序实际ID仅为供应数组排列，不认证UE订阅顺序，也未证明合法PvP别名可达。"
       ],
       "current_deliverables": [
         "out/audit/systematic-rules/effect-damage-entry-redirect-final-modifiers-and-bool-out-fix-20261029.json",
@@ -249,7 +250,8 @@
         "out/audit/systematic-rules/calculation-death-output-callers-and-headless-scope-20261030.json",
         "out/audit/systematic-rules/damage-modifier-final-output-floor-20261030.json",
         "out/audit/systematic-rules/damage-modifier-native-default-before-observers-20261030.json",
-        "out/audit/systematic-rules/damage-modifier-three-own-blueprint-branches-20261030.json"
+        "out/audit/systematic-rules/damage-modifier-three-own-blueprint-branches-20261030.json",
+        "out/audit/systematic-rules/damage-observer-chain-order-stop-deferred-and-id-20261030.json"
       ]
     },
     {

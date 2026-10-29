@@ -1,0 +1,174 @@
+{
+  "rule": "RULE-545",
+  "date": "2026-10-30",
+  "publishing_branch": "DinkyPuffer",
+  "base_commit": "29aa0201305f6bd6f6b2dcc7dc2ad217cae40188",
+  "client_exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "kernel_changed": true,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "findings": [
+    "Fresh T38 script equals RULE-5421987B. Main loop updates tmpDamage with max(previous+add,0), checks stop after applying the stopping callback, and collects National Fire Service entries before ordinary CardID exclusion.",
+    "After main stop, only already-collected deferred entries execute in queue order, reading accumulated damage; their stopAdding outputs are ignored. Unreached deferred entries are not added.",
+    "Ordinary observer exclusion at1656/1738 compares observer.CardID != DamageDealer.CardID. Simulator delegated to a reference-equality skip, allowing a distinct managed alias with the same ID to be visited.",
+    "For supplied [regular20(-10),regular21(+3),deferred22(+8)], input5 and source alias ID20, client AST skips20 and returns16; old simulator called20 and returned11."
+  ],
+  "changes": [
+    "Add a valid-dealer CardID equality skip in the ordinary T38 loop, after National Fire Service collection. Keep deferred include-subject behavior, generic broadcast helper, all arithmetic, query timing and stop logic unchanged."
+  ],
+  "validation": {
+    "ast_vectors": 432,
+    "simulator_scenarios": 864,
+    "focused_before": "1 failed on original production bytes: alias row returned11 and visited20,21,22 instead of skipping20/returning16",
+    "focused_after": "1 passed",
+    "full_selftest": 979,
+    "prior_partial_units_exact_scope_revalidated": 21,
+    "visited_statement_offsets": [
+      0,
+      5,
+      28,
+      38,
+      79,
+      121,
+      184,
+      225,
+      250,
+      261,
+      284,
+      307,
+      366,
+      395,
+      433,
+      471,
+      485,
+      512,
+      517,
+      576,
+      595,
+      659,
+      673,
+      741,
+      742,
+      832,
+      878,
+      920,
+      947,
+      952,
+      975,
+      998,
+      1057,
+      1095,
+      1109,
+      1136,
+      1141,
+      1200,
+      1219,
+      1318,
+      1364,
+      1406,
+      1433,
+      1434,
+      1476,
+      1503,
+      1508,
+      1550,
+      1577,
+      1582,
+      1624,
+      1651,
+      1656,
+      1738,
+      1748,
+      1847,
+      1893,
+      1935,
+      1962,
+      1972,
+      1983,
+      1984
+    ]
+  },
+  "evidence_method": "Fresh read-only modifier scripts, raw hash/FName independent decode; primary executes complete captured T38 control-flow stack with supplied query array and synthetic callbacks. DeepSeek independently checks policy/loop blocks and generates432 matching rows. Simulator validates final damage, visited sequence and each observed input. No game process writes, injections, function calls or match actions.",
+  "source_bindings": {
+    "src/KLink.Bot/Effects/CardApi.cs": "24197f2546532d82d4cdfe02de764ed6e5ae9347d529a7c42b0f172da77be49e",
+    "tools/BotSim/SelfTest.cs": "33541e6c94b5a46f15921e062a246094e8d4eff3feafa22f7da77cd0ca9f93c2",
+    "tools/BotSim/BotSim.csproj": "db6cc50ddeacd78dec69c303a2d455f882895793ff0f647ad96b193de82a331b",
+    "tools/BotSim/SelfTest.DamageObserverChain.cs": "def2edaf6dc710bd2a718d90248114a076ab22e7660df7ea7b0d377e93eb5fb1",
+    "tools/BotSim/Fixtures/damage-observer-chain-20261030.json": "ee4978e4fc422b991aa6bcd3553d895a12ec6bb0f4fc7833320683802964f702",
+    "src/KLink.Bot/Engine/GameState.cs": "4de9bc66ae9e38684d129778cc7e220ba43e25205c7b9920b5e1b0aa2a31f143"
+  },
+  "evidence_bindings": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule545-damage-modifiers-20261030.json",
+      "sha256": "743f797ad45c9c66adaeef0e063647b1dcb542b9d80a1298aa6e9d702be77def"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule542-damage-modifiers-20261030.json",
+      "sha256": "654105c7d97115afbb2f9572e079d7e0dee2688c66ef59b7ffc9f8c1557b91eb"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\prepare-rule545.py",
+      "sha256": "57c195a14cb252057e844de0046fe050d05e5cd7c6e64043122eb02d55d674bc"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-498.py",
+      "sha256": "254664d0aa1146756993fda4ac54e58891709c0ec5bcdd2cfa852f874c4e67ef"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule545-worker\\input.json",
+      "sha256": "a4322062a3b02f363bc66f3d8aa71d40c146072bcef7951824c2f0d6b600fc48"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule545-worker\\output.json",
+      "sha256": "dfe68ec61d79730e6b4b16f6f873eaa2c2df0d168ea32b0ac2b2ab57b85c6b72"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule545-worker\\calculate.py",
+      "sha256": "462b06398b787b3abf86acdf6c9fbabddb062b790169e28c58fdd103802cc382"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\Fixtures\\damage-observer-chain-20261030.json",
+      "sha256": "ee4978e4fc422b991aa6bcd3553d895a12ec6bb0f4fc7833320683802964f702"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule545.py",
+      "sha256": "789f17e2c565f2b8a39306e198fc2d0574a7d6617b911b7f8019e0b5c2f1f517"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule545-verified-20261030.json",
+      "sha256": "b4821eca66a6c8b8f7148ddf21b10193ae7b038228fc3677cb440ae7bb2ee252"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule545-prior-unit-scope-revalidation.json",
+      "sha256": "09a3383337c36ec4714400016b22962bd3fb90d75cf62faf4fdd619fd5d76527"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\patch-rule545.py",
+      "sha256": "580faabaddb8dc123fdb93760be931c6d52f8f162884a8c81a4175b693ec821c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule545-before-test.log",
+      "sha256": "d324544b569dd9126c95cd9568f4585bde9af6ac8e1e7c4365049f788b242dda"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule545-after-test.log",
+      "sha256": "c04ba10d868dda9b64b1f7da9224a6fa52a906c689e13f7b0e6f55721f963ee2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule545-selftest.log",
+      "sha256": "c1ab80a317965b29e4553d90df7205d2ea25462e6d32bebe2a6628b14bd44344"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\report-rule545.py",
+      "sha256": "1f2e50c6a408bc555ab231238427662555e0969f285428d5a23fa23ad9be2da2"
+    }
+  ],
+  "remaining": [
+    "The supplied-array chain is validated, not actual Unreal TSet registration iteration. Fixture logical labels20..22 are remapped to ascending simulator IDs to supply every requested permutation; this does not claim native iteration sorts IDs.",
+    "ID mismatch regression uses a detached valid managed alias with the same ID as an observer. No duplicate ID is inserted into GameState (CreateWithId rejects duplicates), and no normal client/PvP path creating such aliases is established.",
+    "Regular/deferred observer callback bodies are temporary synthetic probes, including replacing National Fire Service local body in scoped cache/IR then restoring it. This does not certify National Fire Service whole-card effects. Existing actual-card delayed-collection regression also passes within full suite.",
+    "Native own additive0, valid unsuppressed source and positive inputs5/100 are fixed. No null-source, receiver immunity, overflow, mutated membership/name/IDs, callback reentrancy, invalid UObject or lifecycle certification.",
+    "Fix is local to ordinary T38 loop ID exclusion after deferred collection. Generic local-broadcast reference exclusion and other event identity policies remain separate scopes.",
+    "All prior partial scopes remain bounded; no whole-card certification or authoritative PvP denominator completion."
+  ]
+}

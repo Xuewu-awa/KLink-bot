@@ -1872,6 +1872,9 @@ public sealed partial class CardApi
                 delayed.Add(observer);
                 continue;
             }
+            // RULE-545: the ordinary T38 loop compares CardID (i=1656),
+            // after collecting deferred cards; managed reference equality is insufficient.
+            if (dealer is not null && observer.CardId == dealer.CardId) continue;
             var hits = BroadcastLocalWithOutParams(
                 "OnOtherCardDealDamageAddDamageAfterCalc", dealer,
                 new[] { "damageToAdd", "stopAdding" }, SeedFor(finalDamage), new[] { observer }, recipientsAlreadyFiltered: true);

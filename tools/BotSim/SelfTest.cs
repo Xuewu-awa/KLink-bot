@@ -20,6 +20,7 @@ internal static partial class SelfTest
 
     private static readonly List<Case> Cases = new()
     {
+        new("伤害观察者链：递进、停止、延后与来源ID排除", DamageObserverChain),
         new("伤害修正覆盖：三张真实IR的分支、上下限及副作用", DamageModifierOwnOverrides),
         new("伤害修正默认体：零增量仍在观察者前限幅", DamageModifierDefaultBeforeObservers),
         new("伤害修正收尾：抑制来源负值归零且高值不截断", DamageModifierFinalFloor),

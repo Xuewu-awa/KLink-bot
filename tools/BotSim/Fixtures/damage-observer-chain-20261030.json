@@ -1,0 +1,11669 @@
+{
+  "scope": "T38 valid unsuppressed native own-zero source, supplied query order, three synthetic registered callbacks. Logical labels remapped to ascending simulator IDs; no native subscription-order claim, overflow or malformed object proof.",
+  "rows": [
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        21,
+        22
+      ],
+      "stopId": -1,
+      "dealerKind": "distinct",
+      "expected": 11,
+      "visits": [
+        {
+          "id": 20,
+          "seen": 5
+        },
+        {
+          "id": 21,
+          "seen": 0
+        },
+        {
+          "id": 22,
+          "seen": 3
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        21,
+        22
+      ],
+      "stopId": -1,
+      "dealerKind": "alias",
+      "expected": 16,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        21,
+        22
+      ],
+      "stopId": -1,
+      "dealerKind": "self",
+      "expected": 16,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        21,
+        22
+      ],
+      "stopId": 20,
+      "dealerKind": "distinct",
+      "expected": 0,
+      "visits": [
+        {
+          "id": 20,
+          "seen": 5
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        21,
+        22
+      ],
+      "stopId": 20,
+      "dealerKind": "alias",
+      "expected": 16,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        21,
+        22
+      ],
+      "stopId": 20,
+      "dealerKind": "self",
+      "expected": 16,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        21,
+        22
+      ],
+      "stopId": 21,
+      "dealerKind": "distinct",
+      "expected": 3,
+      "visits": [
+        {
+          "id": 20,
+          "seen": 5
+        },
+        {
+          "id": 21,
+          "seen": 0
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        21,
+        22
+      ],
+      "stopId": 21,
+      "dealerKind": "alias",
+      "expected": 8,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        21,
+        22
+      ],
+      "stopId": 21,
+      "dealerKind": "self",
+      "expected": 8,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        21,
+        22
+      ],
+      "stopId": 22,
+      "dealerKind": "distinct",
+      "expected": 11,
+      "visits": [
+        {
+          "id": 20,
+          "seen": 5
+        },
+        {
+          "id": 21,
+          "seen": 0
+        },
+        {
+          "id": 22,
+          "seen": 3
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        21,
+        22
+      ],
+      "stopId": 22,
+      "dealerKind": "alias",
+      "expected": 16,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        21,
+        22
+      ],
+      "stopId": 22,
+      "dealerKind": "self",
+      "expected": 16,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        22,
+        21
+      ],
+      "stopId": -1,
+      "dealerKind": "distinct",
+      "expected": 11,
+      "visits": [
+        {
+          "id": 20,
+          "seen": 5
+        },
+        {
+          "id": 21,
+          "seen": 0
+        },
+        {
+          "id": 22,
+          "seen": 3
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        22,
+        21
+      ],
+      "stopId": -1,
+      "dealerKind": "alias",
+      "expected": 16,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        22,
+        21
+      ],
+      "stopId": -1,
+      "dealerKind": "self",
+      "expected": 16,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        22,
+        21
+      ],
+      "stopId": 20,
+      "dealerKind": "distinct",
+      "expected": 0,
+      "visits": [
+        {
+          "id": 20,
+          "seen": 5
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        22,
+        21
+      ],
+      "stopId": 20,
+      "dealerKind": "alias",
+      "expected": 16,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        22,
+        21
+      ],
+      "stopId": 20,
+      "dealerKind": "self",
+      "expected": 16,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        22,
+        21
+      ],
+      "stopId": 21,
+      "dealerKind": "distinct",
+      "expected": 11,
+      "visits": [
+        {
+          "id": 20,
+          "seen": 5
+        },
+        {
+          "id": 21,
+          "seen": 0
+        },
+        {
+          "id": 22,
+          "seen": 3
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        22,
+        21
+      ],
+      "stopId": 21,
+      "dealerKind": "alias",
+      "expected": 16,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        22,
+        21
+      ],
+      "stopId": 21,
+      "dealerKind": "self",
+      "expected": 16,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        22,
+        21
+      ],
+      "stopId": 22,
+      "dealerKind": "distinct",
+      "expected": 11,
+      "visits": [
+        {
+          "id": 20,
+          "seen": 5
+        },
+        {
+          "id": 21,
+          "seen": 0
+        },
+        {
+          "id": 22,
+          "seen": 3
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        22,
+        21
+      ],
+      "stopId": 22,
+      "dealerKind": "alias",
+      "expected": 16,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        22,
+        21
+      ],
+      "stopId": 22,
+      "dealerKind": "self",
+      "expected": 16,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        20,
+        22
+      ],
+      "stopId": -1,
+      "dealerKind": "distinct",
+      "expected": 8,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 20,
+          "seen": 8
+        },
+        {
+          "id": 22,
+          "seen": 0
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        20,
+        22
+      ],
+      "stopId": -1,
+      "dealerKind": "alias",
+      "expected": 16,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        20,
+        22
+      ],
+      "stopId": -1,
+      "dealerKind": "self",
+      "expected": 16,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        20,
+        22
+      ],
+      "stopId": 20,
+      "dealerKind": "distinct",
+      "expected": 0,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 20,
+          "seen": 8
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        20,
+        22
+      ],
+      "stopId": 20,
+      "dealerKind": "alias",
+      "expected": 16,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        20,
+        22
+      ],
+      "stopId": 20,
+      "dealerKind": "self",
+      "expected": 16,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        20,
+        22
+      ],
+      "stopId": 21,
+      "dealerKind": "distinct",
+      "expected": 8,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        20,
+        22
+      ],
+      "stopId": 21,
+      "dealerKind": "alias",
+      "expected": 8,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        20,
+        22
+      ],
+      "stopId": 21,
+      "dealerKind": "self",
+      "expected": 8,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        20,
+        22
+      ],
+      "stopId": 22,
+      "dealerKind": "distinct",
+      "expected": 8,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 20,
+          "seen": 8
+        },
+        {
+          "id": 22,
+          "seen": 0
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        20,
+        22
+      ],
+      "stopId": 22,
+      "dealerKind": "alias",
+      "expected": 16,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        20,
+        22
+      ],
+      "stopId": 22,
+      "dealerKind": "self",
+      "expected": 16,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        22,
+        20
+      ],
+      "stopId": -1,
+      "dealerKind": "distinct",
+      "expected": 8,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 20,
+          "seen": 8
+        },
+        {
+          "id": 22,
+          "seen": 0
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        22,
+        20
+      ],
+      "stopId": -1,
+      "dealerKind": "alias",
+      "expected": 16,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        22,
+        20
+      ],
+      "stopId": -1,
+      "dealerKind": "self",
+      "expected": 16,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        22,
+        20
+      ],
+      "stopId": 20,
+      "dealerKind": "distinct",
+      "expected": 8,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 20,
+          "seen": 8
+        },
+        {
+          "id": 22,
+          "seen": 0
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        22,
+        20
+      ],
+      "stopId": 20,
+      "dealerKind": "alias",
+      "expected": 16,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        22,
+        20
+      ],
+      "stopId": 20,
+      "dealerKind": "self",
+      "expected": 16,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        22,
+        20
+      ],
+      "stopId": 21,
+      "dealerKind": "distinct",
+      "expected": 8,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        22,
+        20
+      ],
+      "stopId": 21,
+      "dealerKind": "alias",
+      "expected": 8,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        22,
+        20
+      ],
+      "stopId": 21,
+      "dealerKind": "self",
+      "expected": 8,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        22,
+        20
+      ],
+      "stopId": 22,
+      "dealerKind": "distinct",
+      "expected": 8,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 20,
+          "seen": 8
+        },
+        {
+          "id": 22,
+          "seen": 0
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        22,
+        20
+      ],
+      "stopId": 22,
+      "dealerKind": "alias",
+      "expected": 16,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        22,
+        20
+      ],
+      "stopId": 22,
+      "dealerKind": "self",
+      "expected": 16,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        20,
+        21
+      ],
+      "stopId": -1,
+      "dealerKind": "distinct",
+      "expected": 11,
+      "visits": [
+        {
+          "id": 20,
+          "seen": 5
+        },
+        {
+          "id": 21,
+          "seen": 0
+        },
+        {
+          "id": 22,
+          "seen": 3
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        20,
+        21
+      ],
+      "stopId": -1,
+      "dealerKind": "alias",
+      "expected": 16,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        20,
+        21
+      ],
+      "stopId": -1,
+      "dealerKind": "self",
+      "expected": 16,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        20,
+        21
+      ],
+      "stopId": 20,
+      "dealerKind": "distinct",
+      "expected": 8,
+      "visits": [
+        {
+          "id": 20,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 0
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        20,
+        21
+      ],
+      "stopId": 20,
+      "dealerKind": "alias",
+      "expected": 16,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        20,
+        21
+      ],
+      "stopId": 20,
+      "dealerKind": "self",
+      "expected": 16,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        20,
+        21
+      ],
+      "stopId": 21,
+      "dealerKind": "distinct",
+      "expected": 11,
+      "visits": [
+        {
+          "id": 20,
+          "seen": 5
+        },
+        {
+          "id": 21,
+          "seen": 0
+        },
+        {
+          "id": 22,
+          "seen": 3
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        20,
+        21
+      ],
+      "stopId": 21,
+      "dealerKind": "alias",
+      "expected": 16,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        20,
+        21
+      ],
+      "stopId": 21,
+      "dealerKind": "self",
+      "expected": 16,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        20,
+        21
+      ],
+      "stopId": 22,
+      "dealerKind": "distinct",
+      "expected": 11,
+      "visits": [
+        {
+          "id": 20,
+          "seen": 5
+        },
+        {
+          "id": 21,
+          "seen": 0
+        },
+        {
+          "id": 22,
+          "seen": 3
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        20,
+        21
+      ],
+      "stopId": 22,
+      "dealerKind": "alias",
+      "expected": 16,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        20,
+        21
+      ],
+      "stopId": 22,
+      "dealerKind": "self",
+      "expected": 16,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        21,
+        20
+      ],
+      "stopId": -1,
+      "dealerKind": "distinct",
+      "expected": 8,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 20,
+          "seen": 8
+        },
+        {
+          "id": 22,
+          "seen": 0
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        21,
+        20
+      ],
+      "stopId": -1,
+      "dealerKind": "alias",
+      "expected": 16,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        21,
+        20
+      ],
+      "stopId": -1,
+      "dealerKind": "self",
+      "expected": 16,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        21,
+        20
+      ],
+      "stopId": 20,
+      "dealerKind": "distinct",
+      "expected": 8,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 20,
+          "seen": 8
+        },
+        {
+          "id": 22,
+          "seen": 0
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        21,
+        20
+      ],
+      "stopId": 20,
+      "dealerKind": "alias",
+      "expected": 16,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        21,
+        20
+      ],
+      "stopId": 20,
+      "dealerKind": "self",
+      "expected": 16,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        21,
+        20
+      ],
+      "stopId": 21,
+      "dealerKind": "distinct",
+      "expected": 16,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        21,
+        20
+      ],
+      "stopId": 21,
+      "dealerKind": "alias",
+      "expected": 16,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        21,
+        20
+      ],
+      "stopId": 21,
+      "dealerKind": "self",
+      "expected": 16,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        21,
+        20
+      ],
+      "stopId": 22,
+      "dealerKind": "distinct",
+      "expected": 8,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 20,
+          "seen": 8
+        },
+        {
+          "id": 22,
+          "seen": 0
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        21,
+        20
+      ],
+      "stopId": 22,
+      "dealerKind": "alias",
+      "expected": 16,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        21,
+        20
+      ],
+      "stopId": 22,
+      "dealerKind": "self",
+      "expected": 16,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        21,
+        22
+      ],
+      "stopId": -1,
+      "dealerKind": "distinct",
+      "expected": 8,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 20,
+          "seen": 8
+        },
+        {
+          "id": 22,
+          "seen": 0
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        21,
+        22
+      ],
+      "stopId": -1,
+      "dealerKind": "alias",
+      "expected": 8,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 20,
+          "seen": 8
+        },
+        {
+          "id": 22,
+          "seen": 0
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        21,
+        22
+      ],
+      "stopId": -1,
+      "dealerKind": "self",
+      "expected": 8,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 20,
+          "seen": 8
+        },
+        {
+          "id": 22,
+          "seen": 0
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        21,
+        22
+      ],
+      "stopId": 20,
+      "dealerKind": "distinct",
+      "expected": 8,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 20,
+          "seen": 8
+        },
+        {
+          "id": 22,
+          "seen": 0
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        21,
+        22
+      ],
+      "stopId": 20,
+      "dealerKind": "alias",
+      "expected": 8,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 20,
+          "seen": 8
+        },
+        {
+          "id": 22,
+          "seen": 0
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        21,
+        22
+      ],
+      "stopId": 20,
+      "dealerKind": "self",
+      "expected": 8,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 20,
+          "seen": 8
+        },
+        {
+          "id": 22,
+          "seen": 0
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        21,
+        22
+      ],
+      "stopId": 21,
+      "dealerKind": "distinct",
+      "expected": 0,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 20,
+          "seen": 8
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        21,
+        22
+      ],
+      "stopId": 21,
+      "dealerKind": "alias",
+      "expected": 0,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 20,
+          "seen": 8
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        21,
+        22
+      ],
+      "stopId": 21,
+      "dealerKind": "self",
+      "expected": 0,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 20,
+          "seen": 8
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        21,
+        22
+      ],
+      "stopId": 22,
+      "dealerKind": "distinct",
+      "expected": 8,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 20,
+          "seen": 8
+        },
+        {
+          "id": 22,
+          "seen": 0
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        21,
+        22
+      ],
+      "stopId": 22,
+      "dealerKind": "alias",
+      "expected": 8,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 20,
+          "seen": 8
+        },
+        {
+          "id": 22,
+          "seen": 0
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        21,
+        22
+      ],
+      "stopId": 22,
+      "dealerKind": "self",
+      "expected": 8,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 20,
+          "seen": 8
+        },
+        {
+          "id": 22,
+          "seen": 0
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        22,
+        21
+      ],
+      "stopId": -1,
+      "dealerKind": "distinct",
+      "expected": 8,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 20,
+          "seen": 8
+        },
+        {
+          "id": 22,
+          "seen": 0
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        22,
+        21
+      ],
+      "stopId": -1,
+      "dealerKind": "alias",
+      "expected": 8,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 20,
+          "seen": 8
+        },
+        {
+          "id": 22,
+          "seen": 0
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        22,
+        21
+      ],
+      "stopId": -1,
+      "dealerKind": "self",
+      "expected": 8,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 20,
+          "seen": 8
+        },
+        {
+          "id": 22,
+          "seen": 0
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        22,
+        21
+      ],
+      "stopId": 20,
+      "dealerKind": "distinct",
+      "expected": 8,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 20,
+          "seen": 8
+        },
+        {
+          "id": 22,
+          "seen": 0
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        22,
+        21
+      ],
+      "stopId": 20,
+      "dealerKind": "alias",
+      "expected": 8,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 20,
+          "seen": 8
+        },
+        {
+          "id": 22,
+          "seen": 0
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        22,
+        21
+      ],
+      "stopId": 20,
+      "dealerKind": "self",
+      "expected": 8,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 20,
+          "seen": 8
+        },
+        {
+          "id": 22,
+          "seen": 0
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        22,
+        21
+      ],
+      "stopId": 21,
+      "dealerKind": "distinct",
+      "expected": 8,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 20,
+          "seen": 8
+        },
+        {
+          "id": 22,
+          "seen": 0
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        22,
+        21
+      ],
+      "stopId": 21,
+      "dealerKind": "alias",
+      "expected": 8,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 20,
+          "seen": 8
+        },
+        {
+          "id": 22,
+          "seen": 0
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        22,
+        21
+      ],
+      "stopId": 21,
+      "dealerKind": "self",
+      "expected": 8,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 20,
+          "seen": 8
+        },
+        {
+          "id": 22,
+          "seen": 0
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        22,
+        21
+      ],
+      "stopId": 22,
+      "dealerKind": "distinct",
+      "expected": 8,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 20,
+          "seen": 8
+        },
+        {
+          "id": 22,
+          "seen": 0
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        22,
+        21
+      ],
+      "stopId": 22,
+      "dealerKind": "alias",
+      "expected": 8,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 20,
+          "seen": 8
+        },
+        {
+          "id": 22,
+          "seen": 0
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        22,
+        21
+      ],
+      "stopId": 22,
+      "dealerKind": "self",
+      "expected": 8,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 20,
+          "seen": 8
+        },
+        {
+          "id": 22,
+          "seen": 0
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        20,
+        22
+      ],
+      "stopId": -1,
+      "dealerKind": "distinct",
+      "expected": 8,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 20,
+          "seen": 8
+        },
+        {
+          "id": 22,
+          "seen": 0
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        20,
+        22
+      ],
+      "stopId": -1,
+      "dealerKind": "alias",
+      "expected": 8,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 20,
+          "seen": 8
+        },
+        {
+          "id": 22,
+          "seen": 0
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        20,
+        22
+      ],
+      "stopId": -1,
+      "dealerKind": "self",
+      "expected": 8,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 20,
+          "seen": 8
+        },
+        {
+          "id": 22,
+          "seen": 0
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        20,
+        22
+      ],
+      "stopId": 20,
+      "dealerKind": "distinct",
+      "expected": 8,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 20,
+          "seen": 8
+        },
+        {
+          "id": 22,
+          "seen": 0
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        20,
+        22
+      ],
+      "stopId": 20,
+      "dealerKind": "alias",
+      "expected": 8,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 20,
+          "seen": 8
+        },
+        {
+          "id": 22,
+          "seen": 0
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        20,
+        22
+      ],
+      "stopId": 20,
+      "dealerKind": "self",
+      "expected": 8,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 20,
+          "seen": 8
+        },
+        {
+          "id": 22,
+          "seen": 0
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        20,
+        22
+      ],
+      "stopId": 21,
+      "dealerKind": "distinct",
+      "expected": 8,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        20,
+        22
+      ],
+      "stopId": 21,
+      "dealerKind": "alias",
+      "expected": 8,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        20,
+        22
+      ],
+      "stopId": 21,
+      "dealerKind": "self",
+      "expected": 8,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        20,
+        22
+      ],
+      "stopId": 22,
+      "dealerKind": "distinct",
+      "expected": 8,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 20,
+          "seen": 8
+        },
+        {
+          "id": 22,
+          "seen": 0
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        20,
+        22
+      ],
+      "stopId": 22,
+      "dealerKind": "alias",
+      "expected": 8,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 20,
+          "seen": 8
+        },
+        {
+          "id": 22,
+          "seen": 0
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        20,
+        22
+      ],
+      "stopId": 22,
+      "dealerKind": "self",
+      "expected": 8,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 20,
+          "seen": 8
+        },
+        {
+          "id": 22,
+          "seen": 0
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        22,
+        20
+      ],
+      "stopId": -1,
+      "dealerKind": "distinct",
+      "expected": 6,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        },
+        {
+          "id": 20,
+          "seen": 16
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        22,
+        20
+      ],
+      "stopId": -1,
+      "dealerKind": "alias",
+      "expected": 6,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        },
+        {
+          "id": 20,
+          "seen": 16
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        22,
+        20
+      ],
+      "stopId": -1,
+      "dealerKind": "self",
+      "expected": 6,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        },
+        {
+          "id": 20,
+          "seen": 16
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        22,
+        20
+      ],
+      "stopId": 20,
+      "dealerKind": "distinct",
+      "expected": 6,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        },
+        {
+          "id": 20,
+          "seen": 16
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        22,
+        20
+      ],
+      "stopId": 20,
+      "dealerKind": "alias",
+      "expected": 6,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        },
+        {
+          "id": 20,
+          "seen": 16
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        22,
+        20
+      ],
+      "stopId": 20,
+      "dealerKind": "self",
+      "expected": 6,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        },
+        {
+          "id": 20,
+          "seen": 16
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        22,
+        20
+      ],
+      "stopId": 21,
+      "dealerKind": "distinct",
+      "expected": 8,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        22,
+        20
+      ],
+      "stopId": 21,
+      "dealerKind": "alias",
+      "expected": 8,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        22,
+        20
+      ],
+      "stopId": 21,
+      "dealerKind": "self",
+      "expected": 8,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        22,
+        20
+      ],
+      "stopId": 22,
+      "dealerKind": "distinct",
+      "expected": 6,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        },
+        {
+          "id": 20,
+          "seen": 16
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        22,
+        20
+      ],
+      "stopId": 22,
+      "dealerKind": "alias",
+      "expected": 6,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        },
+        {
+          "id": 20,
+          "seen": 16
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        22,
+        20
+      ],
+      "stopId": 22,
+      "dealerKind": "self",
+      "expected": 6,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        },
+        {
+          "id": 20,
+          "seen": 16
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        20,
+        21
+      ],
+      "stopId": -1,
+      "dealerKind": "distinct",
+      "expected": 6,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        },
+        {
+          "id": 20,
+          "seen": 16
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        20,
+        21
+      ],
+      "stopId": -1,
+      "dealerKind": "alias",
+      "expected": 6,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        },
+        {
+          "id": 20,
+          "seen": 16
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        20,
+        21
+      ],
+      "stopId": -1,
+      "dealerKind": "self",
+      "expected": 6,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        },
+        {
+          "id": 20,
+          "seen": 16
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        20,
+        21
+      ],
+      "stopId": 20,
+      "dealerKind": "distinct",
+      "expected": 6,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        },
+        {
+          "id": 20,
+          "seen": 16
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        20,
+        21
+      ],
+      "stopId": 20,
+      "dealerKind": "alias",
+      "expected": 6,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        },
+        {
+          "id": 20,
+          "seen": 16
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        20,
+        21
+      ],
+      "stopId": 20,
+      "dealerKind": "self",
+      "expected": 6,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        },
+        {
+          "id": 20,
+          "seen": 16
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        20,
+        21
+      ],
+      "stopId": 21,
+      "dealerKind": "distinct",
+      "expected": 6,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        },
+        {
+          "id": 20,
+          "seen": 16
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        20,
+        21
+      ],
+      "stopId": 21,
+      "dealerKind": "alias",
+      "expected": 6,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        },
+        {
+          "id": 20,
+          "seen": 16
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        20,
+        21
+      ],
+      "stopId": 21,
+      "dealerKind": "self",
+      "expected": 6,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        },
+        {
+          "id": 20,
+          "seen": 16
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        20,
+        21
+      ],
+      "stopId": 22,
+      "dealerKind": "distinct",
+      "expected": 6,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        },
+        {
+          "id": 20,
+          "seen": 16
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        20,
+        21
+      ],
+      "stopId": 22,
+      "dealerKind": "alias",
+      "expected": 6,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        },
+        {
+          "id": 20,
+          "seen": 16
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        20,
+        21
+      ],
+      "stopId": 22,
+      "dealerKind": "self",
+      "expected": 6,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        },
+        {
+          "id": 20,
+          "seen": 16
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        21,
+        20
+      ],
+      "stopId": -1,
+      "dealerKind": "distinct",
+      "expected": 6,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        },
+        {
+          "id": 20,
+          "seen": 16
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        21,
+        20
+      ],
+      "stopId": -1,
+      "dealerKind": "alias",
+      "expected": 6,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        },
+        {
+          "id": 20,
+          "seen": 16
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        21,
+        20
+      ],
+      "stopId": -1,
+      "dealerKind": "self",
+      "expected": 6,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        },
+        {
+          "id": 20,
+          "seen": 16
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        21,
+        20
+      ],
+      "stopId": 20,
+      "dealerKind": "distinct",
+      "expected": 6,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        },
+        {
+          "id": 20,
+          "seen": 16
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        21,
+        20
+      ],
+      "stopId": 20,
+      "dealerKind": "alias",
+      "expected": 6,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        },
+        {
+          "id": 20,
+          "seen": 16
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        21,
+        20
+      ],
+      "stopId": 20,
+      "dealerKind": "self",
+      "expected": 6,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        },
+        {
+          "id": 20,
+          "seen": 16
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        21,
+        20
+      ],
+      "stopId": 21,
+      "dealerKind": "distinct",
+      "expected": 16,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        21,
+        20
+      ],
+      "stopId": 21,
+      "dealerKind": "alias",
+      "expected": 16,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        21,
+        20
+      ],
+      "stopId": 21,
+      "dealerKind": "self",
+      "expected": 16,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        21,
+        20
+      ],
+      "stopId": 22,
+      "dealerKind": "distinct",
+      "expected": 6,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        },
+        {
+          "id": 20,
+          "seen": 16
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        21,
+        20
+      ],
+      "stopId": 22,
+      "dealerKind": "alias",
+      "expected": 6,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        },
+        {
+          "id": 20,
+          "seen": 16
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        21,
+        20
+      ],
+      "stopId": 22,
+      "dealerKind": "self",
+      "expected": 6,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        },
+        {
+          "id": 20,
+          "seen": 16
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        20,
+        21,
+        22
+      ],
+      "stopId": -1,
+      "dealerKind": "distinct",
+      "expected": 11,
+      "visits": [
+        {
+          "id": 20,
+          "seen": 5
+        },
+        {
+          "id": 21,
+          "seen": 0
+        },
+        {
+          "id": 22,
+          "seen": 3
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        20,
+        21,
+        22
+      ],
+      "stopId": -1,
+      "dealerKind": "alias",
+      "expected": 16,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        20,
+        21,
+        22
+      ],
+      "stopId": -1,
+      "dealerKind": "self",
+      "expected": 16,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        20,
+        21,
+        22
+      ],
+      "stopId": 20,
+      "dealerKind": "distinct",
+      "expected": 0,
+      "visits": [
+        {
+          "id": 20,
+          "seen": 5
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        20,
+        21,
+        22
+      ],
+      "stopId": 20,
+      "dealerKind": "alias",
+      "expected": 16,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        20,
+        21,
+        22
+      ],
+      "stopId": 20,
+      "dealerKind": "self",
+      "expected": 16,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        20,
+        21,
+        22
+      ],
+      "stopId": 21,
+      "dealerKind": "distinct",
+      "expected": 3,
+      "visits": [
+        {
+          "id": 20,
+          "seen": 5
+        },
+        {
+          "id": 21,
+          "seen": 0
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        20,
+        21,
+        22
+      ],
+      "stopId": 21,
+      "dealerKind": "alias",
+      "expected": 8,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        20,
+        21,
+        22
+      ],
+      "stopId": 21,
+      "dealerKind": "self",
+      "expected": 8,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        20,
+        21,
+        22
+      ],
+      "stopId": 22,
+      "dealerKind": "distinct",
+      "expected": 11,
+      "visits": [
+        {
+          "id": 20,
+          "seen": 5
+        },
+        {
+          "id": 21,
+          "seen": 0
+        },
+        {
+          "id": 22,
+          "seen": 3
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        20,
+        21,
+        22
+      ],
+      "stopId": 22,
+      "dealerKind": "alias",
+      "expected": 16,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        20,
+        21,
+        22
+      ],
+      "stopId": 22,
+      "dealerKind": "self",
+      "expected": 16,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        20,
+        22,
+        21
+      ],
+      "stopId": -1,
+      "dealerKind": "distinct",
+      "expected": 11,
+      "visits": [
+        {
+          "id": 20,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 0
+        },
+        {
+          "id": 21,
+          "seen": 8
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        20,
+        22,
+        21
+      ],
+      "stopId": -1,
+      "dealerKind": "alias",
+      "expected": 16,
+      "visits": [
+        {
+          "id": 22,
+          "seen": 5
+        },
+        {
+          "id": 21,
+          "seen": 13
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        20,
+        22,
+        21
+      ],
+      "stopId": -1,
+      "dealerKind": "self",
+      "expected": 16,
+      "visits": [
+        {
+          "id": 22,
+          "seen": 5
+        },
+        {
+          "id": 21,
+          "seen": 13
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        20,
+        22,
+        21
+      ],
+      "stopId": 20,
+      "dealerKind": "distinct",
+      "expected": 0,
+      "visits": [
+        {
+          "id": 20,
+          "seen": 5
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        20,
+        22,
+        21
+      ],
+      "stopId": 20,
+      "dealerKind": "alias",
+      "expected": 16,
+      "visits": [
+        {
+          "id": 22,
+          "seen": 5
+        },
+        {
+          "id": 21,
+          "seen": 13
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        20,
+        22,
+        21
+      ],
+      "stopId": 20,
+      "dealerKind": "self",
+      "expected": 16,
+      "visits": [
+        {
+          "id": 22,
+          "seen": 5
+        },
+        {
+          "id": 21,
+          "seen": 13
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        20,
+        22,
+        21
+      ],
+      "stopId": 21,
+      "dealerKind": "distinct",
+      "expected": 11,
+      "visits": [
+        {
+          "id": 20,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 0
+        },
+        {
+          "id": 21,
+          "seen": 8
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        20,
+        22,
+        21
+      ],
+      "stopId": 21,
+      "dealerKind": "alias",
+      "expected": 16,
+      "visits": [
+        {
+          "id": 22,
+          "seen": 5
+        },
+        {
+          "id": 21,
+          "seen": 13
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        20,
+        22,
+        21
+      ],
+      "stopId": 21,
+      "dealerKind": "self",
+      "expected": 16,
+      "visits": [
+        {
+          "id": 22,
+          "seen": 5
+        },
+        {
+          "id": 21,
+          "seen": 13
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        20,
+        22,
+        21
+      ],
+      "stopId": 22,
+      "dealerKind": "distinct",
+      "expected": 8,
+      "visits": [
+        {
+          "id": 20,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 0
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        20,
+        22,
+        21
+      ],
+      "stopId": 22,
+      "dealerKind": "alias",
+      "expected": 13,
+      "visits": [
+        {
+          "id": 22,
+          "seen": 5
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        20,
+        22,
+        21
+      ],
+      "stopId": 22,
+      "dealerKind": "self",
+      "expected": 13,
+      "visits": [
+        {
+          "id": 22,
+          "seen": 5
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        21,
+        20,
+        22
+      ],
+      "stopId": -1,
+      "dealerKind": "distinct",
+      "expected": 8,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 20,
+          "seen": 8
+        },
+        {
+          "id": 22,
+          "seen": 0
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        21,
+        20,
+        22
+      ],
+      "stopId": -1,
+      "dealerKind": "alias",
+      "expected": 16,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        21,
+        20,
+        22
+      ],
+      "stopId": -1,
+      "dealerKind": "self",
+      "expected": 16,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        21,
+        20,
+        22
+      ],
+      "stopId": 20,
+      "dealerKind": "distinct",
+      "expected": 0,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 20,
+          "seen": 8
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        21,
+        20,
+        22
+      ],
+      "stopId": 20,
+      "dealerKind": "alias",
+      "expected": 16,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        21,
+        20,
+        22
+      ],
+      "stopId": 20,
+      "dealerKind": "self",
+      "expected": 16,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        21,
+        20,
+        22
+      ],
+      "stopId": 21,
+      "dealerKind": "distinct",
+      "expected": 8,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        21,
+        20,
+        22
+      ],
+      "stopId": 21,
+      "dealerKind": "alias",
+      "expected": 8,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        21,
+        20,
+        22
+      ],
+      "stopId": 21,
+      "dealerKind": "self",
+      "expected": 8,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        21,
+        20,
+        22
+      ],
+      "stopId": 22,
+      "dealerKind": "distinct",
+      "expected": 8,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 20,
+          "seen": 8
+        },
+        {
+          "id": 22,
+          "seen": 0
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        21,
+        20,
+        22
+      ],
+      "stopId": 22,
+      "dealerKind": "alias",
+      "expected": 16,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        21,
+        20,
+        22
+      ],
+      "stopId": 22,
+      "dealerKind": "self",
+      "expected": 16,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        21,
+        22,
+        20
+      ],
+      "stopId": -1,
+      "dealerKind": "distinct",
+      "expected": 6,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        },
+        {
+          "id": 20,
+          "seen": 16
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        21,
+        22,
+        20
+      ],
+      "stopId": -1,
+      "dealerKind": "alias",
+      "expected": 16,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        21,
+        22,
+        20
+      ],
+      "stopId": -1,
+      "dealerKind": "self",
+      "expected": 16,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        21,
+        22,
+        20
+      ],
+      "stopId": 20,
+      "dealerKind": "distinct",
+      "expected": 6,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        },
+        {
+          "id": 20,
+          "seen": 16
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        21,
+        22,
+        20
+      ],
+      "stopId": 20,
+      "dealerKind": "alias",
+      "expected": 16,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        21,
+        22,
+        20
+      ],
+      "stopId": 20,
+      "dealerKind": "self",
+      "expected": 16,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        21,
+        22,
+        20
+      ],
+      "stopId": 21,
+      "dealerKind": "distinct",
+      "expected": 8,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        21,
+        22,
+        20
+      ],
+      "stopId": 21,
+      "dealerKind": "alias",
+      "expected": 8,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        21,
+        22,
+        20
+      ],
+      "stopId": 21,
+      "dealerKind": "self",
+      "expected": 8,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        21,
+        22,
+        20
+      ],
+      "stopId": 22,
+      "dealerKind": "distinct",
+      "expected": 16,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        21,
+        22,
+        20
+      ],
+      "stopId": 22,
+      "dealerKind": "alias",
+      "expected": 16,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        21,
+        22,
+        20
+      ],
+      "stopId": 22,
+      "dealerKind": "self",
+      "expected": 16,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 5
+        },
+        {
+          "id": 22,
+          "seen": 8
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        22,
+        20,
+        21
+      ],
+      "stopId": -1,
+      "dealerKind": "distinct",
+      "expected": 6,
+      "visits": [
+        {
+          "id": 22,
+          "seen": 5
+        },
+        {
+          "id": 20,
+          "seen": 13
+        },
+        {
+          "id": 21,
+          "seen": 3
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        22,
+        20,
+        21
+      ],
+      "stopId": -1,
+      "dealerKind": "alias",
+      "expected": 16,
+      "visits": [
+        {
+          "id": 22,
+          "seen": 5
+        },
+        {
+          "id": 21,
+          "seen": 13
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        22,
+        20,
+        21
+      ],
+      "stopId": -1,
+      "dealerKind": "self",
+      "expected": 16,
+      "visits": [
+        {
+          "id": 22,
+          "seen": 5
+        },
+        {
+          "id": 21,
+          "seen": 13
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        22,
+        20,
+        21
+      ],
+      "stopId": 20,
+      "dealerKind": "distinct",
+      "expected": 3,
+      "visits": [
+        {
+          "id": 22,
+          "seen": 5
+        },
+        {
+          "id": 20,
+          "seen": 13
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        22,
+        20,
+        21
+      ],
+      "stopId": 20,
+      "dealerKind": "alias",
+      "expected": 16,
+      "visits": [
+        {
+          "id": 22,
+          "seen": 5
+        },
+        {
+          "id": 21,
+          "seen": 13
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        22,
+        20,
+        21
+      ],
+      "stopId": 20,
+      "dealerKind": "self",
+      "expected": 16,
+      "visits": [
+        {
+          "id": 22,
+          "seen": 5
+        },
+        {
+          "id": 21,
+          "seen": 13
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        22,
+        20,
+        21
+      ],
+      "stopId": 21,
+      "dealerKind": "distinct",
+      "expected": 6,
+      "visits": [
+        {
+          "id": 22,
+          "seen": 5
+        },
+        {
+          "id": 20,
+          "seen": 13
+        },
+        {
+          "id": 21,
+          "seen": 3
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        22,
+        20,
+        21
+      ],
+      "stopId": 21,
+      "dealerKind": "alias",
+      "expected": 16,
+      "visits": [
+        {
+          "id": 22,
+          "seen": 5
+        },
+        {
+          "id": 21,
+          "seen": 13
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        22,
+        20,
+        21
+      ],
+      "stopId": 21,
+      "dealerKind": "self",
+      "expected": 16,
+      "visits": [
+        {
+          "id": 22,
+          "seen": 5
+        },
+        {
+          "id": 21,
+          "seen": 13
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        22,
+        20,
+        21
+      ],
+      "stopId": 22,
+      "dealerKind": "distinct",
+      "expected": 13,
+      "visits": [
+        {
+          "id": 22,
+          "seen": 5
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        22,
+        20,
+        21
+      ],
+      "stopId": 22,
+      "dealerKind": "alias",
+      "expected": 13,
+      "visits": [
+        {
+          "id": 22,
+          "seen": 5
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        22,
+        20,
+        21
+      ],
+      "stopId": 22,
+      "dealerKind": "self",
+      "expected": 13,
+      "visits": [
+        {
+          "id": 22,
+          "seen": 5
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        22,
+        21,
+        20
+      ],
+      "stopId": -1,
+      "dealerKind": "distinct",
+      "expected": 6,
+      "visits": [
+        {
+          "id": 22,
+          "seen": 5
+        },
+        {
+          "id": 21,
+          "seen": 13
+        },
+        {
+          "id": 20,
+          "seen": 16
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        22,
+        21,
+        20
+      ],
+      "stopId": -1,
+      "dealerKind": "alias",
+      "expected": 16,
+      "visits": [
+        {
+          "id": 22,
+          "seen": 5
+        },
+        {
+          "id": 21,
+          "seen": 13
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        22,
+        21,
+        20
+      ],
+      "stopId": -1,
+      "dealerKind": "self",
+      "expected": 16,
+      "visits": [
+        {
+          "id": 22,
+          "seen": 5
+        },
+        {
+          "id": 21,
+          "seen": 13
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        22,
+        21,
+        20
+      ],
+      "stopId": 20,
+      "dealerKind": "distinct",
+      "expected": 6,
+      "visits": [
+        {
+          "id": 22,
+          "seen": 5
+        },
+        {
+          "id": 21,
+          "seen": 13
+        },
+        {
+          "id": 20,
+          "seen": 16
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        22,
+        21,
+        20
+      ],
+      "stopId": 20,
+      "dealerKind": "alias",
+      "expected": 16,
+      "visits": [
+        {
+          "id": 22,
+          "seen": 5
+        },
+        {
+          "id": 21,
+          "seen": 13
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        22,
+        21,
+        20
+      ],
+      "stopId": 20,
+      "dealerKind": "self",
+      "expected": 16,
+      "visits": [
+        {
+          "id": 22,
+          "seen": 5
+        },
+        {
+          "id": 21,
+          "seen": 13
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        22,
+        21,
+        20
+      ],
+      "stopId": 21,
+      "dealerKind": "distinct",
+      "expected": 16,
+      "visits": [
+        {
+          "id": 22,
+          "seen": 5
+        },
+        {
+          "id": 21,
+          "seen": 13
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        22,
+        21,
+        20
+      ],
+      "stopId": 21,
+      "dealerKind": "alias",
+      "expected": 16,
+      "visits": [
+        {
+          "id": 22,
+          "seen": 5
+        },
+        {
+          "id": 21,
+          "seen": 13
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        22,
+        21,
+        20
+      ],
+      "stopId": 21,
+      "dealerKind": "self",
+      "expected": 16,
+      "visits": [
+        {
+          "id": 22,
+          "seen": 5
+        },
+        {
+          "id": 21,
+          "seen": 13
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        22,
+        21,
+        20
+      ],
+      "stopId": 22,
+      "dealerKind": "distinct",
+      "expected": 13,
+      "visits": [
+        {
+          "id": 22,
+          "seen": 5
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        22,
+        21,
+        20
+      ],
+      "stopId": 22,
+      "dealerKind": "alias",
+      "expected": 13,
+      "visits": [
+        {
+          "id": 22,
+          "seen": 5
+        }
+      ]
+    },
+    {
+      "damage": 5,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        22,
+        21,
+        20
+      ],
+      "stopId": 22,
+      "dealerKind": "self",
+      "expected": 13,
+      "visits": [
+        {
+          "id": 22,
+          "seen": 5
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        21,
+        22
+      ],
+      "stopId": -1,
+      "dealerKind": "distinct",
+      "expected": 101,
+      "visits": [
+        {
+          "id": 20,
+          "seen": 100
+        },
+        {
+          "id": 21,
+          "seen": 90
+        },
+        {
+          "id": 22,
+          "seen": 93
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        21,
+        22
+      ],
+      "stopId": -1,
+      "dealerKind": "alias",
+      "expected": 111,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        21,
+        22
+      ],
+      "stopId": -1,
+      "dealerKind": "self",
+      "expected": 111,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        21,
+        22
+      ],
+      "stopId": 20,
+      "dealerKind": "distinct",
+      "expected": 90,
+      "visits": [
+        {
+          "id": 20,
+          "seen": 100
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        21,
+        22
+      ],
+      "stopId": 20,
+      "dealerKind": "alias",
+      "expected": 111,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        21,
+        22
+      ],
+      "stopId": 20,
+      "dealerKind": "self",
+      "expected": 111,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        21,
+        22
+      ],
+      "stopId": 21,
+      "dealerKind": "distinct",
+      "expected": 93,
+      "visits": [
+        {
+          "id": 20,
+          "seen": 100
+        },
+        {
+          "id": 21,
+          "seen": 90
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        21,
+        22
+      ],
+      "stopId": 21,
+      "dealerKind": "alias",
+      "expected": 103,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        21,
+        22
+      ],
+      "stopId": 21,
+      "dealerKind": "self",
+      "expected": 103,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        21,
+        22
+      ],
+      "stopId": 22,
+      "dealerKind": "distinct",
+      "expected": 101,
+      "visits": [
+        {
+          "id": 20,
+          "seen": 100
+        },
+        {
+          "id": 21,
+          "seen": 90
+        },
+        {
+          "id": 22,
+          "seen": 93
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        21,
+        22
+      ],
+      "stopId": 22,
+      "dealerKind": "alias",
+      "expected": 111,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        21,
+        22
+      ],
+      "stopId": 22,
+      "dealerKind": "self",
+      "expected": 111,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        22,
+        21
+      ],
+      "stopId": -1,
+      "dealerKind": "distinct",
+      "expected": 101,
+      "visits": [
+        {
+          "id": 20,
+          "seen": 100
+        },
+        {
+          "id": 21,
+          "seen": 90
+        },
+        {
+          "id": 22,
+          "seen": 93
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        22,
+        21
+      ],
+      "stopId": -1,
+      "dealerKind": "alias",
+      "expected": 111,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        22,
+        21
+      ],
+      "stopId": -1,
+      "dealerKind": "self",
+      "expected": 111,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        22,
+        21
+      ],
+      "stopId": 20,
+      "dealerKind": "distinct",
+      "expected": 90,
+      "visits": [
+        {
+          "id": 20,
+          "seen": 100
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        22,
+        21
+      ],
+      "stopId": 20,
+      "dealerKind": "alias",
+      "expected": 111,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        22,
+        21
+      ],
+      "stopId": 20,
+      "dealerKind": "self",
+      "expected": 111,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        22,
+        21
+      ],
+      "stopId": 21,
+      "dealerKind": "distinct",
+      "expected": 101,
+      "visits": [
+        {
+          "id": 20,
+          "seen": 100
+        },
+        {
+          "id": 21,
+          "seen": 90
+        },
+        {
+          "id": 22,
+          "seen": 93
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        22,
+        21
+      ],
+      "stopId": 21,
+      "dealerKind": "alias",
+      "expected": 111,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        22,
+        21
+      ],
+      "stopId": 21,
+      "dealerKind": "self",
+      "expected": 111,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        22,
+        21
+      ],
+      "stopId": 22,
+      "dealerKind": "distinct",
+      "expected": 101,
+      "visits": [
+        {
+          "id": 20,
+          "seen": 100
+        },
+        {
+          "id": 21,
+          "seen": 90
+        },
+        {
+          "id": 22,
+          "seen": 93
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        22,
+        21
+      ],
+      "stopId": 22,
+      "dealerKind": "alias",
+      "expected": 111,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        22,
+        21
+      ],
+      "stopId": 22,
+      "dealerKind": "self",
+      "expected": 111,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        20,
+        22
+      ],
+      "stopId": -1,
+      "dealerKind": "distinct",
+      "expected": 101,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 20,
+          "seen": 103
+        },
+        {
+          "id": 22,
+          "seen": 93
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        20,
+        22
+      ],
+      "stopId": -1,
+      "dealerKind": "alias",
+      "expected": 111,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        20,
+        22
+      ],
+      "stopId": -1,
+      "dealerKind": "self",
+      "expected": 111,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        20,
+        22
+      ],
+      "stopId": 20,
+      "dealerKind": "distinct",
+      "expected": 93,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 20,
+          "seen": 103
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        20,
+        22
+      ],
+      "stopId": 20,
+      "dealerKind": "alias",
+      "expected": 111,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        20,
+        22
+      ],
+      "stopId": 20,
+      "dealerKind": "self",
+      "expected": 111,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        20,
+        22
+      ],
+      "stopId": 21,
+      "dealerKind": "distinct",
+      "expected": 103,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        20,
+        22
+      ],
+      "stopId": 21,
+      "dealerKind": "alias",
+      "expected": 103,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        20,
+        22
+      ],
+      "stopId": 21,
+      "dealerKind": "self",
+      "expected": 103,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        20,
+        22
+      ],
+      "stopId": 22,
+      "dealerKind": "distinct",
+      "expected": 101,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 20,
+          "seen": 103
+        },
+        {
+          "id": 22,
+          "seen": 93
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        20,
+        22
+      ],
+      "stopId": 22,
+      "dealerKind": "alias",
+      "expected": 111,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        20,
+        22
+      ],
+      "stopId": 22,
+      "dealerKind": "self",
+      "expected": 111,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        22,
+        20
+      ],
+      "stopId": -1,
+      "dealerKind": "distinct",
+      "expected": 101,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 20,
+          "seen": 103
+        },
+        {
+          "id": 22,
+          "seen": 93
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        22,
+        20
+      ],
+      "stopId": -1,
+      "dealerKind": "alias",
+      "expected": 111,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        22,
+        20
+      ],
+      "stopId": -1,
+      "dealerKind": "self",
+      "expected": 111,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        22,
+        20
+      ],
+      "stopId": 20,
+      "dealerKind": "distinct",
+      "expected": 101,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 20,
+          "seen": 103
+        },
+        {
+          "id": 22,
+          "seen": 93
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        22,
+        20
+      ],
+      "stopId": 20,
+      "dealerKind": "alias",
+      "expected": 111,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        22,
+        20
+      ],
+      "stopId": 20,
+      "dealerKind": "self",
+      "expected": 111,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        22,
+        20
+      ],
+      "stopId": 21,
+      "dealerKind": "distinct",
+      "expected": 103,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        22,
+        20
+      ],
+      "stopId": 21,
+      "dealerKind": "alias",
+      "expected": 103,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        22,
+        20
+      ],
+      "stopId": 21,
+      "dealerKind": "self",
+      "expected": 103,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        22,
+        20
+      ],
+      "stopId": 22,
+      "dealerKind": "distinct",
+      "expected": 101,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 20,
+          "seen": 103
+        },
+        {
+          "id": 22,
+          "seen": 93
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        22,
+        20
+      ],
+      "stopId": 22,
+      "dealerKind": "alias",
+      "expected": 111,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        22,
+        20
+      ],
+      "stopId": 22,
+      "dealerKind": "self",
+      "expected": 111,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        20,
+        21
+      ],
+      "stopId": -1,
+      "dealerKind": "distinct",
+      "expected": 101,
+      "visits": [
+        {
+          "id": 20,
+          "seen": 100
+        },
+        {
+          "id": 21,
+          "seen": 90
+        },
+        {
+          "id": 22,
+          "seen": 93
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        20,
+        21
+      ],
+      "stopId": -1,
+      "dealerKind": "alias",
+      "expected": 111,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        20,
+        21
+      ],
+      "stopId": -1,
+      "dealerKind": "self",
+      "expected": 111,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        20,
+        21
+      ],
+      "stopId": 20,
+      "dealerKind": "distinct",
+      "expected": 98,
+      "visits": [
+        {
+          "id": 20,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 90
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        20,
+        21
+      ],
+      "stopId": 20,
+      "dealerKind": "alias",
+      "expected": 111,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        20,
+        21
+      ],
+      "stopId": 20,
+      "dealerKind": "self",
+      "expected": 111,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        20,
+        21
+      ],
+      "stopId": 21,
+      "dealerKind": "distinct",
+      "expected": 101,
+      "visits": [
+        {
+          "id": 20,
+          "seen": 100
+        },
+        {
+          "id": 21,
+          "seen": 90
+        },
+        {
+          "id": 22,
+          "seen": 93
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        20,
+        21
+      ],
+      "stopId": 21,
+      "dealerKind": "alias",
+      "expected": 111,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        20,
+        21
+      ],
+      "stopId": 21,
+      "dealerKind": "self",
+      "expected": 111,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        20,
+        21
+      ],
+      "stopId": 22,
+      "dealerKind": "distinct",
+      "expected": 101,
+      "visits": [
+        {
+          "id": 20,
+          "seen": 100
+        },
+        {
+          "id": 21,
+          "seen": 90
+        },
+        {
+          "id": 22,
+          "seen": 93
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        20,
+        21
+      ],
+      "stopId": 22,
+      "dealerKind": "alias",
+      "expected": 111,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        20,
+        21
+      ],
+      "stopId": 22,
+      "dealerKind": "self",
+      "expected": 111,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        21,
+        20
+      ],
+      "stopId": -1,
+      "dealerKind": "distinct",
+      "expected": 101,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 20,
+          "seen": 103
+        },
+        {
+          "id": 22,
+          "seen": 93
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        21,
+        20
+      ],
+      "stopId": -1,
+      "dealerKind": "alias",
+      "expected": 111,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        21,
+        20
+      ],
+      "stopId": -1,
+      "dealerKind": "self",
+      "expected": 111,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        21,
+        20
+      ],
+      "stopId": 20,
+      "dealerKind": "distinct",
+      "expected": 101,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 20,
+          "seen": 103
+        },
+        {
+          "id": 22,
+          "seen": 93
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        21,
+        20
+      ],
+      "stopId": 20,
+      "dealerKind": "alias",
+      "expected": 111,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        21,
+        20
+      ],
+      "stopId": 20,
+      "dealerKind": "self",
+      "expected": 111,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        21,
+        20
+      ],
+      "stopId": 21,
+      "dealerKind": "distinct",
+      "expected": 111,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        21,
+        20
+      ],
+      "stopId": 21,
+      "dealerKind": "alias",
+      "expected": 111,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        21,
+        20
+      ],
+      "stopId": 21,
+      "dealerKind": "self",
+      "expected": 111,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        21,
+        20
+      ],
+      "stopId": 22,
+      "dealerKind": "distinct",
+      "expected": 101,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 20,
+          "seen": 103
+        },
+        {
+          "id": 22,
+          "seen": 93
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        21,
+        20
+      ],
+      "stopId": 22,
+      "dealerKind": "alias",
+      "expected": 111,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        21,
+        20
+      ],
+      "stopId": 22,
+      "dealerKind": "self",
+      "expected": 111,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        21,
+        22
+      ],
+      "stopId": -1,
+      "dealerKind": "distinct",
+      "expected": 101,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 20,
+          "seen": 103
+        },
+        {
+          "id": 22,
+          "seen": 93
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        21,
+        22
+      ],
+      "stopId": -1,
+      "dealerKind": "alias",
+      "expected": 101,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 20,
+          "seen": 103
+        },
+        {
+          "id": 22,
+          "seen": 93
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        21,
+        22
+      ],
+      "stopId": -1,
+      "dealerKind": "self",
+      "expected": 101,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 20,
+          "seen": 103
+        },
+        {
+          "id": 22,
+          "seen": 93
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        21,
+        22
+      ],
+      "stopId": 20,
+      "dealerKind": "distinct",
+      "expected": 101,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 20,
+          "seen": 103
+        },
+        {
+          "id": 22,
+          "seen": 93
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        21,
+        22
+      ],
+      "stopId": 20,
+      "dealerKind": "alias",
+      "expected": 101,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 20,
+          "seen": 103
+        },
+        {
+          "id": 22,
+          "seen": 93
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        21,
+        22
+      ],
+      "stopId": 20,
+      "dealerKind": "self",
+      "expected": 101,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 20,
+          "seen": 103
+        },
+        {
+          "id": 22,
+          "seen": 93
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        21,
+        22
+      ],
+      "stopId": 21,
+      "dealerKind": "distinct",
+      "expected": 93,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 20,
+          "seen": 103
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        21,
+        22
+      ],
+      "stopId": 21,
+      "dealerKind": "alias",
+      "expected": 93,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 20,
+          "seen": 103
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        21,
+        22
+      ],
+      "stopId": 21,
+      "dealerKind": "self",
+      "expected": 93,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 20,
+          "seen": 103
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        21,
+        22
+      ],
+      "stopId": 22,
+      "dealerKind": "distinct",
+      "expected": 101,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 20,
+          "seen": 103
+        },
+        {
+          "id": 22,
+          "seen": 93
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        21,
+        22
+      ],
+      "stopId": 22,
+      "dealerKind": "alias",
+      "expected": 101,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 20,
+          "seen": 103
+        },
+        {
+          "id": 22,
+          "seen": 93
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        21,
+        22
+      ],
+      "stopId": 22,
+      "dealerKind": "self",
+      "expected": 101,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 20,
+          "seen": 103
+        },
+        {
+          "id": 22,
+          "seen": 93
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        22,
+        21
+      ],
+      "stopId": -1,
+      "dealerKind": "distinct",
+      "expected": 101,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 20,
+          "seen": 103
+        },
+        {
+          "id": 22,
+          "seen": 93
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        22,
+        21
+      ],
+      "stopId": -1,
+      "dealerKind": "alias",
+      "expected": 101,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 20,
+          "seen": 103
+        },
+        {
+          "id": 22,
+          "seen": 93
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        22,
+        21
+      ],
+      "stopId": -1,
+      "dealerKind": "self",
+      "expected": 101,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 20,
+          "seen": 103
+        },
+        {
+          "id": 22,
+          "seen": 93
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        22,
+        21
+      ],
+      "stopId": 20,
+      "dealerKind": "distinct",
+      "expected": 101,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 20,
+          "seen": 103
+        },
+        {
+          "id": 22,
+          "seen": 93
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        22,
+        21
+      ],
+      "stopId": 20,
+      "dealerKind": "alias",
+      "expected": 101,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 20,
+          "seen": 103
+        },
+        {
+          "id": 22,
+          "seen": 93
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        22,
+        21
+      ],
+      "stopId": 20,
+      "dealerKind": "self",
+      "expected": 101,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 20,
+          "seen": 103
+        },
+        {
+          "id": 22,
+          "seen": 93
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        22,
+        21
+      ],
+      "stopId": 21,
+      "dealerKind": "distinct",
+      "expected": 101,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 20,
+          "seen": 103
+        },
+        {
+          "id": 22,
+          "seen": 93
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        22,
+        21
+      ],
+      "stopId": 21,
+      "dealerKind": "alias",
+      "expected": 101,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 20,
+          "seen": 103
+        },
+        {
+          "id": 22,
+          "seen": 93
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        22,
+        21
+      ],
+      "stopId": 21,
+      "dealerKind": "self",
+      "expected": 101,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 20,
+          "seen": 103
+        },
+        {
+          "id": 22,
+          "seen": 93
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        22,
+        21
+      ],
+      "stopId": 22,
+      "dealerKind": "distinct",
+      "expected": 101,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 20,
+          "seen": 103
+        },
+        {
+          "id": 22,
+          "seen": 93
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        22,
+        21
+      ],
+      "stopId": 22,
+      "dealerKind": "alias",
+      "expected": 101,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 20,
+          "seen": 103
+        },
+        {
+          "id": 22,
+          "seen": 93
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        20,
+        22,
+        21
+      ],
+      "stopId": 22,
+      "dealerKind": "self",
+      "expected": 101,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 20,
+          "seen": 103
+        },
+        {
+          "id": 22,
+          "seen": 93
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        20,
+        22
+      ],
+      "stopId": -1,
+      "dealerKind": "distinct",
+      "expected": 101,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 20,
+          "seen": 103
+        },
+        {
+          "id": 22,
+          "seen": 93
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        20,
+        22
+      ],
+      "stopId": -1,
+      "dealerKind": "alias",
+      "expected": 101,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 20,
+          "seen": 103
+        },
+        {
+          "id": 22,
+          "seen": 93
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        20,
+        22
+      ],
+      "stopId": -1,
+      "dealerKind": "self",
+      "expected": 101,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 20,
+          "seen": 103
+        },
+        {
+          "id": 22,
+          "seen": 93
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        20,
+        22
+      ],
+      "stopId": 20,
+      "dealerKind": "distinct",
+      "expected": 101,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 20,
+          "seen": 103
+        },
+        {
+          "id": 22,
+          "seen": 93
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        20,
+        22
+      ],
+      "stopId": 20,
+      "dealerKind": "alias",
+      "expected": 101,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 20,
+          "seen": 103
+        },
+        {
+          "id": 22,
+          "seen": 93
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        20,
+        22
+      ],
+      "stopId": 20,
+      "dealerKind": "self",
+      "expected": 101,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 20,
+          "seen": 103
+        },
+        {
+          "id": 22,
+          "seen": 93
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        20,
+        22
+      ],
+      "stopId": 21,
+      "dealerKind": "distinct",
+      "expected": 103,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        20,
+        22
+      ],
+      "stopId": 21,
+      "dealerKind": "alias",
+      "expected": 103,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        20,
+        22
+      ],
+      "stopId": 21,
+      "dealerKind": "self",
+      "expected": 103,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        20,
+        22
+      ],
+      "stopId": 22,
+      "dealerKind": "distinct",
+      "expected": 101,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 20,
+          "seen": 103
+        },
+        {
+          "id": 22,
+          "seen": 93
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        20,
+        22
+      ],
+      "stopId": 22,
+      "dealerKind": "alias",
+      "expected": 101,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 20,
+          "seen": 103
+        },
+        {
+          "id": 22,
+          "seen": 93
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        20,
+        22
+      ],
+      "stopId": 22,
+      "dealerKind": "self",
+      "expected": 101,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 20,
+          "seen": 103
+        },
+        {
+          "id": 22,
+          "seen": 93
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        22,
+        20
+      ],
+      "stopId": -1,
+      "dealerKind": "distinct",
+      "expected": 101,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        },
+        {
+          "id": 20,
+          "seen": 111
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        22,
+        20
+      ],
+      "stopId": -1,
+      "dealerKind": "alias",
+      "expected": 101,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        },
+        {
+          "id": 20,
+          "seen": 111
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        22,
+        20
+      ],
+      "stopId": -1,
+      "dealerKind": "self",
+      "expected": 101,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        },
+        {
+          "id": 20,
+          "seen": 111
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        22,
+        20
+      ],
+      "stopId": 20,
+      "dealerKind": "distinct",
+      "expected": 101,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        },
+        {
+          "id": 20,
+          "seen": 111
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        22,
+        20
+      ],
+      "stopId": 20,
+      "dealerKind": "alias",
+      "expected": 101,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        },
+        {
+          "id": 20,
+          "seen": 111
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        22,
+        20
+      ],
+      "stopId": 20,
+      "dealerKind": "self",
+      "expected": 101,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        },
+        {
+          "id": 20,
+          "seen": 111
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        22,
+        20
+      ],
+      "stopId": 21,
+      "dealerKind": "distinct",
+      "expected": 103,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        22,
+        20
+      ],
+      "stopId": 21,
+      "dealerKind": "alias",
+      "expected": 103,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        22,
+        20
+      ],
+      "stopId": 21,
+      "dealerKind": "self",
+      "expected": 103,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        22,
+        20
+      ],
+      "stopId": 22,
+      "dealerKind": "distinct",
+      "expected": 101,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        },
+        {
+          "id": 20,
+          "seen": 111
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        22,
+        20
+      ],
+      "stopId": 22,
+      "dealerKind": "alias",
+      "expected": 101,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        },
+        {
+          "id": 20,
+          "seen": 111
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        21,
+        22,
+        20
+      ],
+      "stopId": 22,
+      "dealerKind": "self",
+      "expected": 101,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        },
+        {
+          "id": 20,
+          "seen": 111
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        20,
+        21
+      ],
+      "stopId": -1,
+      "dealerKind": "distinct",
+      "expected": 101,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        },
+        {
+          "id": 20,
+          "seen": 111
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        20,
+        21
+      ],
+      "stopId": -1,
+      "dealerKind": "alias",
+      "expected": 101,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        },
+        {
+          "id": 20,
+          "seen": 111
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        20,
+        21
+      ],
+      "stopId": -1,
+      "dealerKind": "self",
+      "expected": 101,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        },
+        {
+          "id": 20,
+          "seen": 111
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        20,
+        21
+      ],
+      "stopId": 20,
+      "dealerKind": "distinct",
+      "expected": 101,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        },
+        {
+          "id": 20,
+          "seen": 111
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        20,
+        21
+      ],
+      "stopId": 20,
+      "dealerKind": "alias",
+      "expected": 101,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        },
+        {
+          "id": 20,
+          "seen": 111
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        20,
+        21
+      ],
+      "stopId": 20,
+      "dealerKind": "self",
+      "expected": 101,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        },
+        {
+          "id": 20,
+          "seen": 111
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        20,
+        21
+      ],
+      "stopId": 21,
+      "dealerKind": "distinct",
+      "expected": 101,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        },
+        {
+          "id": 20,
+          "seen": 111
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        20,
+        21
+      ],
+      "stopId": 21,
+      "dealerKind": "alias",
+      "expected": 101,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        },
+        {
+          "id": 20,
+          "seen": 111
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        20,
+        21
+      ],
+      "stopId": 21,
+      "dealerKind": "self",
+      "expected": 101,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        },
+        {
+          "id": 20,
+          "seen": 111
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        20,
+        21
+      ],
+      "stopId": 22,
+      "dealerKind": "distinct",
+      "expected": 101,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        },
+        {
+          "id": 20,
+          "seen": 111
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        20,
+        21
+      ],
+      "stopId": 22,
+      "dealerKind": "alias",
+      "expected": 101,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        },
+        {
+          "id": 20,
+          "seen": 111
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        20,
+        21
+      ],
+      "stopId": 22,
+      "dealerKind": "self",
+      "expected": 101,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        },
+        {
+          "id": 20,
+          "seen": 111
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        21,
+        20
+      ],
+      "stopId": -1,
+      "dealerKind": "distinct",
+      "expected": 101,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        },
+        {
+          "id": 20,
+          "seen": 111
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        21,
+        20
+      ],
+      "stopId": -1,
+      "dealerKind": "alias",
+      "expected": 101,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        },
+        {
+          "id": 20,
+          "seen": 111
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        21,
+        20
+      ],
+      "stopId": -1,
+      "dealerKind": "self",
+      "expected": 101,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        },
+        {
+          "id": 20,
+          "seen": 111
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        21,
+        20
+      ],
+      "stopId": 20,
+      "dealerKind": "distinct",
+      "expected": 101,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        },
+        {
+          "id": 20,
+          "seen": 111
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        21,
+        20
+      ],
+      "stopId": 20,
+      "dealerKind": "alias",
+      "expected": 101,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        },
+        {
+          "id": 20,
+          "seen": 111
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        21,
+        20
+      ],
+      "stopId": 20,
+      "dealerKind": "self",
+      "expected": 101,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        },
+        {
+          "id": 20,
+          "seen": 111
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        21,
+        20
+      ],
+      "stopId": 21,
+      "dealerKind": "distinct",
+      "expected": 111,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        21,
+        20
+      ],
+      "stopId": 21,
+      "dealerKind": "alias",
+      "expected": 111,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        21,
+        20
+      ],
+      "stopId": 21,
+      "dealerKind": "self",
+      "expected": 111,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        21,
+        20
+      ],
+      "stopId": 22,
+      "dealerKind": "distinct",
+      "expected": 101,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        },
+        {
+          "id": 20,
+          "seen": 111
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        21,
+        20
+      ],
+      "stopId": 22,
+      "dealerKind": "alias",
+      "expected": 101,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        },
+        {
+          "id": 20,
+          "seen": 111
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "deferred",
+        "regular",
+        "deferred"
+      ],
+      "order": [
+        22,
+        21,
+        20
+      ],
+      "stopId": 22,
+      "dealerKind": "self",
+      "expected": 101,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        },
+        {
+          "id": 20,
+          "seen": 111
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        20,
+        21,
+        22
+      ],
+      "stopId": -1,
+      "dealerKind": "distinct",
+      "expected": 101,
+      "visits": [
+        {
+          "id": 20,
+          "seen": 100
+        },
+        {
+          "id": 21,
+          "seen": 90
+        },
+        {
+          "id": 22,
+          "seen": 93
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        20,
+        21,
+        22
+      ],
+      "stopId": -1,
+      "dealerKind": "alias",
+      "expected": 111,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        20,
+        21,
+        22
+      ],
+      "stopId": -1,
+      "dealerKind": "self",
+      "expected": 111,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        20,
+        21,
+        22
+      ],
+      "stopId": 20,
+      "dealerKind": "distinct",
+      "expected": 90,
+      "visits": [
+        {
+          "id": 20,
+          "seen": 100
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        20,
+        21,
+        22
+      ],
+      "stopId": 20,
+      "dealerKind": "alias",
+      "expected": 111,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        20,
+        21,
+        22
+      ],
+      "stopId": 20,
+      "dealerKind": "self",
+      "expected": 111,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        20,
+        21,
+        22
+      ],
+      "stopId": 21,
+      "dealerKind": "distinct",
+      "expected": 93,
+      "visits": [
+        {
+          "id": 20,
+          "seen": 100
+        },
+        {
+          "id": 21,
+          "seen": 90
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        20,
+        21,
+        22
+      ],
+      "stopId": 21,
+      "dealerKind": "alias",
+      "expected": 103,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        20,
+        21,
+        22
+      ],
+      "stopId": 21,
+      "dealerKind": "self",
+      "expected": 103,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        20,
+        21,
+        22
+      ],
+      "stopId": 22,
+      "dealerKind": "distinct",
+      "expected": 101,
+      "visits": [
+        {
+          "id": 20,
+          "seen": 100
+        },
+        {
+          "id": 21,
+          "seen": 90
+        },
+        {
+          "id": 22,
+          "seen": 93
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        20,
+        21,
+        22
+      ],
+      "stopId": 22,
+      "dealerKind": "alias",
+      "expected": 111,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        20,
+        21,
+        22
+      ],
+      "stopId": 22,
+      "dealerKind": "self",
+      "expected": 111,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        20,
+        22,
+        21
+      ],
+      "stopId": -1,
+      "dealerKind": "distinct",
+      "expected": 101,
+      "visits": [
+        {
+          "id": 20,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 90
+        },
+        {
+          "id": 21,
+          "seen": 98
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        20,
+        22,
+        21
+      ],
+      "stopId": -1,
+      "dealerKind": "alias",
+      "expected": 111,
+      "visits": [
+        {
+          "id": 22,
+          "seen": 100
+        },
+        {
+          "id": 21,
+          "seen": 108
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        20,
+        22,
+        21
+      ],
+      "stopId": -1,
+      "dealerKind": "self",
+      "expected": 111,
+      "visits": [
+        {
+          "id": 22,
+          "seen": 100
+        },
+        {
+          "id": 21,
+          "seen": 108
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        20,
+        22,
+        21
+      ],
+      "stopId": 20,
+      "dealerKind": "distinct",
+      "expected": 90,
+      "visits": [
+        {
+          "id": 20,
+          "seen": 100
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        20,
+        22,
+        21
+      ],
+      "stopId": 20,
+      "dealerKind": "alias",
+      "expected": 111,
+      "visits": [
+        {
+          "id": 22,
+          "seen": 100
+        },
+        {
+          "id": 21,
+          "seen": 108
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        20,
+        22,
+        21
+      ],
+      "stopId": 20,
+      "dealerKind": "self",
+      "expected": 111,
+      "visits": [
+        {
+          "id": 22,
+          "seen": 100
+        },
+        {
+          "id": 21,
+          "seen": 108
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        20,
+        22,
+        21
+      ],
+      "stopId": 21,
+      "dealerKind": "distinct",
+      "expected": 101,
+      "visits": [
+        {
+          "id": 20,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 90
+        },
+        {
+          "id": 21,
+          "seen": 98
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        20,
+        22,
+        21
+      ],
+      "stopId": 21,
+      "dealerKind": "alias",
+      "expected": 111,
+      "visits": [
+        {
+          "id": 22,
+          "seen": 100
+        },
+        {
+          "id": 21,
+          "seen": 108
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        20,
+        22,
+        21
+      ],
+      "stopId": 21,
+      "dealerKind": "self",
+      "expected": 111,
+      "visits": [
+        {
+          "id": 22,
+          "seen": 100
+        },
+        {
+          "id": 21,
+          "seen": 108
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        20,
+        22,
+        21
+      ],
+      "stopId": 22,
+      "dealerKind": "distinct",
+      "expected": 98,
+      "visits": [
+        {
+          "id": 20,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 90
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        20,
+        22,
+        21
+      ],
+      "stopId": 22,
+      "dealerKind": "alias",
+      "expected": 108,
+      "visits": [
+        {
+          "id": 22,
+          "seen": 100
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        20,
+        22,
+        21
+      ],
+      "stopId": 22,
+      "dealerKind": "self",
+      "expected": 108,
+      "visits": [
+        {
+          "id": 22,
+          "seen": 100
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        21,
+        20,
+        22
+      ],
+      "stopId": -1,
+      "dealerKind": "distinct",
+      "expected": 101,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 20,
+          "seen": 103
+        },
+        {
+          "id": 22,
+          "seen": 93
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        21,
+        20,
+        22
+      ],
+      "stopId": -1,
+      "dealerKind": "alias",
+      "expected": 111,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        21,
+        20,
+        22
+      ],
+      "stopId": -1,
+      "dealerKind": "self",
+      "expected": 111,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        21,
+        20,
+        22
+      ],
+      "stopId": 20,
+      "dealerKind": "distinct",
+      "expected": 93,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 20,
+          "seen": 103
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        21,
+        20,
+        22
+      ],
+      "stopId": 20,
+      "dealerKind": "alias",
+      "expected": 111,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        21,
+        20,
+        22
+      ],
+      "stopId": 20,
+      "dealerKind": "self",
+      "expected": 111,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        21,
+        20,
+        22
+      ],
+      "stopId": 21,
+      "dealerKind": "distinct",
+      "expected": 103,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        21,
+        20,
+        22
+      ],
+      "stopId": 21,
+      "dealerKind": "alias",
+      "expected": 103,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        21,
+        20,
+        22
+      ],
+      "stopId": 21,
+      "dealerKind": "self",
+      "expected": 103,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        21,
+        20,
+        22
+      ],
+      "stopId": 22,
+      "dealerKind": "distinct",
+      "expected": 101,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 20,
+          "seen": 103
+        },
+        {
+          "id": 22,
+          "seen": 93
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        21,
+        20,
+        22
+      ],
+      "stopId": 22,
+      "dealerKind": "alias",
+      "expected": 111,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        21,
+        20,
+        22
+      ],
+      "stopId": 22,
+      "dealerKind": "self",
+      "expected": 111,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        21,
+        22,
+        20
+      ],
+      "stopId": -1,
+      "dealerKind": "distinct",
+      "expected": 101,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        },
+        {
+          "id": 20,
+          "seen": 111
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        21,
+        22,
+        20
+      ],
+      "stopId": -1,
+      "dealerKind": "alias",
+      "expected": 111,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        21,
+        22,
+        20
+      ],
+      "stopId": -1,
+      "dealerKind": "self",
+      "expected": 111,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        21,
+        22,
+        20
+      ],
+      "stopId": 20,
+      "dealerKind": "distinct",
+      "expected": 101,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        },
+        {
+          "id": 20,
+          "seen": 111
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        21,
+        22,
+        20
+      ],
+      "stopId": 20,
+      "dealerKind": "alias",
+      "expected": 111,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        21,
+        22,
+        20
+      ],
+      "stopId": 20,
+      "dealerKind": "self",
+      "expected": 111,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        21,
+        22,
+        20
+      ],
+      "stopId": 21,
+      "dealerKind": "distinct",
+      "expected": 103,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        21,
+        22,
+        20
+      ],
+      "stopId": 21,
+      "dealerKind": "alias",
+      "expected": 103,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        21,
+        22,
+        20
+      ],
+      "stopId": 21,
+      "dealerKind": "self",
+      "expected": 103,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        21,
+        22,
+        20
+      ],
+      "stopId": 22,
+      "dealerKind": "distinct",
+      "expected": 111,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        21,
+        22,
+        20
+      ],
+      "stopId": 22,
+      "dealerKind": "alias",
+      "expected": 111,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        21,
+        22,
+        20
+      ],
+      "stopId": 22,
+      "dealerKind": "self",
+      "expected": 111,
+      "visits": [
+        {
+          "id": 21,
+          "seen": 100
+        },
+        {
+          "id": 22,
+          "seen": 103
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        22,
+        20,
+        21
+      ],
+      "stopId": -1,
+      "dealerKind": "distinct",
+      "expected": 101,
+      "visits": [
+        {
+          "id": 22,
+          "seen": 100
+        },
+        {
+          "id": 20,
+          "seen": 108
+        },
+        {
+          "id": 21,
+          "seen": 98
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        22,
+        20,
+        21
+      ],
+      "stopId": -1,
+      "dealerKind": "alias",
+      "expected": 111,
+      "visits": [
+        {
+          "id": 22,
+          "seen": 100
+        },
+        {
+          "id": 21,
+          "seen": 108
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        22,
+        20,
+        21
+      ],
+      "stopId": -1,
+      "dealerKind": "self",
+      "expected": 111,
+      "visits": [
+        {
+          "id": 22,
+          "seen": 100
+        },
+        {
+          "id": 21,
+          "seen": 108
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        22,
+        20,
+        21
+      ],
+      "stopId": 20,
+      "dealerKind": "distinct",
+      "expected": 98,
+      "visits": [
+        {
+          "id": 22,
+          "seen": 100
+        },
+        {
+          "id": 20,
+          "seen": 108
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        22,
+        20,
+        21
+      ],
+      "stopId": 20,
+      "dealerKind": "alias",
+      "expected": 111,
+      "visits": [
+        {
+          "id": 22,
+          "seen": 100
+        },
+        {
+          "id": 21,
+          "seen": 108
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        22,
+        20,
+        21
+      ],
+      "stopId": 20,
+      "dealerKind": "self",
+      "expected": 111,
+      "visits": [
+        {
+          "id": 22,
+          "seen": 100
+        },
+        {
+          "id": 21,
+          "seen": 108
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        22,
+        20,
+        21
+      ],
+      "stopId": 21,
+      "dealerKind": "distinct",
+      "expected": 101,
+      "visits": [
+        {
+          "id": 22,
+          "seen": 100
+        },
+        {
+          "id": 20,
+          "seen": 108
+        },
+        {
+          "id": 21,
+          "seen": 98
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        22,
+        20,
+        21
+      ],
+      "stopId": 21,
+      "dealerKind": "alias",
+      "expected": 111,
+      "visits": [
+        {
+          "id": 22,
+          "seen": 100
+        },
+        {
+          "id": 21,
+          "seen": 108
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        22,
+        20,
+        21
+      ],
+      "stopId": 21,
+      "dealerKind": "self",
+      "expected": 111,
+      "visits": [
+        {
+          "id": 22,
+          "seen": 100
+        },
+        {
+          "id": 21,
+          "seen": 108
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        22,
+        20,
+        21
+      ],
+      "stopId": 22,
+      "dealerKind": "distinct",
+      "expected": 108,
+      "visits": [
+        {
+          "id": 22,
+          "seen": 100
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        22,
+        20,
+        21
+      ],
+      "stopId": 22,
+      "dealerKind": "alias",
+      "expected": 108,
+      "visits": [
+        {
+          "id": 22,
+          "seen": 100
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        22,
+        20,
+        21
+      ],
+      "stopId": 22,
+      "dealerKind": "self",
+      "expected": 108,
+      "visits": [
+        {
+          "id": 22,
+          "seen": 100
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        22,
+        21,
+        20
+      ],
+      "stopId": -1,
+      "dealerKind": "distinct",
+      "expected": 101,
+      "visits": [
+        {
+          "id": 22,
+          "seen": 100
+        },
+        {
+          "id": 21,
+          "seen": 108
+        },
+        {
+          "id": 20,
+          "seen": 111
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        22,
+        21,
+        20
+      ],
+      "stopId": -1,
+      "dealerKind": "alias",
+      "expected": 111,
+      "visits": [
+        {
+          "id": 22,
+          "seen": 100
+        },
+        {
+          "id": 21,
+          "seen": 108
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        22,
+        21,
+        20
+      ],
+      "stopId": -1,
+      "dealerKind": "self",
+      "expected": 111,
+      "visits": [
+        {
+          "id": 22,
+          "seen": 100
+        },
+        {
+          "id": 21,
+          "seen": 108
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        22,
+        21,
+        20
+      ],
+      "stopId": 20,
+      "dealerKind": "distinct",
+      "expected": 101,
+      "visits": [
+        {
+          "id": 22,
+          "seen": 100
+        },
+        {
+          "id": 21,
+          "seen": 108
+        },
+        {
+          "id": 20,
+          "seen": 111
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        22,
+        21,
+        20
+      ],
+      "stopId": 20,
+      "dealerKind": "alias",
+      "expected": 111,
+      "visits": [
+        {
+          "id": 22,
+          "seen": 100
+        },
+        {
+          "id": 21,
+          "seen": 108
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        22,
+        21,
+        20
+      ],
+      "stopId": 20,
+      "dealerKind": "self",
+      "expected": 111,
+      "visits": [
+        {
+          "id": 22,
+          "seen": 100
+        },
+        {
+          "id": 21,
+          "seen": 108
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        22,
+        21,
+        20
+      ],
+      "stopId": 21,
+      "dealerKind": "distinct",
+      "expected": 111,
+      "visits": [
+        {
+          "id": 22,
+          "seen": 100
+        },
+        {
+          "id": 21,
+          "seen": 108
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        22,
+        21,
+        20
+      ],
+      "stopId": 21,
+      "dealerKind": "alias",
+      "expected": 111,
+      "visits": [
+        {
+          "id": 22,
+          "seen": 100
+        },
+        {
+          "id": 21,
+          "seen": 108
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        22,
+        21,
+        20
+      ],
+      "stopId": 21,
+      "dealerKind": "self",
+      "expected": 111,
+      "visits": [
+        {
+          "id": 22,
+          "seen": 100
+        },
+        {
+          "id": 21,
+          "seen": 108
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        22,
+        21,
+        20
+      ],
+      "stopId": 22,
+      "dealerKind": "distinct",
+      "expected": 108,
+      "visits": [
+        {
+          "id": 22,
+          "seen": 100
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        22,
+        21,
+        20
+      ],
+      "stopId": 22,
+      "dealerKind": "alias",
+      "expected": 108,
+      "visits": [
+        {
+          "id": 22,
+          "seen": 100
+        }
+      ]
+    },
+    {
+      "damage": 100,
+      "types": [
+        "regular",
+        "regular",
+        "regular"
+      ],
+      "order": [
+        22,
+        21,
+        20
+      ],
+      "stopId": 22,
+      "dealerKind": "self",
+      "expected": 108,
+      "visits": [
+        {
+          "id": 22,
+          "seen": 100
+        }
+      ]
+    }
+  ]
+}
