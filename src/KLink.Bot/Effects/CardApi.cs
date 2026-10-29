@@ -1968,13 +1968,13 @@ public sealed partial class CardApi
         if (toAttacker > 0 && !attacker.IsSuppressed) ExecuteBeforeReceiveDamage(attacker, defender, toAttacker, true);
         // ExecuteAttackCard i=1104..1213 snapshots defense after receive hooks,
         // while locations were captured before flags and those hooks.
-        int attackerOldDefense = attacker.Defense;
-        int defenderOldDefense = defender.Defense;
+        int attackerOldDefense = Math.Clamp(attacker.Defense, 0, 99);
+        int defenderOldDefense = Math.Clamp(defender.Defense, 0, 99);
         int excess = 0;
-        if (HasCustomAbility(attacker, "excess") && IsUnit(defender) && toDefender > defender.Defense)
+        if (HasCustomAbility(attacker, "excess") && IsUnit(defender) && toDefender > Math.Clamp(defender.Defense, 0, 99))
         {
-            excess = toDefender - defender.Defense;
-            toDefender = defender.Defense;
+            excess = unchecked(toDefender - Math.Clamp(defender.Defense, 0, 99));
+            toDefender = Math.Clamp(defender.Defense, 0, 99);
         }
         _engine.ApplyDamage(defender, toDefender, attacker, isCombatDamage: true, damageAlreadyCalculated: true);
         bool defenderDestroyed = defender.Defense <= 0

@@ -3144,6 +3144,22 @@ public sealed class MatchEngine
                              bool isCombatDamage = false, bool ignoreHeavyArmor = false,
                              bool damageAlreadyCalculated = false)
     {
+        // RULE-536: ExecuteAttackCard writes bounded total defense minus the
+        // signed precomputed amount in both directions, even for zero damage.
+        // These two callers own notifications and saved destruction decisions.
+        if (damageAlreadyCalculated)
+        {
+            target.Defense = unchecked(Math.Clamp(target.Defense, 0, 99) - amount);
+            // Preserve the existing positive-damage statistics adapter; its full
+            // native HQ identity semantics are a separate audit scope.
+            if (amount > 0 && target.IsHq)
+            {
+                State.UpdateHQDamagedAmountThisTurn(target.Owner, amount);
+                Say($"HQ {target.Owner.ToWire()} 受到 {amount} 伤害，剩余 {target.Defense}");
+            }
+            return amount;
+        }
+
         if (amount <= 0 || (!damageAlreadyCalculated && !target.IsAlive))
         {
             return 0;

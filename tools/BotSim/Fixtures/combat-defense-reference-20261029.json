@@ -1,0 +1,3893 @@
+{
+  "scope": "Controlled ExecuteAttackCard numeric AST slice; counterdamage0, unit defender, fixed excess flag and no lethal ability; receive callback supplied by fixture. Full combat/callback system not certified.",
+  "rows": [
+    {
+      "attackerRaw": -3,
+      "defenderBefore": -3,
+      "defenderAfter": -4,
+      "damage": 0,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 0,
+        "defenderOldDefense": 0,
+        "attackerStored": 0,
+        "defenderStored": 0,
+        "toDefender": 0,
+        "spill": 0,
+        "attackerDestroyed": true,
+        "defenderDestroyed": true,
+        "receiveCalled": false
+      }
+    },
+    {
+      "attackerRaw": -3,
+      "defenderBefore": -3,
+      "defenderAfter": -4,
+      "damage": 0,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 0,
+        "defenderOldDefense": 0,
+        "attackerStored": 0,
+        "defenderStored": 0,
+        "toDefender": 0,
+        "spill": 0,
+        "attackerDestroyed": true,
+        "defenderDestroyed": true,
+        "receiveCalled": false
+      }
+    },
+    {
+      "attackerRaw": -3,
+      "defenderBefore": -3,
+      "defenderAfter": -4,
+      "damage": 1,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 0,
+        "defenderOldDefense": 0,
+        "attackerStored": 0,
+        "defenderStored": -1,
+        "toDefender": 1,
+        "spill": 0,
+        "attackerDestroyed": true,
+        "defenderDestroyed": true,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": -3,
+      "defenderBefore": -3,
+      "defenderAfter": -4,
+      "damage": 1,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 0,
+        "defenderOldDefense": 0,
+        "attackerStored": 0,
+        "defenderStored": 0,
+        "toDefender": 0,
+        "spill": 1,
+        "attackerDestroyed": true,
+        "defenderDestroyed": true,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": -3,
+      "defenderBefore": -3,
+      "defenderAfter": -4,
+      "damage": 5,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 0,
+        "defenderOldDefense": 0,
+        "attackerStored": 0,
+        "defenderStored": -5,
+        "toDefender": 5,
+        "spill": 0,
+        "attackerDestroyed": true,
+        "defenderDestroyed": true,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": -3,
+      "defenderBefore": -3,
+      "defenderAfter": -4,
+      "damage": 5,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 0,
+        "defenderOldDefense": 0,
+        "attackerStored": 0,
+        "defenderStored": 0,
+        "toDefender": 0,
+        "spill": 5,
+        "attackerDestroyed": true,
+        "defenderDestroyed": true,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": -3,
+      "defenderBefore": -3,
+      "defenderAfter": 2,
+      "damage": 0,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 0,
+        "defenderOldDefense": 0,
+        "attackerStored": 0,
+        "defenderStored": 0,
+        "toDefender": 0,
+        "spill": 0,
+        "attackerDestroyed": true,
+        "defenderDestroyed": true,
+        "receiveCalled": false
+      }
+    },
+    {
+      "attackerRaw": -3,
+      "defenderBefore": -3,
+      "defenderAfter": 2,
+      "damage": 0,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 0,
+        "defenderOldDefense": 0,
+        "attackerStored": 0,
+        "defenderStored": 0,
+        "toDefender": 0,
+        "spill": 0,
+        "attackerDestroyed": true,
+        "defenderDestroyed": true,
+        "receiveCalled": false
+      }
+    },
+    {
+      "attackerRaw": -3,
+      "defenderBefore": -3,
+      "defenderAfter": 2,
+      "damage": 1,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 0,
+        "defenderOldDefense": 2,
+        "attackerStored": 0,
+        "defenderStored": 1,
+        "toDefender": 1,
+        "spill": 0,
+        "attackerDestroyed": true,
+        "defenderDestroyed": false,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": -3,
+      "defenderBefore": -3,
+      "defenderAfter": 2,
+      "damage": 1,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 0,
+        "defenderOldDefense": 2,
+        "attackerStored": 0,
+        "defenderStored": 1,
+        "toDefender": 1,
+        "spill": 0,
+        "attackerDestroyed": true,
+        "defenderDestroyed": false,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": -3,
+      "defenderBefore": -3,
+      "defenderAfter": 2,
+      "damage": 5,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 0,
+        "defenderOldDefense": 2,
+        "attackerStored": 0,
+        "defenderStored": -3,
+        "toDefender": 5,
+        "spill": 0,
+        "attackerDestroyed": true,
+        "defenderDestroyed": true,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": -3,
+      "defenderBefore": -3,
+      "defenderAfter": 2,
+      "damage": 5,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 0,
+        "defenderOldDefense": 2,
+        "attackerStored": 0,
+        "defenderStored": 0,
+        "toDefender": 2,
+        "spill": 3,
+        "attackerDestroyed": true,
+        "defenderDestroyed": true,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": -3,
+      "defenderBefore": -3,
+      "defenderAfter": 105,
+      "damage": 0,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 0,
+        "defenderOldDefense": 0,
+        "attackerStored": 0,
+        "defenderStored": 0,
+        "toDefender": 0,
+        "spill": 0,
+        "attackerDestroyed": true,
+        "defenderDestroyed": true,
+        "receiveCalled": false
+      }
+    },
+    {
+      "attackerRaw": -3,
+      "defenderBefore": -3,
+      "defenderAfter": 105,
+      "damage": 0,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 0,
+        "defenderOldDefense": 0,
+        "attackerStored": 0,
+        "defenderStored": 0,
+        "toDefender": 0,
+        "spill": 0,
+        "attackerDestroyed": true,
+        "defenderDestroyed": true,
+        "receiveCalled": false
+      }
+    },
+    {
+      "attackerRaw": -3,
+      "defenderBefore": -3,
+      "defenderAfter": 105,
+      "damage": 1,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 0,
+        "defenderOldDefense": 99,
+        "attackerStored": 0,
+        "defenderStored": 98,
+        "toDefender": 1,
+        "spill": 0,
+        "attackerDestroyed": true,
+        "defenderDestroyed": false,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": -3,
+      "defenderBefore": -3,
+      "defenderAfter": 105,
+      "damage": 1,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 0,
+        "defenderOldDefense": 99,
+        "attackerStored": 0,
+        "defenderStored": 98,
+        "toDefender": 1,
+        "spill": 0,
+        "attackerDestroyed": true,
+        "defenderDestroyed": false,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": -3,
+      "defenderBefore": -3,
+      "defenderAfter": 105,
+      "damage": 5,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 0,
+        "defenderOldDefense": 99,
+        "attackerStored": 0,
+        "defenderStored": 94,
+        "toDefender": 5,
+        "spill": 0,
+        "attackerDestroyed": true,
+        "defenderDestroyed": false,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": -3,
+      "defenderBefore": -3,
+      "defenderAfter": 105,
+      "damage": 5,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 0,
+        "defenderOldDefense": 99,
+        "attackerStored": 0,
+        "defenderStored": 94,
+        "toDefender": 5,
+        "spill": 0,
+        "attackerDestroyed": true,
+        "defenderDestroyed": false,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": -3,
+      "defenderBefore": 0,
+      "defenderAfter": -4,
+      "damage": 0,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 0,
+        "defenderOldDefense": 0,
+        "attackerStored": 0,
+        "defenderStored": 0,
+        "toDefender": 0,
+        "spill": 0,
+        "attackerDestroyed": true,
+        "defenderDestroyed": true,
+        "receiveCalled": false
+      }
+    },
+    {
+      "attackerRaw": -3,
+      "defenderBefore": 0,
+      "defenderAfter": -4,
+      "damage": 0,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 0,
+        "defenderOldDefense": 0,
+        "attackerStored": 0,
+        "defenderStored": 0,
+        "toDefender": 0,
+        "spill": 0,
+        "attackerDestroyed": true,
+        "defenderDestroyed": true,
+        "receiveCalled": false
+      }
+    },
+    {
+      "attackerRaw": -3,
+      "defenderBefore": 0,
+      "defenderAfter": -4,
+      "damage": 1,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 0,
+        "defenderOldDefense": 0,
+        "attackerStored": 0,
+        "defenderStored": -1,
+        "toDefender": 1,
+        "spill": 0,
+        "attackerDestroyed": true,
+        "defenderDestroyed": true,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": -3,
+      "defenderBefore": 0,
+      "defenderAfter": -4,
+      "damage": 1,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 0,
+        "defenderOldDefense": 0,
+        "attackerStored": 0,
+        "defenderStored": 0,
+        "toDefender": 0,
+        "spill": 1,
+        "attackerDestroyed": true,
+        "defenderDestroyed": true,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": -3,
+      "defenderBefore": 0,
+      "defenderAfter": -4,
+      "damage": 5,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 0,
+        "defenderOldDefense": 0,
+        "attackerStored": 0,
+        "defenderStored": -5,
+        "toDefender": 5,
+        "spill": 0,
+        "attackerDestroyed": true,
+        "defenderDestroyed": true,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": -3,
+      "defenderBefore": 0,
+      "defenderAfter": -4,
+      "damage": 5,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 0,
+        "defenderOldDefense": 0,
+        "attackerStored": 0,
+        "defenderStored": 0,
+        "toDefender": 0,
+        "spill": 5,
+        "attackerDestroyed": true,
+        "defenderDestroyed": true,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": -3,
+      "defenderBefore": 0,
+      "defenderAfter": 2,
+      "damage": 0,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 0,
+        "defenderOldDefense": 0,
+        "attackerStored": 0,
+        "defenderStored": 0,
+        "toDefender": 0,
+        "spill": 0,
+        "attackerDestroyed": true,
+        "defenderDestroyed": true,
+        "receiveCalled": false
+      }
+    },
+    {
+      "attackerRaw": -3,
+      "defenderBefore": 0,
+      "defenderAfter": 2,
+      "damage": 0,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 0,
+        "defenderOldDefense": 0,
+        "attackerStored": 0,
+        "defenderStored": 0,
+        "toDefender": 0,
+        "spill": 0,
+        "attackerDestroyed": true,
+        "defenderDestroyed": true,
+        "receiveCalled": false
+      }
+    },
+    {
+      "attackerRaw": -3,
+      "defenderBefore": 0,
+      "defenderAfter": 2,
+      "damage": 1,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 0,
+        "defenderOldDefense": 2,
+        "attackerStored": 0,
+        "defenderStored": 1,
+        "toDefender": 1,
+        "spill": 0,
+        "attackerDestroyed": true,
+        "defenderDestroyed": false,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": -3,
+      "defenderBefore": 0,
+      "defenderAfter": 2,
+      "damage": 1,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 0,
+        "defenderOldDefense": 2,
+        "attackerStored": 0,
+        "defenderStored": 1,
+        "toDefender": 1,
+        "spill": 0,
+        "attackerDestroyed": true,
+        "defenderDestroyed": false,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": -3,
+      "defenderBefore": 0,
+      "defenderAfter": 2,
+      "damage": 5,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 0,
+        "defenderOldDefense": 2,
+        "attackerStored": 0,
+        "defenderStored": -3,
+        "toDefender": 5,
+        "spill": 0,
+        "attackerDestroyed": true,
+        "defenderDestroyed": true,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": -3,
+      "defenderBefore": 0,
+      "defenderAfter": 2,
+      "damage": 5,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 0,
+        "defenderOldDefense": 2,
+        "attackerStored": 0,
+        "defenderStored": 0,
+        "toDefender": 2,
+        "spill": 3,
+        "attackerDestroyed": true,
+        "defenderDestroyed": true,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": -3,
+      "defenderBefore": 0,
+      "defenderAfter": 105,
+      "damage": 0,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 0,
+        "defenderOldDefense": 0,
+        "attackerStored": 0,
+        "defenderStored": 0,
+        "toDefender": 0,
+        "spill": 0,
+        "attackerDestroyed": true,
+        "defenderDestroyed": true,
+        "receiveCalled": false
+      }
+    },
+    {
+      "attackerRaw": -3,
+      "defenderBefore": 0,
+      "defenderAfter": 105,
+      "damage": 0,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 0,
+        "defenderOldDefense": 0,
+        "attackerStored": 0,
+        "defenderStored": 0,
+        "toDefender": 0,
+        "spill": 0,
+        "attackerDestroyed": true,
+        "defenderDestroyed": true,
+        "receiveCalled": false
+      }
+    },
+    {
+      "attackerRaw": -3,
+      "defenderBefore": 0,
+      "defenderAfter": 105,
+      "damage": 1,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 0,
+        "defenderOldDefense": 99,
+        "attackerStored": 0,
+        "defenderStored": 98,
+        "toDefender": 1,
+        "spill": 0,
+        "attackerDestroyed": true,
+        "defenderDestroyed": false,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": -3,
+      "defenderBefore": 0,
+      "defenderAfter": 105,
+      "damage": 1,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 0,
+        "defenderOldDefense": 99,
+        "attackerStored": 0,
+        "defenderStored": 98,
+        "toDefender": 1,
+        "spill": 0,
+        "attackerDestroyed": true,
+        "defenderDestroyed": false,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": -3,
+      "defenderBefore": 0,
+      "defenderAfter": 105,
+      "damage": 5,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 0,
+        "defenderOldDefense": 99,
+        "attackerStored": 0,
+        "defenderStored": 94,
+        "toDefender": 5,
+        "spill": 0,
+        "attackerDestroyed": true,
+        "defenderDestroyed": false,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": -3,
+      "defenderBefore": 0,
+      "defenderAfter": 105,
+      "damage": 5,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 0,
+        "defenderOldDefense": 99,
+        "attackerStored": 0,
+        "defenderStored": 94,
+        "toDefender": 5,
+        "spill": 0,
+        "attackerDestroyed": true,
+        "defenderDestroyed": false,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": -3,
+      "defenderBefore": 3,
+      "defenderAfter": -4,
+      "damage": 0,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 0,
+        "defenderOldDefense": 3,
+        "attackerStored": 0,
+        "defenderStored": 3,
+        "toDefender": 0,
+        "spill": 0,
+        "attackerDestroyed": true,
+        "defenderDestroyed": false,
+        "receiveCalled": false
+      }
+    },
+    {
+      "attackerRaw": -3,
+      "defenderBefore": 3,
+      "defenderAfter": -4,
+      "damage": 0,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 0,
+        "defenderOldDefense": 3,
+        "attackerStored": 0,
+        "defenderStored": 3,
+        "toDefender": 0,
+        "spill": 0,
+        "attackerDestroyed": true,
+        "defenderDestroyed": false,
+        "receiveCalled": false
+      }
+    },
+    {
+      "attackerRaw": -3,
+      "defenderBefore": 3,
+      "defenderAfter": -4,
+      "damage": 1,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 0,
+        "defenderOldDefense": 0,
+        "attackerStored": 0,
+        "defenderStored": -1,
+        "toDefender": 1,
+        "spill": 0,
+        "attackerDestroyed": true,
+        "defenderDestroyed": true,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": -3,
+      "defenderBefore": 3,
+      "defenderAfter": -4,
+      "damage": 1,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 0,
+        "defenderOldDefense": 0,
+        "attackerStored": 0,
+        "defenderStored": 0,
+        "toDefender": 0,
+        "spill": 1,
+        "attackerDestroyed": true,
+        "defenderDestroyed": true,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": -3,
+      "defenderBefore": 3,
+      "defenderAfter": -4,
+      "damage": 5,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 0,
+        "defenderOldDefense": 0,
+        "attackerStored": 0,
+        "defenderStored": -5,
+        "toDefender": 5,
+        "spill": 0,
+        "attackerDestroyed": true,
+        "defenderDestroyed": true,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": -3,
+      "defenderBefore": 3,
+      "defenderAfter": -4,
+      "damage": 5,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 0,
+        "defenderOldDefense": 0,
+        "attackerStored": 0,
+        "defenderStored": 0,
+        "toDefender": 0,
+        "spill": 5,
+        "attackerDestroyed": true,
+        "defenderDestroyed": true,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": -3,
+      "defenderBefore": 3,
+      "defenderAfter": 2,
+      "damage": 0,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 0,
+        "defenderOldDefense": 3,
+        "attackerStored": 0,
+        "defenderStored": 3,
+        "toDefender": 0,
+        "spill": 0,
+        "attackerDestroyed": true,
+        "defenderDestroyed": false,
+        "receiveCalled": false
+      }
+    },
+    {
+      "attackerRaw": -3,
+      "defenderBefore": 3,
+      "defenderAfter": 2,
+      "damage": 0,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 0,
+        "defenderOldDefense": 3,
+        "attackerStored": 0,
+        "defenderStored": 3,
+        "toDefender": 0,
+        "spill": 0,
+        "attackerDestroyed": true,
+        "defenderDestroyed": false,
+        "receiveCalled": false
+      }
+    },
+    {
+      "attackerRaw": -3,
+      "defenderBefore": 3,
+      "defenderAfter": 2,
+      "damage": 1,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 0,
+        "defenderOldDefense": 2,
+        "attackerStored": 0,
+        "defenderStored": 1,
+        "toDefender": 1,
+        "spill": 0,
+        "attackerDestroyed": true,
+        "defenderDestroyed": false,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": -3,
+      "defenderBefore": 3,
+      "defenderAfter": 2,
+      "damage": 1,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 0,
+        "defenderOldDefense": 2,
+        "attackerStored": 0,
+        "defenderStored": 1,
+        "toDefender": 1,
+        "spill": 0,
+        "attackerDestroyed": true,
+        "defenderDestroyed": false,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": -3,
+      "defenderBefore": 3,
+      "defenderAfter": 2,
+      "damage": 5,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 0,
+        "defenderOldDefense": 2,
+        "attackerStored": 0,
+        "defenderStored": -3,
+        "toDefender": 5,
+        "spill": 0,
+        "attackerDestroyed": true,
+        "defenderDestroyed": true,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": -3,
+      "defenderBefore": 3,
+      "defenderAfter": 2,
+      "damage": 5,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 0,
+        "defenderOldDefense": 2,
+        "attackerStored": 0,
+        "defenderStored": 0,
+        "toDefender": 2,
+        "spill": 3,
+        "attackerDestroyed": true,
+        "defenderDestroyed": true,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": -3,
+      "defenderBefore": 3,
+      "defenderAfter": 105,
+      "damage": 0,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 0,
+        "defenderOldDefense": 3,
+        "attackerStored": 0,
+        "defenderStored": 3,
+        "toDefender": 0,
+        "spill": 0,
+        "attackerDestroyed": true,
+        "defenderDestroyed": false,
+        "receiveCalled": false
+      }
+    },
+    {
+      "attackerRaw": -3,
+      "defenderBefore": 3,
+      "defenderAfter": 105,
+      "damage": 0,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 0,
+        "defenderOldDefense": 3,
+        "attackerStored": 0,
+        "defenderStored": 3,
+        "toDefender": 0,
+        "spill": 0,
+        "attackerDestroyed": true,
+        "defenderDestroyed": false,
+        "receiveCalled": false
+      }
+    },
+    {
+      "attackerRaw": -3,
+      "defenderBefore": 3,
+      "defenderAfter": 105,
+      "damage": 1,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 0,
+        "defenderOldDefense": 99,
+        "attackerStored": 0,
+        "defenderStored": 98,
+        "toDefender": 1,
+        "spill": 0,
+        "attackerDestroyed": true,
+        "defenderDestroyed": false,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": -3,
+      "defenderBefore": 3,
+      "defenderAfter": 105,
+      "damage": 1,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 0,
+        "defenderOldDefense": 99,
+        "attackerStored": 0,
+        "defenderStored": 98,
+        "toDefender": 1,
+        "spill": 0,
+        "attackerDestroyed": true,
+        "defenderDestroyed": false,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": -3,
+      "defenderBefore": 3,
+      "defenderAfter": 105,
+      "damage": 5,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 0,
+        "defenderOldDefense": 99,
+        "attackerStored": 0,
+        "defenderStored": 94,
+        "toDefender": 5,
+        "spill": 0,
+        "attackerDestroyed": true,
+        "defenderDestroyed": false,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": -3,
+      "defenderBefore": 3,
+      "defenderAfter": 105,
+      "damage": 5,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 0,
+        "defenderOldDefense": 99,
+        "attackerStored": 0,
+        "defenderStored": 94,
+        "toDefender": 5,
+        "spill": 0,
+        "attackerDestroyed": true,
+        "defenderDestroyed": false,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": -3,
+      "defenderBefore": 105,
+      "defenderAfter": -4,
+      "damage": 0,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 0,
+        "defenderOldDefense": 99,
+        "attackerStored": 0,
+        "defenderStored": 99,
+        "toDefender": 0,
+        "spill": 0,
+        "attackerDestroyed": true,
+        "defenderDestroyed": false,
+        "receiveCalled": false
+      }
+    },
+    {
+      "attackerRaw": -3,
+      "defenderBefore": 105,
+      "defenderAfter": -4,
+      "damage": 0,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 0,
+        "defenderOldDefense": 99,
+        "attackerStored": 0,
+        "defenderStored": 99,
+        "toDefender": 0,
+        "spill": 0,
+        "attackerDestroyed": true,
+        "defenderDestroyed": false,
+        "receiveCalled": false
+      }
+    },
+    {
+      "attackerRaw": -3,
+      "defenderBefore": 105,
+      "defenderAfter": -4,
+      "damage": 1,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 0,
+        "defenderOldDefense": 0,
+        "attackerStored": 0,
+        "defenderStored": -1,
+        "toDefender": 1,
+        "spill": 0,
+        "attackerDestroyed": true,
+        "defenderDestroyed": true,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": -3,
+      "defenderBefore": 105,
+      "defenderAfter": -4,
+      "damage": 1,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 0,
+        "defenderOldDefense": 0,
+        "attackerStored": 0,
+        "defenderStored": 0,
+        "toDefender": 0,
+        "spill": 1,
+        "attackerDestroyed": true,
+        "defenderDestroyed": true,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": -3,
+      "defenderBefore": 105,
+      "defenderAfter": -4,
+      "damage": 5,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 0,
+        "defenderOldDefense": 0,
+        "attackerStored": 0,
+        "defenderStored": -5,
+        "toDefender": 5,
+        "spill": 0,
+        "attackerDestroyed": true,
+        "defenderDestroyed": true,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": -3,
+      "defenderBefore": 105,
+      "defenderAfter": -4,
+      "damage": 5,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 0,
+        "defenderOldDefense": 0,
+        "attackerStored": 0,
+        "defenderStored": 0,
+        "toDefender": 0,
+        "spill": 5,
+        "attackerDestroyed": true,
+        "defenderDestroyed": true,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": -3,
+      "defenderBefore": 105,
+      "defenderAfter": 2,
+      "damage": 0,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 0,
+        "defenderOldDefense": 99,
+        "attackerStored": 0,
+        "defenderStored": 99,
+        "toDefender": 0,
+        "spill": 0,
+        "attackerDestroyed": true,
+        "defenderDestroyed": false,
+        "receiveCalled": false
+      }
+    },
+    {
+      "attackerRaw": -3,
+      "defenderBefore": 105,
+      "defenderAfter": 2,
+      "damage": 0,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 0,
+        "defenderOldDefense": 99,
+        "attackerStored": 0,
+        "defenderStored": 99,
+        "toDefender": 0,
+        "spill": 0,
+        "attackerDestroyed": true,
+        "defenderDestroyed": false,
+        "receiveCalled": false
+      }
+    },
+    {
+      "attackerRaw": -3,
+      "defenderBefore": 105,
+      "defenderAfter": 2,
+      "damage": 1,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 0,
+        "defenderOldDefense": 2,
+        "attackerStored": 0,
+        "defenderStored": 1,
+        "toDefender": 1,
+        "spill": 0,
+        "attackerDestroyed": true,
+        "defenderDestroyed": false,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": -3,
+      "defenderBefore": 105,
+      "defenderAfter": 2,
+      "damage": 1,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 0,
+        "defenderOldDefense": 2,
+        "attackerStored": 0,
+        "defenderStored": 1,
+        "toDefender": 1,
+        "spill": 0,
+        "attackerDestroyed": true,
+        "defenderDestroyed": false,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": -3,
+      "defenderBefore": 105,
+      "defenderAfter": 2,
+      "damage": 5,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 0,
+        "defenderOldDefense": 2,
+        "attackerStored": 0,
+        "defenderStored": -3,
+        "toDefender": 5,
+        "spill": 0,
+        "attackerDestroyed": true,
+        "defenderDestroyed": true,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": -3,
+      "defenderBefore": 105,
+      "defenderAfter": 2,
+      "damage": 5,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 0,
+        "defenderOldDefense": 2,
+        "attackerStored": 0,
+        "defenderStored": 0,
+        "toDefender": 2,
+        "spill": 3,
+        "attackerDestroyed": true,
+        "defenderDestroyed": true,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": -3,
+      "defenderBefore": 105,
+      "defenderAfter": 105,
+      "damage": 0,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 0,
+        "defenderOldDefense": 99,
+        "attackerStored": 0,
+        "defenderStored": 99,
+        "toDefender": 0,
+        "spill": 0,
+        "attackerDestroyed": true,
+        "defenderDestroyed": false,
+        "receiveCalled": false
+      }
+    },
+    {
+      "attackerRaw": -3,
+      "defenderBefore": 105,
+      "defenderAfter": 105,
+      "damage": 0,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 0,
+        "defenderOldDefense": 99,
+        "attackerStored": 0,
+        "defenderStored": 99,
+        "toDefender": 0,
+        "spill": 0,
+        "attackerDestroyed": true,
+        "defenderDestroyed": false,
+        "receiveCalled": false
+      }
+    },
+    {
+      "attackerRaw": -3,
+      "defenderBefore": 105,
+      "defenderAfter": 105,
+      "damage": 1,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 0,
+        "defenderOldDefense": 99,
+        "attackerStored": 0,
+        "defenderStored": 98,
+        "toDefender": 1,
+        "spill": 0,
+        "attackerDestroyed": true,
+        "defenderDestroyed": false,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": -3,
+      "defenderBefore": 105,
+      "defenderAfter": 105,
+      "damage": 1,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 0,
+        "defenderOldDefense": 99,
+        "attackerStored": 0,
+        "defenderStored": 98,
+        "toDefender": 1,
+        "spill": 0,
+        "attackerDestroyed": true,
+        "defenderDestroyed": false,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": -3,
+      "defenderBefore": 105,
+      "defenderAfter": 105,
+      "damage": 5,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 0,
+        "defenderOldDefense": 99,
+        "attackerStored": 0,
+        "defenderStored": 94,
+        "toDefender": 5,
+        "spill": 0,
+        "attackerDestroyed": true,
+        "defenderDestroyed": false,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": -3,
+      "defenderBefore": 105,
+      "defenderAfter": 105,
+      "damage": 5,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 0,
+        "defenderOldDefense": 99,
+        "attackerStored": 0,
+        "defenderStored": 94,
+        "toDefender": 5,
+        "spill": 0,
+        "attackerDestroyed": true,
+        "defenderDestroyed": false,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 7,
+      "defenderBefore": -3,
+      "defenderAfter": -4,
+      "damage": 0,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 7,
+        "defenderOldDefense": 0,
+        "attackerStored": 7,
+        "defenderStored": 0,
+        "toDefender": 0,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": true,
+        "receiveCalled": false
+      }
+    },
+    {
+      "attackerRaw": 7,
+      "defenderBefore": -3,
+      "defenderAfter": -4,
+      "damage": 0,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 7,
+        "defenderOldDefense": 0,
+        "attackerStored": 7,
+        "defenderStored": 0,
+        "toDefender": 0,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": true,
+        "receiveCalled": false
+      }
+    },
+    {
+      "attackerRaw": 7,
+      "defenderBefore": -3,
+      "defenderAfter": -4,
+      "damage": 1,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 7,
+        "defenderOldDefense": 0,
+        "attackerStored": 7,
+        "defenderStored": -1,
+        "toDefender": 1,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": true,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 7,
+      "defenderBefore": -3,
+      "defenderAfter": -4,
+      "damage": 1,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 7,
+        "defenderOldDefense": 0,
+        "attackerStored": 7,
+        "defenderStored": 0,
+        "toDefender": 0,
+        "spill": 1,
+        "attackerDestroyed": false,
+        "defenderDestroyed": true,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 7,
+      "defenderBefore": -3,
+      "defenderAfter": -4,
+      "damage": 5,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 7,
+        "defenderOldDefense": 0,
+        "attackerStored": 7,
+        "defenderStored": -5,
+        "toDefender": 5,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": true,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 7,
+      "defenderBefore": -3,
+      "defenderAfter": -4,
+      "damage": 5,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 7,
+        "defenderOldDefense": 0,
+        "attackerStored": 7,
+        "defenderStored": 0,
+        "toDefender": 0,
+        "spill": 5,
+        "attackerDestroyed": false,
+        "defenderDestroyed": true,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 7,
+      "defenderBefore": -3,
+      "defenderAfter": 2,
+      "damage": 0,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 7,
+        "defenderOldDefense": 0,
+        "attackerStored": 7,
+        "defenderStored": 0,
+        "toDefender": 0,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": true,
+        "receiveCalled": false
+      }
+    },
+    {
+      "attackerRaw": 7,
+      "defenderBefore": -3,
+      "defenderAfter": 2,
+      "damage": 0,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 7,
+        "defenderOldDefense": 0,
+        "attackerStored": 7,
+        "defenderStored": 0,
+        "toDefender": 0,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": true,
+        "receiveCalled": false
+      }
+    },
+    {
+      "attackerRaw": 7,
+      "defenderBefore": -3,
+      "defenderAfter": 2,
+      "damage": 1,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 7,
+        "defenderOldDefense": 2,
+        "attackerStored": 7,
+        "defenderStored": 1,
+        "toDefender": 1,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": false,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 7,
+      "defenderBefore": -3,
+      "defenderAfter": 2,
+      "damage": 1,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 7,
+        "defenderOldDefense": 2,
+        "attackerStored": 7,
+        "defenderStored": 1,
+        "toDefender": 1,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": false,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 7,
+      "defenderBefore": -3,
+      "defenderAfter": 2,
+      "damage": 5,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 7,
+        "defenderOldDefense": 2,
+        "attackerStored": 7,
+        "defenderStored": -3,
+        "toDefender": 5,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": true,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 7,
+      "defenderBefore": -3,
+      "defenderAfter": 2,
+      "damage": 5,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 7,
+        "defenderOldDefense": 2,
+        "attackerStored": 7,
+        "defenderStored": 0,
+        "toDefender": 2,
+        "spill": 3,
+        "attackerDestroyed": false,
+        "defenderDestroyed": true,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 7,
+      "defenderBefore": -3,
+      "defenderAfter": 105,
+      "damage": 0,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 7,
+        "defenderOldDefense": 0,
+        "attackerStored": 7,
+        "defenderStored": 0,
+        "toDefender": 0,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": true,
+        "receiveCalled": false
+      }
+    },
+    {
+      "attackerRaw": 7,
+      "defenderBefore": -3,
+      "defenderAfter": 105,
+      "damage": 0,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 7,
+        "defenderOldDefense": 0,
+        "attackerStored": 7,
+        "defenderStored": 0,
+        "toDefender": 0,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": true,
+        "receiveCalled": false
+      }
+    },
+    {
+      "attackerRaw": 7,
+      "defenderBefore": -3,
+      "defenderAfter": 105,
+      "damage": 1,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 7,
+        "defenderOldDefense": 99,
+        "attackerStored": 7,
+        "defenderStored": 98,
+        "toDefender": 1,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": false,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 7,
+      "defenderBefore": -3,
+      "defenderAfter": 105,
+      "damage": 1,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 7,
+        "defenderOldDefense": 99,
+        "attackerStored": 7,
+        "defenderStored": 98,
+        "toDefender": 1,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": false,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 7,
+      "defenderBefore": -3,
+      "defenderAfter": 105,
+      "damage": 5,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 7,
+        "defenderOldDefense": 99,
+        "attackerStored": 7,
+        "defenderStored": 94,
+        "toDefender": 5,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": false,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 7,
+      "defenderBefore": -3,
+      "defenderAfter": 105,
+      "damage": 5,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 7,
+        "defenderOldDefense": 99,
+        "attackerStored": 7,
+        "defenderStored": 94,
+        "toDefender": 5,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": false,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 7,
+      "defenderBefore": 0,
+      "defenderAfter": -4,
+      "damage": 0,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 7,
+        "defenderOldDefense": 0,
+        "attackerStored": 7,
+        "defenderStored": 0,
+        "toDefender": 0,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": true,
+        "receiveCalled": false
+      }
+    },
+    {
+      "attackerRaw": 7,
+      "defenderBefore": 0,
+      "defenderAfter": -4,
+      "damage": 0,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 7,
+        "defenderOldDefense": 0,
+        "attackerStored": 7,
+        "defenderStored": 0,
+        "toDefender": 0,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": true,
+        "receiveCalled": false
+      }
+    },
+    {
+      "attackerRaw": 7,
+      "defenderBefore": 0,
+      "defenderAfter": -4,
+      "damage": 1,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 7,
+        "defenderOldDefense": 0,
+        "attackerStored": 7,
+        "defenderStored": -1,
+        "toDefender": 1,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": true,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 7,
+      "defenderBefore": 0,
+      "defenderAfter": -4,
+      "damage": 1,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 7,
+        "defenderOldDefense": 0,
+        "attackerStored": 7,
+        "defenderStored": 0,
+        "toDefender": 0,
+        "spill": 1,
+        "attackerDestroyed": false,
+        "defenderDestroyed": true,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 7,
+      "defenderBefore": 0,
+      "defenderAfter": -4,
+      "damage": 5,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 7,
+        "defenderOldDefense": 0,
+        "attackerStored": 7,
+        "defenderStored": -5,
+        "toDefender": 5,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": true,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 7,
+      "defenderBefore": 0,
+      "defenderAfter": -4,
+      "damage": 5,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 7,
+        "defenderOldDefense": 0,
+        "attackerStored": 7,
+        "defenderStored": 0,
+        "toDefender": 0,
+        "spill": 5,
+        "attackerDestroyed": false,
+        "defenderDestroyed": true,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 7,
+      "defenderBefore": 0,
+      "defenderAfter": 2,
+      "damage": 0,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 7,
+        "defenderOldDefense": 0,
+        "attackerStored": 7,
+        "defenderStored": 0,
+        "toDefender": 0,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": true,
+        "receiveCalled": false
+      }
+    },
+    {
+      "attackerRaw": 7,
+      "defenderBefore": 0,
+      "defenderAfter": 2,
+      "damage": 0,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 7,
+        "defenderOldDefense": 0,
+        "attackerStored": 7,
+        "defenderStored": 0,
+        "toDefender": 0,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": true,
+        "receiveCalled": false
+      }
+    },
+    {
+      "attackerRaw": 7,
+      "defenderBefore": 0,
+      "defenderAfter": 2,
+      "damage": 1,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 7,
+        "defenderOldDefense": 2,
+        "attackerStored": 7,
+        "defenderStored": 1,
+        "toDefender": 1,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": false,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 7,
+      "defenderBefore": 0,
+      "defenderAfter": 2,
+      "damage": 1,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 7,
+        "defenderOldDefense": 2,
+        "attackerStored": 7,
+        "defenderStored": 1,
+        "toDefender": 1,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": false,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 7,
+      "defenderBefore": 0,
+      "defenderAfter": 2,
+      "damage": 5,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 7,
+        "defenderOldDefense": 2,
+        "attackerStored": 7,
+        "defenderStored": -3,
+        "toDefender": 5,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": true,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 7,
+      "defenderBefore": 0,
+      "defenderAfter": 2,
+      "damage": 5,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 7,
+        "defenderOldDefense": 2,
+        "attackerStored": 7,
+        "defenderStored": 0,
+        "toDefender": 2,
+        "spill": 3,
+        "attackerDestroyed": false,
+        "defenderDestroyed": true,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 7,
+      "defenderBefore": 0,
+      "defenderAfter": 105,
+      "damage": 0,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 7,
+        "defenderOldDefense": 0,
+        "attackerStored": 7,
+        "defenderStored": 0,
+        "toDefender": 0,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": true,
+        "receiveCalled": false
+      }
+    },
+    {
+      "attackerRaw": 7,
+      "defenderBefore": 0,
+      "defenderAfter": 105,
+      "damage": 0,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 7,
+        "defenderOldDefense": 0,
+        "attackerStored": 7,
+        "defenderStored": 0,
+        "toDefender": 0,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": true,
+        "receiveCalled": false
+      }
+    },
+    {
+      "attackerRaw": 7,
+      "defenderBefore": 0,
+      "defenderAfter": 105,
+      "damage": 1,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 7,
+        "defenderOldDefense": 99,
+        "attackerStored": 7,
+        "defenderStored": 98,
+        "toDefender": 1,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": false,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 7,
+      "defenderBefore": 0,
+      "defenderAfter": 105,
+      "damage": 1,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 7,
+        "defenderOldDefense": 99,
+        "attackerStored": 7,
+        "defenderStored": 98,
+        "toDefender": 1,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": false,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 7,
+      "defenderBefore": 0,
+      "defenderAfter": 105,
+      "damage": 5,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 7,
+        "defenderOldDefense": 99,
+        "attackerStored": 7,
+        "defenderStored": 94,
+        "toDefender": 5,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": false,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 7,
+      "defenderBefore": 0,
+      "defenderAfter": 105,
+      "damage": 5,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 7,
+        "defenderOldDefense": 99,
+        "attackerStored": 7,
+        "defenderStored": 94,
+        "toDefender": 5,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": false,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 7,
+      "defenderBefore": 3,
+      "defenderAfter": -4,
+      "damage": 0,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 7,
+        "defenderOldDefense": 3,
+        "attackerStored": 7,
+        "defenderStored": 3,
+        "toDefender": 0,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": false,
+        "receiveCalled": false
+      }
+    },
+    {
+      "attackerRaw": 7,
+      "defenderBefore": 3,
+      "defenderAfter": -4,
+      "damage": 0,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 7,
+        "defenderOldDefense": 3,
+        "attackerStored": 7,
+        "defenderStored": 3,
+        "toDefender": 0,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": false,
+        "receiveCalled": false
+      }
+    },
+    {
+      "attackerRaw": 7,
+      "defenderBefore": 3,
+      "defenderAfter": -4,
+      "damage": 1,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 7,
+        "defenderOldDefense": 0,
+        "attackerStored": 7,
+        "defenderStored": -1,
+        "toDefender": 1,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": true,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 7,
+      "defenderBefore": 3,
+      "defenderAfter": -4,
+      "damage": 1,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 7,
+        "defenderOldDefense": 0,
+        "attackerStored": 7,
+        "defenderStored": 0,
+        "toDefender": 0,
+        "spill": 1,
+        "attackerDestroyed": false,
+        "defenderDestroyed": true,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 7,
+      "defenderBefore": 3,
+      "defenderAfter": -4,
+      "damage": 5,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 7,
+        "defenderOldDefense": 0,
+        "attackerStored": 7,
+        "defenderStored": -5,
+        "toDefender": 5,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": true,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 7,
+      "defenderBefore": 3,
+      "defenderAfter": -4,
+      "damage": 5,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 7,
+        "defenderOldDefense": 0,
+        "attackerStored": 7,
+        "defenderStored": 0,
+        "toDefender": 0,
+        "spill": 5,
+        "attackerDestroyed": false,
+        "defenderDestroyed": true,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 7,
+      "defenderBefore": 3,
+      "defenderAfter": 2,
+      "damage": 0,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 7,
+        "defenderOldDefense": 3,
+        "attackerStored": 7,
+        "defenderStored": 3,
+        "toDefender": 0,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": false,
+        "receiveCalled": false
+      }
+    },
+    {
+      "attackerRaw": 7,
+      "defenderBefore": 3,
+      "defenderAfter": 2,
+      "damage": 0,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 7,
+        "defenderOldDefense": 3,
+        "attackerStored": 7,
+        "defenderStored": 3,
+        "toDefender": 0,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": false,
+        "receiveCalled": false
+      }
+    },
+    {
+      "attackerRaw": 7,
+      "defenderBefore": 3,
+      "defenderAfter": 2,
+      "damage": 1,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 7,
+        "defenderOldDefense": 2,
+        "attackerStored": 7,
+        "defenderStored": 1,
+        "toDefender": 1,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": false,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 7,
+      "defenderBefore": 3,
+      "defenderAfter": 2,
+      "damage": 1,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 7,
+        "defenderOldDefense": 2,
+        "attackerStored": 7,
+        "defenderStored": 1,
+        "toDefender": 1,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": false,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 7,
+      "defenderBefore": 3,
+      "defenderAfter": 2,
+      "damage": 5,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 7,
+        "defenderOldDefense": 2,
+        "attackerStored": 7,
+        "defenderStored": -3,
+        "toDefender": 5,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": true,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 7,
+      "defenderBefore": 3,
+      "defenderAfter": 2,
+      "damage": 5,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 7,
+        "defenderOldDefense": 2,
+        "attackerStored": 7,
+        "defenderStored": 0,
+        "toDefender": 2,
+        "spill": 3,
+        "attackerDestroyed": false,
+        "defenderDestroyed": true,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 7,
+      "defenderBefore": 3,
+      "defenderAfter": 105,
+      "damage": 0,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 7,
+        "defenderOldDefense": 3,
+        "attackerStored": 7,
+        "defenderStored": 3,
+        "toDefender": 0,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": false,
+        "receiveCalled": false
+      }
+    },
+    {
+      "attackerRaw": 7,
+      "defenderBefore": 3,
+      "defenderAfter": 105,
+      "damage": 0,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 7,
+        "defenderOldDefense": 3,
+        "attackerStored": 7,
+        "defenderStored": 3,
+        "toDefender": 0,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": false,
+        "receiveCalled": false
+      }
+    },
+    {
+      "attackerRaw": 7,
+      "defenderBefore": 3,
+      "defenderAfter": 105,
+      "damage": 1,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 7,
+        "defenderOldDefense": 99,
+        "attackerStored": 7,
+        "defenderStored": 98,
+        "toDefender": 1,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": false,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 7,
+      "defenderBefore": 3,
+      "defenderAfter": 105,
+      "damage": 1,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 7,
+        "defenderOldDefense": 99,
+        "attackerStored": 7,
+        "defenderStored": 98,
+        "toDefender": 1,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": false,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 7,
+      "defenderBefore": 3,
+      "defenderAfter": 105,
+      "damage": 5,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 7,
+        "defenderOldDefense": 99,
+        "attackerStored": 7,
+        "defenderStored": 94,
+        "toDefender": 5,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": false,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 7,
+      "defenderBefore": 3,
+      "defenderAfter": 105,
+      "damage": 5,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 7,
+        "defenderOldDefense": 99,
+        "attackerStored": 7,
+        "defenderStored": 94,
+        "toDefender": 5,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": false,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 7,
+      "defenderBefore": 105,
+      "defenderAfter": -4,
+      "damage": 0,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 7,
+        "defenderOldDefense": 99,
+        "attackerStored": 7,
+        "defenderStored": 99,
+        "toDefender": 0,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": false,
+        "receiveCalled": false
+      }
+    },
+    {
+      "attackerRaw": 7,
+      "defenderBefore": 105,
+      "defenderAfter": -4,
+      "damage": 0,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 7,
+        "defenderOldDefense": 99,
+        "attackerStored": 7,
+        "defenderStored": 99,
+        "toDefender": 0,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": false,
+        "receiveCalled": false
+      }
+    },
+    {
+      "attackerRaw": 7,
+      "defenderBefore": 105,
+      "defenderAfter": -4,
+      "damage": 1,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 7,
+        "defenderOldDefense": 0,
+        "attackerStored": 7,
+        "defenderStored": -1,
+        "toDefender": 1,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": true,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 7,
+      "defenderBefore": 105,
+      "defenderAfter": -4,
+      "damage": 1,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 7,
+        "defenderOldDefense": 0,
+        "attackerStored": 7,
+        "defenderStored": 0,
+        "toDefender": 0,
+        "spill": 1,
+        "attackerDestroyed": false,
+        "defenderDestroyed": true,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 7,
+      "defenderBefore": 105,
+      "defenderAfter": -4,
+      "damage": 5,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 7,
+        "defenderOldDefense": 0,
+        "attackerStored": 7,
+        "defenderStored": -5,
+        "toDefender": 5,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": true,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 7,
+      "defenderBefore": 105,
+      "defenderAfter": -4,
+      "damage": 5,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 7,
+        "defenderOldDefense": 0,
+        "attackerStored": 7,
+        "defenderStored": 0,
+        "toDefender": 0,
+        "spill": 5,
+        "attackerDestroyed": false,
+        "defenderDestroyed": true,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 7,
+      "defenderBefore": 105,
+      "defenderAfter": 2,
+      "damage": 0,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 7,
+        "defenderOldDefense": 99,
+        "attackerStored": 7,
+        "defenderStored": 99,
+        "toDefender": 0,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": false,
+        "receiveCalled": false
+      }
+    },
+    {
+      "attackerRaw": 7,
+      "defenderBefore": 105,
+      "defenderAfter": 2,
+      "damage": 0,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 7,
+        "defenderOldDefense": 99,
+        "attackerStored": 7,
+        "defenderStored": 99,
+        "toDefender": 0,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": false,
+        "receiveCalled": false
+      }
+    },
+    {
+      "attackerRaw": 7,
+      "defenderBefore": 105,
+      "defenderAfter": 2,
+      "damage": 1,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 7,
+        "defenderOldDefense": 2,
+        "attackerStored": 7,
+        "defenderStored": 1,
+        "toDefender": 1,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": false,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 7,
+      "defenderBefore": 105,
+      "defenderAfter": 2,
+      "damage": 1,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 7,
+        "defenderOldDefense": 2,
+        "attackerStored": 7,
+        "defenderStored": 1,
+        "toDefender": 1,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": false,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 7,
+      "defenderBefore": 105,
+      "defenderAfter": 2,
+      "damage": 5,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 7,
+        "defenderOldDefense": 2,
+        "attackerStored": 7,
+        "defenderStored": -3,
+        "toDefender": 5,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": true,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 7,
+      "defenderBefore": 105,
+      "defenderAfter": 2,
+      "damage": 5,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 7,
+        "defenderOldDefense": 2,
+        "attackerStored": 7,
+        "defenderStored": 0,
+        "toDefender": 2,
+        "spill": 3,
+        "attackerDestroyed": false,
+        "defenderDestroyed": true,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 7,
+      "defenderBefore": 105,
+      "defenderAfter": 105,
+      "damage": 0,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 7,
+        "defenderOldDefense": 99,
+        "attackerStored": 7,
+        "defenderStored": 99,
+        "toDefender": 0,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": false,
+        "receiveCalled": false
+      }
+    },
+    {
+      "attackerRaw": 7,
+      "defenderBefore": 105,
+      "defenderAfter": 105,
+      "damage": 0,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 7,
+        "defenderOldDefense": 99,
+        "attackerStored": 7,
+        "defenderStored": 99,
+        "toDefender": 0,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": false,
+        "receiveCalled": false
+      }
+    },
+    {
+      "attackerRaw": 7,
+      "defenderBefore": 105,
+      "defenderAfter": 105,
+      "damage": 1,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 7,
+        "defenderOldDefense": 99,
+        "attackerStored": 7,
+        "defenderStored": 98,
+        "toDefender": 1,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": false,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 7,
+      "defenderBefore": 105,
+      "defenderAfter": 105,
+      "damage": 1,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 7,
+        "defenderOldDefense": 99,
+        "attackerStored": 7,
+        "defenderStored": 98,
+        "toDefender": 1,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": false,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 7,
+      "defenderBefore": 105,
+      "defenderAfter": 105,
+      "damage": 5,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 7,
+        "defenderOldDefense": 99,
+        "attackerStored": 7,
+        "defenderStored": 94,
+        "toDefender": 5,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": false,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 7,
+      "defenderBefore": 105,
+      "defenderAfter": 105,
+      "damage": 5,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 7,
+        "defenderOldDefense": 99,
+        "attackerStored": 7,
+        "defenderStored": 94,
+        "toDefender": 5,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": false,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 105,
+      "defenderBefore": -3,
+      "defenderAfter": -4,
+      "damage": 0,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 99,
+        "defenderOldDefense": 0,
+        "attackerStored": 99,
+        "defenderStored": 0,
+        "toDefender": 0,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": true,
+        "receiveCalled": false
+      }
+    },
+    {
+      "attackerRaw": 105,
+      "defenderBefore": -3,
+      "defenderAfter": -4,
+      "damage": 0,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 99,
+        "defenderOldDefense": 0,
+        "attackerStored": 99,
+        "defenderStored": 0,
+        "toDefender": 0,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": true,
+        "receiveCalled": false
+      }
+    },
+    {
+      "attackerRaw": 105,
+      "defenderBefore": -3,
+      "defenderAfter": -4,
+      "damage": 1,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 99,
+        "defenderOldDefense": 0,
+        "attackerStored": 99,
+        "defenderStored": -1,
+        "toDefender": 1,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": true,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 105,
+      "defenderBefore": -3,
+      "defenderAfter": -4,
+      "damage": 1,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 99,
+        "defenderOldDefense": 0,
+        "attackerStored": 99,
+        "defenderStored": 0,
+        "toDefender": 0,
+        "spill": 1,
+        "attackerDestroyed": false,
+        "defenderDestroyed": true,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 105,
+      "defenderBefore": -3,
+      "defenderAfter": -4,
+      "damage": 5,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 99,
+        "defenderOldDefense": 0,
+        "attackerStored": 99,
+        "defenderStored": -5,
+        "toDefender": 5,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": true,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 105,
+      "defenderBefore": -3,
+      "defenderAfter": -4,
+      "damage": 5,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 99,
+        "defenderOldDefense": 0,
+        "attackerStored": 99,
+        "defenderStored": 0,
+        "toDefender": 0,
+        "spill": 5,
+        "attackerDestroyed": false,
+        "defenderDestroyed": true,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 105,
+      "defenderBefore": -3,
+      "defenderAfter": 2,
+      "damage": 0,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 99,
+        "defenderOldDefense": 0,
+        "attackerStored": 99,
+        "defenderStored": 0,
+        "toDefender": 0,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": true,
+        "receiveCalled": false
+      }
+    },
+    {
+      "attackerRaw": 105,
+      "defenderBefore": -3,
+      "defenderAfter": 2,
+      "damage": 0,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 99,
+        "defenderOldDefense": 0,
+        "attackerStored": 99,
+        "defenderStored": 0,
+        "toDefender": 0,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": true,
+        "receiveCalled": false
+      }
+    },
+    {
+      "attackerRaw": 105,
+      "defenderBefore": -3,
+      "defenderAfter": 2,
+      "damage": 1,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 99,
+        "defenderOldDefense": 2,
+        "attackerStored": 99,
+        "defenderStored": 1,
+        "toDefender": 1,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": false,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 105,
+      "defenderBefore": -3,
+      "defenderAfter": 2,
+      "damage": 1,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 99,
+        "defenderOldDefense": 2,
+        "attackerStored": 99,
+        "defenderStored": 1,
+        "toDefender": 1,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": false,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 105,
+      "defenderBefore": -3,
+      "defenderAfter": 2,
+      "damage": 5,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 99,
+        "defenderOldDefense": 2,
+        "attackerStored": 99,
+        "defenderStored": -3,
+        "toDefender": 5,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": true,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 105,
+      "defenderBefore": -3,
+      "defenderAfter": 2,
+      "damage": 5,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 99,
+        "defenderOldDefense": 2,
+        "attackerStored": 99,
+        "defenderStored": 0,
+        "toDefender": 2,
+        "spill": 3,
+        "attackerDestroyed": false,
+        "defenderDestroyed": true,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 105,
+      "defenderBefore": -3,
+      "defenderAfter": 105,
+      "damage": 0,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 99,
+        "defenderOldDefense": 0,
+        "attackerStored": 99,
+        "defenderStored": 0,
+        "toDefender": 0,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": true,
+        "receiveCalled": false
+      }
+    },
+    {
+      "attackerRaw": 105,
+      "defenderBefore": -3,
+      "defenderAfter": 105,
+      "damage": 0,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 99,
+        "defenderOldDefense": 0,
+        "attackerStored": 99,
+        "defenderStored": 0,
+        "toDefender": 0,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": true,
+        "receiveCalled": false
+      }
+    },
+    {
+      "attackerRaw": 105,
+      "defenderBefore": -3,
+      "defenderAfter": 105,
+      "damage": 1,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 99,
+        "defenderOldDefense": 99,
+        "attackerStored": 99,
+        "defenderStored": 98,
+        "toDefender": 1,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": false,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 105,
+      "defenderBefore": -3,
+      "defenderAfter": 105,
+      "damage": 1,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 99,
+        "defenderOldDefense": 99,
+        "attackerStored": 99,
+        "defenderStored": 98,
+        "toDefender": 1,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": false,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 105,
+      "defenderBefore": -3,
+      "defenderAfter": 105,
+      "damage": 5,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 99,
+        "defenderOldDefense": 99,
+        "attackerStored": 99,
+        "defenderStored": 94,
+        "toDefender": 5,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": false,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 105,
+      "defenderBefore": -3,
+      "defenderAfter": 105,
+      "damage": 5,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 99,
+        "defenderOldDefense": 99,
+        "attackerStored": 99,
+        "defenderStored": 94,
+        "toDefender": 5,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": false,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 105,
+      "defenderBefore": 0,
+      "defenderAfter": -4,
+      "damage": 0,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 99,
+        "defenderOldDefense": 0,
+        "attackerStored": 99,
+        "defenderStored": 0,
+        "toDefender": 0,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": true,
+        "receiveCalled": false
+      }
+    },
+    {
+      "attackerRaw": 105,
+      "defenderBefore": 0,
+      "defenderAfter": -4,
+      "damage": 0,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 99,
+        "defenderOldDefense": 0,
+        "attackerStored": 99,
+        "defenderStored": 0,
+        "toDefender": 0,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": true,
+        "receiveCalled": false
+      }
+    },
+    {
+      "attackerRaw": 105,
+      "defenderBefore": 0,
+      "defenderAfter": -4,
+      "damage": 1,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 99,
+        "defenderOldDefense": 0,
+        "attackerStored": 99,
+        "defenderStored": -1,
+        "toDefender": 1,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": true,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 105,
+      "defenderBefore": 0,
+      "defenderAfter": -4,
+      "damage": 1,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 99,
+        "defenderOldDefense": 0,
+        "attackerStored": 99,
+        "defenderStored": 0,
+        "toDefender": 0,
+        "spill": 1,
+        "attackerDestroyed": false,
+        "defenderDestroyed": true,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 105,
+      "defenderBefore": 0,
+      "defenderAfter": -4,
+      "damage": 5,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 99,
+        "defenderOldDefense": 0,
+        "attackerStored": 99,
+        "defenderStored": -5,
+        "toDefender": 5,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": true,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 105,
+      "defenderBefore": 0,
+      "defenderAfter": -4,
+      "damage": 5,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 99,
+        "defenderOldDefense": 0,
+        "attackerStored": 99,
+        "defenderStored": 0,
+        "toDefender": 0,
+        "spill": 5,
+        "attackerDestroyed": false,
+        "defenderDestroyed": true,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 105,
+      "defenderBefore": 0,
+      "defenderAfter": 2,
+      "damage": 0,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 99,
+        "defenderOldDefense": 0,
+        "attackerStored": 99,
+        "defenderStored": 0,
+        "toDefender": 0,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": true,
+        "receiveCalled": false
+      }
+    },
+    {
+      "attackerRaw": 105,
+      "defenderBefore": 0,
+      "defenderAfter": 2,
+      "damage": 0,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 99,
+        "defenderOldDefense": 0,
+        "attackerStored": 99,
+        "defenderStored": 0,
+        "toDefender": 0,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": true,
+        "receiveCalled": false
+      }
+    },
+    {
+      "attackerRaw": 105,
+      "defenderBefore": 0,
+      "defenderAfter": 2,
+      "damage": 1,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 99,
+        "defenderOldDefense": 2,
+        "attackerStored": 99,
+        "defenderStored": 1,
+        "toDefender": 1,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": false,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 105,
+      "defenderBefore": 0,
+      "defenderAfter": 2,
+      "damage": 1,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 99,
+        "defenderOldDefense": 2,
+        "attackerStored": 99,
+        "defenderStored": 1,
+        "toDefender": 1,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": false,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 105,
+      "defenderBefore": 0,
+      "defenderAfter": 2,
+      "damage": 5,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 99,
+        "defenderOldDefense": 2,
+        "attackerStored": 99,
+        "defenderStored": -3,
+        "toDefender": 5,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": true,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 105,
+      "defenderBefore": 0,
+      "defenderAfter": 2,
+      "damage": 5,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 99,
+        "defenderOldDefense": 2,
+        "attackerStored": 99,
+        "defenderStored": 0,
+        "toDefender": 2,
+        "spill": 3,
+        "attackerDestroyed": false,
+        "defenderDestroyed": true,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 105,
+      "defenderBefore": 0,
+      "defenderAfter": 105,
+      "damage": 0,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 99,
+        "defenderOldDefense": 0,
+        "attackerStored": 99,
+        "defenderStored": 0,
+        "toDefender": 0,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": true,
+        "receiveCalled": false
+      }
+    },
+    {
+      "attackerRaw": 105,
+      "defenderBefore": 0,
+      "defenderAfter": 105,
+      "damage": 0,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 99,
+        "defenderOldDefense": 0,
+        "attackerStored": 99,
+        "defenderStored": 0,
+        "toDefender": 0,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": true,
+        "receiveCalled": false
+      }
+    },
+    {
+      "attackerRaw": 105,
+      "defenderBefore": 0,
+      "defenderAfter": 105,
+      "damage": 1,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 99,
+        "defenderOldDefense": 99,
+        "attackerStored": 99,
+        "defenderStored": 98,
+        "toDefender": 1,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": false,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 105,
+      "defenderBefore": 0,
+      "defenderAfter": 105,
+      "damage": 1,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 99,
+        "defenderOldDefense": 99,
+        "attackerStored": 99,
+        "defenderStored": 98,
+        "toDefender": 1,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": false,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 105,
+      "defenderBefore": 0,
+      "defenderAfter": 105,
+      "damage": 5,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 99,
+        "defenderOldDefense": 99,
+        "attackerStored": 99,
+        "defenderStored": 94,
+        "toDefender": 5,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": false,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 105,
+      "defenderBefore": 0,
+      "defenderAfter": 105,
+      "damage": 5,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 99,
+        "defenderOldDefense": 99,
+        "attackerStored": 99,
+        "defenderStored": 94,
+        "toDefender": 5,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": false,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 105,
+      "defenderBefore": 3,
+      "defenderAfter": -4,
+      "damage": 0,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 99,
+        "defenderOldDefense": 3,
+        "attackerStored": 99,
+        "defenderStored": 3,
+        "toDefender": 0,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": false,
+        "receiveCalled": false
+      }
+    },
+    {
+      "attackerRaw": 105,
+      "defenderBefore": 3,
+      "defenderAfter": -4,
+      "damage": 0,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 99,
+        "defenderOldDefense": 3,
+        "attackerStored": 99,
+        "defenderStored": 3,
+        "toDefender": 0,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": false,
+        "receiveCalled": false
+      }
+    },
+    {
+      "attackerRaw": 105,
+      "defenderBefore": 3,
+      "defenderAfter": -4,
+      "damage": 1,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 99,
+        "defenderOldDefense": 0,
+        "attackerStored": 99,
+        "defenderStored": -1,
+        "toDefender": 1,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": true,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 105,
+      "defenderBefore": 3,
+      "defenderAfter": -4,
+      "damage": 1,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 99,
+        "defenderOldDefense": 0,
+        "attackerStored": 99,
+        "defenderStored": 0,
+        "toDefender": 0,
+        "spill": 1,
+        "attackerDestroyed": false,
+        "defenderDestroyed": true,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 105,
+      "defenderBefore": 3,
+      "defenderAfter": -4,
+      "damage": 5,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 99,
+        "defenderOldDefense": 0,
+        "attackerStored": 99,
+        "defenderStored": -5,
+        "toDefender": 5,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": true,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 105,
+      "defenderBefore": 3,
+      "defenderAfter": -4,
+      "damage": 5,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 99,
+        "defenderOldDefense": 0,
+        "attackerStored": 99,
+        "defenderStored": 0,
+        "toDefender": 0,
+        "spill": 5,
+        "attackerDestroyed": false,
+        "defenderDestroyed": true,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 105,
+      "defenderBefore": 3,
+      "defenderAfter": 2,
+      "damage": 0,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 99,
+        "defenderOldDefense": 3,
+        "attackerStored": 99,
+        "defenderStored": 3,
+        "toDefender": 0,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": false,
+        "receiveCalled": false
+      }
+    },
+    {
+      "attackerRaw": 105,
+      "defenderBefore": 3,
+      "defenderAfter": 2,
+      "damage": 0,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 99,
+        "defenderOldDefense": 3,
+        "attackerStored": 99,
+        "defenderStored": 3,
+        "toDefender": 0,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": false,
+        "receiveCalled": false
+      }
+    },
+    {
+      "attackerRaw": 105,
+      "defenderBefore": 3,
+      "defenderAfter": 2,
+      "damage": 1,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 99,
+        "defenderOldDefense": 2,
+        "attackerStored": 99,
+        "defenderStored": 1,
+        "toDefender": 1,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": false,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 105,
+      "defenderBefore": 3,
+      "defenderAfter": 2,
+      "damage": 1,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 99,
+        "defenderOldDefense": 2,
+        "attackerStored": 99,
+        "defenderStored": 1,
+        "toDefender": 1,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": false,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 105,
+      "defenderBefore": 3,
+      "defenderAfter": 2,
+      "damage": 5,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 99,
+        "defenderOldDefense": 2,
+        "attackerStored": 99,
+        "defenderStored": -3,
+        "toDefender": 5,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": true,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 105,
+      "defenderBefore": 3,
+      "defenderAfter": 2,
+      "damage": 5,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 99,
+        "defenderOldDefense": 2,
+        "attackerStored": 99,
+        "defenderStored": 0,
+        "toDefender": 2,
+        "spill": 3,
+        "attackerDestroyed": false,
+        "defenderDestroyed": true,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 105,
+      "defenderBefore": 3,
+      "defenderAfter": 105,
+      "damage": 0,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 99,
+        "defenderOldDefense": 3,
+        "attackerStored": 99,
+        "defenderStored": 3,
+        "toDefender": 0,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": false,
+        "receiveCalled": false
+      }
+    },
+    {
+      "attackerRaw": 105,
+      "defenderBefore": 3,
+      "defenderAfter": 105,
+      "damage": 0,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 99,
+        "defenderOldDefense": 3,
+        "attackerStored": 99,
+        "defenderStored": 3,
+        "toDefender": 0,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": false,
+        "receiveCalled": false
+      }
+    },
+    {
+      "attackerRaw": 105,
+      "defenderBefore": 3,
+      "defenderAfter": 105,
+      "damage": 1,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 99,
+        "defenderOldDefense": 99,
+        "attackerStored": 99,
+        "defenderStored": 98,
+        "toDefender": 1,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": false,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 105,
+      "defenderBefore": 3,
+      "defenderAfter": 105,
+      "damage": 1,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 99,
+        "defenderOldDefense": 99,
+        "attackerStored": 99,
+        "defenderStored": 98,
+        "toDefender": 1,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": false,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 105,
+      "defenderBefore": 3,
+      "defenderAfter": 105,
+      "damage": 5,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 99,
+        "defenderOldDefense": 99,
+        "attackerStored": 99,
+        "defenderStored": 94,
+        "toDefender": 5,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": false,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 105,
+      "defenderBefore": 3,
+      "defenderAfter": 105,
+      "damage": 5,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 99,
+        "defenderOldDefense": 99,
+        "attackerStored": 99,
+        "defenderStored": 94,
+        "toDefender": 5,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": false,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 105,
+      "defenderBefore": 105,
+      "defenderAfter": -4,
+      "damage": 0,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 99,
+        "defenderOldDefense": 99,
+        "attackerStored": 99,
+        "defenderStored": 99,
+        "toDefender": 0,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": false,
+        "receiveCalled": false
+      }
+    },
+    {
+      "attackerRaw": 105,
+      "defenderBefore": 105,
+      "defenderAfter": -4,
+      "damage": 0,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 99,
+        "defenderOldDefense": 99,
+        "attackerStored": 99,
+        "defenderStored": 99,
+        "toDefender": 0,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": false,
+        "receiveCalled": false
+      }
+    },
+    {
+      "attackerRaw": 105,
+      "defenderBefore": 105,
+      "defenderAfter": -4,
+      "damage": 1,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 99,
+        "defenderOldDefense": 0,
+        "attackerStored": 99,
+        "defenderStored": -1,
+        "toDefender": 1,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": true,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 105,
+      "defenderBefore": 105,
+      "defenderAfter": -4,
+      "damage": 1,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 99,
+        "defenderOldDefense": 0,
+        "attackerStored": 99,
+        "defenderStored": 0,
+        "toDefender": 0,
+        "spill": 1,
+        "attackerDestroyed": false,
+        "defenderDestroyed": true,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 105,
+      "defenderBefore": 105,
+      "defenderAfter": -4,
+      "damage": 5,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 99,
+        "defenderOldDefense": 0,
+        "attackerStored": 99,
+        "defenderStored": -5,
+        "toDefender": 5,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": true,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 105,
+      "defenderBefore": 105,
+      "defenderAfter": -4,
+      "damage": 5,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 99,
+        "defenderOldDefense": 0,
+        "attackerStored": 99,
+        "defenderStored": 0,
+        "toDefender": 0,
+        "spill": 5,
+        "attackerDestroyed": false,
+        "defenderDestroyed": true,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 105,
+      "defenderBefore": 105,
+      "defenderAfter": 2,
+      "damage": 0,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 99,
+        "defenderOldDefense": 99,
+        "attackerStored": 99,
+        "defenderStored": 99,
+        "toDefender": 0,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": false,
+        "receiveCalled": false
+      }
+    },
+    {
+      "attackerRaw": 105,
+      "defenderBefore": 105,
+      "defenderAfter": 2,
+      "damage": 0,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 99,
+        "defenderOldDefense": 99,
+        "attackerStored": 99,
+        "defenderStored": 99,
+        "toDefender": 0,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": false,
+        "receiveCalled": false
+      }
+    },
+    {
+      "attackerRaw": 105,
+      "defenderBefore": 105,
+      "defenderAfter": 2,
+      "damage": 1,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 99,
+        "defenderOldDefense": 2,
+        "attackerStored": 99,
+        "defenderStored": 1,
+        "toDefender": 1,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": false,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 105,
+      "defenderBefore": 105,
+      "defenderAfter": 2,
+      "damage": 1,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 99,
+        "defenderOldDefense": 2,
+        "attackerStored": 99,
+        "defenderStored": 1,
+        "toDefender": 1,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": false,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 105,
+      "defenderBefore": 105,
+      "defenderAfter": 2,
+      "damage": 5,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 99,
+        "defenderOldDefense": 2,
+        "attackerStored": 99,
+        "defenderStored": -3,
+        "toDefender": 5,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": true,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 105,
+      "defenderBefore": 105,
+      "defenderAfter": 2,
+      "damage": 5,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 99,
+        "defenderOldDefense": 2,
+        "attackerStored": 99,
+        "defenderStored": 0,
+        "toDefender": 2,
+        "spill": 3,
+        "attackerDestroyed": false,
+        "defenderDestroyed": true,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 105,
+      "defenderBefore": 105,
+      "defenderAfter": 105,
+      "damage": 0,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 99,
+        "defenderOldDefense": 99,
+        "attackerStored": 99,
+        "defenderStored": 99,
+        "toDefender": 0,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": false,
+        "receiveCalled": false
+      }
+    },
+    {
+      "attackerRaw": 105,
+      "defenderBefore": 105,
+      "defenderAfter": 105,
+      "damage": 0,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 99,
+        "defenderOldDefense": 99,
+        "attackerStored": 99,
+        "defenderStored": 99,
+        "toDefender": 0,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": false,
+        "receiveCalled": false
+      }
+    },
+    {
+      "attackerRaw": 105,
+      "defenderBefore": 105,
+      "defenderAfter": 105,
+      "damage": 1,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 99,
+        "defenderOldDefense": 99,
+        "attackerStored": 99,
+        "defenderStored": 98,
+        "toDefender": 1,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": false,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 105,
+      "defenderBefore": 105,
+      "defenderAfter": 105,
+      "damage": 1,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 99,
+        "defenderOldDefense": 99,
+        "attackerStored": 99,
+        "defenderStored": 98,
+        "toDefender": 1,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": false,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 105,
+      "defenderBefore": 105,
+      "defenderAfter": 105,
+      "damage": 5,
+      "excess": false,
+      "expected": {
+        "attackerOldDefense": 99,
+        "defenderOldDefense": 99,
+        "attackerStored": 99,
+        "defenderStored": 94,
+        "toDefender": 5,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": false,
+        "receiveCalled": true
+      }
+    },
+    {
+      "attackerRaw": 105,
+      "defenderBefore": 105,
+      "defenderAfter": 105,
+      "damage": 5,
+      "excess": true,
+      "expected": {
+        "attackerOldDefense": 99,
+        "defenderOldDefense": 99,
+        "attackerStored": 99,
+        "defenderStored": 94,
+        "toDefender": 5,
+        "spill": 0,
+        "attackerDestroyed": false,
+        "defenderDestroyed": false,
+        "receiveCalled": true
+      }
+    }
+  ]
+}

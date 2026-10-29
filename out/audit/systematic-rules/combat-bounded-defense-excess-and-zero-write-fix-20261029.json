@@ -1,0 +1,134 @@
+{
+  "rule": "RULE-536",
+  "date": "2026-10-29",
+  "publishing_branch": "DinkyPuffer",
+  "base_commit": "45e7825028ac96109bd5952617f8748eeb17a82d",
+  "client_exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "kernel_changed": true,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "finding": "ExecuteAttackCard snapshots/getter-reads total defense bounded0..99 after receive hooks, computes excess from fresh bounded defender reads, then always writes bounded defense minus signed damage in both directions. Simulator used raw storage and skipped precomputed nonpositive writes, corrupting oldDefense notifications, subtraction and spill.",
+  "authoritative_sequence": [
+    "1104/1172 get bounded attacker/defender defense after receive callbacks for oldDefense notification.",
+    "1300/1468/1582 read bounded defender defense for excess comparison, subtraction and finalDamage cap.",
+    "1692/1733/1779 always read/subtract/write defender defense;2249/2290/2336 always do attacker write. No damage>0 gate around these writes.",
+    "2076/2525 bounded reads feed saved death flags; bounded<=0 agrees with raw<=0 on valid integer storage.",
+    "Native getTotalDefense/setAndEncryptDefense backend bytes were independently compared to the current PE, including0..99 getter clamp and raw signed setter."
+  ],
+  "changes": [
+    "Use bounded old-defense snapshots and fresh bounded excess reads.",
+    "ApplyDamage precomputed branch writes unchecked(bound(raw)-amount) for positive, zero and negative supplied amounts; ordinary non-precomputed paths unchanged.",
+    "Preserve the existing statistics adapter and saved death/notification phases; do not broaden its identity semantics."
+  ],
+  "validation": {
+    "script_bytes": 4794,
+    "numeric_rows": 216,
+    "signed_write_rows": 16,
+    "real_ir_cases": 1,
+    "new_regression_cases": 3,
+    "focused_before": "3/3 failed",
+    "focused_after": "3/3 passed",
+    "selftest_passed": 965,
+    "selftest_total": 965,
+    "prior_partial_units_scope_revalidated": 11
+  },
+  "real_card_integration": "M18 Hellcat repository IR doubles attack7 against a tank to14. Target raw105 is read as99 and stored85; attacker raw105 with zero counterdamage is written99.",
+  "evidence_method": "DeepSeek computes216 controlled formula rows; primary independently evaluates captured scalar AST nodes and revalidates native PE accessors before emitting fixture. This is a numeric slice, not a full native execution emulator.",
+  "remaining": [
+    "216 rows isolate ExecuteAttackCard numeric slice with counterdamage0, unit defender, optional excess, no lethal ability, supplied receive callback and stable getters. Full callback system, all card reachability and arbitrary combat input combinations are not certified.",
+    "CalculateCombatDamage/CalculateDamageDealt pre-calculation (including ambush prediction), T37/T38 complete arithmetic/overflow, batch damage numeric parity and every signed/extreme input remain separate scopes.",
+    "Existing positive-damage HQ statistics adapter is preserved; native UpdateHQ_DamagedAmountThisTurnIfNeeded identity, side and phase semantics remain open.",
+    "Native getter/setter PE bytes are revalidated; encryption/CRC failure, mutable UObject fields, malformed pointers and object lifetime are not reproduced.",
+    "Negative precomputed amounts are tested on the lower write entry only; normal simulator calculation may clamp them away. No legal-card negative combat reachability claim.",
+    "Actual M18 repository IR integration verifies tank damage modification plus bounded writes, not whole-card or asset-version/end-to-end PvP certification."
+  ],
+  "source_bindings": {
+    "src/KLink.Bot/Effects/CardApi.cs": "4590eb21c7d28a4bc0cc39d27e4c68cb8ed308ac56ba33442d47a8f32e497656",
+    "src/KLink.Bot/Engine/MatchEngine.cs": "144475220eef3658cc97673b702098ac86b568a538e7e9812a8f5472b6f917f9",
+    "src/KLink.Bot/Engine/GameState.cs": "4de9bc66ae9e38684d129778cc7e220ba43e25205c7b9920b5e1b0aa2a31f143",
+    "src/KLink.Bot/Engine/CardInstance.cs": "350c5d79a51fe68af6af4769abd18764dcbfa36cdcae06cc91b7d553754551da",
+    "klink bot/docs/card-ir.json": "526812fa8dc0934f1d6ecd3794053871fa6b701c2b5df3fd1edb3c38513ba2e9",
+    "tools/BotSim/SelfTest.cs": "ef5aad6cc5d6310797c40b180f92954f13156f0d54ea7ceff2a4aff0a34651a8",
+    "tools/BotSim/BotSim.csproj": "fb1f65e9c1a7ed045c5af76c91a3a452a1569893cbd6415beeb67984796b3fff",
+    "tools/BotSim/SelfTest.CombatNumeric.cs": "905d1371249afae71a6ebb5cbd1f5a51948c378a0ec29f5e610498131552e894",
+    "tools/BotSim/Fixtures/combat-defense-reference-20261029.json": "30e3b0eb9ebd0a96179af1bc9663318ebf4301b06acdcff99a76046de6a00861"
+  },
+  "evidence_bindings": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule536-combat-defense-functions-20261029.json",
+      "sha256": "ea8575f250526a5dc061740d1b3785ce475677bc3ace2a7a0a5ffc8310c27747"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule536-combat.py",
+      "sha256": "f289d7e2e09889ffb3ee5917287ee99e20a036a9dca960ec8f8e68941a9298e2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-498.py",
+      "sha256": "254664d0aa1146756993fda4ac54e58891709c0ec5bcdd2cfa852f874c4e67ef"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule334-defense-accessors.py",
+      "sha256": "445595b9441d2883b47e2d9a9872f311bcf5e9c15603f255b9a2e826b1659325"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-native-numeric-accessors-pe-20261023.json",
+      "sha256": "8213e9fb22facc40ec5ab1c3d3e7601d0f22318cb774a4fdf34613135cdef274"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule-delay-scope-native-20261020.json",
+      "sha256": "21e36301e3b2c801d2d93202df3ff94055630e06ee67cc9d8fe657dea8a4c543"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\prepare-rule536-worker.py",
+      "sha256": "b6a876f8a58041e7aa10b0551bd7c87bbbfd490d3e5aaec6b986f8479c526bfc"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule536-worker\\input.json",
+      "sha256": "cbaaec13aae9d017b714d2b614f329ba0c0dfea16444bca9c2f5fe232ecdf061"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule536-worker\\output.json",
+      "sha256": "4cdfb7c872c2f63eea494ed7eb43fd64e3ac60e489cfd5f4c5104858b9b9bf1b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule536-worker\\calculate.py",
+      "sha256": "307b7d210a01d6ae55bfcb665836db4e0e0cc0dc7363a203e719c07705f1e10e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\Fixtures\\combat-defense-reference-20261029.json",
+      "sha256": "30e3b0eb9ebd0a96179af1bc9663318ebf4301b06acdcff99a76046de6a00861"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule536.py",
+      "sha256": "3cb6445f77dcc52023fe86008a38554e48e9eaa1b7d52b74a1b4a151233b2c05"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule536-verified-20261029.json",
+      "sha256": "f0f95390b1cdbb2634473ee814ac28c50a3d97c1e792970317f70fbfe3dd0c91"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule536-prior-unit-scope-revalidation.json",
+      "sha256": "237e54aef91fd7f6badc132f9cd61ae2cbf97c88d3b518169993c6e833603bdf"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\patch-rule536.py",
+      "sha256": "6a9b65d42ba086811949e7139226400d38b5d1000920ffc87453bcea2515929e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule536-focused-before.log",
+      "sha256": "91f04cded1745e8d7b940a31d7ceb5f52349e28e427f844e0debd9961bdf5b09"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule536-focused-after.log",
+      "sha256": "70c44eeb23ad8ed19ecabd3171c819d0ba7bee6fd8d0ff8fef1c000b77c3459d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule536-selftest-final.log",
+      "sha256": "f7592d4a09a792700b25b435db5fc41845306475bb551fd724c8ceca64a2b174"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\report-rule536.py",
+      "sha256": "24b07d91ba89499a4f8b45e353af1adfaa1c6bd5ea067f4d31799ec2e7e13922"
+    }
+  ]
+}

@@ -20,6 +20,9 @@ internal static partial class SelfTest
 
     private static readonly List<Case> Cases = new()
     {
+        new("战斗数值：216组有界防御、回调后读取与溢出", CombatBoundedDefenseReference),
+        new("战斗数值：预计算入口零负伤害仍写入", CombatPrecomputedSignedWrites),
+        new("战斗数值：M18真实IR修正后按有界防御扣血", HellcatBoundedCombatIntegration),
         new("战斗死亡：保存总部ID与回调后重绑定", CombatHqSavedIdentity),
         new("战斗死亡：保留对象和双方死亡回调", CombatRetainedDeathCallbacks),
         new("总部保存槽：绑定、换主、重绑定与局部清理", HqSlotLifecycle),
