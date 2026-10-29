@@ -482,15 +482,15 @@
     "active_plan": "klink bot/docs/训练闭环推进-20261030.md",
     "measurements": "out/training-readiness/baseline-20261030.json",
     "priority_order": [
-      "Unfinished episode root causes",
-      "Missing invoked Red Devils/Ki-61 Hien card entries",
+      "Missing invoked Red Devils/Ki-61 Hien default contracts",
+      "New reachable MakeLiteralText operation",
       "Decision-level adapter and choice contracts",
       "Observation/model contracts and admitted starter closure",
-      "Remaining unresolved flow cases if observed"
+      "Remaining unfinished episodes if observed"
     ],
     "deferred": "Unproven normal-PvP boundary refinements unless they block the active loop.",
     "batch_policy": "Integrate related changes and run complete tests/inventories once per completed batch.",
     "rule_scope_or_completion_denominator_changed": false,
-    "latest_result": "RULE-546 repairs omitted dispatch-return landing sites. Default20 pop-unresolved8283->0; random10 now admits3/80rows, rejects7. One-epoch value-model smoke only; no rule/strength certification."
+    "latest_result": "Training policy fixes active-Gotcha toggling. Same10 all finish;6 admitted/189rows,4 still reject. No engine rule or per-name admission waiver."
   }
 }

@@ -1,9 +1,9 @@
 {
   "date": "2026-10-30",
-  "batch": "RULE-546",
+  "batch": "training-greedy-gotcha",
   "documentation_records": 546,
   "reports": 421,
-  "verification_scope": "Dispatch-return graph closure fix,1339 IR entries and two current raw graph/stub pairs. Full980 tests,17 admission checks,20-game diagnostic comparison and10-game gated dump; one-epoch value smoke only. Prior22 source scopes revalidated exactly.",
+  "verification_scope": "Training policy avoids cancelling active Gotcha. No game-rule change. Original23 partial source scopes revalidated by exact test registration/source changes. Four old stalled episodes reproduce with actual training data; all10 now finish,6 admitted.",
   "baseline_counts": {
     "ledger_rule_records": 546,
     "json_reports": 421,
@@ -12,23 +12,23 @@
     "distinct_declared_file_paths": 5403,
     "file_binding_claims": 7661,
     "physical_files_hashed": 5373,
-    "bytes_hashed": 2103527644,
+    "bytes_hashed": 2103527973,
     "binding_states": {
-      "match": 6949,
-      "changed": 712
+      "match": 6946,
+      "changed": 715
     },
     "changed_binding_roles": {
-      "kernel_or_regression_source": 658,
+      "kernel_or_regression_source": 661,
       "other_audit_artifact": 14,
       "client_executable": 31,
       "captured_or_extracted_data": 1,
       "parser_or_sdk_source": 4,
       "audit_tool_script": 4
     },
-    "distinct_changed_physical_files": 27,
+    "distinct_changed_physical_files": 28,
     "report_provenance_states": {
-      "all_recognized_file_bindings_match": 174,
-      "declared_bindings_changed": 243,
+      "all_recognized_file_bindings_match": 173,
+      "declared_bindings_changed": 244,
       "no_recognized_file_bindings": 4
     },
     "report_version_states": {
@@ -70,15 +70,15 @@
     "remaining_work_percent": null
   },
   "tests": {
-    "core_selftest": 980,
+    "core_selftest": 981,
     "admission": 17,
     "baseline_tool": 20,
     "matrix_tool": 16
   },
   "no_semantic_certification_promotion": true,
   "files_sha256": {
-    "out/audit/progress-baseline/baseline.json": "5ba75fd92a4f8557fbfbfa113e36b1c4c1b5dbb551b40b9e47caa3004764e5ca",
-    "klink bot/docs/audit-work-plan.json": "414cad6764a7f8f16ffac037f01935480492d80e15d9ea6463cc4f382957b05a",
-    "out/training-readiness/flow-return-progress-20261030.json": "85ed610ef68c3ff7f9842ebda5cb9474399066d4fb94f28eb1ef6773212f611f"
+    "out/audit/progress-baseline/baseline.json": "75599fc912eeecdc1e9a2ce5bea13c05b1e9b0394bd2f5a37dbffb5d9e8aaf1c",
+    "klink bot/docs/audit-work-plan.json": "d3cf64d126cdf2a1d262d3619fa14d5a3d5eb29ca3ccf1540f3982e8537c9c83",
+    "out/training-readiness/gotcha-policy-progress-20261030.json": "af4d41acbaa3ad2a8d505c6870245cb1cb5487e3947adde0f21397473249ecad"
   }
 }

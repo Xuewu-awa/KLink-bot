@@ -70,6 +70,9 @@ public sealed class GreedyBot : IPlayerPolicy
         var state = engine.State;
         // 单位优先（能站场），其次按费用从高到低
         var playable = state.Hand(side)
+            // Policy choice: keep an armed countermeasure armed. Playing it
+            // again cancels/refunds it and can create an endless toggle loop.
+            .Where(c => !engine.Api.IsGotcha(c) || c.GotchaActivated <= 0)
             .Where(c => engine.CanPlay(c, out _))
             .OrderByDescending(c => c.Definition.IsUnit)
             .ThenByDescending(c => c.KreditCost)

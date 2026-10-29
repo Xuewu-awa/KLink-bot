@@ -1,0 +1,137 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-30",
+  "batch": "training-greedy-gotcha",
+  "base_commit": "157a2918e918c5c9e517e84eb9a80cf310ba0947",
+  "policy_changed": true,
+  "game_rules_changed": false,
+  "rule_certification_promoted": false,
+  "findings": [
+    "All four previous unfinished episodes independently reproduce using the NNTrain bundled data, with pending-selection count0 and repeated Gotcha hand actions at turns32/14/18/30. Do not substitute docs/cards.json for deployed cards.json when reproducing.",
+    "GreedyBot repeatedly selects the same playable Gotcha. Engine correctly permits activation/cancellation/refund; the policy reselects the active card and cycles. It exhausts its200-action budget without ending the turn, and the outer driver restarts that budget.",
+    "The policy now skips active Gotcha when choosing hand plays. It can activate an inactive counter, then continue other actions/end its turn. Engine cancellation/refund behavior remains available and unchanged.",
+    "Missing Red Devils/Ki-61 Hien classes have no direct reflected UField children and derive from BaseCardObject; base OnPlayedFromHand has empty script. This does not prove the complete event/native-default dispatch is a no-op. Captured generic helper virtual calls are not treated as card implementations. Both remain rejected."
+  ],
+  "measurements": {
+    "same_seed_games": 10,
+    "seed": 20261030,
+    "unfinished_before": 4,
+    "unfinished_after": 0,
+    "accepted_before": 3,
+    "accepted_after": 6,
+    "rows_before": 80,
+    "rows_after": 189,
+    "elapsed_seconds_before": 13.4,
+    "elapsed_seconds_after": 1.2,
+    "remaining_reason_games": {
+      "unimplemented:<card:card_unit_ki_61_hien>": 1,
+      "unimplemented:<card:card_unit_red_devils>": 2,
+      "unimplemented:math:MakeLiteralText": 1
+    },
+    "throughput_scope": "Single local Debug10-game measurement, not a general benchmark"
+  },
+  "validation": {
+    "policy_cases": 12,
+    "regression_before": "Inactive HMS Spectre played3times without ending turn",
+    "regression_after": "12 scenarios passed with inactive1play/active0plays and turn progress",
+    "core_selftests": 981,
+    "training_admission_checks": 17,
+    "prior_partial_units_source_scopes_revalidated": 23
+  },
+  "limitations": [
+    "No new game-rule or whole-card certification; policy intentionally chooses not to cancel active counters, without removing that legal engine action.",
+    "Action-budget exit for other possible policy loops is unchanged; no universal termination guarantee. Existing pending-choice behavior is not certified by zero queues in these four cases.",
+    "Missing card defaults remain open; no per-name waiver added. One newly reached math:MakeLiteralText path also remains rejected.",
+    "The first diagnostic run used a different cards.json root and its worker packet is superseded. Only the final bundled-data probe and immutable stall-worker-v2 packet support this report."
+  ],
+  "source_bindings": {
+    "src/KLink.Bot/Bots/GreedyBot.cs": "0a8a90ba6a31ed999ae5846eaf2edf2827186c82e9ed43ca3da273e02c5c4d9c",
+    "tools/BotSim/SelfTest.cs": "49eff293e3cbfca8175fa87a4079d530197213c9eb6e362477dd411368353cf4",
+    "tools/BotSim/SelfTest.GreedyGotcha.cs": "61b7ff2a5887b1b1b0881e4de7eff5c44129017ba35c04e02244d63abcef1d3e",
+    "src/KLink.Bot/Engine/MatchEngine.cs": "8b32754076c45a546c4f39cf9971e909b254a705d675c2ca8a47eac13ac69cdd",
+    "tools/NNTrain/Program.cs": "bc1aba6ff7a8ed0b0a5c5059dbf0c04fd9da99deb54cc50ea7acccc6dd31e6dd",
+    "tools/NNTrain/TrainingAdmission.cs": "77b439193f835b6a10fa6839b310fc2d54c528ad37d66d40fb4f5f1e982b5c07"
+  },
+  "evidence_bindings": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\stall-probe-before.json",
+      "sha256": "95d637d92f0223650317caf3d1e0c8971dabf543f685895e4c4bf9703b7768ae"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\StallProbe\\Program.cs",
+      "sha256": "e7000a946d2183e758f06345e3a9f4dc6ca1a02351ee957134a874420dccd818"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\StallProbe\\StallProbe.csproj",
+      "sha256": "898fa414110d03a5d33cda4364e03bc1dbb3ea0042ba23aaaef0a6e78a6eb0e6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\stall-worker-v2\\input.json",
+      "sha256": "3fd3e9c9d3bac2c31323c5cb1d23b17f5ac68e0e52924ec4340b76d99f482a32"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\stall-worker-v2\\GreedyBot.cs",
+      "sha256": "56438154ba2181fe2e9d3fae3ef3a8d26a77ce08ab116453c6ed59f5b8067dc2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\stall-worker-v2\\output.json",
+      "sha256": "5e8dcb1a9813c0fc04130ae2227815f6166f39f95dd70ec75286adddb8810b88"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule547-missing-card-own-functions-20261030.json",
+      "sha256": "f78f2c5f0eb3559e7cf78ccd329a53fc293fd09f4dcb9e284f658a79f56d0af4"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule547-play-default-native-20261030.json",
+      "sha256": "9f7f06d43b3bca25eff69d8dcdb43cb44c36bfdac38057bdc9cacb2d5da145c5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule547-card-defaults.py",
+      "sha256": "f0cfc7cd80cf597d5689b14d34e80baeba0b18c35be2db4f9b1d87857f10bdad"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule547-before-test.log",
+      "sha256": "0338913f8bf45835f5573e732a7ecc5f4e137a5e45affb71dec3e0b20f0f99f3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule547-after-test.log",
+      "sha256": "5c9a476d6f65ea26f740e2f08f696eb0cf59f35e6713193c3360768f701ca7ff"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule547-selftest.log",
+      "sha256": "269c9c85925b5f778e8af502498b910a64329da9733ee89b8b5356cf8a7a74f8"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule547-admission.log",
+      "sha256": "1f8a2c72fa0743c6d2645539ae672f707e73485d1cceedcc0dc76b576bce87ab"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule546-dump.bin.quality.json",
+      "sha256": "360027f3f90558947a8c36af16ea5e0bda7cb84b94e908f8531ed314fa791561"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule547-dump.bin.quality.json",
+      "sha256": "392ee2e288e19d81d4006b9c8f8e5e2ec5df3445d595355cf55e317d6bf10d2b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule547-dump.bin",
+      "sha256": "0d9e804f2ee66d5af0c69705cff3eb41dae89988a770be68057cfe44bdf6f8e3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule547-dump.log",
+      "sha256": "0e394a563d2accc995fe425e4d09b63ba96393cc4cc39a5e5e708deda02bb16e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\patch-greedy-gotcha.py",
+      "sha256": "9051364423bb40c5f3adcb76dc536f15ebef9ba1d06b610f71549ca3d875ef00"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\training-greedy-prior-scope-revalidation.json",
+      "sha256": "19c5ac691f8dff7a848cac9aeee34ddb275cb0aec0ae6457b25ea8c0569f5593"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\record-training-stall-fix.py",
+      "sha256": "d499bda82b1998d05bb01562cab9bbd628761cf20c24bb7c474025dcd8cc1cbf"
+    }
+  ]
+}

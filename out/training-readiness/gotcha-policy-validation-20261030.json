@@ -1,0 +1,17 @@
+{
+  "date": "2026-10-30",
+  "tests": {
+    "core": 981,
+    "admission": 17,
+    "audit_tools": 36
+  },
+  "same_seed_games": 10,
+  "finished": 10,
+  "admitted": 6,
+  "rows": 189,
+  "rejected": 4,
+  "default_card_investigation_still_open": true,
+  "game_rule_change": false,
+  "progress_sha256": "af4d41acbaa3ad2a8d505c6870245cb1cb5487e3947adde0f21397473249ecad",
+  "source_and_evidence_hashes_checked": true
+}

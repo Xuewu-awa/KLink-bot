@@ -1,6 +1,6 @@
 {
   "date": "2026-10-30",
-  "batch": "RULE-546",
+  "batch": "training-greedy-gotcha",
   "counts": {
     "cards": 2019,
     "cards_with_own_ir": 1709,
@@ -24,8 +24,8 @@
   },
   "tests": 16,
   "work_plan_synced": true,
-  "prior_partial_source_scopes_revalidated": 22,
-  "new_partial_units": 1,
-  "matrix_sha256": "90f578821a08931f0971c700227dfd90a797aeece7655c1e20558cbe94448129",
+  "prior_partial_source_scopes_revalidated": 23,
+  "new_partial_units": 0,
+  "matrix_sha256": "c940640778c4cbbbb5fef1c3cf1637fe24dc05bbbaed8460fc91c806c963dc84",
   "no_semantic_certification_promotion": true
 }
