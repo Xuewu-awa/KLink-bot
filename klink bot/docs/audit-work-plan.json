@@ -212,10 +212,12 @@
       "effort_estimate": "not_sized",
       "status_basis": "planning taxonomy; historical partial evidence is not domain completion",
       "progress_notes": [
-        "RULE-530修复效果DamageCard区域/零负请求、重定向最终修正、显式来源和bool输出；真实皇家苏格兰Pincer免疫通过，952项回归全通过。286个导出调用点/262个候选资产不等于PvP闭合。"
+        "RULE-530修复效果DamageCard区域/零负请求、重定向最终修正、显式来源和bool输出；真实皇家苏格兰Pincer免疫通过，952项回归全通过。286个导出调用点/262个候选资产不等于PvP闭合。",
+        "RULE-531修复ApplyDamageToCard读取原始防御而非0..99总防御的问题，覆盖通知、回调后扣血及溢出；300受控数值和血腥镰刀IR通过，954项回归全通过，完整生命周期未由数值表认证。"
       ],
       "current_deliverables": [
-        "out/audit/systematic-rules/effect-damage-entry-redirect-final-modifiers-and-bool-out-fix-20261029.json"
+        "out/audit/systematic-rules/effect-damage-entry-redirect-final-modifiers-and-bool-out-fix-20261029.json",
+        "out/audit/systematic-rules/apply-damage-clamped-defense-reads-and-excess-fix-20261029.json"
       ]
     },
     {

@@ -1,25 +1,25 @@
 {
   "date": "2026-10-29",
-  "batch": "RULE-530",
-  "documentation_records": 530,
-  "reports": 405,
+  "batch": "RULE-531",
+  "documentation_records": 531,
+  "reports": 406,
   "verification_scope": "New batch source/evidence hashes independently checked; baseline generator performed full historical hashing. No new semantic certification of historical reports.",
-  "independently_rehashed_this_batch_files": 290,
+  "independently_rehashed_this_batch_files": 27,
   "baseline_counts": {
-    "ledger_rule_records": 530,
-    "json_reports": 405,
-    "ledger_rules_with_explicit_json_report": 404,
-    "json_reports_with_explicit_rule_identity": 404,
-    "distinct_declared_file_paths": 5127,
-    "file_binding_claims": 7261,
-    "physical_files_hashed": 5105,
-    "bytes_hashed": 1986605641,
+    "ledger_rule_records": 531,
+    "json_reports": 406,
+    "ledger_rules_with_explicit_json_report": 405,
+    "json_reports_with_explicit_rule_identity": 405,
+    "distinct_declared_file_paths": 5144,
+    "file_binding_claims": 7288,
+    "physical_files_hashed": 5121,
+    "bytes_hashed": 1991705822,
     "binding_states": {
-      "match": 6600,
-      "changed": 661
+      "match": 6625,
+      "changed": 663
     },
     "changed_binding_roles": {
-      "kernel_or_regression_source": 607,
+      "kernel_or_regression_source": 609,
       "other_audit_artifact": 14,
       "client_executable": 31,
       "captured_or_extracted_data": 1,
@@ -29,18 +29,18 @@
     "distinct_changed_physical_files": 26,
     "report_provenance_states": {
       "all_recognized_file_bindings_match": 176,
-      "declared_bindings_changed": 225,
+      "declared_bindings_changed": 226,
       "no_recognized_file_bindings": 4
     },
     "report_version_states": {
-      "declared_current_exe_hash": 245,
+      "declared_current_exe_hash": 246,
       "not_declared": 128,
       "declared_other_exe_hash": 32
     },
-    "historical_remaining_claims": 2149,
+    "historical_remaining_claims": 2154,
     "remaining_dispositions": {
       "partially_addressed": 4,
-      "historical_untriaged": 2145
+      "historical_untriaged": 2150
     },
     "work_units": 14,
     "acceptance_criteria": 42,
@@ -71,14 +71,14 @@
     "remaining_work_percent": null
   },
   "tests": {
-    "game_selftest": 952,
+    "game_selftest": 954,
     "baseline_tool": 20,
     "matrix_tool": 16
   },
   "no_semantic_certification_promotion": true,
   "files_sha256": {
-    "out/audit/progress-baseline/baseline.json": "2589ae32299d8cb321c925d71a887e6ad4a90340c0ee11e3caecbdf85d9732c8",
-    "klink bot/docs/audit-work-plan.json": "dd3314a1ccd2696b7a00392a630d395fb3e56699c55b040ded54a26fcffae81f",
-    "klink bot/docs/audit-matrix-reviews.json": "7afd9b742cf2bb9673e01a988cce63f366811c19c5e6b5d4a0717c2d5e61c13d"
+    "out/audit/progress-baseline/baseline.json": "5005a8f7e5ce460ec0711aa6f2e1c5f46200a0d45d326ef44fe93a0fe7575577",
+    "klink bot/docs/audit-work-plan.json": "6028b8bb695e8d272eb6c13b16c738ae30fcea3bd370b69c8779337033d177f0",
+    "klink bot/docs/audit-matrix-reviews.json": "f36919fdb86f430bfbd3b1bf3c565a38a982cf5b3cb52fe0cd2a0e1df23d1361"
   }
 }

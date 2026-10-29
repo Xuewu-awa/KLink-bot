@@ -2051,7 +2051,7 @@ public sealed partial class CardApi
     /// ApplyDamageToCard's action path. Only the entry damage selects the positive
     /// branch; receive callbacks and excess may later change defense or damage.
     /// Once entered, raw signed subtraction, destroyed snapshot and deal callbacks
-    /// still run when excess caps the victim's damage to zero or a negative value.
+    /// still run when excess caps the victim's damage to zero.
     /// Initial nonpositive damage only emits the zero-damage notification.
     /// </summary>
     internal void ApplyCalculatedDamage(CardInstance target, int amount, CardInstance? source,
@@ -2068,7 +2068,7 @@ public sealed partial class CardApi
                                         int? oldDefense = null, bool beforeReceiveExecuted = false,
                                         bool isFightDefenderDamage = false)
     {
-        int initialDefense = target.Defense;
+        int initialDefense = Math.Clamp(target.Defense, 0, 99);
         var oldLocation = target.Location; // ApplyDamageToCard i=89, before receive hooks.
         bool resolvesDamage = amount > 0; // ApplyDamageToCard i=264/298, before any callbacks.
         if (resolvesDamage && !beforeReceiveExecuted)
@@ -2077,19 +2077,19 @@ public sealed partial class CardApi
         // i=519..957: a non-unit dealer may cap damage to the current unit defense.
         if (appliedDamage is null && resolvesDamage && source is not null
             && HasCustomAbility(source, "excess") && !IsUnit(source) && IsUnit(target)
-            && amount > target.Defense)
+            && amount > Math.Clamp(target.Defense, 0, 99))
         {
-            excess = amount - target.Defense;
-            amount = target.Defense;
+            excess = unchecked(amount - Math.Clamp(target.Defense, 0, 99));
+            amount = Math.Clamp(target.Defense, 0, 99);
         }
         // i=985 refreshes this even if excess changed finalDamage to nonpositive.
-        oldDefense ??= resolvesDamage ? target.Defense : initialDefense;
+        oldDefense ??= resolvesDamage ? Math.Clamp(target.Defense, 0, 99) : initialDefense;
         int applied = appliedDamage ?? 0;
         if (resolvesDamage && appliedDamage is null)
         {
             // i=1094..1181 subtracts the signed finalDamage without another gate.
             // Mitigation was already calculated; no immunity/location recheck here.
-            target.Defense -= amount;
+            target.Defense = unchecked(Math.Clamp(target.Defense, 0, 99) - amount);
             applied = amount;
             if (target.IsHq) State.UpdateHQDamagedAmountThisTurn(target.Owner, amount);
         }

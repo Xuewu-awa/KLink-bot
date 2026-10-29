@@ -20,6 +20,8 @@ internal static partial class SelfTest
 
     private static readonly List<Case> Cases = new()
     {
+        new("伤害数值：300组原始值、回调后读取、通知及溢出", DamageNumericClampReference),
+        new("伤害数值：血腥镰刀真实IR以有界防御扣血并抽牌", BloodySickleBoundedDefenseIntegration),
         new("效果伤害入口：区域、零负请求、重定向和未知来源", EffectDamageEntryContract),
         new("效果伤害入口：布尔输出、零通知和无效目标", EffectDamageDestroyedOutput),
         new("效果伤害入口：受伤回调换区后继续原结算", EffectDamageMovedDuringReceive),
@@ -16007,9 +16009,9 @@ internal static partial class SelfTest
                 victim.Keywords.Clear(); victim.Keywords.Add(Keyword.Mobilize); victim.Defense = 9;
                 var hq = state.Hq(victim.Owner); hq.Defense = 20;
                 bool positive = row.Incoming > 0;
-                int spilled = positive && !row.Unit && row.Incoming > row.ReceiveDefense ? row.Incoming - row.ReceiveDefense : 0;
-                int finalDamage = spilled > 0 ? row.ReceiveDefense : positive ? row.Incoming : 0;
-                int rawDefense = positive ? row.ReceiveDefense - finalDamage : 9;
+                int spilled = positive && !row.Unit && row.Incoming > Math.Clamp(row.ReceiveDefense, 0, 99) ? row.Incoming - Math.Clamp(row.ReceiveDefense, 0, 99) : 0;
+                int finalDamage = spilled > 0 ? Math.Clamp(row.ReceiveDefense, 0, 99) : positive ? row.Incoming : 0;
+                int rawDefense = positive ? Math.Clamp(row.ReceiveDefense, 0, 99) - finalDamage : 9;
                 bool destroyed = positive && rawDefense <= 0;
                 int finalDefense = row.Heal && spilled > 0 ? 9 : rawDefense;
                 var events = new List<string>(); var serial = new Dictionary<int, int>(); string? payloadError = null;
@@ -16047,7 +16049,7 @@ internal static partial class SelfTest
                 {
                     var notice = notices[0].Values.ToDictionary(v => v.Name);
                     noticesOk = notice["cardID"].Value == 60 && notice["damage"].Value == finalDamage
-                        && notice["oldDefense"].Value == (positive ? row.ReceiveDefense : 9)
+                        && notice["oldDefense"].Value == (positive ? Math.Clamp(row.ReceiveDefense, 0, 99) : 9)
                         && notice["destroyed"].Value == (destroyed ? 1 : 0) && notice["attackerCardID"].Value == 50;
                     if (spilled > 0)
                     {

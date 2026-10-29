@@ -1,0 +1,124 @@
+{
+  "rule": "RULE-531",
+  "date": "2026-10-29",
+  "publishing_branch": "DinkyPuffer",
+  "base_commit": "64d1f8d99a87f61c92ba86fa51af62af36a37c5d",
+  "client_exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "kernel_changed": true,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "finding": "ApplyDamageToCard reads getTotalDefense at entry, after receive callbacks, at excess checks/capping and immediately before subtracting. Simulator used raw storage at these positions, causing wrong oldDefense notifications, deductions and spill when callbacks or stored values fall outside0..99.",
+  "changes": [
+    "Clamp only scalar reads0..99 without rewriting stored defense on nonpositive damage.",
+    "Use fresh clamped reads for excess comparison/subtraction/capping and post-callback oldDefense, then store the raw signed subtraction result.",
+    "Preserve the initial positive-branch decision and existing destruction snapshot before spill/deal hooks; excess may cap finalDamage to0 without skipping those phases.",
+    "Revise four old test expressions that assumed a raw getter; no production change to event routing or corpse handling."
+  ],
+  "validation": {
+    "script_bytes": 2312,
+    "scalar_cases": 300,
+    "new_regression_cases": 2,
+    "focused_before": "2/2 failed before fix",
+    "focused_after": "2/2 passed",
+    "selftest_passed": 954,
+    "selftest_total": 954,
+    "prior_partial_units_scope_revalidated": 6
+  },
+  "real_card_integration": "Bloody Sickle repository IR: target raw defense105 becomes98 after one damage via clamped99 read; caster HQ20->19 and one draw remain correct.",
+  "remaining": [
+    "Numeric fixture uses valid objects, stable raw getters, controlled before-receive callback and source-order/unit flags, and deferred destruction; no whole lifecycle certification.",
+    "Native backend bytes are PE-revalidated; physical encryption/CRC errors, object lifetime and malformed pointers remain open.",
+    "Explicit caller-supplied precomputed damage/oldDefense paths and full combat/batch numeric parity are not newly certified.",
+    "Global subscription ordering, missing dealer native defaults and all card-specific branches remain separate scopes.",
+    "Actual card regression executes repository IR; card asset version/end-to-end PvP certification is not established."
+  ],
+  "source_bindings": {
+    "src/KLink.Bot/Effects/CardApi.cs": "9933a7af291ea435c041edb19cc68cd526e237b163983ce33d2a73d5cfb07896",
+    "src/KLink.Bot/Effects/CardApi.EffectDamage.cs": "36f72925695728384f0fa9cb815f844149036bbb7828d1390304255bfebfb0c0",
+    "src/KLink.Bot/Effects/CardApiDispatch.cs": "fc7b62b6bacbfc4885ec1407ec71452579f93cae07089f441250d48b6c3c8241",
+    "src/KLink.Bot/Engine/CardInstance.cs": "350c5d79a51fe68af6af4769abd18764dcbfa36cdcae06cc91b7d553754551da",
+    "klink bot/docs/card-ir.json": "526812fa8dc0934f1d6ecd3794053871fa6b701c2b5df3fd1edb3c38513ba2e9",
+    "tools/BotSim/BotSim.csproj": "5c7da0c2e19b6f96af9b46e148a2071349142d70bcbcd1a0b18210a0f090fb02",
+    "tools/BotSim/SelfTest.cs": "843b6d5325f0520c197a4ce62fa296714b01eca8f32ba0c4cafe27df3c11d060",
+    "tools/BotSim/SelfTest.DamageNumeric.cs": "4b23eb8c7420b82a4d792e5e17127ac8dbbb53d1c1e02c82572016adfe63a519",
+    "tools/BotSim/Fixtures/damage-defense-clamp-reference-20261029.json": "6b90042832f84bcc80e261e419be74e5dd8f8f83323607b9223896a00e205b6a"
+  },
+  "evidence_bindings": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule531-effect-damage-numeric-20261029.json",
+      "sha256": "3d0c5e1d21444439c8cbb55b79ee3f8f398db6c9c7cf705879df43177fe8bfef"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule531-damage-numeric.py",
+      "sha256": "e3535d3d25984de90981414d1276d40baf35f8f4ef5a18f60400d5227a616042"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-498.py",
+      "sha256": "254664d0aa1146756993fda4ac54e58891709c0ec5bcdd2cfa852f874c4e67ef"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule334-defense-accessors.py",
+      "sha256": "445595b9441d2883b47e2d9a9872f311bcf5e9c15603f255b9a2e826b1659325"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-native-numeric-accessors-pe-20261023.json",
+      "sha256": "8213e9fb22facc40ec5ab1c3d3e7601d0f22318cb774a4fdf34613135cdef274"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule-delay-scope-native-20261020.json",
+      "sha256": "21e36301e3b2c801d2d93202df3ff94055630e06ee67cc9d8fe657dea8a4c543"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule531-fixture.py",
+      "sha256": "4cc15bcbd290bb126fa20812ea9b8519a22e4387ede1f40349a787678693c27d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\prepare-rule531-worker.py",
+      "sha256": "cf6cd960f135cbf809f23bf3680711bbba15523fa9a8b453d37acc9776f65968"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule531-worker\\input.json",
+      "sha256": "f834086376150c869d41cbaad18bac74d896b94f11be6ea29adcf261503cccfd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule531-worker\\output.json",
+      "sha256": "663c8fe214e2d3f2408bac7518d66a8cbd17f2f20f581f49c661a989ec7210a0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule531-worker\\calculate.py",
+      "sha256": "2fb020b8a3e57fd69727d8b57707e1765535bad16332e7e29bb879f95e4cbf2c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\Fixtures\\damage-defense-clamp-reference-20261029.json",
+      "sha256": "6b90042832f84bcc80e261e419be74e5dd8f8f83323607b9223896a00e205b6a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule531-verified-20261029.json",
+      "sha256": "fb2bdfcb2ce00a74a9fc8a76a2595e96bad99bd072c0339373a813733d68be41"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\patch-rule531.py",
+      "sha256": "17b96f21ab2074f3269056c9912b2e59e1cea6568c2fe15232626d0f2a0dfe47"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule531-prior-unit-scope-revalidation.json",
+      "sha256": "4eaec1517689c5c0b8c75115dd5d37e0f3680d4351cbbca2c03b4b9b3fc4aa2a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule531-focused-before.log",
+      "sha256": "3a1d91eaa0636a753133b110dc723c0aba2ec26c36c935813a9cee15d862c522"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule531-focused-after.log",
+      "sha256": "da0002930c6a12a3cc60fd6cfe6d133a236e229eb45423a2bdcff9e9f500078f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule531-selftest-final.log",
+      "sha256": "11a618928004adc462adb8d40e6a58bb065f6f87598b80e8a2bb7ff141461c29"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\report-rule531.py",
+      "sha256": "d2ccd569cd5cea2e6580179e97d6a13fc30c9fd103b217bb79db61c555bbcc78"
+    }
+  ]
+}
