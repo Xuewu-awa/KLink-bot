@@ -2119,11 +2119,10 @@ public sealed partial class CardApi
         {
             // i=1885/2086 compare the saved target ID against side HQ IDs,
             // left first. A location-card type or mutable owner is not identity.
-            // FindHq currently supplies the existing simulator lookup; native
-            // stored-slot initialization/rebinding is not certified here.
-            if (State.FindHq(Side.Left)?.CardId == targetCardId)
+            // RULE-534: compare the saved IDs, independently of mutable objects.
+            if (State.GetLocationCardId(Side.Left) == targetCardId)
                 State.Finish(Side.Right, "Victory_DestroyHQ");
-            else if (State.FindHq(Side.Right)?.CardId == targetCardId)
+            else if (State.GetLocationCardId(Side.Right) == targetCardId)
                 State.Finish(Side.Left, "Victory_DestroyHQ");
             else
                 // i=2049 does not generate an explicit destroy notification.
@@ -5692,7 +5691,7 @@ public sealed partial class CardApi
     public CardInstance? GetCardFromID(int cardId) => cardId > 0 ? State.ById(cardId) : null;
     /// <summary>Fresh CardFunctions wrapper outputs are null/zero outside sides 1 and 2.</summary>
     public CardInstance? GetLocationCardBySide(Side s)
-        => s is Side.Left or Side.Right ? State.Hq(s) : null;
+        => State.FindHq(s);
 
     /// <summary>
     /// 客户端 `GetCardsOnBoardBySide(side, unitsOnly, includeCovertCards)` 的候选集。

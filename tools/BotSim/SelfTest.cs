@@ -20,6 +20,8 @@ internal static partial class SelfTest
 
     private static readonly List<Case> Cases = new()
     {
+        new("总部保存槽：绑定、换主、重绑定与局部清理", HqSlotLifecycle),
+        new("总部保存槽：致死回调与血腥镰刀真实IR", HqSlotDamageIntegration),
         new("伤害总部：按侧别ID确定胜方不按可变归属", DamageHqSideIdentity),
         new("伤害总部：非总部位置牌仍走单位死亡链", DamageHqLocationImpostor),
         new("伤害死亡：致死快照和保留对象的移除链", DamageDeathRetainedSnapshot),
@@ -1576,8 +1578,8 @@ internal static partial class SelfTest
     private static (MatchEngine Engine, GameState State) EmptyBoard(CardDatabase db)    {
         var engine = new MatchEngine(db, Array.Empty<string>(), Array.Empty<string>(), seed: 1);
         var state = engine.State;
-        state.CreateWithId("card_location_berlin", Side.Left, 1, CardLocation.BoardHqLeft, 0);
-        state.CreateWithId("card_location_berlin", Side.Right, 41, CardLocation.BoardHqRight, 0);
+        state.SetLocationCardBySide(Side.Left, state.CreateWithId("card_location_berlin", Side.Left, 1, CardLocation.BoardHqLeft, 0));
+        state.SetLocationCardBySide(Side.Right, state.CreateWithId("card_location_berlin", Side.Right, 41, CardLocation.BoardHqRight, 0));
         state.SetHqDefense(Side.Left, MatchEngine.InitialHqDefense);
         state.SetHqDefense(Side.Right, MatchEngine.InitialHqDefense);
         return (engine, state);
@@ -4544,8 +4546,8 @@ internal static partial class SelfTest
     private static string? MainFactionUninitialized(CardDatabase db)
     {
         var engine = new MatchEngine(db, Array.Empty<string>(), Array.Empty<string>(), seed: 1);
-        engine.State.CreateWithId("card_location_london", Side.Left, 1, CardLocation.BoardHqLeft, 0);
-        engine.State.CreateWithId("card_location_berlin", Side.Right, 41, CardLocation.BoardHqRight, 0);
+        engine.State.SetLocationCardBySide(Side.Left, engine.State.CreateWithId("card_location_london", Side.Left, 1, CardLocation.BoardHqLeft, 0));
+        engine.State.SetLocationCardBySide(Side.Right, engine.State.CreateWithId("card_location_berlin", Side.Right, 41, CardLocation.BoardHqRight, 0));
         int left = engine.State.GetMainFactionBySide(Side.Left);
         int right = engine.State.GetMainFactionBySide(Side.Right);
         return left == 0 && right == 0 ? null : $"未初始化主阵营必须保持 0，实际 {left}/{right}";
@@ -4665,8 +4667,8 @@ internal static partial class SelfTest
 
         var engine = new MatchEngine(db, Array.Empty<string>(), Array.Empty<string>(), seed: 1);
         var state = engine.State;
-        state.CreateWithId("card_location_london", Side.Left, 1, CardLocation.BoardHqLeft, 0);
-        state.CreateWithId("card_location_berlin", Side.Right, 41, CardLocation.BoardHqRight, 0);
+        state.SetLocationCardBySide(Side.Left, state.CreateWithId("card_location_london", Side.Left, 1, CardLocation.BoardHqLeft, 0));
+        state.SetLocationCardBySide(Side.Right, state.CreateWithId("card_location_berlin", Side.Right, 41, CardLocation.BoardHqRight, 0));
         state.SetMainFactionBySide(Side.Left, 1); // Deliberately differs from London.
         state.SetMainFactionBySide(Side.Right, 2); // Deliberately differs from Berlin.
         state.SetHqDefense(Side.Left, MatchEngine.InitialHqDefense);
@@ -20285,8 +20287,8 @@ internal static partial class SelfTest
         {
             var engine = new MatchEngine(db, Array.Empty<string>(), Array.Empty<string>(), seed);
             var state = engine.State;
-            state.CreateWithId("card_location_berlin", Side.Left, 1, Side.Left.HqOf(), 0);
-            state.CreateWithId("card_location_berlin", Side.Right, 41, Side.Right.HqOf(), 0);
+            state.SetLocationCardBySide(Side.Left, state.CreateWithId("card_location_berlin", Side.Left, 1, Side.Left.HqOf(), 0));
+            state.SetLocationCardBySide(Side.Right, state.CreateWithId("card_location_berlin", Side.Right, 41, Side.Right.HqOf(), 0));
             state.SetHqDefense(Side.Left, 20); state.SetHqDefense(Side.Right, 20);
             foreach (Side side in new[] { Side.Left, Side.Right })
                 for (int i = 0; i < 4; i++) state.CreateWithId(PlainUnit, side, (int)side * 100 + i, side.DeckOf(), i);

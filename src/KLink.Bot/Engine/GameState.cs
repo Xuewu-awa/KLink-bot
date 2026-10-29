@@ -666,11 +666,34 @@ public sealed class GameState
         => _battleCardOrder.FindAll(c => c.Owner == s && c.Location.IsBoard());
     public List<CardInstance> Discard(Side s) => Cards(s, CardLocation.Discard);
 
-    // Nullable view of the existing HQ lookup; explicit native saved HQ slots
-    // and their initialization/rebinding remain a separate audit boundary.
-    internal CardInstance? FindHq(Side s) => _cardsBySide[(int)s].FirstOrDefault(c => c.IsHq);
+    // RULE-534: GameState stores side HQ references and IDs explicitly.
+    // Creation, type changes, movement and ownership transfers do not bind them.
+    private readonly CardInstance?[] _locationCards = new CardInstance?[3];
+    private readonly int[] _locationCardIds = new int[3];
 
-    public CardInstance Hq(Side s) => _cardsBySide[(int)s].First(c => c.IsHq);
+    public void SetLocationCardBySide(Side side, CardInstance? card)
+    {
+        if (side is not (Side.Left or Side.Right)) return;
+        _locationCards[(int)side] = card;
+        _locationCardIds[(int)side] = card?.CardId ?? 0;
+    }
+
+    // Only the four HQ fields from ClearGameStateVariables; this is not a
+    // replacement for the client's complete match-state reset operation.
+    public void ClearLocationCardBindings()
+    {
+        Array.Clear(_locationCards);
+        Array.Clear(_locationCardIds);
+    }
+
+    public int GetLocationCardId(Side side)
+        => side is Side.Left or Side.Right ? _locationCardIds[(int)side] : 0;
+
+    internal CardInstance? FindHq(Side side)
+        => side is Side.Left or Side.Right ? _locationCards[(int)side] : null;
+
+    public CardInstance Hq(Side s) => FindHq(s)
+        ?? throw new InvalidOperationException($"Side {s} has no bound HQ");
 
     public int HqDefense(Side s) => Hq(s).Defense;
 

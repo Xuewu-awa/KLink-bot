@@ -1,0 +1,147 @@
+{
+  "rule": "RULE-534",
+  "date": "2026-10-29",
+  "publishing_branch": "DinkyPuffer",
+  "base_commit": "64c6aa3f04e09daa079598eb448aff78fc897c3b",
+  "client_exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "kernel_changed": true,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "finding": "GameState selected the first location-typed card in a mutable side list as HQ. Authoritative GameState instead saves independent side HQ references/IDs, assigned explicitly after creation and cleared by the reset. First-type lookup loses HQ on transformation/ownership transfer and silently substitutes decoys.",
+  "authoritative_sequence": [
+    "SetLocationCardBySide239B: side1 writes Left_HQ_Card_Ref95 then Left_HQ_CardID114 from saved ref.CardID; side2 writes Right_HQ_Card_Ref168 then Rgith_HQ_CardID187. Invalid side performs no write.",
+    "GetLocationCardBySide195B returns saved ref and ID, without type/owner/location discovery.",
+    "ClearGameStateVariables1363B clears HQ IDs933/956 and refs979/990 as part of its larger state reset.",
+    "OnlineMatch graph29897B creates right/left starting location card objects, then explicitly binds side2 at23746 and side1 at24529. Whole graph bytes/symbols independently redecoded; selected statement packet is not a whole-graph semantic certificate."
+  ],
+  "changes": [
+    "Store side HQ refs and cached IDs; setter overwrites explicitly with no type, owner or zone guard. Invalid sides remain null/zero/no-op.",
+    "Provide local four-field clear; creation alone never auto-binds or restores a cleared HQ.",
+    "Use stored reference for Hq/GetLocationCardBySide and stored ID for output/death classification.",
+    "Explicitly bind normal selfplay, snapshot recovery and smoke/test opening objects. Existing eight test setup lines changed; original assertions preserved."
+  ],
+  "validation": {
+    "worker_statements_independently_verified": 14,
+    "script_bytes": {
+      "CardFunctionsStub:GetLocationCardBySide": 0,
+      "BP_GameState_Battle_C:SetLocationCardBySide": 239,
+      "BP_GameState_Battle_C:GetLocationCardBySide": 195,
+      "BP_GameState_Battle_C:ClearGameStateVariables": 1363,
+      "BP_CardFunctions_C:HQ_DestroyedEndMatch": 335,
+      "BP_CardFunctions_C:ApplyRemoveCardFromBoard": 1009,
+      "BP_CardFunctions_C:ApplyDamageToCard": 2312,
+      "BP_CardFunctions_C:ExecuteOnBeforeOtherCardDestroyed": 788,
+      "BP_CardFunctions_C:GetLocationCardBySide": 112,
+      "BP_OnlineMatch_C:ExecuteUbergraph_BP_OnlineMatch": 29897
+    },
+    "new_regression_cases": 2,
+    "controlled_scenarios": 33,
+    "focused_before": "2/2 failed: missing explicit slot entry",
+    "focused_after": "2/2 passed",
+    "selftest_passed": 960,
+    "selftest_total": 960,
+    "prior_partial_units_scope_revalidated": 9,
+    "smoke_pvp_rows": 6
+  },
+  "real_card_integration": "Bloody Sickle repository IR damages a stored right HQ after type mutation and side-list ownership transfer; winner remains Left. Separate PvP smoke rows have no exceptions/VM faults/new unimplemented calls and deterministic fingerprints.",
+  "smoke_limitations": "Substring filter also ran campaign variant; its HasCampaignUpgrade diagnostic is excluded from PvP proof. Query-only zero-change rows are not effect failures.",
+  "remaining": [
+    "ClearLocationCardBindings models only the four HQ fields. The complete ClearGameStateVariables reset, reuse/reconnect ordering, network state restoration and all native/UObject lifetime cases are not certified.",
+    "Headless Start and snapshot adapters bind explicit canonical HQ objects; whole client opening creation order, server payload validation, duplicated HQ snapshot entries and every creation-time callback remain separate scopes. Historical replay contents are not authority.",
+    "CardId is immutable in the simulator; arbitrary native ID mutation, ref/ID disagreement, GC nulling references independently of IDs, destroyed pointers and malformed/nonpositive IDs remain open.",
+    "HQ type predicates, board-unit filtering, damage statistics and other victory paths have not all been converted to identity checks by this batch.",
+    "Synthetic type/owner/rebinding perturbations do not certify legal-card reachability or whole individual cards. Actual Bloody Sickle IR covers the shared lookup/damage integration only."
+  ],
+  "source_bindings": {
+    "src/KLink.Bot/Effects/CardApi.cs": "0d6a78dae5373f956d95574c441976b87ef0de7faa4ff4242e0fe3242a0d4672",
+    "src/KLink.Bot/Effects/CardApiDispatch.cs": "03080524c38f087e41d8baf7e01c3de8ec2343742b1daedced9d02535ef838fb",
+    "src/KLink.Bot/Engine/GameState.cs": "4de9bc66ae9e38684d129778cc7e220ba43e25205c7b9920b5e1b0aa2a31f143",
+    "src/KLink.Bot/Engine/MatchEngine.cs": "ff4b2a0d3384eef683f96700741e93f6712d9b98013920b9759e147fa3fff73a",
+    "src/KLink.Bot/Replay/ReplayRunner.cs": "525635c245e307d4dffd471f0d7352f8c73db5b0d22a215552895a8f8d2f7188",
+    "tools/BotSim/SelfTest.cs": "8413ee4aee7304be8319400da8ca406b3870b9d9b681708b9283718a1e7d464b",
+    "tools/BotSim/SmokeAllCards.cs": "9bb2648d2187fcdf48c8a2835df321b0693e77d788c920652215ecf08cefe8bf",
+    "src/KLink.Bot/Engine/CardInstance.cs": "350c5d79a51fe68af6af4769abd18764dcbfa36cdcae06cc91b7d553754551da",
+    "klink bot/docs/card-ir.json": "526812fa8dc0934f1d6ecd3794053871fa6b701c2b5df3fd1edb3c38513ba2e9",
+    "tools/BotSim/SelfTest.HqSlots.cs": "c846f80b0cdace729fdb87839eb33b19eaff7d4e5b6cf435a333cf2bf2071b4f",
+    "tools/BotSim/SelfTest.DamageHq.cs": "0df50b78c5ed04855d7406ae727800a1326fc6d2ad9221e5675843de09b20b06",
+    "tools/BotSim/SelfTest.DamageDeath.cs": "0cd9e44c070f5103ef128728e3b449462d1e270ffe3e78783d077e1759faedeb"
+  },
+  "evidence_bindings": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule534-hq-slot-lifecycle-functions-20261029.json",
+      "sha256": "97118555489d71dca2b21a84c426a330acd48dbfbe5c62ff485dbe84d56cbdce"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule534-hq.py",
+      "sha256": "533bf9547bafe1cac0af429bcf3aa6c54ac74560f760e3864ef736e2219222a1"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-498.py",
+      "sha256": "254664d0aa1146756993fda4ac54e58891709c0ec5bcdd2cfa852f874c4e67ef"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\prepare-rule534-worker.py",
+      "sha256": "1caf0d5f919d0bcf69c9bc3c0ea3bbca43e4bb8e6158877366702079b619c94f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule534-worker\\input.json",
+      "sha256": "0cc416cc51027afd91a7c726d0a88847d77a371dd8bca77626ecf1fb519bf6d2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule534-worker\\output.json",
+      "sha256": "c9ed3e257937464f31191bfb266b3a1f6cf8e4be60523164cf23ce1faa98cd93"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule534-worker\\extract.py",
+      "sha256": "442b52caf5adc62f372fa36921b2e40bcc430304e701cbd0412ac7cd0f46b7c5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule534-smoke-bloody-sickle.tsv",
+      "sha256": "b412decfcaa7a091c18206b22ca303f7025854bf04eee535fa52d9750cb2801c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule534-smoke-bloody-sickle.txt",
+      "sha256": "b6700bca5482655df00f0dbddd088f8dfcc0d63640bcb90cdae41a18ac85e70a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule534-smoke.log",
+      "sha256": "6e415717e8f638939ce63d6740bf62dd31dd7b0dda8872c202a20d088d69438c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule534.py",
+      "sha256": "c5b43a289d307b4d716fa8938df61d737da8558ef48b6071849e43c179a9455c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule534-verified-20261029.json",
+      "sha256": "0bc88ae080485b6b0b2108e5f3a869438a61884bb543fa59c50aa9dd6ef85ac2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule534-prior-unit-scope-revalidation.json",
+      "sha256": "6200ceab5b30b5bc68d1d24b2121a9800cd1042e1a8bbd0f3337657c858311c4"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\patch-rule534.py",
+      "sha256": "34dd1d0aa4d1f62f2b890e33b8b084295d9995cc7354612eaea82211717178f0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\finish-rule534.py",
+      "sha256": "62504120c4fc8b26d69a5c5f8dd173a431b0221ab21e061fbf4e31c7bd4be841"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule534-focused-before.log",
+      "sha256": "29380e7bffe397f949b54654abf3eb4c77a1553e0a905399f0f03e3d7b2eb15c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule534-focused-after.log",
+      "sha256": "f67df5c4f23f95dd794ad8dce2c705f335a541d0fb7e6a1dd95a470dcf02d2f7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule534-selftest-final.log",
+      "sha256": "e062fadb7ded71365712b0089a450bfa1d378338d59631464d0257c347972315"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\report-rule534.py",
+      "sha256": "23f62d10755584fdf5a4dd45e978bb1e3f8e13e45ada5a7157a65be67b39b043"
+    }
+  ]
+}

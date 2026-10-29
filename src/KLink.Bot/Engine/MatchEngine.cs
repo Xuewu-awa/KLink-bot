@@ -496,10 +496,12 @@ public sealed class MatchEngine
     {
         // HQ：左右各一，防御 20
         var leftHq = State.Create("card_location_london", Side.Left, CardLocation.BoardHqLeft, 0);
+        State.SetLocationCardBySide(Side.Left, leftHq);
         leftHq.Defense = InitialHqDefense;
         leftHq.MaxDefense = InitialHqDefense;
 
         var rightHq = State.Create("card_location_london", Side.Right, CardLocation.BoardHqRight, 0);
+        State.SetLocationCardBySide(Side.Right, rightHq);
         rightHq.Defense = InitialHqDefense;
         rightHq.MaxDefense = InitialHqDefense;
 

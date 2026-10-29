@@ -16,9 +16,9 @@
 | IR程序容器 | 2626 |
 | 聚合静态依赖关联 | 18571 |
 | 依赖符号 | 440 |
-| 已索引JSON审计记录 | 408 |
-| 已人工关联局部证据单元 | 9 |
-| 局部证据绑定输入一致 | 9 |
+| 已索引JSON审计记录 | 409 |
+| 已人工关联局部证据单元 | 10 |
+| 局部证据绑定输入一致 | 10 |
 | 规划工作域（不作完成率分母） | 14 |
 | 明确验收条件 | 42 |
 | 当前权威PvP分母已建立 | 否 |
@@ -60,7 +60,7 @@ TSV中的null表示缺失/未知值；复杂字段为JSON单元格，完整类�
 | GetCardFromID | 228 | 231 | 尚未人工关联 |
 | PersistCustomFields | 217 | 230 | 尚未人工关联 |
 | DrawCardsFromDeckBySide | 215 | 217 | 尚未人工关联 |
-| GetLocationCardBySide | 210 | 216 | 尚未人工关联 |
+| GetLocationCardBySide | 210 | 216 | RULE-534/GetLocationCardBySide/explicit-hq-slots |
 | IsSideActive | 209 | 210 | 尚未人工关联 |
 | GetRandomCard | 156 | 156 | 尚未人工关联 |
 | IsSameSideUnit | 148 | 149 | 尚未人工关联 |
@@ -85,6 +85,6 @@ python tools/test-audit-matrix.py
 
 更新 `klink bot/docs/audit-matrix-reviews.json` 维护局部证据、当前待办及有证据的PvP范围判定。
 绑定报告或源码改变、未检查EXE或EXE不匹配时，局部证据显示失效/未检查；不自动继承绿色状态。
-当前9条局部单元已人工关联；其他旧审计成果为待整理，不表示全部重做。
+当前10条局部单元已人工关联；其他旧审计成果为待整理，不表示全部重做。
 完整单卡认证需要另行完成：当前版本资产、PvP范围、全部自定义/继承/原生路径、分支及联动验证。
 第一版不允许以手填百分比或局部共享测试自动认证整卡；完整认证准入尚待独立闭合。

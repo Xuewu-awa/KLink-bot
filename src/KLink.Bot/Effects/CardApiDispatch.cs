@@ -286,7 +286,7 @@ public sealed partial class CardApi
                     _ => Side.NotAvailable,
                 };
                 var card = GetLocationCardBySide(side);
-                return new object?[] { card, card?.CardId ?? 0 };
+                return new object?[] { card, c.State.GetLocationCardId(side) };
             },
             // `GetMainNationForSide` forwards to BP_GameState_Battle's
             // `GetMainFactionBySide`; read saved opening metadata, not the current HQ.

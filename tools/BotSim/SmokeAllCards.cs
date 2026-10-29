@@ -799,7 +799,9 @@ internal static class SmokeAllCards
         string hq = db.Find("card_location_london")?.Name
                     ?? db.All.First(c => c.IsLocationCard).Name;
         var lhq = state.CreateWithId(hq, Side.Left, 1, CardLocation.BoardHqLeft, 0);
+        state.SetLocationCardBySide(Side.Left, lhq);
         var rhq = state.CreateWithId(hq, Side.Right, 41, CardLocation.BoardHqRight, 0);
+        state.SetLocationCardBySide(Side.Right, rhq);
         lhq.Defense = lhq.MaxDefense = MatchEngine.InitialHqDefense;
         rhq.Defense = rhq.MaxDefense = MatchEngine.InitialHqDefense;
 
@@ -1281,7 +1283,9 @@ internal static class SmokeAllCards
 
         string hq = db.Find("card_location_london")?.Name ?? db.All.First(c => c.IsLocationCard).Name;
         var lhq = state.CreateWithId(hq, Side.Left, 1, CardLocation.BoardHqLeft, 0);
+        state.SetLocationCardBySide(Side.Left, lhq);
         var rhq = state.CreateWithId(hq, Side.Right, 41, CardLocation.BoardHqRight, 0);
+        state.SetLocationCardBySide(Side.Right, rhq);
         lhq.Defense = lhq.MaxDefense = MatchEngine.InitialHqDefense;
         rhq.Defense = rhq.MaxDefense = MatchEngine.InitialHqDefense;
 

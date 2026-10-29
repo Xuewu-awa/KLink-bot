@@ -379,7 +379,10 @@ public sealed class ReplayRunner
             // Current OnlineMatch initializes this from location_card_*.faction,
             // independently of the HQ definition. Ordinary support-line units do not write it.
             if (openingCard.IsHq)
+            {
+                state.SetLocationCardBySide(c.Owner, openingCard);
                 state.SetMainFactionBySide(c.Owner, GameState.MainFactionFromStartingData(c.Faction));
+            }
         }
 
         int known = 0, skipped = 0;
