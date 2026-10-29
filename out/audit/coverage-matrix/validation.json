@@ -1,6 +1,6 @@
 {
   "date": "2026-10-29",
-  "batch": "RULE-532",
+  "batch": "RULE-533",
   "counts": {
     "cards": 2019,
     "cards_with_own_ir": 1709,
@@ -12,9 +12,9 @@
     "program_containers": 2626,
     "dependency_edges": 18571,
     "dependency_symbols": 440,
-    "secondary_reports": 407,
-    "explicit_partial_units": 8,
-    "partial_units_matching_bound_inputs": 8,
+    "secondary_reports": 408,
+    "explicit_partial_units": 9,
+    "partial_units_matching_bound_inputs": 9,
     "planning_work_domains": 14,
     "planning_acceptance_criteria": 42,
     "authoritative_current_pvp_denominator_available": false,
@@ -24,8 +24,8 @@
   },
   "tests": 16,
   "work_plan_synced": true,
-  "partial_source_scopes_revalidated": 7,
+  "partial_source_scopes_revalidated": 8,
   "new_partial_units": 1,
-  "matrix_sha256": "59067891b4acc4975edcf73b52c5172ebded3d09b3d205aa456d1ee78490e5bb",
+  "matrix_sha256": "854edf4a552bb744b6d544438b398a112fa736b6401ef11114fed5e3827d2249",
   "no_semantic_certification_promotion": true
 }

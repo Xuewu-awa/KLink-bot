@@ -20,6 +20,8 @@ internal static partial class SelfTest
 
     private static readonly List<Case> Cases = new()
     {
+        new("伤害总部：按侧别ID确定胜方不按可变归属", DamageHqSideIdentity),
+        new("伤害总部：非总部位置牌仍走单位死亡链", DamageHqLocationImpostor),
         new("伤害死亡：致死快照和保留对象的移除链", DamageDeathRetainedSnapshot),
         new("伤害死亡：非致死快照不在回调后重算", DamageDeathNonlethalSnapshot),
         new("伤害数值：300组原始值、回调后读取、通知及溢出", DamageNumericClampReference),

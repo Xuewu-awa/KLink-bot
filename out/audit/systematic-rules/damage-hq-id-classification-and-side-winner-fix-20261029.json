@@ -1,0 +1,132 @@
+{
+  "rule": "RULE-533",
+  "date": "2026-10-29",
+  "publishing_branch": "DinkyPuffer",
+  "base_commit": "d5525030f435a3fc6853f9c4135e3118c35b444b",
+  "client_exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "kernel_changed": true,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "finding": "ApplyDamageToCard compares entry-cached toCardID with queried side HQ IDs after damage callbacks, left before right. Simulator used target.IsHq and target.Owner, causing wrong wins for mutable owner and non-HQ location-typed retained objects.",
+  "authoritative_sequence": [
+    "i138 snapshots target ID before receive hooks. i1861 branches on saved lethality; i1885 queries side1 HQ ID, i1919 compares cached targetID, i1967 sets winner2.",
+    "If left differs, flow stack queries side2 at2086; i2120 compares, i2168 sets winner1. Only if both differ does2015/2049 execute before-destroy/removal.",
+    "GameState GetLocationCardBySide returns saved side ID/ref fields. SetLocationCardBySide writes reference then ID; simulator stored-slot initialization remains unresolved.",
+    "HQ_DestroyedEndMatch notifies HQ destruction, then checks finished flag; only first completion sets match finished and requests end notification. Existing GameState.Finish is idempotent."
+  ],
+  "changes": [
+    "Cache target ID before callbacks; compare side HQ IDs left then right and choose winner from matched side.",
+    "Route unmatched positive-ID retained objects through ordinary damage death chain regardless of current location-card type.",
+    "Add nullable counterpart of existing HQ query so incomplete simulator setups do not throw during unit damage; no automatic HQ slot persistence is introduced."
+  ],
+  "validation": {
+    "worker_nodes_independently_verified": 29,
+    "branch_stack_vectors": 24,
+    "script_bytes": {
+      "CardFunctionsStub:GetLocationCardBySide": 0,
+      "BP_GameState_Battle_C:SetLocationCardBySide": 239,
+      "BP_GameState_Battle_C:GetLocationCardBySide": 195,
+      "BP_CardFunctions_C:HQ_DestroyedEndMatch": 335,
+      "BP_CardFunctions_C:ApplyRemoveCardFromBoard": 1009,
+      "BP_CardFunctions_C:ApplyDamageToCard": 2312,
+      "BP_CardFunctions_C:ExecuteOnBeforeOtherCardDestroyed": 788,
+      "BP_CardFunctions_C:GetLocationCardBySide": 112
+    },
+    "new_regression_cases": 2,
+    "controlled_simulator_scenarios": 20,
+    "focused_before": "2/2 failed",
+    "focused_after": "2/2 passed",
+    "selftest_passed": 958,
+    "selftest_total": 958,
+    "prior_partial_units_scope_revalidated": 8
+  },
+  "scenarios": [
+    "12 side/owner/lethality cases: unchanged owner, owner changed before damage or during deal callback; both sides, lethal/nonlethal.",
+    "8 non-HQ-ID location-type cases: type set before damage or during deal callback, both sides, suppressed/unsuppressed; correct removal hooks and no extra explicit destroy notice.",
+    "24 isolated captured-AST control-flow vectors cover side matching, left priority, unmatched IDs and saved nonlethal exit. This is not a full Blueprint interpreter or stored-slot integration test."
+  ],
+  "remaining": [
+    "GameState still derives HQ objects from first location-card in each side list, rather than native saved ID/reference fields. Full SetLocationCardBySide initialization/reset/rebinding, HQ type mutation, ownership transfer that changes side lists and stale/disagreeing ID/reference slots remain open.",
+    "Scoped to stable positive IDs and canonical side HQ lookup. No missing/nonpositive IDs, object replacement, UObject lifetime or malformed state certification.",
+    "HQ damage statistics still use existing type/owner classification; no full combat/batch damage or other victory paths are newly certified.",
+    "Controlled probes change owner/type without asserting current legal-card reachability. Existing real-card IR tests pass but no new full card certification is claimed.",
+    "Native NotifyOnCardDestroyed/NotifyEndMatch callbacks and replay/UI paths are not reproduced by this headless winner-branch fix."
+  ],
+  "source_bindings": {
+    "src/KLink.Bot/Effects/CardApi.cs": "2d915366816921933721a956956260a0ada3deb9f72a987ec57c05461dbc99a6",
+    "src/KLink.Bot/Engine/GameState.cs": "b863339e10d6c2993bae211a87648172ae257fa6bbed1e3892ee16213ce43902",
+    "src/KLink.Bot/Engine/MatchEngine.cs": "50f1ab8e291881a79b9768eed03c6a8d75a13980940e6d2e2207e15494d65f86",
+    "src/KLink.Bot/Effects/CardApi.EffectDamage.cs": "36f72925695728384f0fa9cb815f844149036bbb7828d1390304255bfebfb0c0",
+    "src/KLink.Bot/Engine/CardInstance.cs": "350c5d79a51fe68af6af4769abd18764dcbfa36cdcae06cc91b7d553754551da",
+    "klink bot/docs/card-ir.json": "526812fa8dc0934f1d6ecd3794053871fa6b701c2b5df3fd1edb3c38513ba2e9",
+    "tools/BotSim/SelfTest.cs": "d069ff53fa36903fe794dc6868f40372532922c025063f9881676dd99fdd0d87",
+    "tools/BotSim/SelfTest.DamageHq.cs": "0df50b78c5ed04855d7406ae727800a1326fc6d2ad9221e5675843de09b20b06",
+    "tools/BotSim/SelfTest.DamageDeath.cs": "0cd9e44c070f5103ef128728e3b449462d1e270ffe3e78783d077e1759faedeb"
+  },
+  "evidence_bindings": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule533-hq-identity-functions-20261029.json",
+      "sha256": "e71e11bad41f58a769cca5f2fa7fb590b2d4e434e9f368b606a15304ab41b406"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule533-hq.py",
+      "sha256": "19f48ffde4e238ffecc8b869b72208b6c7a23ff0b335f55444152de355427434"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-498.py",
+      "sha256": "254664d0aa1146756993fda4ac54e58891709c0ec5bcdd2cfa852f874c4e67ef"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\prepare-rule533-worker.py",
+      "sha256": "fa58f7403085a295b9311c5ec8337fe30017920a206c8f89e226aac002dc7ec1"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule533-worker\\input.json",
+      "sha256": "17c308aedd8968b6c5c3ad138cb70abded4af51015999d1af8ff53f532802140"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule533-worker\\output.json",
+      "sha256": "9e1c1e2c3fe6b0dc44e816126ab0f52c7dca5b6dbf3f6fd2173efde2e7e1c7b3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule533-worker\\extract.py",
+      "sha256": "c29f4f4f84ef2ce7e557eb0a16153fac3f91ed51bca463653efeca9bc9c92280"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule533-hq-branch-reference.json",
+      "sha256": "1db454d4aad9749da2a1d94f35fb7471f8a2ccb54d9b007d51a3022d4fa771b9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule533.py",
+      "sha256": "354b4e29ef464f8c6c9960fece2f6910e248b1932aee5e41f87898bf44880214"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule533-verified-20261029.json",
+      "sha256": "d2c0ca2905fd419181becb9a4d497517fc1dc1e20bfd29ab5be21aa9c3c9cf51"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule533-prior-unit-scope-revalidation.json",
+      "sha256": "1a9709d903a2b4c12b87ad9aeb9fd6e7e9a8bc229f5f5e57242098dd953f5adc"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\patch-rule533.py",
+      "sha256": "195805c787daea085cd71df64c13855a1b9b513dde22c1d836e26be43384f3dd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule533-focused-before.log",
+      "sha256": "6a92ff68346377d80656dd05a04d49733bf242d088741a3b2b8e63b9aee7611d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule533-focused-after.log",
+      "sha256": "f8caa642bb0828910c19cf445daf1756e65a54c1dbb9ce85a560a5665eae157e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule533-selftest-final.log",
+      "sha256": "3e167b759ddc145d8407f32fc01de5a401513f9e164479fc82d915082e460dfb"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\report-rule533.py",
+      "sha256": "d01bc7f6ece6e2a070da8cf2ba969b7308f1fbb33f724ef572f0d94f44d81171"
+    }
+  ]
+}

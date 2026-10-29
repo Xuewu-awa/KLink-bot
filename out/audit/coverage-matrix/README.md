@@ -16,9 +16,9 @@
 | IR程序容器 | 2626 |
 | 聚合静态依赖关联 | 18571 |
 | 依赖符号 | 440 |
-| 已索引JSON审计记录 | 407 |
-| 已人工关联局部证据单元 | 8 |
-| 局部证据绑定输入一致 | 8 |
+| 已索引JSON审计记录 | 408 |
+| 已人工关联局部证据单元 | 9 |
+| 局部证据绑定输入一致 | 9 |
 | 规划工作域（不作完成率分母） | 14 |
 | 明确验收条件 | 42 |
 | 当前权威PvP分母已建立 | 否 |
@@ -55,7 +55,7 @@ TSV中的null表示缺失/未知值；复杂字段为JSON单元格，完整类�
 | GetTargetedCard | 429 | 429 | 尚未人工关联 |
 | ChangeAttack | 355 | 369 | RULE-525/ChangeAttack/ordinary, RULE-526/ChangeAttack/absolute, RULE-527/ChangeAttack/remove, RULE-528/ChangeAttack/custom-and-default |
 | ChangeDefense | 325 | 330 | 尚未人工关联 |
-| DamageCard | 262 | 265 | RULE-530/DamageCard/effect-entry, RULE-531/DamageCard/apply-bounded-defense, RULE-532/DamageCard/retained-lethal-removal |
+| DamageCard | 262 | 265 | RULE-530/DamageCard/effect-entry, RULE-531/DamageCard/apply-bounded-defense, RULE-532/DamageCard/retained-lethal-removal, RULE-533/DamageCard/hq-id-winner-branch |
 | GetCardsOnBoardBySide | 246 | 247 | 尚未人工关联 |
 | GetCardFromID | 228 | 231 | 尚未人工关联 |
 | PersistCustomFields | 217 | 230 | 尚未人工关联 |
@@ -85,6 +85,6 @@ python tools/test-audit-matrix.py
 
 更新 `klink bot/docs/audit-matrix-reviews.json` 维护局部证据、当前待办及有证据的PvP范围判定。
 绑定报告或源码改变、未检查EXE或EXE不匹配时，局部证据显示失效/未检查；不自动继承绿色状态。
-当前8条局部单元已人工关联；其他旧审计成果为待整理，不表示全部重做。
+当前9条局部单元已人工关联；其他旧审计成果为待整理，不表示全部重做。
 完整单卡认证需要另行完成：当前版本资产、PvP范围、全部自定义/继承/原生路径、分支及联动验证。
 第一版不允许以手填百分比或局部共享测试自动认证整卡；完整认证准入尚待独立闭合。

@@ -214,12 +214,14 @@
       "progress_notes": [
         "RULE-530修复效果DamageCard区域/零负请求、重定向最终修正、显式来源和bool输出；真实皇家苏格兰Pincer免疫通过，952项回归全通过。286个导出调用点/262个候选资产不等于PvP闭合。",
         "RULE-531修复ApplyDamageToCard读取原始防御而非0..99总防御的问题，覆盖通知、回调后扣血及溢出；300受控数值和血腥镰刀IR通过，954项回归全通过，完整生命周期未由数值表认证。",
-        "RULE-532修复伤害致死快照后保留对象被通用Destroy区域守卫截断的问题；22受控场景覆盖换区、回血和嵌套销毁，956项回归通过。HQ真实身份映射、对象替换和完整死亡链仍开放。"
+        "RULE-532修复伤害致死快照后保留对象被通用Destroy区域守卫截断的问题；22受控场景覆盖换区、回血和嵌套销毁，956项回归通过。HQ真实身份映射、对象替换和完整死亡链仍开放。",
+        "RULE-533修复单体伤害按位置牌类型/可变归属判总部胜负的问题，改为目标缓存ID与侧别总部ID比较；20受控场景、24原AST分支及958项回归通过。总部保存槽及初始化/重绑定、类型变化和换主导致侧表变化仍开放。"
       ],
       "current_deliverables": [
         "out/audit/systematic-rules/effect-damage-entry-redirect-final-modifiers-and-bool-out-fix-20261029.json",
         "out/audit/systematic-rules/apply-damage-clamped-defense-reads-and-excess-fix-20261029.json",
-        "out/audit/systematic-rules/damage-retained-victim-lethal-snapshot-removal-fix-20261029.json"
+        "out/audit/systematic-rules/damage-retained-victim-lethal-snapshot-removal-fix-20261029.json",
+        "out/audit/systematic-rules/damage-hq-id-classification-and-side-winner-fix-20261029.json"
       ]
     },
     {

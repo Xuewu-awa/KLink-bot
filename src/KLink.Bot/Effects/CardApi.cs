@@ -2068,6 +2068,7 @@ public sealed partial class CardApi
                                         int? oldDefense = null, bool beforeReceiveExecuted = false,
                                         bool isFightDefenderDamage = false)
     {
+        int targetCardId = target.CardId; // ApplyDamageToCard i=138, before callbacks.
         int initialDefense = Math.Clamp(target.Defense, 0, 99);
         var oldLocation = target.Location; // ApplyDamageToCard i=89, before receive hooks.
         bool resolvesDamage = amount > 0; // ApplyDamageToCard i=264/298, before any callbacks.
@@ -2114,13 +2115,19 @@ public sealed partial class CardApi
         // i=1775..1808 has no second finalDamage>0 check inside the positive branch.
         if (resolvesDamage) ExecuteOnCardDealDamageEffects(target, source, amount, isCombatDamage, counterDamage, isRedirected);
 
-        if (!deferDestruction && destroyed && target.IsHq)
-            State.Finish(target.Owner.Opposite(), "Victory_DestroyHQ");
-        else if (!deferDestruction && destroyed)
+        if (!deferDestruction && destroyed)
         {
-            // ApplyDamageToCard i=2049 removes the victim after its damage
-            // notification; it does not generate another explicit destroy action.
-            _engine.DestroyFromAppliedDamage(target, source);
+            // i=1885/2086 compare the saved target ID against side HQ IDs,
+            // left first. A location-card type or mutable owner is not identity.
+            // FindHq currently supplies the existing simulator lookup; native
+            // stored-slot initialization/rebinding is not certified here.
+            if (State.FindHq(Side.Left)?.CardId == targetCardId)
+                State.Finish(Side.Right, "Victory_DestroyHQ");
+            else if (State.FindHq(Side.Right)?.CardId == targetCardId)
+                State.Finish(Side.Left, "Victory_DestroyHQ");
+            else
+                // i=2049 does not generate an explicit destroy notification.
+                _engine.DestroyFromAppliedDamage(target, source);
         }
         // i=2225 checks the final damage only for surviving Mobilize removal.
         else if (!deferDestruction && resolvesDamage && amount > 0 && target.Keywords.Contains(Keyword.Mobilize))

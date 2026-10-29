@@ -666,6 +666,10 @@ public sealed class GameState
         => _battleCardOrder.FindAll(c => c.Owner == s && c.Location.IsBoard());
     public List<CardInstance> Discard(Side s) => Cards(s, CardLocation.Discard);
 
+    // Nullable view of the existing HQ lookup; explicit native saved HQ slots
+    // and their initialization/rebinding remain a separate audit boundary.
+    internal CardInstance? FindHq(Side s) => _cardsBySide[(int)s].FirstOrDefault(c => c.IsHq);
+
     public CardInstance Hq(Side s) => _cardsBySide[(int)s].First(c => c.IsHq);
 
     public int HqDefense(Side s) => Hq(s).Defense;
