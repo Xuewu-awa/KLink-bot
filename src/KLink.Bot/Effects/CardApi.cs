@@ -2056,7 +2056,15 @@ public sealed partial class CardApi
         if (!isAttacker && (IsArtillery(receiver) || MatchEngine.IsBomber(dealer)
             || MatchEngine.IsBomber(receiver) && dealer.Definition.Type != "fighter" && !IsAntiAir(dealer)
             || IsUnit(dealer) && receiver.Keywords.Contains(Keyword.Shock))) damage = 0;
-        return damage > 0 ? Math.Max(damage - receiver.HeavyArmor, 0) : damage;
+        if (damage <= 0) return damage;
+        // RULE-538: i=2936 caches armor before i=3028 invokes the receiver's
+        // passive function, even when armor will absorb all damage. Ordinary
+        // AttackCard uses applyBeforeAttackBuffs=false, so i=3082 selects zero
+        // for the passive return's numeric contribution, not for its invocation.
+        int armorBeforePassive = receiver.HeavyArmor;
+        _ = RunOwnLocal(receiver, "GetPassiveDefenseBuff",
+            new Dictionary<string, object?> { ["incomingDamage"] = damage }, "amount");
+        return Math.Max(unchecked(damage - armorBeforePassive), 0);
     }
 
     /// <summary>

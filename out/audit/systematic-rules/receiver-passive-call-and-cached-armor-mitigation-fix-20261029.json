@@ -1,0 +1,139 @@
+{
+  "rule": "RULE-538",
+  "date": "2026-10-29",
+  "publishing_branch": "DinkyPuffer",
+  "base_commit": "e15f7222a66c0052687439ae7f303e009b1add5c",
+  "client_exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "kernel_changed": true,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "finding": "CalculateDamageDealt calls receiver.GetPassiveDefenseBuff for positive damage after retaliation gates, even in ordinary mode where its returned amount contributes zero. Simulator skipped the call. Native caches armor before this call, so callback changes to armor cannot change this reduction.",
+  "authoritative_sequence": [
+    "2888/2922 positive damage gate follows ambush and retaliation restrictions; zero skips to3294.",
+    "2936 reads total armor;2977 selects it when ignoreHeavyArmor=false;3028 calls receiver.GetPassiveDefenseBuff with pre-armor damage and no extra suppression gate.",
+    "3082 selects0 for the passive return when applyBeforeAttackBuffs=false;3133/3179/3225 subtract cached armor and clamp result at0. The invocation itself is not skipped by this flag.",
+    "Captured48th GetPassiveDefenseBuff53B forwards to GetDefenseBuffFromAdjacentUnits and returns amount. The fixture supplies valid armor values; no new native armor-accessor or default-passive certification."
+  ],
+  "changes": [
+    "Keep zero/nonpositive damage exit before passive call.",
+    "For positive damage cache armor, invoke the receiver local passive program with incomingDamage, then subtract cached armor only in ordinary action mode.",
+    "Do not introduce a suppression/armor-fully-blocked gate or subtract the passive return a second time."
+  ],
+  "validation": {
+    "script_bytes": {
+      "CardFunctionsStub:GetLocationCardBySide": 0,
+      "BaseCardObject:GetPassiveDefenseBuff": 0,
+      "BP_GameState_Battle_C:SetLocationCardBySide": 239,
+      "BP_GameState_Battle_C:GetLocationCardBySide": 195,
+      "BP_GameState_Battle_C:ClearGameStateVariables": 1363,
+      "BP_CardFunctions_C:UpdateHQ_DamagedAmountThisTurnIfNeeded": 274,
+      "BP_CardFunctions_C:HQ_DestroyedEndMatch": 335,
+      "BP_CardFunctions_C:ApplyRemoveCardFromBoard": 1009,
+      "BP_CardFunctions_C:ExecuteAttackCard": 4794,
+      "BP_CardFunctions_C:AttackCard": 4789,
+      "BP_CardFunctions_C:ApplyDamageToCard": 2312,
+      "BP_CardFunctions_C:ApplyDamageToMultipleCards": 10676,
+      "BP_CardFunctions_C:CalculateDamageDealt": 4784,
+      "BP_CardFunctions_C:ExecuteOnBeforeOtherCardDestroyed": 788,
+      "BP_CardFunctions_C:GetLocationCardBySide": 112,
+      "card_unit_511th_regiment_C:GetPassiveDefenseBuff": 264,
+      "card_unit_48th_armored_infantry_C:GetPassiveDefenseBuff": 53
+    },
+    "numeric_rows": 288,
+    "gate_cases": 7,
+    "real_ir_cases": 1,
+    "new_regression_cases": 3,
+    "focused_before": "3/3 failed",
+    "focused_after": "3/3 passed",
+    "selftest_passed": 971,
+    "selftest_total": 971,
+    "prior_partial_units_scope_revalidated": 13
+  },
+  "real_card_integration": "48th Armored Infantry local passive IR runs once. Two adjacent units produce4; ordinary incoming6 with armor1 still returns5 at this pre-T38 stage, rather than subtracting4 again.",
+  "evidence_method": "DeepSeek computes288 controlled formula rows. Primary independently evaluates captured mitigation AST, including SelectInt flags, callback mutation after armor read and the positive gate, then emits fixture. Two directions, suppression flag, ignored passive outputs and before/after armor values are controlled dimensions.",
+  "remaining": [
+    "288 rows supply neutral units, post-T37 damage0/1/3/6, ordinary false ignoreArmor/applyBeforeAttackBuffs flags, armor0..3 and a synthetic receiver passive callback. Seven gate cases cover named exits, not every combined ambush/retaliation condition or full calculation.",
+    "BaseCardObject native default and inheritance/virtual resolution, native pointer lifetime, invalid objects and depth limits remain open. This change runs existing local Blueprint programs; it does not execute client native functions.",
+    "The two captured current Blueprint passive implementations primarily query state. A numeric PvP defect from the previously omitted call on those ordinary pure-query inputs is not established. Synthetic mutation cases verify control-flow fidelity without legal-card reachability claims.",
+    "applyBeforeAttackBuffs=true preview math, ignoreHeavyArmor=true routing, before-attack buffs, full T37/T38 arithmetic and all prediction output fields remain outside this ordinary-action fragment.",
+    "Actual48th integration verifies its local passive call plus the existing adjacent-defense helper result under a controlled board, not the complete helper semantics, whole-card logic or asset-version/end-to-end certification.",
+    "HQ damage statistics and other batch/death/identity boundaries remain separate work."
+  ],
+  "source_bindings": {
+    "src/KLink.Bot/Effects/CardApi.cs": "f4d4b1bc9e8af34b4509c0042bd30016bd1697237a58bd818879ffa75a0da71d",
+    "src/KLink.Bot/Engine/MatchEngine.cs": "144475220eef3658cc97673b702098ac86b568a538e7e9812a8f5472b6f917f9",
+    "src/KLink.Bot/Engine/CardInstance.cs": "350c5d79a51fe68af6af4769abd18764dcbfa36cdcae06cc91b7d553754551da",
+    "klink bot/docs/card-ir.json": "526812fa8dc0934f1d6ecd3794053871fa6b701c2b5df3fd1edb3c38513ba2e9",
+    "tools/BotSim/SelfTest.cs": "abe2ad2c18e491b1b9f52c8ffde66d2c97d1503389b86f0b614ad9f38c1da2b6",
+    "tools/BotSim/BotSim.csproj": "09a29509100e8747cf4cc1ffa2f0f819feda3ef0a82cfbca9ae147afe381df51",
+    "tools/BotSim/SelfTest.PassiveMitigation.cs": "45569827c867aa72290a75dcd6142ce40e6405f6933a5ec26487e892ee773a5c",
+    "tools/BotSim/SelfTest.AmbushNumeric.cs": "9d492f98507eeecee87957f72c6f94b58f253f82eea31b315ec785b7f7855080",
+    "tools/BotSim/Fixtures/passive-mitigation-reference-20261029.json": "404c0b5a0ac612cf32359ad051879a7308d1d3deab2048a44ba8f35dfdf7ff8f"
+  },
+  "evidence_bindings": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule538-passive-mitigation-functions-20261029.json",
+      "sha256": "b347140836d7fdf4e5e7b329f2d4c6b7396d77a550a5992208b5440e05ad1693"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule538-passive.py",
+      "sha256": "68b6cc315f99cfa68999e3c27192e12c34e2611213ab6e0113cf27aa94d3aa74"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-498.py",
+      "sha256": "254664d0aa1146756993fda4ac54e58891709c0ec5bcdd2cfa852f874c4e67ef"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\prepare-rule538-worker.py",
+      "sha256": "199e6c0815474fcb5a6136e5eac787dc6b16aa76a07087cff4cb8659f6272a8e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule538-worker\\input.json",
+      "sha256": "034390f9f105122990e9ce3442ee5af7f3c2e23c5cb625c7e1539f77f9bf81a8"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule538-worker\\output.json",
+      "sha256": "10e24f633a848c48d247b6fc62365b790f1bdecbb72c787f055f886248f53356"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule538-worker\\calculate.py",
+      "sha256": "9b3e8a8278ec9a6c45416ef9dfce5b66c45ea3ce33b4cf160ddbeebf90cca777"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\Fixtures\\passive-mitigation-reference-20261029.json",
+      "sha256": "404c0b5a0ac612cf32359ad051879a7308d1d3deab2048a44ba8f35dfdf7ff8f"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule538.py",
+      "sha256": "03cef4463f95641a58ccbd351e78349e6acf626008afac02b46d47c5bc0e6b20"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule538-verified-20261029.json",
+      "sha256": "662029238c445d33728851aecf550775b59fd8c59cacfbe40577128d650c2267"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule538-prior-unit-scope-revalidation.json",
+      "sha256": "975724c21cb31c72118aabed48e1956abbc96309b20a576e90f611b13a6abf27"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\patch-rule538.py",
+      "sha256": "4137ff09f2c8f8f86c13eac2cee4d4a96d3d7ab4d2b0cc5e8bb1982eba4be7c8"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule538-focused-before.log",
+      "sha256": "6ebcc2180439436c20f05759814ce7c03b307741a27835493c2f8fc0032e8f34"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule538-focused-after.log",
+      "sha256": "879a04d72fc679e528e57ad142646af1107dbac42cc5410946b766c3d72632de"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule538-selftest-final.log",
+      "sha256": "22b1277fb710acf848d043a8dffab99de7be76d81f73fc0062664b6b3389ef07"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\report-rule538.py",
+      "sha256": "ee11137e6bfbbfdf9774824a89ed8333d1fb64b4acef8a506bcc6e422d9c951f"
+    }
+  ]
+}

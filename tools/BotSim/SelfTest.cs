@@ -20,6 +20,9 @@ internal static partial class SelfTest
 
     private static readonly List<Case> Cases = new()
     {
+        new("受伤方被动：288组调用、抑制和重甲快照", PassiveMitigationReference),
+        new("受伤方被动：免疫反击限制先于调用，重甲减零仍调用", PassiveMitigationGates),
+        new("受伤方被动：第48装甲步兵真实IR且不重复扣除", Armored48PassiveMitigationIntegration),
         new("伏击预判：216组有界防御、重甲及被动修正", AmbushThresholdReference),
         new("伏击预判：防御重甲在被动函数之前缓存", AmbushSnapshotBeforePassive),
         new("伏击预判：第511团真实被动防御IR", Regiment511AmbushIntegration),

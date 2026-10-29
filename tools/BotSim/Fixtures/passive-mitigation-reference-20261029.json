@@ -1,0 +1,3749 @@
+{
+  "scope": "Controlled positive-damage mitigation AST slice: ordinary applyBeforeAttackBuffs/ignoreArmor flags false, neutral units and supplied post-T37 damage, fixed armor0..3 and synthetic passive mutation. No whole callback/gating certificate.",
+  "rows": [
+    {
+      "damage": 0,
+      "armor": 0,
+      "suppressed": false,
+      "passive": -2,
+      "afterArmor": -4,
+      "isAttacker": false,
+      "expected": {
+        "called": false,
+        "damage": 0,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 0,
+      "armor": 0,
+      "suppressed": false,
+      "passive": -2,
+      "afterArmor": -4,
+      "isAttacker": true,
+      "expected": {
+        "called": false,
+        "damage": 0,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 0,
+      "armor": 0,
+      "suppressed": false,
+      "passive": -2,
+      "afterArmor": 3,
+      "isAttacker": false,
+      "expected": {
+        "called": false,
+        "damage": 0,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 0,
+      "armor": 0,
+      "suppressed": false,
+      "passive": -2,
+      "afterArmor": 3,
+      "isAttacker": true,
+      "expected": {
+        "called": false,
+        "damage": 0,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 0,
+      "armor": 0,
+      "suppressed": false,
+      "passive": 0,
+      "afterArmor": -4,
+      "isAttacker": false,
+      "expected": {
+        "called": false,
+        "damage": 0,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 0,
+      "armor": 0,
+      "suppressed": false,
+      "passive": 0,
+      "afterArmor": -4,
+      "isAttacker": true,
+      "expected": {
+        "called": false,
+        "damage": 0,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 0,
+      "armor": 0,
+      "suppressed": false,
+      "passive": 0,
+      "afterArmor": 3,
+      "isAttacker": false,
+      "expected": {
+        "called": false,
+        "damage": 0,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 0,
+      "armor": 0,
+      "suppressed": false,
+      "passive": 0,
+      "afterArmor": 3,
+      "isAttacker": true,
+      "expected": {
+        "called": false,
+        "damage": 0,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 0,
+      "armor": 0,
+      "suppressed": false,
+      "passive": 100,
+      "afterArmor": -4,
+      "isAttacker": false,
+      "expected": {
+        "called": false,
+        "damage": 0,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 0,
+      "armor": 0,
+      "suppressed": false,
+      "passive": 100,
+      "afterArmor": -4,
+      "isAttacker": true,
+      "expected": {
+        "called": false,
+        "damage": 0,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 0,
+      "armor": 0,
+      "suppressed": false,
+      "passive": 100,
+      "afterArmor": 3,
+      "isAttacker": false,
+      "expected": {
+        "called": false,
+        "damage": 0,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 0,
+      "armor": 0,
+      "suppressed": false,
+      "passive": 100,
+      "afterArmor": 3,
+      "isAttacker": true,
+      "expected": {
+        "called": false,
+        "damage": 0,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 0,
+      "armor": 0,
+      "suppressed": true,
+      "passive": -2,
+      "afterArmor": -4,
+      "isAttacker": false,
+      "expected": {
+        "called": false,
+        "damage": 0,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 0,
+      "armor": 0,
+      "suppressed": true,
+      "passive": -2,
+      "afterArmor": -4,
+      "isAttacker": true,
+      "expected": {
+        "called": false,
+        "damage": 0,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 0,
+      "armor": 0,
+      "suppressed": true,
+      "passive": -2,
+      "afterArmor": 3,
+      "isAttacker": false,
+      "expected": {
+        "called": false,
+        "damage": 0,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 0,
+      "armor": 0,
+      "suppressed": true,
+      "passive": -2,
+      "afterArmor": 3,
+      "isAttacker": true,
+      "expected": {
+        "called": false,
+        "damage": 0,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 0,
+      "armor": 0,
+      "suppressed": true,
+      "passive": 0,
+      "afterArmor": -4,
+      "isAttacker": false,
+      "expected": {
+        "called": false,
+        "damage": 0,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 0,
+      "armor": 0,
+      "suppressed": true,
+      "passive": 0,
+      "afterArmor": -4,
+      "isAttacker": true,
+      "expected": {
+        "called": false,
+        "damage": 0,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 0,
+      "armor": 0,
+      "suppressed": true,
+      "passive": 0,
+      "afterArmor": 3,
+      "isAttacker": false,
+      "expected": {
+        "called": false,
+        "damage": 0,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 0,
+      "armor": 0,
+      "suppressed": true,
+      "passive": 0,
+      "afterArmor": 3,
+      "isAttacker": true,
+      "expected": {
+        "called": false,
+        "damage": 0,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 0,
+      "armor": 0,
+      "suppressed": true,
+      "passive": 100,
+      "afterArmor": -4,
+      "isAttacker": false,
+      "expected": {
+        "called": false,
+        "damage": 0,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 0,
+      "armor": 0,
+      "suppressed": true,
+      "passive": 100,
+      "afterArmor": -4,
+      "isAttacker": true,
+      "expected": {
+        "called": false,
+        "damage": 0,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 0,
+      "armor": 0,
+      "suppressed": true,
+      "passive": 100,
+      "afterArmor": 3,
+      "isAttacker": false,
+      "expected": {
+        "called": false,
+        "damage": 0,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 0,
+      "armor": 0,
+      "suppressed": true,
+      "passive": 100,
+      "afterArmor": 3,
+      "isAttacker": true,
+      "expected": {
+        "called": false,
+        "damage": 0,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 0,
+      "armor": 1,
+      "suppressed": false,
+      "passive": -2,
+      "afterArmor": -4,
+      "isAttacker": false,
+      "expected": {
+        "called": false,
+        "damage": 0,
+        "finalArmor": 1
+      }
+    },
+    {
+      "damage": 0,
+      "armor": 1,
+      "suppressed": false,
+      "passive": -2,
+      "afterArmor": -4,
+      "isAttacker": true,
+      "expected": {
+        "called": false,
+        "damage": 0,
+        "finalArmor": 1
+      }
+    },
+    {
+      "damage": 0,
+      "armor": 1,
+      "suppressed": false,
+      "passive": -2,
+      "afterArmor": 3,
+      "isAttacker": false,
+      "expected": {
+        "called": false,
+        "damage": 0,
+        "finalArmor": 1
+      }
+    },
+    {
+      "damage": 0,
+      "armor": 1,
+      "suppressed": false,
+      "passive": -2,
+      "afterArmor": 3,
+      "isAttacker": true,
+      "expected": {
+        "called": false,
+        "damage": 0,
+        "finalArmor": 1
+      }
+    },
+    {
+      "damage": 0,
+      "armor": 1,
+      "suppressed": false,
+      "passive": 0,
+      "afterArmor": -4,
+      "isAttacker": false,
+      "expected": {
+        "called": false,
+        "damage": 0,
+        "finalArmor": 1
+      }
+    },
+    {
+      "damage": 0,
+      "armor": 1,
+      "suppressed": false,
+      "passive": 0,
+      "afterArmor": -4,
+      "isAttacker": true,
+      "expected": {
+        "called": false,
+        "damage": 0,
+        "finalArmor": 1
+      }
+    },
+    {
+      "damage": 0,
+      "armor": 1,
+      "suppressed": false,
+      "passive": 0,
+      "afterArmor": 3,
+      "isAttacker": false,
+      "expected": {
+        "called": false,
+        "damage": 0,
+        "finalArmor": 1
+      }
+    },
+    {
+      "damage": 0,
+      "armor": 1,
+      "suppressed": false,
+      "passive": 0,
+      "afterArmor": 3,
+      "isAttacker": true,
+      "expected": {
+        "called": false,
+        "damage": 0,
+        "finalArmor": 1
+      }
+    },
+    {
+      "damage": 0,
+      "armor": 1,
+      "suppressed": false,
+      "passive": 100,
+      "afterArmor": -4,
+      "isAttacker": false,
+      "expected": {
+        "called": false,
+        "damage": 0,
+        "finalArmor": 1
+      }
+    },
+    {
+      "damage": 0,
+      "armor": 1,
+      "suppressed": false,
+      "passive": 100,
+      "afterArmor": -4,
+      "isAttacker": true,
+      "expected": {
+        "called": false,
+        "damage": 0,
+        "finalArmor": 1
+      }
+    },
+    {
+      "damage": 0,
+      "armor": 1,
+      "suppressed": false,
+      "passive": 100,
+      "afterArmor": 3,
+      "isAttacker": false,
+      "expected": {
+        "called": false,
+        "damage": 0,
+        "finalArmor": 1
+      }
+    },
+    {
+      "damage": 0,
+      "armor": 1,
+      "suppressed": false,
+      "passive": 100,
+      "afterArmor": 3,
+      "isAttacker": true,
+      "expected": {
+        "called": false,
+        "damage": 0,
+        "finalArmor": 1
+      }
+    },
+    {
+      "damage": 0,
+      "armor": 1,
+      "suppressed": true,
+      "passive": -2,
+      "afterArmor": -4,
+      "isAttacker": false,
+      "expected": {
+        "called": false,
+        "damage": 0,
+        "finalArmor": 1
+      }
+    },
+    {
+      "damage": 0,
+      "armor": 1,
+      "suppressed": true,
+      "passive": -2,
+      "afterArmor": -4,
+      "isAttacker": true,
+      "expected": {
+        "called": false,
+        "damage": 0,
+        "finalArmor": 1
+      }
+    },
+    {
+      "damage": 0,
+      "armor": 1,
+      "suppressed": true,
+      "passive": -2,
+      "afterArmor": 3,
+      "isAttacker": false,
+      "expected": {
+        "called": false,
+        "damage": 0,
+        "finalArmor": 1
+      }
+    },
+    {
+      "damage": 0,
+      "armor": 1,
+      "suppressed": true,
+      "passive": -2,
+      "afterArmor": 3,
+      "isAttacker": true,
+      "expected": {
+        "called": false,
+        "damage": 0,
+        "finalArmor": 1
+      }
+    },
+    {
+      "damage": 0,
+      "armor": 1,
+      "suppressed": true,
+      "passive": 0,
+      "afterArmor": -4,
+      "isAttacker": false,
+      "expected": {
+        "called": false,
+        "damage": 0,
+        "finalArmor": 1
+      }
+    },
+    {
+      "damage": 0,
+      "armor": 1,
+      "suppressed": true,
+      "passive": 0,
+      "afterArmor": -4,
+      "isAttacker": true,
+      "expected": {
+        "called": false,
+        "damage": 0,
+        "finalArmor": 1
+      }
+    },
+    {
+      "damage": 0,
+      "armor": 1,
+      "suppressed": true,
+      "passive": 0,
+      "afterArmor": 3,
+      "isAttacker": false,
+      "expected": {
+        "called": false,
+        "damage": 0,
+        "finalArmor": 1
+      }
+    },
+    {
+      "damage": 0,
+      "armor": 1,
+      "suppressed": true,
+      "passive": 0,
+      "afterArmor": 3,
+      "isAttacker": true,
+      "expected": {
+        "called": false,
+        "damage": 0,
+        "finalArmor": 1
+      }
+    },
+    {
+      "damage": 0,
+      "armor": 1,
+      "suppressed": true,
+      "passive": 100,
+      "afterArmor": -4,
+      "isAttacker": false,
+      "expected": {
+        "called": false,
+        "damage": 0,
+        "finalArmor": 1
+      }
+    },
+    {
+      "damage": 0,
+      "armor": 1,
+      "suppressed": true,
+      "passive": 100,
+      "afterArmor": -4,
+      "isAttacker": true,
+      "expected": {
+        "called": false,
+        "damage": 0,
+        "finalArmor": 1
+      }
+    },
+    {
+      "damage": 0,
+      "armor": 1,
+      "suppressed": true,
+      "passive": 100,
+      "afterArmor": 3,
+      "isAttacker": false,
+      "expected": {
+        "called": false,
+        "damage": 0,
+        "finalArmor": 1
+      }
+    },
+    {
+      "damage": 0,
+      "armor": 1,
+      "suppressed": true,
+      "passive": 100,
+      "afterArmor": 3,
+      "isAttacker": true,
+      "expected": {
+        "called": false,
+        "damage": 0,
+        "finalArmor": 1
+      }
+    },
+    {
+      "damage": 0,
+      "armor": 3,
+      "suppressed": false,
+      "passive": -2,
+      "afterArmor": -4,
+      "isAttacker": false,
+      "expected": {
+        "called": false,
+        "damage": 0,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 0,
+      "armor": 3,
+      "suppressed": false,
+      "passive": -2,
+      "afterArmor": -4,
+      "isAttacker": true,
+      "expected": {
+        "called": false,
+        "damage": 0,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 0,
+      "armor": 3,
+      "suppressed": false,
+      "passive": -2,
+      "afterArmor": 3,
+      "isAttacker": false,
+      "expected": {
+        "called": false,
+        "damage": 0,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 0,
+      "armor": 3,
+      "suppressed": false,
+      "passive": -2,
+      "afterArmor": 3,
+      "isAttacker": true,
+      "expected": {
+        "called": false,
+        "damage": 0,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 0,
+      "armor": 3,
+      "suppressed": false,
+      "passive": 0,
+      "afterArmor": -4,
+      "isAttacker": false,
+      "expected": {
+        "called": false,
+        "damage": 0,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 0,
+      "armor": 3,
+      "suppressed": false,
+      "passive": 0,
+      "afterArmor": -4,
+      "isAttacker": true,
+      "expected": {
+        "called": false,
+        "damage": 0,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 0,
+      "armor": 3,
+      "suppressed": false,
+      "passive": 0,
+      "afterArmor": 3,
+      "isAttacker": false,
+      "expected": {
+        "called": false,
+        "damage": 0,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 0,
+      "armor": 3,
+      "suppressed": false,
+      "passive": 0,
+      "afterArmor": 3,
+      "isAttacker": true,
+      "expected": {
+        "called": false,
+        "damage": 0,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 0,
+      "armor": 3,
+      "suppressed": false,
+      "passive": 100,
+      "afterArmor": -4,
+      "isAttacker": false,
+      "expected": {
+        "called": false,
+        "damage": 0,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 0,
+      "armor": 3,
+      "suppressed": false,
+      "passive": 100,
+      "afterArmor": -4,
+      "isAttacker": true,
+      "expected": {
+        "called": false,
+        "damage": 0,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 0,
+      "armor": 3,
+      "suppressed": false,
+      "passive": 100,
+      "afterArmor": 3,
+      "isAttacker": false,
+      "expected": {
+        "called": false,
+        "damage": 0,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 0,
+      "armor": 3,
+      "suppressed": false,
+      "passive": 100,
+      "afterArmor": 3,
+      "isAttacker": true,
+      "expected": {
+        "called": false,
+        "damage": 0,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 0,
+      "armor": 3,
+      "suppressed": true,
+      "passive": -2,
+      "afterArmor": -4,
+      "isAttacker": false,
+      "expected": {
+        "called": false,
+        "damage": 0,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 0,
+      "armor": 3,
+      "suppressed": true,
+      "passive": -2,
+      "afterArmor": -4,
+      "isAttacker": true,
+      "expected": {
+        "called": false,
+        "damage": 0,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 0,
+      "armor": 3,
+      "suppressed": true,
+      "passive": -2,
+      "afterArmor": 3,
+      "isAttacker": false,
+      "expected": {
+        "called": false,
+        "damage": 0,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 0,
+      "armor": 3,
+      "suppressed": true,
+      "passive": -2,
+      "afterArmor": 3,
+      "isAttacker": true,
+      "expected": {
+        "called": false,
+        "damage": 0,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 0,
+      "armor": 3,
+      "suppressed": true,
+      "passive": 0,
+      "afterArmor": -4,
+      "isAttacker": false,
+      "expected": {
+        "called": false,
+        "damage": 0,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 0,
+      "armor": 3,
+      "suppressed": true,
+      "passive": 0,
+      "afterArmor": -4,
+      "isAttacker": true,
+      "expected": {
+        "called": false,
+        "damage": 0,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 0,
+      "armor": 3,
+      "suppressed": true,
+      "passive": 0,
+      "afterArmor": 3,
+      "isAttacker": false,
+      "expected": {
+        "called": false,
+        "damage": 0,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 0,
+      "armor": 3,
+      "suppressed": true,
+      "passive": 0,
+      "afterArmor": 3,
+      "isAttacker": true,
+      "expected": {
+        "called": false,
+        "damage": 0,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 0,
+      "armor": 3,
+      "suppressed": true,
+      "passive": 100,
+      "afterArmor": -4,
+      "isAttacker": false,
+      "expected": {
+        "called": false,
+        "damage": 0,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 0,
+      "armor": 3,
+      "suppressed": true,
+      "passive": 100,
+      "afterArmor": -4,
+      "isAttacker": true,
+      "expected": {
+        "called": false,
+        "damage": 0,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 0,
+      "armor": 3,
+      "suppressed": true,
+      "passive": 100,
+      "afterArmor": 3,
+      "isAttacker": false,
+      "expected": {
+        "called": false,
+        "damage": 0,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 0,
+      "armor": 3,
+      "suppressed": true,
+      "passive": 100,
+      "afterArmor": 3,
+      "isAttacker": true,
+      "expected": {
+        "called": false,
+        "damage": 0,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 1,
+      "armor": 0,
+      "suppressed": false,
+      "passive": -2,
+      "afterArmor": -4,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 1,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 1,
+      "armor": 0,
+      "suppressed": false,
+      "passive": -2,
+      "afterArmor": -4,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 1,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 1,
+      "armor": 0,
+      "suppressed": false,
+      "passive": -2,
+      "afterArmor": 3,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 1,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 1,
+      "armor": 0,
+      "suppressed": false,
+      "passive": -2,
+      "afterArmor": 3,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 1,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 1,
+      "armor": 0,
+      "suppressed": false,
+      "passive": 0,
+      "afterArmor": -4,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 1,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 1,
+      "armor": 0,
+      "suppressed": false,
+      "passive": 0,
+      "afterArmor": -4,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 1,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 1,
+      "armor": 0,
+      "suppressed": false,
+      "passive": 0,
+      "afterArmor": 3,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 1,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 1,
+      "armor": 0,
+      "suppressed": false,
+      "passive": 0,
+      "afterArmor": 3,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 1,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 1,
+      "armor": 0,
+      "suppressed": false,
+      "passive": 100,
+      "afterArmor": -4,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 1,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 1,
+      "armor": 0,
+      "suppressed": false,
+      "passive": 100,
+      "afterArmor": -4,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 1,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 1,
+      "armor": 0,
+      "suppressed": false,
+      "passive": 100,
+      "afterArmor": 3,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 1,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 1,
+      "armor": 0,
+      "suppressed": false,
+      "passive": 100,
+      "afterArmor": 3,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 1,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 1,
+      "armor": 0,
+      "suppressed": true,
+      "passive": -2,
+      "afterArmor": -4,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 1,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 1,
+      "armor": 0,
+      "suppressed": true,
+      "passive": -2,
+      "afterArmor": -4,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 1,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 1,
+      "armor": 0,
+      "suppressed": true,
+      "passive": -2,
+      "afterArmor": 3,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 1,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 1,
+      "armor": 0,
+      "suppressed": true,
+      "passive": -2,
+      "afterArmor": 3,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 1,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 1,
+      "armor": 0,
+      "suppressed": true,
+      "passive": 0,
+      "afterArmor": -4,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 1,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 1,
+      "armor": 0,
+      "suppressed": true,
+      "passive": 0,
+      "afterArmor": -4,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 1,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 1,
+      "armor": 0,
+      "suppressed": true,
+      "passive": 0,
+      "afterArmor": 3,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 1,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 1,
+      "armor": 0,
+      "suppressed": true,
+      "passive": 0,
+      "afterArmor": 3,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 1,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 1,
+      "armor": 0,
+      "suppressed": true,
+      "passive": 100,
+      "afterArmor": -4,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 1,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 1,
+      "armor": 0,
+      "suppressed": true,
+      "passive": 100,
+      "afterArmor": -4,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 1,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 1,
+      "armor": 0,
+      "suppressed": true,
+      "passive": 100,
+      "afterArmor": 3,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 1,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 1,
+      "armor": 0,
+      "suppressed": true,
+      "passive": 100,
+      "afterArmor": 3,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 1,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 1,
+      "armor": 1,
+      "suppressed": false,
+      "passive": -2,
+      "afterArmor": -4,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 0,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 1,
+      "armor": 1,
+      "suppressed": false,
+      "passive": -2,
+      "afterArmor": -4,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 0,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 1,
+      "armor": 1,
+      "suppressed": false,
+      "passive": -2,
+      "afterArmor": 3,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 0,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 1,
+      "armor": 1,
+      "suppressed": false,
+      "passive": -2,
+      "afterArmor": 3,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 0,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 1,
+      "armor": 1,
+      "suppressed": false,
+      "passive": 0,
+      "afterArmor": -4,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 0,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 1,
+      "armor": 1,
+      "suppressed": false,
+      "passive": 0,
+      "afterArmor": -4,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 0,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 1,
+      "armor": 1,
+      "suppressed": false,
+      "passive": 0,
+      "afterArmor": 3,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 0,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 1,
+      "armor": 1,
+      "suppressed": false,
+      "passive": 0,
+      "afterArmor": 3,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 0,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 1,
+      "armor": 1,
+      "suppressed": false,
+      "passive": 100,
+      "afterArmor": -4,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 0,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 1,
+      "armor": 1,
+      "suppressed": false,
+      "passive": 100,
+      "afterArmor": -4,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 0,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 1,
+      "armor": 1,
+      "suppressed": false,
+      "passive": 100,
+      "afterArmor": 3,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 0,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 1,
+      "armor": 1,
+      "suppressed": false,
+      "passive": 100,
+      "afterArmor": 3,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 0,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 1,
+      "armor": 1,
+      "suppressed": true,
+      "passive": -2,
+      "afterArmor": -4,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 0,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 1,
+      "armor": 1,
+      "suppressed": true,
+      "passive": -2,
+      "afterArmor": -4,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 0,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 1,
+      "armor": 1,
+      "suppressed": true,
+      "passive": -2,
+      "afterArmor": 3,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 0,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 1,
+      "armor": 1,
+      "suppressed": true,
+      "passive": -2,
+      "afterArmor": 3,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 0,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 1,
+      "armor": 1,
+      "suppressed": true,
+      "passive": 0,
+      "afterArmor": -4,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 0,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 1,
+      "armor": 1,
+      "suppressed": true,
+      "passive": 0,
+      "afterArmor": -4,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 0,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 1,
+      "armor": 1,
+      "suppressed": true,
+      "passive": 0,
+      "afterArmor": 3,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 0,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 1,
+      "armor": 1,
+      "suppressed": true,
+      "passive": 0,
+      "afterArmor": 3,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 0,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 1,
+      "armor": 1,
+      "suppressed": true,
+      "passive": 100,
+      "afterArmor": -4,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 0,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 1,
+      "armor": 1,
+      "suppressed": true,
+      "passive": 100,
+      "afterArmor": -4,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 0,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 1,
+      "armor": 1,
+      "suppressed": true,
+      "passive": 100,
+      "afterArmor": 3,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 0,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 1,
+      "armor": 1,
+      "suppressed": true,
+      "passive": 100,
+      "afterArmor": 3,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 0,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 1,
+      "armor": 3,
+      "suppressed": false,
+      "passive": -2,
+      "afterArmor": -4,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 0,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 1,
+      "armor": 3,
+      "suppressed": false,
+      "passive": -2,
+      "afterArmor": -4,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 0,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 1,
+      "armor": 3,
+      "suppressed": false,
+      "passive": -2,
+      "afterArmor": 3,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 0,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 1,
+      "armor": 3,
+      "suppressed": false,
+      "passive": -2,
+      "afterArmor": 3,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 0,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 1,
+      "armor": 3,
+      "suppressed": false,
+      "passive": 0,
+      "afterArmor": -4,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 0,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 1,
+      "armor": 3,
+      "suppressed": false,
+      "passive": 0,
+      "afterArmor": -4,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 0,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 1,
+      "armor": 3,
+      "suppressed": false,
+      "passive": 0,
+      "afterArmor": 3,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 0,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 1,
+      "armor": 3,
+      "suppressed": false,
+      "passive": 0,
+      "afterArmor": 3,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 0,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 1,
+      "armor": 3,
+      "suppressed": false,
+      "passive": 100,
+      "afterArmor": -4,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 0,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 1,
+      "armor": 3,
+      "suppressed": false,
+      "passive": 100,
+      "afterArmor": -4,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 0,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 1,
+      "armor": 3,
+      "suppressed": false,
+      "passive": 100,
+      "afterArmor": 3,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 0,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 1,
+      "armor": 3,
+      "suppressed": false,
+      "passive": 100,
+      "afterArmor": 3,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 0,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 1,
+      "armor": 3,
+      "suppressed": true,
+      "passive": -2,
+      "afterArmor": -4,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 0,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 1,
+      "armor": 3,
+      "suppressed": true,
+      "passive": -2,
+      "afterArmor": -4,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 0,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 1,
+      "armor": 3,
+      "suppressed": true,
+      "passive": -2,
+      "afterArmor": 3,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 0,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 1,
+      "armor": 3,
+      "suppressed": true,
+      "passive": -2,
+      "afterArmor": 3,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 0,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 1,
+      "armor": 3,
+      "suppressed": true,
+      "passive": 0,
+      "afterArmor": -4,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 0,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 1,
+      "armor": 3,
+      "suppressed": true,
+      "passive": 0,
+      "afterArmor": -4,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 0,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 1,
+      "armor": 3,
+      "suppressed": true,
+      "passive": 0,
+      "afterArmor": 3,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 0,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 1,
+      "armor": 3,
+      "suppressed": true,
+      "passive": 0,
+      "afterArmor": 3,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 0,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 1,
+      "armor": 3,
+      "suppressed": true,
+      "passive": 100,
+      "afterArmor": -4,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 0,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 1,
+      "armor": 3,
+      "suppressed": true,
+      "passive": 100,
+      "afterArmor": -4,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 0,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 1,
+      "armor": 3,
+      "suppressed": true,
+      "passive": 100,
+      "afterArmor": 3,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 0,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 1,
+      "armor": 3,
+      "suppressed": true,
+      "passive": 100,
+      "afterArmor": 3,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 0,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 3,
+      "armor": 0,
+      "suppressed": false,
+      "passive": -2,
+      "afterArmor": -4,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 3,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 3,
+      "armor": 0,
+      "suppressed": false,
+      "passive": -2,
+      "afterArmor": -4,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 3,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 3,
+      "armor": 0,
+      "suppressed": false,
+      "passive": -2,
+      "afterArmor": 3,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 3,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 3,
+      "armor": 0,
+      "suppressed": false,
+      "passive": -2,
+      "afterArmor": 3,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 3,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 3,
+      "armor": 0,
+      "suppressed": false,
+      "passive": 0,
+      "afterArmor": -4,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 3,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 3,
+      "armor": 0,
+      "suppressed": false,
+      "passive": 0,
+      "afterArmor": -4,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 3,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 3,
+      "armor": 0,
+      "suppressed": false,
+      "passive": 0,
+      "afterArmor": 3,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 3,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 3,
+      "armor": 0,
+      "suppressed": false,
+      "passive": 0,
+      "afterArmor": 3,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 3,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 3,
+      "armor": 0,
+      "suppressed": false,
+      "passive": 100,
+      "afterArmor": -4,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 3,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 3,
+      "armor": 0,
+      "suppressed": false,
+      "passive": 100,
+      "afterArmor": -4,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 3,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 3,
+      "armor": 0,
+      "suppressed": false,
+      "passive": 100,
+      "afterArmor": 3,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 3,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 3,
+      "armor": 0,
+      "suppressed": false,
+      "passive": 100,
+      "afterArmor": 3,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 3,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 3,
+      "armor": 0,
+      "suppressed": true,
+      "passive": -2,
+      "afterArmor": -4,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 3,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 3,
+      "armor": 0,
+      "suppressed": true,
+      "passive": -2,
+      "afterArmor": -4,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 3,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 3,
+      "armor": 0,
+      "suppressed": true,
+      "passive": -2,
+      "afterArmor": 3,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 3,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 3,
+      "armor": 0,
+      "suppressed": true,
+      "passive": -2,
+      "afterArmor": 3,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 3,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 3,
+      "armor": 0,
+      "suppressed": true,
+      "passive": 0,
+      "afterArmor": -4,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 3,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 3,
+      "armor": 0,
+      "suppressed": true,
+      "passive": 0,
+      "afterArmor": -4,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 3,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 3,
+      "armor": 0,
+      "suppressed": true,
+      "passive": 0,
+      "afterArmor": 3,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 3,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 3,
+      "armor": 0,
+      "suppressed": true,
+      "passive": 0,
+      "afterArmor": 3,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 3,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 3,
+      "armor": 0,
+      "suppressed": true,
+      "passive": 100,
+      "afterArmor": -4,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 3,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 3,
+      "armor": 0,
+      "suppressed": true,
+      "passive": 100,
+      "afterArmor": -4,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 3,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 3,
+      "armor": 0,
+      "suppressed": true,
+      "passive": 100,
+      "afterArmor": 3,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 3,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 3,
+      "armor": 0,
+      "suppressed": true,
+      "passive": 100,
+      "afterArmor": 3,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 3,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 3,
+      "armor": 1,
+      "suppressed": false,
+      "passive": -2,
+      "afterArmor": -4,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 2,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 3,
+      "armor": 1,
+      "suppressed": false,
+      "passive": -2,
+      "afterArmor": -4,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 2,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 3,
+      "armor": 1,
+      "suppressed": false,
+      "passive": -2,
+      "afterArmor": 3,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 2,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 3,
+      "armor": 1,
+      "suppressed": false,
+      "passive": -2,
+      "afterArmor": 3,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 2,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 3,
+      "armor": 1,
+      "suppressed": false,
+      "passive": 0,
+      "afterArmor": -4,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 2,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 3,
+      "armor": 1,
+      "suppressed": false,
+      "passive": 0,
+      "afterArmor": -4,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 2,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 3,
+      "armor": 1,
+      "suppressed": false,
+      "passive": 0,
+      "afterArmor": 3,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 2,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 3,
+      "armor": 1,
+      "suppressed": false,
+      "passive": 0,
+      "afterArmor": 3,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 2,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 3,
+      "armor": 1,
+      "suppressed": false,
+      "passive": 100,
+      "afterArmor": -4,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 2,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 3,
+      "armor": 1,
+      "suppressed": false,
+      "passive": 100,
+      "afterArmor": -4,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 2,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 3,
+      "armor": 1,
+      "suppressed": false,
+      "passive": 100,
+      "afterArmor": 3,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 2,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 3,
+      "armor": 1,
+      "suppressed": false,
+      "passive": 100,
+      "afterArmor": 3,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 2,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 3,
+      "armor": 1,
+      "suppressed": true,
+      "passive": -2,
+      "afterArmor": -4,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 2,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 3,
+      "armor": 1,
+      "suppressed": true,
+      "passive": -2,
+      "afterArmor": -4,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 2,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 3,
+      "armor": 1,
+      "suppressed": true,
+      "passive": -2,
+      "afterArmor": 3,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 2,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 3,
+      "armor": 1,
+      "suppressed": true,
+      "passive": -2,
+      "afterArmor": 3,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 2,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 3,
+      "armor": 1,
+      "suppressed": true,
+      "passive": 0,
+      "afterArmor": -4,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 2,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 3,
+      "armor": 1,
+      "suppressed": true,
+      "passive": 0,
+      "afterArmor": -4,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 2,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 3,
+      "armor": 1,
+      "suppressed": true,
+      "passive": 0,
+      "afterArmor": 3,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 2,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 3,
+      "armor": 1,
+      "suppressed": true,
+      "passive": 0,
+      "afterArmor": 3,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 2,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 3,
+      "armor": 1,
+      "suppressed": true,
+      "passive": 100,
+      "afterArmor": -4,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 2,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 3,
+      "armor": 1,
+      "suppressed": true,
+      "passive": 100,
+      "afterArmor": -4,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 2,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 3,
+      "armor": 1,
+      "suppressed": true,
+      "passive": 100,
+      "afterArmor": 3,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 2,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 3,
+      "armor": 1,
+      "suppressed": true,
+      "passive": 100,
+      "afterArmor": 3,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 2,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 3,
+      "armor": 3,
+      "suppressed": false,
+      "passive": -2,
+      "afterArmor": -4,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 0,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 3,
+      "armor": 3,
+      "suppressed": false,
+      "passive": -2,
+      "afterArmor": -4,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 0,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 3,
+      "armor": 3,
+      "suppressed": false,
+      "passive": -2,
+      "afterArmor": 3,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 0,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 3,
+      "armor": 3,
+      "suppressed": false,
+      "passive": -2,
+      "afterArmor": 3,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 0,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 3,
+      "armor": 3,
+      "suppressed": false,
+      "passive": 0,
+      "afterArmor": -4,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 0,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 3,
+      "armor": 3,
+      "suppressed": false,
+      "passive": 0,
+      "afterArmor": -4,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 0,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 3,
+      "armor": 3,
+      "suppressed": false,
+      "passive": 0,
+      "afterArmor": 3,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 0,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 3,
+      "armor": 3,
+      "suppressed": false,
+      "passive": 0,
+      "afterArmor": 3,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 0,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 3,
+      "armor": 3,
+      "suppressed": false,
+      "passive": 100,
+      "afterArmor": -4,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 0,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 3,
+      "armor": 3,
+      "suppressed": false,
+      "passive": 100,
+      "afterArmor": -4,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 0,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 3,
+      "armor": 3,
+      "suppressed": false,
+      "passive": 100,
+      "afterArmor": 3,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 0,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 3,
+      "armor": 3,
+      "suppressed": false,
+      "passive": 100,
+      "afterArmor": 3,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 0,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 3,
+      "armor": 3,
+      "suppressed": true,
+      "passive": -2,
+      "afterArmor": -4,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 0,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 3,
+      "armor": 3,
+      "suppressed": true,
+      "passive": -2,
+      "afterArmor": -4,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 0,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 3,
+      "armor": 3,
+      "suppressed": true,
+      "passive": -2,
+      "afterArmor": 3,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 0,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 3,
+      "armor": 3,
+      "suppressed": true,
+      "passive": -2,
+      "afterArmor": 3,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 0,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 3,
+      "armor": 3,
+      "suppressed": true,
+      "passive": 0,
+      "afterArmor": -4,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 0,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 3,
+      "armor": 3,
+      "suppressed": true,
+      "passive": 0,
+      "afterArmor": -4,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 0,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 3,
+      "armor": 3,
+      "suppressed": true,
+      "passive": 0,
+      "afterArmor": 3,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 0,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 3,
+      "armor": 3,
+      "suppressed": true,
+      "passive": 0,
+      "afterArmor": 3,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 0,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 3,
+      "armor": 3,
+      "suppressed": true,
+      "passive": 100,
+      "afterArmor": -4,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 0,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 3,
+      "armor": 3,
+      "suppressed": true,
+      "passive": 100,
+      "afterArmor": -4,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 0,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 3,
+      "armor": 3,
+      "suppressed": true,
+      "passive": 100,
+      "afterArmor": 3,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 0,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 3,
+      "armor": 3,
+      "suppressed": true,
+      "passive": 100,
+      "afterArmor": 3,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 0,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 6,
+      "armor": 0,
+      "suppressed": false,
+      "passive": -2,
+      "afterArmor": -4,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 6,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 6,
+      "armor": 0,
+      "suppressed": false,
+      "passive": -2,
+      "afterArmor": -4,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 6,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 6,
+      "armor": 0,
+      "suppressed": false,
+      "passive": -2,
+      "afterArmor": 3,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 6,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 6,
+      "armor": 0,
+      "suppressed": false,
+      "passive": -2,
+      "afterArmor": 3,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 6,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 6,
+      "armor": 0,
+      "suppressed": false,
+      "passive": 0,
+      "afterArmor": -4,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 6,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 6,
+      "armor": 0,
+      "suppressed": false,
+      "passive": 0,
+      "afterArmor": -4,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 6,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 6,
+      "armor": 0,
+      "suppressed": false,
+      "passive": 0,
+      "afterArmor": 3,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 6,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 6,
+      "armor": 0,
+      "suppressed": false,
+      "passive": 0,
+      "afterArmor": 3,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 6,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 6,
+      "armor": 0,
+      "suppressed": false,
+      "passive": 100,
+      "afterArmor": -4,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 6,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 6,
+      "armor": 0,
+      "suppressed": false,
+      "passive": 100,
+      "afterArmor": -4,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 6,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 6,
+      "armor": 0,
+      "suppressed": false,
+      "passive": 100,
+      "afterArmor": 3,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 6,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 6,
+      "armor": 0,
+      "suppressed": false,
+      "passive": 100,
+      "afterArmor": 3,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 6,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 6,
+      "armor": 0,
+      "suppressed": true,
+      "passive": -2,
+      "afterArmor": -4,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 6,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 6,
+      "armor": 0,
+      "suppressed": true,
+      "passive": -2,
+      "afterArmor": -4,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 6,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 6,
+      "armor": 0,
+      "suppressed": true,
+      "passive": -2,
+      "afterArmor": 3,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 6,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 6,
+      "armor": 0,
+      "suppressed": true,
+      "passive": -2,
+      "afterArmor": 3,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 6,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 6,
+      "armor": 0,
+      "suppressed": true,
+      "passive": 0,
+      "afterArmor": -4,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 6,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 6,
+      "armor": 0,
+      "suppressed": true,
+      "passive": 0,
+      "afterArmor": -4,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 6,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 6,
+      "armor": 0,
+      "suppressed": true,
+      "passive": 0,
+      "afterArmor": 3,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 6,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 6,
+      "armor": 0,
+      "suppressed": true,
+      "passive": 0,
+      "afterArmor": 3,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 6,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 6,
+      "armor": 0,
+      "suppressed": true,
+      "passive": 100,
+      "afterArmor": -4,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 6,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 6,
+      "armor": 0,
+      "suppressed": true,
+      "passive": 100,
+      "afterArmor": -4,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 6,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 6,
+      "armor": 0,
+      "suppressed": true,
+      "passive": 100,
+      "afterArmor": 3,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 6,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 6,
+      "armor": 0,
+      "suppressed": true,
+      "passive": 100,
+      "afterArmor": 3,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 6,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 6,
+      "armor": 1,
+      "suppressed": false,
+      "passive": -2,
+      "afterArmor": -4,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 5,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 6,
+      "armor": 1,
+      "suppressed": false,
+      "passive": -2,
+      "afterArmor": -4,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 5,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 6,
+      "armor": 1,
+      "suppressed": false,
+      "passive": -2,
+      "afterArmor": 3,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 5,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 6,
+      "armor": 1,
+      "suppressed": false,
+      "passive": -2,
+      "afterArmor": 3,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 5,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 6,
+      "armor": 1,
+      "suppressed": false,
+      "passive": 0,
+      "afterArmor": -4,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 5,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 6,
+      "armor": 1,
+      "suppressed": false,
+      "passive": 0,
+      "afterArmor": -4,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 5,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 6,
+      "armor": 1,
+      "suppressed": false,
+      "passive": 0,
+      "afterArmor": 3,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 5,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 6,
+      "armor": 1,
+      "suppressed": false,
+      "passive": 0,
+      "afterArmor": 3,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 5,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 6,
+      "armor": 1,
+      "suppressed": false,
+      "passive": 100,
+      "afterArmor": -4,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 5,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 6,
+      "armor": 1,
+      "suppressed": false,
+      "passive": 100,
+      "afterArmor": -4,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 5,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 6,
+      "armor": 1,
+      "suppressed": false,
+      "passive": 100,
+      "afterArmor": 3,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 5,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 6,
+      "armor": 1,
+      "suppressed": false,
+      "passive": 100,
+      "afterArmor": 3,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 5,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 6,
+      "armor": 1,
+      "suppressed": true,
+      "passive": -2,
+      "afterArmor": -4,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 5,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 6,
+      "armor": 1,
+      "suppressed": true,
+      "passive": -2,
+      "afterArmor": -4,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 5,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 6,
+      "armor": 1,
+      "suppressed": true,
+      "passive": -2,
+      "afterArmor": 3,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 5,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 6,
+      "armor": 1,
+      "suppressed": true,
+      "passive": -2,
+      "afterArmor": 3,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 5,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 6,
+      "armor": 1,
+      "suppressed": true,
+      "passive": 0,
+      "afterArmor": -4,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 5,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 6,
+      "armor": 1,
+      "suppressed": true,
+      "passive": 0,
+      "afterArmor": -4,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 5,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 6,
+      "armor": 1,
+      "suppressed": true,
+      "passive": 0,
+      "afterArmor": 3,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 5,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 6,
+      "armor": 1,
+      "suppressed": true,
+      "passive": 0,
+      "afterArmor": 3,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 5,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 6,
+      "armor": 1,
+      "suppressed": true,
+      "passive": 100,
+      "afterArmor": -4,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 5,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 6,
+      "armor": 1,
+      "suppressed": true,
+      "passive": 100,
+      "afterArmor": -4,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 5,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 6,
+      "armor": 1,
+      "suppressed": true,
+      "passive": 100,
+      "afterArmor": 3,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 5,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 6,
+      "armor": 1,
+      "suppressed": true,
+      "passive": 100,
+      "afterArmor": 3,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 5,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 6,
+      "armor": 3,
+      "suppressed": false,
+      "passive": -2,
+      "afterArmor": -4,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 3,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 6,
+      "armor": 3,
+      "suppressed": false,
+      "passive": -2,
+      "afterArmor": -4,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 3,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 6,
+      "armor": 3,
+      "suppressed": false,
+      "passive": -2,
+      "afterArmor": 3,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 3,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 6,
+      "armor": 3,
+      "suppressed": false,
+      "passive": -2,
+      "afterArmor": 3,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 3,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 6,
+      "armor": 3,
+      "suppressed": false,
+      "passive": 0,
+      "afterArmor": -4,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 3,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 6,
+      "armor": 3,
+      "suppressed": false,
+      "passive": 0,
+      "afterArmor": -4,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 3,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 6,
+      "armor": 3,
+      "suppressed": false,
+      "passive": 0,
+      "afterArmor": 3,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 3,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 6,
+      "armor": 3,
+      "suppressed": false,
+      "passive": 0,
+      "afterArmor": 3,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 3,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 6,
+      "armor": 3,
+      "suppressed": false,
+      "passive": 100,
+      "afterArmor": -4,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 3,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 6,
+      "armor": 3,
+      "suppressed": false,
+      "passive": 100,
+      "afterArmor": -4,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 3,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 6,
+      "armor": 3,
+      "suppressed": false,
+      "passive": 100,
+      "afterArmor": 3,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 3,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 6,
+      "armor": 3,
+      "suppressed": false,
+      "passive": 100,
+      "afterArmor": 3,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 3,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 6,
+      "armor": 3,
+      "suppressed": true,
+      "passive": -2,
+      "afterArmor": -4,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 3,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 6,
+      "armor": 3,
+      "suppressed": true,
+      "passive": -2,
+      "afterArmor": -4,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 3,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 6,
+      "armor": 3,
+      "suppressed": true,
+      "passive": -2,
+      "afterArmor": 3,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 3,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 6,
+      "armor": 3,
+      "suppressed": true,
+      "passive": -2,
+      "afterArmor": 3,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 3,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 6,
+      "armor": 3,
+      "suppressed": true,
+      "passive": 0,
+      "afterArmor": -4,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 3,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 6,
+      "armor": 3,
+      "suppressed": true,
+      "passive": 0,
+      "afterArmor": -4,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 3,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 6,
+      "armor": 3,
+      "suppressed": true,
+      "passive": 0,
+      "afterArmor": 3,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 3,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 6,
+      "armor": 3,
+      "suppressed": true,
+      "passive": 0,
+      "afterArmor": 3,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 3,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 6,
+      "armor": 3,
+      "suppressed": true,
+      "passive": 100,
+      "afterArmor": -4,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 3,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 6,
+      "armor": 3,
+      "suppressed": true,
+      "passive": 100,
+      "afterArmor": -4,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 3,
+        "finalArmor": 0
+      }
+    },
+    {
+      "damage": 6,
+      "armor": 3,
+      "suppressed": true,
+      "passive": 100,
+      "afterArmor": 3,
+      "isAttacker": false,
+      "expected": {
+        "called": true,
+        "damage": 3,
+        "finalArmor": 3
+      }
+    },
+    {
+      "damage": 6,
+      "armor": 3,
+      "suppressed": true,
+      "passive": 100,
+      "afterArmor": 3,
+      "isAttacker": true,
+      "expected": {
+        "called": true,
+        "damage": 3,
+        "finalArmor": 3
+      }
+    }
+  ]
+}

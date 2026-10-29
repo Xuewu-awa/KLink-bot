@@ -1,6 +1,6 @@
 {
   "date": "2026-10-29",
-  "batch": "RULE-537",
+  "batch": "RULE-538",
   "counts": {
     "cards": 2019,
     "cards_with_own_ir": 1709,
@@ -12,9 +12,9 @@
     "program_containers": 2626,
     "dependency_edges": 18571,
     "dependency_symbols": 440,
-    "secondary_reports": 412,
-    "explicit_partial_units": 13,
-    "partial_units_matching_bound_inputs": 13,
+    "secondary_reports": 413,
+    "explicit_partial_units": 14,
+    "partial_units_matching_bound_inputs": 14,
     "planning_work_domains": 14,
     "planning_acceptance_criteria": 42,
     "authoritative_current_pvp_denominator_available": false,
@@ -24,8 +24,8 @@
   },
   "tests": 16,
   "work_plan_synced": true,
-  "partial_source_scopes_revalidated": 12,
+  "partial_source_scopes_revalidated": 13,
   "new_partial_units": 1,
-  "matrix_sha256": "c9b04f42bc558ad4c3e0a9ba5b68edd75261b2470c546fa895770ab38225da97",
+  "matrix_sha256": "838cd3ea0d69173d38a210eb9842f306f0201994fa7336fe73104f3dc6d1c1e1",
   "no_semantic_certification_promotion": true
 }
