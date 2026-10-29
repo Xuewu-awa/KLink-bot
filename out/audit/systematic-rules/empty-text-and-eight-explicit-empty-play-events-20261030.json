@@ -1,0 +1,240 @@
+{
+  "rule": "RULE-548",
+  "date": "2026-10-30",
+  "publishing_branch": "DinkyPuffer",
+  "base_commit": "329bc0075c691a2896a0859edbed52d5ddbc7bc9",
+  "client_exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "kernel_changed": true,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "findings": [
+    "Prior100games rejected33episodes across8missingcard entries and1GetEmptyText intrinsic; reason frequencies overlap.",
+    "Current8selectedclasses have no own reflected functions; derive fromBaseCardObject with empty non-nativeOnPlayedFromHand; all selected CDO ProcessEvent slot0x260 targets0x159ca40.36offline valid cases verify early return.",
+    "CurrentGetEmptyText wrapper calls empty singleton getter/copy/move;4offline initialized-path cases return singleton payload/flags and preserve guard buffers with correctCode advance. Repository has1staticIR site onTropicLightning."
+  ],
+  "changes": [
+    "Extend hash-bound explicit empty event contract by8exact names only.",
+    "Implement GetEmptyText as empty simulator text; static guard removes exactly1knowncall, oldfingerprint reconstructs."
+  ],
+  "validation": {
+    "core_selftests": 986,
+    "training_admission_checks": 17,
+    "focused_tests": 2,
+    "event_native_cases": 36,
+    "empty_text_native_cases": 4,
+    "new_exact_empty_events": 8,
+    "static_gap_before": 46,
+    "static_gap_after": 45,
+    "same100_before_admitted": 67,
+    "same100_after_admitted": 100,
+    "same100_rows": 2635,
+    "broad1000": {
+      "accepted": 974,
+      "rejected": 26,
+      "rows": 25328,
+      "unfinished": 3,
+      "reasons": {
+        "unfinished": 3,
+        "unimplemented:<card:card_unit_104th_infantry_regiment>": 1,
+        "unimplemented:<card:card_unit_flak_37_spg>": 5,
+        "unimplemented:<card:card_unit_light_infantry>": 10,
+        "unimplemented:<card:card_unit_panzer_iii_j>": 2,
+        "unimplemented:<card:card_unit_sissi>": 4,
+        "unimplemented:<card:card_unit_swordfish>": 1
+      }
+    },
+    "value_model_smoke": {
+      "epochs": 1,
+      "shape": [
+        745,
+        8,
+        1
+      ],
+      "training_games": 85,
+      "validation_games": 15,
+      "train_save_reload_verify": true,
+      "strength_claim": false
+    },
+    "prior_scopes_revalidated": 25
+  },
+  "source_bindings": {
+    "src/KLink.Bot/Effects/Blueprint/KismetVm.cs": "f831c4f23b4ca4db1db08df6b6f75a0d43e9a0dd96b6a8e1d63a3ceff1e2b150",
+    "tools/BotSim/SelfTest.cs": "783283f6ecb3c44dd3e27894dcf67b467d6a3af18ba7ebce54f5d6bdf27f2974",
+    "tools/BotSim/DispatchGap.cs": "9092a217505832ca66b40ffe0e2ef74ad9bfbe7a78575106c8ef081485463e3f",
+    "klink bot/docs/card-ir-native-defaults.json": "41a37ceda71a5aa7c8a2fe853c4263f935b7fd8605970467b7cf1fe3d5f810af",
+    "src/KLink.Bot/Effects/Blueprint/KismetNativeDefaults.cs": "07f82fce7697c8654b123a1583c46470cbebdf27c94acc7a9716de4124f3009d",
+    "src/KLink.Bot/Effects/Blueprint/KismetIr.cs": "94370376b702631289a4ff362e054e962d220f302dc13d9d2658a45cf72a3e86",
+    "tools/BotSim/SelfTest.TrainingBatchDefaults.cs": "4f9ed2c9bdd1587d925e3d31a059ab89077448475699d9efd9d7f3d767c6788c",
+    "klink bot/docs/card-ir.json": "526812fa8dc0934f1d6ecd3794053871fa6b701c2b5df3fd1edb3c38513ba2e9",
+    "klink bot/docs/cards.live.json": "3550dc76eb0414c500166875f45909077aeeb3ea4d229b9b0ba9c66a81987c4b",
+    "tools/NNTrain/TrainingAdmission.cs": "77b439193f835b6a10fa6839b310fc2d54c528ad37d66d40fb4f5f1e982b5c07",
+    "tools/NNTrain/Program.cs": "bc1aba6ff7a8ed0b0a5c5059dbf0c04fd9da99deb54cc50ea7acccc6dd31e6dd"
+  },
+  "evidence_bindings": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule549-missing-card-own-functions-20261030.json",
+      "sha256": "c7a470a403a53bf439b007a0e35461760df98f6c5dec349e416d694df8f9c167"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule549-dispatch-windows-20261030.json",
+      "sha256": "584894e444a1e78ac31efddb6143183adb50859bd73eb3dbfc7f252172e125af"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule549-empty-text-functions-20261030.json",
+      "sha256": "5de2f0df4bea206e8a09765451ca5dc961c501b8f6a0c96d4a9666b28d3325b2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule549-empty-text-native-20261030.json",
+      "sha256": "01ac49c26fa2b4074ab35f737fcb97985f148009322e9b202bae1654f71e897a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule549-complete-empty-text-native-20261030.json",
+      "sha256": "e36819247601504fe7b651ce6deaaad4634cdef54a791e88826b44255d1c7726"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule548-complete-native-bodies-20261030.json",
+      "sha256": "1d32746e69e84d02a44c840064037b8ebc73c559a4d87fcd5f6f1a092daa2c71"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule548-local-dispatch-difference-20261030.json",
+      "sha256": "4230a668d340b1e81a67e4e51b51d87585864970284ffb3ae49e4cae7aa784d2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule549-card-defaults.py",
+      "sha256": "6fbd419c14e98c90d50550c5f6c313e77a21d5184555bae3e7a9eba957019f98"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule549-dispatch.py",
+      "sha256": "5556f36e12fcc6783e1ad61632e0270b3e4775ff3125ba61151ac460b125139e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule549-empty-text.py",
+      "sha256": "bed38ef94bec1d400ec4c7255d4f333667469ccddde3cef42353fb5864f27681"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule549-empty-native.py",
+      "sha256": "03df4d1d38f5efe7b0681b94b613c22a4869a17fab3b8a3d46fbec1e44edc515"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule549-empty-bodies.py",
+      "sha256": "766eee3e93f5b4fd8c0a1331bb43c938c7bdf39807418deaefa3ba10d0e14710"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule549-native.py",
+      "sha256": "eb3c067521d31b79b8cda679ba955714dfbe1adad1f2416319840e84f53a9f68"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule549-native-emulation-verified.json",
+      "sha256": "2c01b74c260b71e25e51d1eb0f3308f22ea84f6bfc706e906f61fdea3ca9970b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule549-gap-verified.json",
+      "sha256": "8678230853f88e53a00d3b97c961f5fe1e1a22bb3c3371395f4136f813e496dd"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule549-empty-text-ir-sites.json",
+      "sha256": "0fc28fb6bf0b02b3ecc5a77d94c72dcd1aa9cd3f527498dc86435fda9cad1d33"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule549-worker.py",
+      "sha256": "15a73fef55500dbb6e83d7fa722df9ab831417706da854ae5b361e7f7651f37d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule549-worker-verified.json",
+      "sha256": "acc47b6f5e6219a6c1acff2306b6930753d8cf1ccb6cc3677d1d857314e6d01a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\training-blockers-worker\\input.json",
+      "sha256": "fda1565d7d575a39ac6a077d7c73f0e0b45a6620b63fa182648d4fd98890d9bb"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\training-blockers-worker\\output.json",
+      "sha256": "ab3b93cffca2c078c73789f395830733df0fafd493ab017c9e7137d856439eba"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\training-blockers-worker\\task.txt",
+      "sha256": "6e88363507da44eff218f5a063d547ee1fc9ac44b2f1db2851225b5990f6b9ca"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule549-before-test.log",
+      "sha256": "3c3b54b402bb08952d12e7d2ffe31cf76f5c1b280a90c1c7e291bf7f10e63d57"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule549-after-test.log",
+      "sha256": "96bac5bcd3db5a51cce39ed958da3949d0a9af780bacf527c9aa02a5d3d7643c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule549-selftest.log",
+      "sha256": "94f916d88858fe89b2e5766112fe87a66b393e2808ee675d651842cc0b322aab"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule549-admission.log",
+      "sha256": "dfdbc57476e6274e3adb0e479837ffdb19aa367f13fcf3599c14a9c622842156"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule548-100.bin.quality.json",
+      "sha256": "44c110cd89b9cce73808a43985d5c391cca341f5e851f669cc44685e883448f6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule549-100.bin",
+      "sha256": "6a167b614a1efe26adf577541d443c22836ae7292d57d83935ff84cd4e0063f6"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule549-100.bin.quality.json",
+      "sha256": "7ecacfdaf8d4e10cc1e684669b182797311c09ebbd11af0045a1412857cf276d"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule549-100.log",
+      "sha256": "0e98a80f45d379de962ef01526ca998b6ba03b0947ca4cf7386140088b15f9f9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule549-1000.bin",
+      "sha256": "7f232bc5a5243f7e3b54180dfdc4abc400ee4bcd66a76981da45fe17305f17cc"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule549-1000.bin.quality.json",
+      "sha256": "a738b60338617f0a9dfb9a6386e4f3054140cc35eaaa5c1e53052617c3133ec0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule549-1000.log",
+      "sha256": "1567aa256236b625782a0fdb796211883f8cbc055eba375e99ccedd60428de39"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule549-model.bin",
+      "sha256": "35f39608dfee35885cceba7c45fcfd7ebc3edf164e2e47f7d86ca9c44d4dec24"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule549-train.log",
+      "sha256": "436b4a28481651e4a47d83b643dc153161a412f089e25cfcd3755f87f1e3374b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule549-verify.log",
+      "sha256": "cdf9e51238671c3234de39efe9236688d7e03987cc97fae61887af4101b8c4df"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\patch-rule549.py",
+      "sha256": "0048f7d3eb3c4e6f58a44b76fafc2a3b724dfe5d90cecd65dd061d8e4a022303"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule549-gap.py",
+      "sha256": "d7998b583e13901841204ac02698dcf05ed5b2e3adeee9f24a0b2b8715e50568"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule549-prior-scope-revalidation.json",
+      "sha256": "6e3a260bbce33809c8b515fc0afeb5064ae86e6cc2fd805d67192b2ac79c0127"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\record-rule549-batch.py",
+      "sha256": "7a97bfcb82687a7ab68067f0ab9acffb4090fd833a9fff628c524ee42f711e6a"
+    }
+  ],
+  "remaining": [
+    "Only exact8selected card names and their empty OnPlayedFromHand event are added. No own reflected functions, common base and sameProcessEvent target support this bounded default; no keyword, other-event, variant or whole-card certification.",
+    "Copied-code36eventcases include9classes/base times4objectflag cases. GetEmptyText4cases exercise current wrapper,copy/move and initialized singleton getter with modeled TLS epoch state and refcount helpers. Lazy initialization,allocator,GC,localization/full native FText storage are not certified; simulator uses empty string.",
+    "Previous separate local interpreter detour/Blueprint direct-call ABI limitation remains open. Runtime empty-event branch tested returns before that interpreter; no claim every invocation route or hook recovered.",
+    "Reused raw wrapper label says GetPlayingSide, but current selected UFunction is KismetTextLibrary:GetEmptyText, nativeRVA0x37a7190,71bytes; helper0x3d7bbc0,71bytes and initialized getter0x127c630,202bytes. Private capturelabel549 is not ledger number.",
+    "DeepSeek rejected-game/reason/card/fault/unsupported fields independently match. Its unfinished_games field inferred from sampling gaps is rejected; primary uses explicit unfinished reason. Worker output alone is never rule evidence.",
+    "Health admission and one-epoch745->8->1 value-model train/save/reload test are interface/diagnostic checks, not AI-strength or rule-fidelity proof. Legacy confidence prose from training CLI is not endorsed;15validationgames and1epoch do not support conclusions about feature quality.",
+    "Current full PvP scope denominator remains unresolved; no overall completion percentage or whole-card promotion. Any new1000-game blockers remain rejected."
+  ]
+}

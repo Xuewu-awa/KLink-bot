@@ -1,0 +1,35 @@
+{
+  "date": "2026-10-30",
+  "batch": "RULE-548",
+  "report": "out/audit/systematic-rules/empty-text-and-eight-explicit-empty-play-events-20261030.json",
+  "report_sha256": "e773c7b9c45490957c0ed0d0fc6f3afea27d17770fef25c9b8a836e16405a29c",
+  "same100": {
+    "accepted_before": 67,
+    "accepted_after": 100,
+    "rows_before": 1804,
+    "rows_after": 2635,
+    "rejected": 0
+  },
+  "broad1000": {
+    "accepted": 974,
+    "rejected": 26,
+    "rows": 25328,
+    "unfinished": 3,
+    "reasons": {
+      "unfinished": 3,
+      "unimplemented:<card:card_unit_104th_infantry_regiment>": 1,
+      "unimplemented:<card:card_unit_flak_37_spg>": 5,
+      "unimplemented:<card:card_unit_light_infantry>": 10,
+      "unimplemented:<card:card_unit_panzer_iii_j>": 2,
+      "unimplemented:<card:card_unit_sissi>": 4,
+      "unimplemented:<card:card_unit_swordfish>": 1
+    }
+  },
+  "tests": {
+    "core": 986,
+    "admission": 17
+  },
+  "whole_card_certification": 0,
+  "semantic_completion_percent": null,
+  "value_model_smoke_only": true
+}

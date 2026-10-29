@@ -482,14 +482,13 @@
     "active_plan": "klink bot/docs/训练闭环推进-20261030.md",
     "measurements": "out/training-readiness/baseline-20261030.json",
     "priority_order": [
-      "Eight missing invoked card defaults in100game probe, ranked by rejection frequency",
-      "GetEmptyText reachable intrinsic",
+      "Observed1000game execution blockers, if any, by rejection frequency",
       "Decision-level adapter and choice contracts",
       "Observation/model contracts and admitted starter closure"
     ],
     "deferred": "Unproven normal-PvP boundary refinements unless they block the active loop.",
     "batch_policy": "Integrate related changes and run complete tests/inventories once per completed batch.",
     "rule_scope_or_completion_denominator_changed": false,
-    "latest_result": "RULE-547: literal text identity and two explicit hash-bound empty OnPlayedFromHand programs. Same10 admit10/291rows; broader100 admit67/1804rows,33reject,allfinish. Partial evidence only; no whole-card/ABI/AI-strength certification."
+    "latest_result": "RULE-548:8exact empty played-event programs andGetEmptyText. Same100 admit100/2635rows. Broad1000 admit974/25328rows, reject26,unfinished3. Value-model interface smoke only; no whole-card or strength certification."
   }
 }

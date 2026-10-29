@@ -7,7 +7,25 @@
     "event_dispatcher_rva": "0x159ca40",
     "event_virtual_slot": "0x260",
     "source_scope": "Current selected class headers, non-native empty UFunction, same native ProcessEvent target; copied-code valid-buffer early-return proof. Full Blueprint call ABI/hooks/lifetime not certified.",
-    "verified_capture_sha256": "038e6815b5aa6066b3ec5a51732d674f04479e64b12583050bff28dc4877efce"
+    "verified_capture_sha256": "038e6815b5aa6066b3ec5a51732d674f04479e64b12583050bff28dc4877efce",
+    "additional_empty_event_batches": [
+      {
+        "cards": [
+          "card_unit_tiger_i_e",
+          "card_unit_routed_troops",
+          "card_unit_15th_cavalry_regiment",
+          "card_unit_554th_rifles",
+          "card_unit_tiger_i",
+          "card_unit_panzer_ii_a",
+          "card_unit_shiden",
+          "card_unit_sbd3_dauntless"
+        ],
+        "class_capture_sha256": "c7a470a403a53bf439b007a0e35461760df98f6c5dec349e416d694df8f9c167",
+        "virtual_target_capture_sha256": "584894e444a1e78ac31efddb6143183adb50859bd73eb3dbfc7f252172e125af",
+        "native_emulation_sha256": "2c01b74c260b71e25e51d1eb0f3308f22ea84f6bfc706e906f61fdea3ca9970b",
+        "scope": "Selected exact classes have no own reflected functions; same BaseCardObject non-native empty event and ProcessEvent virtual target. Prior contract scope/ABI and runtime-hook limitations remain."
+      }
+    ]
   },
   "empty_events": [
     {
@@ -19,6 +37,62 @@
     },
     {
       "card": "card_unit_ki_61_hien",
+      "event": "OnPlayedFromHand",
+      "kind": "non_native_empty_script",
+      "script_bytes": 0,
+      "function_flags": 201459712
+    },
+    {
+      "card": "card_unit_tiger_i_e",
+      "event": "OnPlayedFromHand",
+      "kind": "non_native_empty_script",
+      "script_bytes": 0,
+      "function_flags": 201459712
+    },
+    {
+      "card": "card_unit_routed_troops",
+      "event": "OnPlayedFromHand",
+      "kind": "non_native_empty_script",
+      "script_bytes": 0,
+      "function_flags": 201459712
+    },
+    {
+      "card": "card_unit_15th_cavalry_regiment",
+      "event": "OnPlayedFromHand",
+      "kind": "non_native_empty_script",
+      "script_bytes": 0,
+      "function_flags": 201459712
+    },
+    {
+      "card": "card_unit_554th_rifles",
+      "event": "OnPlayedFromHand",
+      "kind": "non_native_empty_script",
+      "script_bytes": 0,
+      "function_flags": 201459712
+    },
+    {
+      "card": "card_unit_tiger_i",
+      "event": "OnPlayedFromHand",
+      "kind": "non_native_empty_script",
+      "script_bytes": 0,
+      "function_flags": 201459712
+    },
+    {
+      "card": "card_unit_panzer_ii_a",
+      "event": "OnPlayedFromHand",
+      "kind": "non_native_empty_script",
+      "script_bytes": 0,
+      "function_flags": 201459712
+    },
+    {
+      "card": "card_unit_shiden",
+      "event": "OnPlayedFromHand",
+      "kind": "non_native_empty_script",
+      "script_bytes": 0,
+      "function_flags": 201459712
+    },
+    {
+      "card": "card_unit_sbd3_dauntless",
       "event": "OnPlayedFromHand",
       "kind": "non_native_empty_script",
       "script_bytes": 0,
