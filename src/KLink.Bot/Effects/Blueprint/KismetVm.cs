@@ -1082,6 +1082,7 @@ public sealed class KismetVm
         "RemoveGameplayTag",
         "Conv_IntToText",
         "Conv_ByteToText",
+        "MakeLiteralText",
         "Conv_TextToString",
         "Conv_StringToText",
         "Conv_IntToBool",
@@ -1207,6 +1208,7 @@ public sealed class KismetVm
                 }
             case "Conv_IntToText": return ToInt(a).ToString();
             case "Conv_ByteToText": return ToInt(a).ToString();
+            case "MakeLiteralText": return a;
             case "Conv_TextToString": return a?.ToString() ?? "";
             case "Conv_StringToText": return a?.ToString() ?? "";
             case "Conv_IntToBool": return ToInt(a) != 0;

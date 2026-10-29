@@ -12,7 +12,7 @@ namespace KLink.Bot.Effects.Blueprint;
 /// - 局部变量名 <c>CallFunc_&lt;函数名&gt;_&lt;参数名&gt;</c> 就是该调用的输出槽，数据流由此可还原
 /// - <c>JumpIfNot</c> 的 Offset 给出控制流
 /// </summary>
-public sealed class KismetLibrary
+public sealed partial class KismetLibrary
 {
     private readonly Dictionary<string, KismetCard> _cards = new(StringComparer.OrdinalIgnoreCase);
 
@@ -134,6 +134,8 @@ public sealed class KismetLibrary
     /// </summary>
     public KismetProgram? FindProgram(string cardName, string programName)
     {
+        if (programName.Equals("OnPlayedFromHand", StringComparison.OrdinalIgnoreCase)
+            && _emptyPlayedEvents.TryGetValue(cardName, out var empty)) return empty;
         foreach (string candidate in Candidates(cardName))
         {
             if (!_cards.TryGetValue(candidate, out var card))
@@ -202,6 +204,8 @@ public sealed class KismetLibrary
     /// </summary>
     public KismetProgram? FindLocalProgram(string cardName, string functionName)
     {
+        if (functionName.Equals("OnPlayedFromHand", StringComparison.OrdinalIgnoreCase)
+            && _emptyPlayedEvents.TryGetValue(cardName, out var empty)) return empty;
         foreach (string candidate in Candidates(cardName))
         {
             if (!_cards.TryGetValue(candidate, out var card)
@@ -363,6 +367,7 @@ public sealed class KismetLibrary
     /// </remarks>
     public IEnumerable<string> ProgramNames(string cardName)
     {
+        if (_emptyPlayedEvents.ContainsKey(cardName)) return new[] { "OnPlayedFromHand" };
         foreach (string candidate in Candidates(cardName))
         {
             if (_cards.TryGetValue(candidate, out var card))
@@ -497,6 +502,7 @@ public sealed class KismetLibrary
             };
         }
 
+        library.LoadNativeDefaults(path);
         return library;
     }
 

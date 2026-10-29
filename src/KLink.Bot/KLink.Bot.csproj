@@ -23,6 +23,10 @@
     <None Include="$(BotDataRoot)\card-ir.json" Link="Data\card-ir.json"
           CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
 
+    <None Include="$(BotDataRoot)\card-ir-native-defaults.json" Link="Data\card-ir-native-defaults.json"
+          CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest"
+          Condition="Exists('$(BotDataRoot)\card-ir-native-defaults.json')" />
+
     <None Include="$(BotDataRoot)\card-vectors.json" Link="Data\card-vectors.json"
           CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
     <None Include="$(BotDataRoot)\event-contracts.json" Link="Data\event-contracts.json"

@@ -1,0 +1,34 @@
+{
+  "date": "2026-10-30",
+  "batch": "RULE-547",
+  "report": "out/audit/systematic-rules/literal-text-and-explicit-empty-play-events-20261030.json",
+  "report_sha256": "2e57cc4994809f96d46199de2e689423cad7a3608ce2f9700d2a401cde0f7d47",
+  "same_seed10": {
+    "accepted_before": 6,
+    "accepted_after": 10,
+    "rows_before": 189,
+    "rows_after": 291,
+    "rejected": 0
+  },
+  "broad100": {
+    "accepted": 67,
+    "rejected": 33,
+    "rows": 1804,
+    "unfinished": 0,
+    "reasons": {
+      "unimplemented:<card:card_unit_15th_cavalry_regiment>": 7,
+      "unimplemented:<card:card_unit_554th_rifles>": 6,
+      "unimplemented:<card:card_unit_panzer_ii_a>": 12,
+      "unimplemented:<card:card_unit_routed_troops>": 2,
+      "unimplemented:<card:card_unit_sbd3_dauntless>": 1,
+      "unimplemented:<card:card_unit_shiden>": 5,
+      "unimplemented:<card:card_unit_tiger_i>": 1,
+      "unimplemented:<card:card_unit_tiger_i_e>": 2,
+      "unimplemented:math:GetEmptyText": 1
+    }
+  },
+  "core_selftests": 984,
+  "admission_checks": 17,
+  "whole_card_certification": 0,
+  "semantic_completion_percent": null
+}

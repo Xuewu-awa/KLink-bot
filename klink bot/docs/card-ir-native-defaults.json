@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "source_client_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "base_ir_sha256": "526812fa8dc0934f1d6ecd3794053871fa6b701c2b5df3fd1edb3c38513ba2e9",
+  "cards_sha256": "3550dc76eb0414c500166875f45909077aeeb3ea4d229b9b0ba9c66a81987c4b",
+  "proof": {
+    "event_dispatcher_rva": "0x159ca40",
+    "event_virtual_slot": "0x260",
+    "source_scope": "Current selected class headers, non-native empty UFunction, same native ProcessEvent target; copied-code valid-buffer early-return proof. Full Blueprint call ABI/hooks/lifetime not certified.",
+    "verified_capture_sha256": "038e6815b5aa6066b3ec5a51732d674f04479e64b12583050bff28dc4877efce"
+  },
+  "empty_events": [
+    {
+      "card": "card_unit_red_devils",
+      "event": "OnPlayedFromHand",
+      "kind": "non_native_empty_script",
+      "script_bytes": 0,
+      "function_flags": 201459712
+    },
+    {
+      "card": "card_unit_ki_61_hien",
+      "event": "OnPlayedFromHand",
+      "kind": "non_native_empty_script",
+      "script_bytes": 0,
+      "function_flags": 201459712
+    }
+  ]
+}

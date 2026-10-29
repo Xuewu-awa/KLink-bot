@@ -227,10 +227,10 @@ internal static class DispatchGapBaseline
     /// 战役、教程、UI 或文本路径。这个基线仍扫描完整 IR，故用作“派发表没有
     /// 意外回退”的保守守卫，不把 47 误称为 PvP 规则缺失数。
     /// </remarks>
-    public const int BaselineCount = 47;
+    public const int BaselineCount = 46;
 
     /// <summary>冻结的缺口集合指纹（<see cref="KLink.Bot.Effects.Blueprint.DispatchGap.Fingerprint"/>）。</summary>
-    public const string BaselineFingerprint = "725225C6C5554B71";
+    public const string BaselineFingerprint = "75E130C3F0866F5F";
 
     /// <summary>自测用：返回 null = 通过，否则是失败原因。</summary>
     public static string? Check(CardDatabase db)

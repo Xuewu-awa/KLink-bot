@@ -1,6 +1,6 @@
 {
   "date": "2026-10-30",
-  "batch": "training-greedy-gotcha",
+  "batch": "RULE-547",
   "counts": {
     "cards": 2019,
     "cards_with_own_ir": 1709,
@@ -12,9 +12,9 @@
     "program_containers": 2626,
     "dependency_edges": 18571,
     "dependency_symbols": 440,
-    "secondary_reports": 421,
-    "explicit_partial_units": 23,
-    "partial_units_matching_bound_inputs": 23,
+    "secondary_reports": 422,
+    "explicit_partial_units": 25,
+    "partial_units_matching_bound_inputs": 25,
     "planning_work_domains": 14,
     "planning_acceptance_criteria": 42,
     "authoritative_current_pvp_denominator_available": false,
@@ -25,7 +25,7 @@
   "tests": 16,
   "work_plan_synced": true,
   "prior_partial_source_scopes_revalidated": 23,
-  "new_partial_units": 0,
-  "matrix_sha256": "c940640778c4cbbbb5fef1c3cf1637fe24dc05bbbaed8460fc91c806c963dc84",
+  "new_partial_units": 2,
+  "matrix_sha256": "805bedc98fb439468fcd3139c648583e2ae2b969f85aaf7bf664f3890b8b5436",
   "no_semantic_certification_promotion": true
 }

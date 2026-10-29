@@ -20,6 +20,9 @@ internal static partial class SelfTest
 
     private static readonly List<Case> Cases = new()
     {
+        new("字面文本与默认事件：保留文本值", LiteralTextIdentity),
+        new("字面文本与默认事件：两张单位的显式空事件", NativeEmptyPlayedEvents),
+        new("字面文本与默认事件：契约与数据指纹", NativeEmptyContractIntegrity),
         new("训练策略：反制只激活一次并能结束回合", GreedyGotchaTurnProgress),
         new("训练控制流：真实事件保留分派返回落点", EntryDispatchReturnClosure),
         new("伤害观察者链：递进、停止、延后与来源ID排除", DamageObserverChain),
