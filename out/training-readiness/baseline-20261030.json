@@ -1,0 +1,161 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-30",
+  "base_commit": "d55db1db201e94d37c988e4d1dc74d9b82fbe06e",
+  "purpose": "Prioritize headless training blockers from current local execution, not certify game rules or use old replays as authority.",
+  "rules_certified_cards": 0,
+  "measurements": {
+    "default_pair_greedy": {
+      "games": 20,
+      "finished": 20,
+      "vm_faults": 0,
+      "pop_unresolved": 8283,
+      "elapsed_seconds": 1.47,
+      "scope": "One deck pair, Debug build, local observational throughput only"
+    },
+    "random_pair_value_dump": {
+      "games": 10,
+      "seed": 20261030,
+      "unfinished": 4,
+      "old_exported_rows": 152,
+      "new_accepted_games": 0,
+      "new_exported_rows": 0,
+      "expected_dump_exit": 2,
+      "reason_games": {
+        "unsupported:<pop-unresolved>": 10,
+        "unimplemented:<card:card_unit_red_devils>": 2,
+        "unfinished": 4,
+        "unimplemented:<card:card_unit_ki_61_hien>": 1
+      }
+    }
+  },
+  "resolved": [
+    {
+      "id": "TRAIN-GATE-01",
+      "issue": "Ended games with unsupported execution paths could enter training data",
+      "result": "Per-game diagnostic admission, explicit rejection reasons, binary hash-bound sidecar; train/verify reject missing, inconsistent or empty quality evidence. Unknown operations/markers fail closed. Known local-call and frontline rejection markers retained as informational."
+    }
+  ],
+  "blockers": [
+    {
+      "id": "TRAIN-01",
+      "priority": "P0",
+      "status": "observed",
+      "title": "Unresolved Blueprint flow returns",
+      "evidence": "All10 sampled random matches;8283 in20 default-pair matches.",
+      "next_action": "Attribute pop-unresolved to card, event/local program and target offset; establish root cause against authoritative script before changing flow handling."
+    },
+    {
+      "id": "TRAIN-02",
+      "priority": "P0",
+      "status": "observed",
+      "title": "Unfinished self-play episodes",
+      "evidence": "4/10 random-pair episodes hit current turn-driver guard.",
+      "next_action": "Capture last turn/active side/action and pending-selection state; reproduce individually. Cause not yet attributed to pending choices."
+    },
+    {
+      "id": "TRAIN-03",
+      "priority": "P0",
+      "status": "observed",
+      "title": "Missing card entry execution",
+      "evidence": {
+        "unimplemented:<card:card_unit_red_devils>": 2,
+        "unimplemented:<card:card_unit_ki_61_hien>": 1
+      },
+      "next_action": "Trace actual invoked card entry and inheritance/native defaults; distinguish no-effect card from lost required behavior. Do not whitelist by card name."
+    },
+    {
+      "id": "TRAIN-04",
+      "priority": "P1",
+      "status": "source_gap_candidate",
+      "title": "Decision-level training adapter and pending choices",
+      "evidence": "NNTrain generates GreedyBot turn-boundary value labels; NnPolicy enumerates four basic action categories; engine exposes pending-selection queue and callbacks.",
+      "next_action": "Inventory NNPlay/engine selection callbacks, then implement a bounded decision adapter using existing primitives rather than replacing the engine."
+    },
+    {
+      "id": "TRAIN-05",
+      "priority": "P1",
+      "status": "source_gap_candidate",
+      "title": "Replay and observation/model contracts",
+      "evidence": "Replayer.Build calls Apply without checking its boolean result. StateEncoder currently produces745 dimensions; stale comments describe other layouts.",
+      "next_action": "Verify action-rebuild failures, hidden-information access and train/inference encoder identity before trusting action scoring."
+    },
+    {
+      "id": "TRAIN-06",
+      "priority": "P1",
+      "status": "open",
+      "title": "Admitted starter card-pool closure",
+      "evidence": "Current sample has no diagnostic-clean admitted games; no certified starter subset established.",
+      "next_action": "After P0 fixes, choose a small explicitly tracked pool; close generated/selected card dependencies and reject unsupported behavior. Preserve full PvP restoration objective."
+    }
+  ],
+  "validation": {
+    "training_admission_checks": 17,
+    "core_selftests": 979,
+    "previous_partial_units_source_bindings_unchanged": 22,
+    "no_kernel_rule_change": true
+  },
+  "source_bindings": {
+    "tools/NNTrain/Program.cs": "bc1aba6ff7a8ed0b0a5c5059dbf0c04fd9da99deb54cc50ea7acccc6dd31e6dd",
+    "tools/NNTrain/TrainingAdmission.cs": "77b439193f835b6a10fa6839b310fc2d54c528ad37d66d40fb4f5f1e982b5c07",
+    "tools/NNTrain/AdmissionSelfTest.cs": "e9147ced4541438a7bbfb9dbe3b9007c26e28e14a4ecb87ebb24b719d43b06c7",
+    "src/KLink.Bot/Effects/Blueprint/KismetVm.cs": "9f412b103c4701413902a3def18a170bb2a8719a8901199f21e4ff6c40c9c173",
+    "src/KLink.Bot/Server/NnPolicy.cs": "e19ae39efd0660302652f6394cee7afcc1b72bc4e5e6807685efa87d114c0a13",
+    "src/KLink.Bot/Server/AtomicAction.cs": "05fc444f94c6697a2f695f5960e5aca58532bd7de3c449a22b063566142bb786",
+    "src/KLink.Bot/NN/StateEncoder.cs": "8da023351d65a32e1ca22ccf1dd9e86f86652316ffb6735b60374516752e90e7"
+  },
+  "evidence_bindings": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\training-loop-after.bin.quality.json",
+      "sha256": "34c8cc7ab462169e33b48257a0312c9cac68e8af4f3758d0f6e82a02fe5c0148"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\training-loop-after.bin",
+      "sha256": "70995350b3c4d0a159d7539bf360ea0ecbc8928d043c549d9a8a6118c00f97f2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\training-loop-before.bin",
+      "sha256": "409860737511f7de8202ccdd6201ad839038bb00103ff0c3482fa7a31f7a59bb"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\training-loop-before-dump.log",
+      "sha256": "ac4c62646ea66d2e4551a5696e2b2f4634e55ec828b638010a2a760dc0358174"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\training-loop-after-dump.log",
+      "sha256": "71d18da1888f12a547e805f77bb9b791ca2ac27fcde553684ed04e600c94c754"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\training-loop-baseline-play-20261030.log",
+      "sha256": "0900597f83f6f75593f55e509ae208a6dada008aba1aba4d18bae5185ae6a9d1"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\training-admission-selftest.log",
+      "sha256": "dfdbc57476e6274e3adb0e479837ffdb19aa367f13fcf3599c14a9c622842156"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\training-loop-core-selftest.log",
+      "sha256": "c1ab80a317965b29e4553d90df7205d2ea25462e6d32bebe2a6628b14bd44344"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\training-loop-empty-data-rejection.log",
+      "sha256": "6fd37ced87a6750ccb6964a863c3b976b1fea56ad8846d54e68d821092caf209"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\training-loop-verify-rejection.log",
+      "sha256": "fe069ec45034e09bd2bc96333fb14f2173e6d7b5c8d0b13e0f5526d012c714ce"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\training-loop-worker\\inventory.json",
+      "sha256": "052866d328dfce3ede891af87dfcfac1321157445ae5a1feef2f11b1ec1bbdee"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\patch-training-admission.py",
+      "sha256": "6af554a98364afc72d74c3bce6b201d5af8542b3c2676f9a1491ae73acecee11"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\record-training-loop-baseline.py",
+      "sha256": "8e8bc7f89016b0d6cf153fb8987c32f71c2d6a9f83d9fe557881660d11ece611"
+    }
+  ]
+}

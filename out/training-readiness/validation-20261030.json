@@ -1,0 +1,19 @@
+{
+  "date": "2026-10-30",
+  "tests": {
+    "admission": 17,
+    "core": 979,
+    "audit_tools": 36
+  },
+  "integration": {
+    "sampled_games": 10,
+    "accepted": 0,
+    "rejected": 10,
+    "written_rows": 0,
+    "expected_dump_exit": 2,
+    "legacy_missing_report_rejected": true,
+    "empty_report_rejected": true
+  },
+  "source_and_evidence_hashes_checked": true,
+  "baseline_sha256": "d35887803ca9faffa32e5664fbfda093a6b3b3faa90e7130d41bb8373a779f7e"
+}

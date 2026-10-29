@@ -63,6 +63,7 @@ internal static class Program
 
         try
         {
+            if (cmd == "admission-selftest") return AdmissionSelfTest.Run();
             string dataDir = FindDir("card-effects.json");
             var db = CardDatabase.Load(dataDir);
             var vecs = StateEncoder.LoadCardVectors(FindDir("card-vectors.json"));
@@ -123,7 +124,16 @@ internal static class Program
         string outPath = opts.GetValueOrDefault("out", "nn-data.bin");
         int everyTurns = GetInt(opts, "every", 1);
 
+        if (games <= 0 || everyTurns <= 0) throw new ArgumentException("--games 和 --every 必须大于零");
+        if (KLink.Bot.Effects.Blueprint.KismetLibrary.Default is null)
+            throw new InvalidOperationException("蓝图 IR 未加载，不能生成训练数据");
         var decks = MetaDecks.All;
+        var expanded = decks.Select(d => ExpandDeck(db, d.Name)).ToArray();
+        var quality = new QualityReport { Seed=seed, RequestedGames=games, Dim=Dim, DeckCount=decks.Count };
+        string inputDir = FindDir("card-effects.json");
+        foreach (string file in Directory.EnumerateFiles(inputDir,"*.json").OrderBy(x=>x,StringComparer.Ordinal))
+            quality.InputsSha256[Path.GetFileName(file)] = TrainingAdmission.Hash(file);
+        quality.InputsSha256["KLink.Bot.dll"] = TrainingAdmission.Hash(typeof(MatchEngine).Assembly.Location);
         Console.WriteLine($"自对弈 {games} 局；每局从 {decks.Count} 套元卡组里**随机抽 2 套不同的**"
                           + "（seed 派生的独立随机流）+ 左右随机互换，输出 " + outPath);
 
@@ -166,9 +176,8 @@ internal static class Program
             string dbName = decks[rightIdx].Name;
             if (da == dbName) continue;               // 抽签逻辑已保证不等，留作断言（不该触发）
 
-            var left = ExpandDeck(db, da);
-            var right = ExpandDeck(db, dbName);
-            if (left.Count == 0 || right.Count == 0) continue;
+            var left = expanded[leftIdx];
+            var right = expanded[rightIdx];
 
             var engine = new MatchEngine(db, left, right, seed + (ulong)g);
             var botL = new GreedyBot("L");
@@ -189,12 +198,22 @@ internal static class Program
                 }
             }
 
-            float label = engine.State.IsFinished
-                ? (engine.State.Winner == Side.Left ? 1f : 0f)
-                : 0.5f;
-            if (label == 1f) leftWins++;
-            else if (label == 0f) rightWins++;
-            else { unfinished++; continue; }   // 未分胜负的局整个丢掉
+            if (!engine.State.IsFinished) unfinished++;
+            var reasons = TrainingAdmission.Check(engine.State.IsFinished, engine.State.Winner,
+                engine.Api.Vm.FaultedPrograms, engine.Api.Vm.UnsupportedOps, engine.UnimplementedCalls,
+                KLink.Bot.Effects.Blueprint.KismetLibrary.Default is not null,
+                snapshots.Count, snapshots.All(s=>s.V.All(float.IsFinite)));
+            var episode = new QualityGame { Game=g, Seed=seed+(ulong)g, LeftDeck=da, RightDeck=dbName,
+                Accepted=reasons.Length==0, Reasons=reasons, Turns=engine.State.Turn,
+                ObservedSamples=snapshots.Count, WrittenSamples=reasons.Length==0 ? snapshots.Count : 0,
+                VmFaults=engine.Api.Vm.FaultedPrograms,
+                UnsupportedOps=engine.Api.Vm.UnsupportedOps.ToDictionary(p=>p.Key,p=>p.Value),
+                Calls=engine.UnimplementedCalls.ToDictionary(p=>p.Key,p=>p.Value) };
+            quality.Games.Add(episode);
+            if (!episode.Accepted) { quality.RejectedGames++; continue; }
+            quality.AcceptedGames++;
+            float label = engine.State.Winner == Side.Left ? 1f : 0f;
+            if (label == 1f) leftWins++; else rightWins++;
 
             // 对位编号（**新格式的核心**）：让「优势回归 / 对位内成对排序」这类
             // 需要在训练时按对位做中心化的目标不用去读外部清单文件。
@@ -250,7 +269,14 @@ internal static class Program
         sb.Append("]}");
         File.WriteAllText(manPath, sb.ToString(), new UTF8Encoding(false));
         Console.WriteLine($"对位清单 {manPath}（{new FileInfo(manPath).Length / 1024.0:F0} KB）");
-        return 0;
+        bw.Flush(); fs.Flush();
+        quality.Rows=rows; quality.DataSha256=TrainingAdmission.Hash(outPath);
+        string qualityPath=outPath+".quality.json";
+        File.WriteAllText(qualityPath,JsonSerializer.Serialize(quality,TrainingAdmission.Json),new UTF8Encoding(false));
+        Console.WriteLine($"训练准入：接受 {quality.AcceptedGames} / 拒绝 {quality.RejectedGames}，仅写入已接受对局；清单 {qualityPath}");
+        foreach (var reason in quality.Games.SelectMany(g=>g.Reasons).GroupBy(x=>x).OrderByDescending(g=>g.Count()).ThenBy(g=>g.Key,StringComparer.Ordinal).Take(10))
+            Console.WriteLine($"  {reason.Key}: {reason.Count()} 局");
+        return quality.RejectedGames>0 || rows==0 ? 2 : 0;
     }
 
     private static List<string> ExpandDeck(CardDatabase db, string deckName)
@@ -258,14 +284,13 @@ internal static class Program
         foreach (var (name, code) in MetaDecks.All)
         {
             if (name != deckName) continue;
-            try
-            {
-                var parsed = DeckCodeParser.Parse(code);
-                return DeckCodeParser.Expand(parsed, db.DeckCodeIds, out _);
-            }
-            catch { return new List<string>(); }
+            var parsed = DeckCodeParser.Parse(code);
+            var cards = DeckCodeParser.Expand(parsed, db.DeckCodeIds, out var unknown);
+            if (unknown.Count>0 || cards.Count==0)
+                throw new InvalidDataException($"卡组 {deckName} 无法完整解析，未知码：{string.Join(',',unknown)}");
+            return cards;
         }
-        return new List<string>();
+        throw new ArgumentException("未知卡组："+deckName);
     }
 
     // ==================== train ====================
@@ -273,6 +298,7 @@ internal static class Program
     private static int Train(Dictionary<string, string> opts)
     {
         string path = opts.GetValueOrDefault("data", "nn-data.bin");
+        TrainingAdmission.VerifyDataset(path);
         int epochs = GetInt(opts, "epochs", 30);
         // ⭐ 报告节奏（**纯日志开关，不参与任何训练算式**）。
         //    默认 5 = 历史行为（第五轮之前是 `ep % 5 == 0 || ep == epochs`，写死的）。
@@ -643,6 +669,7 @@ internal static class Program
     private static int Verify(Dictionary<string, string> opts)
     {
         string path = opts.GetValueOrDefault("data", "nn-data.bin");
+        TrainingAdmission.VerifyDataset(path);
         string modelPath = opts.GetValueOrDefault("model", "nn-model.bin");
         int splitSeed = GetInt(opts, "split-seed", -1);
 
@@ -895,6 +922,9 @@ internal static class Program
     {
         Console.WriteLine("""
             NNTrain —— 验证向量方案的最小管线
+            admission-selftest  检查训练准入、清单及数据完整性
+            dump 拒绝异常/未支持/未结束对局；有拒绝或无样本时返回2。
+            train/verify 要求匹配的 .quality.json；诊断通过不等于规则已认证。
 
               NNTrain dump   --games 10000 --out nn-data.bin [--seed 1] [--every 1]
               NNTrain train  --data nn-data.bin [--epochs 30] [--hidden 64]

@@ -473,5 +473,21 @@
       "review_basis": "Primary reviewed precise earlier claim and subsequent partial reports; no whole-function certification."
     }
   ],
-  "percentage_policy": "Do not compute overall completion before authoritative PvP closure and sized, non-overlapping work items."
+  "percentage_policy": "Do not compute overall completion before authoritative PvP closure and sized, non-overlapping work items.",
+  "execution_focus": {
+    "date": "2026-10-30",
+    "objective": "Reliable headless training loop first, retaining complete PvP rule restoration as final scope.",
+    "active_plan": "klink bot/docs/训练闭环推进-20261030.md",
+    "measurements": "out/training-readiness/baseline-20261030.json",
+    "priority_order": [
+      "Unresolved Blueprint flow in ordinary self-play",
+      "Unfinished episode root causes",
+      "Missing invoked card entries",
+      "Decision-level adapter and choice contracts",
+      "Admitted starter dependency closure"
+    ],
+    "deferred": "Unproven normal-PvP boundary refinements unless they block the active loop.",
+    "batch_policy": "Integrate related changes and run complete tests/inventories once per completed batch.",
+    "rule_scope_or_completion_denominator_changed": false
+  }
 }

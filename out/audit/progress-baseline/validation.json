@@ -1,10 +1,9 @@
 {
   "date": "2026-10-30",
-  "batch": "RULE-545",
+  "batch": "training-loop-admission",
   "documentation_records": 545,
   "reports": 420,
-  "verification_scope": "Given-array T38 observer chain,432 saved-AST vectors and864 simulator cases. ID exclusion patch with before-failing test; full979 tests. Prior21 scopes revalidated by exact source changes. Native subscription iteration and valid client aliases remain open.",
-  "independently_rehashed_this_batch_files": 21,
+  "verification_scope": "Training readiness baseline and fail-closed dataset admission only. No kernel rules changed;22 prior partial source bindings unchanged. Rule scope/denominator and whole-card certification unchanged.",
   "baseline_counts": {
     "ledger_rule_records": 545,
     "json_reports": 420,
@@ -71,14 +70,15 @@
     "remaining_work_percent": null
   },
   "tests": {
-    "full_selftest": 979,
+    "training_admission": 17,
+    "core_selftest": 979,
     "baseline_tool": 20,
     "matrix_tool": 16
   },
   "no_semantic_certification_promotion": true,
   "files_sha256": {
-    "out/audit/progress-baseline/baseline.json": "2b6cbfa57a9a97eda81cc378fbe46f1802ad738339e206c5bb3f8782cb4c07fb",
-    "klink bot/docs/audit-work-plan.json": "57ab31a9d3d71d412ba38b770ea63298e45bdaa02eeaaf184726e78295308954",
-    "klink bot/docs/audit-matrix-reviews.json": "a9164046015dc2208ca686c46c6eda5bc27289a88ea806533154af6cb9897fc0"
+    "out/audit/progress-baseline/baseline.json": "05f8541fa40cf198d579dd86b8675666facbdbf8f26598a6a354b0580531548c",
+    "klink bot/docs/audit-work-plan.json": "f6aa9ed085e6f24b0b9faaa9959040407fedb1c23bea8f4a96e22d875cce4ef9",
+    "out/training-readiness/baseline-20261030.json": "d35887803ca9faffa32e5664fbfda093a6b3b3faa90e7130d41bb8373a779f7e"
   }
 }

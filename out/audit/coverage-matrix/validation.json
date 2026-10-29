@@ -1,6 +1,6 @@
 {
   "date": "2026-10-30",
-  "batch": "RULE-545",
+  "batch": "training-loop-admission",
   "counts": {
     "cards": 2019,
     "cards_with_own_ir": 1709,
@@ -24,8 +24,8 @@
   },
   "tests": 16,
   "work_plan_synced": true,
-  "prior_partial_source_scopes_revalidated": 21,
-  "new_partial_units": 1,
-  "matrix_sha256": "2faa01a8d2f87f29627efe7bd79b525be612e3de33f4e55ddda00c6cdecc9d26",
+  "prior_partial_source_bindings_unchanged": 22,
+  "new_partial_units": 0,
+  "matrix_sha256": "d3295d37ca8ed3bb985f5e14e33ca5d7eacbd03544e8f10c8486dbe1f6074c7d",
   "no_semantic_certification_promotion": true
 }
