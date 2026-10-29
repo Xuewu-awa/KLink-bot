@@ -1,0 +1,134 @@
+{
+  "rule": "RULE-535",
+  "date": "2026-10-29",
+  "publishing_branch": "DinkyPuffer",
+  "base_commit": "89df759ee34208d205819f3e423773313ae345b3",
+  "client_exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "kernel_changed": true,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "finding": "ExecuteAttackCard queries both saved side HQ IDs after damage callbacks, compares cached defenderCardID and then removes retained combat deaths. Simulator used defender type/owner for victory and legacy availability/type guards for single-death removal; pair leave helpers also skipped location types.",
+  "authoritative_sequence": [
+    "ExecuteAttackCard4794B:3525/3559 query left HQ ID and compare cached defenderID;3607 winner2.3655/3689 query right ID;3737 winner1. These follow deal effects and saved defenderDestroyed.",
+    "Single dead attacker4508/4542 or defender4589/4623 invokes before-destroy and ApplyRemoveCardFromBoard without a new availability guard.",
+    "Both dead:3967/4001 before-destroy;4035/4093 before-leave;4151/4208 movement;4265/4299 after-leave;4362/4442 destruction. Calls have no outer location-card type filter.",
+    "Batch ApplyDamageToMultipleCards6789..7013 queries client HQ then opponent HQ and checks board location; it consumes stored references supplied by RULE-534. No new batch semantic certification."
+  ],
+  "changes": [
+    "Compare cached defender ID to saved left/right HQ IDs, choose winner by matched side, and honor callback-time explicit HQ rebinding.",
+    "Add combat-specific removal adapter with combat flag and without legacy availability/type guard or explicit destroy notice.",
+    "Permit location-typed retained victims in both-death before/after-leave phases. Public ordinary Destroy guards remain."
+  ],
+  "validation": {
+    "worker_statements_independently_verified": 64,
+    "branch_stack_vectors": 24,
+    "script_bytes": {
+      "CardFunctionsStub:GetLocationCardBySide": 0,
+      "BP_GameState_Battle_C:SetLocationCardBySide": 239,
+      "BP_GameState_Battle_C:GetLocationCardBySide": 195,
+      "BP_GameState_Battle_C:ClearGameStateVariables": 1363,
+      "BP_CardFunctions_C:HQ_DestroyedEndMatch": 335,
+      "BP_CardFunctions_C:ApplyRemoveCardFromBoard": 1009,
+      "BP_CardFunctions_C:ExecuteAttackCard": 4794,
+      "BP_CardFunctions_C:ApplyDamageToCard": 2312,
+      "BP_CardFunctions_C:ApplyDamageToMultipleCards": 10676,
+      "BP_CardFunctions_C:ExecuteOnBeforeOtherCardDestroyed": 788,
+      "BP_CardFunctions_C:GetLocationCardBySide": 112
+    },
+    "new_regression_cases": 2,
+    "controlled_scenarios": 20,
+    "focused_before": "Original two regressions both failed: mutable HQ owner and Discard victim; final test adds leave-notice assertion.",
+    "focused_after": "2/2 passed",
+    "selftest_passed": 962,
+    "selftest_total": 962,
+    "prior_partial_units_scope_revalidated": 10
+  },
+  "scenarios": [
+    "8 HQ cases: both sides, unchanged/owner moved between side lists/type changed/explicit slot rebound during deal callback.",
+    "12 retained death cases: both sides, single/both deaths, callback heals and moves victim to Discard/NotAvailable or changes it to location type; assert death hooks, leave notice and no extra explicit destroy notice.",
+    "24 isolated captured-AST HQ branch vectors verify saved lethal condition, left priority and side winner. No whole combat interpreter claim."
+  ],
+  "remaining": [
+    "Scoped to positive retained IDs, ordinary attack action mode and saved lethal flags. Captured-ID/object replacement, native pointer lifetime, nonpositive IDs and action/replay routing are not certified.",
+    "Combat raw defense/getTotalDefense boundaries, excess arithmetic, full receive/deal callback semantics, mobilize and global registration ordering remain separate audit scopes.",
+    "Pair leave phases now permit location-typed retained objects; all leave-observer and destruction payload ordering across arbitrary mutations is not fully certified.",
+    "Controlled type/owner/rebinding/heal/zone perturbations are not legal-card reachability proofs. No new complete card IR integration or whole-card certification; existing combat card regressions pass.",
+    "Batch damage reads stored client/opponent HQ references after removal, rather than defender ID comparison; this matches the existing query structure after RULE-534, but complete batch phases and HQ statistics remain open."
+  ],
+  "source_bindings": {
+    "src/KLink.Bot/Effects/CardApi.cs": "49b85f59c60f426fe7c0b4aae3887b3cad210a94276400b1dc0882d3011cb3d2",
+    "src/KLink.Bot/Engine/MatchEngine.cs": "09e200d1dfb7a3b877620d92713f6fff94b406a75b0245cb3c9ea513c1607d3e",
+    "src/KLink.Bot/Engine/GameState.cs": "4de9bc66ae9e38684d129778cc7e220ba43e25205c7b9920b5e1b0aa2a31f143",
+    "src/KLink.Bot/Engine/CardInstance.cs": "350c5d79a51fe68af6af4769abd18764dcbfa36cdcae06cc91b7d553754551da",
+    "klink bot/docs/card-ir.json": "526812fa8dc0934f1d6ecd3794053871fa6b701c2b5df3fd1edb3c38513ba2e9",
+    "tools/BotSim/SelfTest.cs": "61cfc383390d2e13683b60bd9c2287ed7cf78cc4426e08621e0188db0f249dfa",
+    "tools/BotSim/SelfTest.CombatDeath.cs": "68fb1d0a4a6efafe3d2930938c95ac932cb1887d7b5aab6eceb447fc5de60540",
+    "tools/BotSim/SelfTest.HqSlots.cs": "c846f80b0cdace729fdb87839eb33b19eaff7d4e5b6cf435a333cf2bf2071b4f"
+  },
+  "evidence_bindings": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule535-combat-hq-functions-20261029.json",
+      "sha256": "81d4a681c025c5dec060c013e77457d1d901fe32427fd3013bf6a635d1c08c7a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule535-combat.py",
+      "sha256": "1e3072326d0a92db75a9be5875031b3ab2c55177f64a9c39a083bd6575becc4c"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-498.py",
+      "sha256": "254664d0aa1146756993fda4ac54e58891709c0ec5bcdd2cfa852f874c4e67ef"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\prepare-rule535-worker.py",
+      "sha256": "b2ca1a5a1f8500011f84cc9b14038833a83c886675c002ec8351d1e8078f455a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule535-worker\\input.json",
+      "sha256": "99b491b296d3f105a25607ba388f55f7b58334855da5520c71ee54e03c5c2f61"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule535-worker\\output.json",
+      "sha256": "3474e8340c3ae7ec7e11eb9c9014833b0b1a37ad3254e6d7251f02d51dde0d07"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule535-worker\\extract.py",
+      "sha256": "dfbc6e11ade5f1d5ab1c6e065bc279d71fd03ab393d94ad046c87f090a6d9ba1"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule535-combat-hq-branch-reference.json",
+      "sha256": "6c79414e6b12239c017a5a3e80f8b3e5dd1c837bbe2661f128452f1592d1e8d7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule535.py",
+      "sha256": "89875c30acaed29f051d5a9a96fd3f5e46ec74f7064c55d3f47ad193dbf74b44"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule535-verified-20261029.json",
+      "sha256": "767783e73ce3fde49c659e7971eb35e69611ee09aca793f49de91638e56fd33b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule535-prior-unit-scope-revalidation.json",
+      "sha256": "6031bd839f4a0bc133c4af3649102d86c1966a28ec5deea82bbc7b9ad31b6bb2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\patch-rule535.py",
+      "sha256": "4cd5cec5c39fb254f9316abf6120b070c7fd92aa1746189bcf295020249df7af"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule535-focused-before.log",
+      "sha256": "b8273231c606e0fc1a0280bb5accb4b0877e630c346a1431cbc7ad62d2e7fc31"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule535-focused-after.log",
+      "sha256": "d5bb1162606baf1b301a745675a58763a66fb0b702fa822b27961a28451ad3d7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule535-selftest-final.log",
+      "sha256": "09a94a93c6e5666e2464783f2476610bd8249d742eace1fe6d6977fb04382c70"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\report-rule535.py",
+      "sha256": "1a872e483a6801deba13cf9171ac80985ddaad1e430b2ab12cc7480ceb3ac48c"
+    }
+  ]
+}

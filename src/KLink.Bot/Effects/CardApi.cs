@@ -1953,6 +1953,7 @@ public sealed partial class CardApi
         int toAttacker = CalculateCombatDamage(defender, attacker, false);
         toDefender = ExecuteOnDealDamageAddDamageAfterCalc(attacker, defender, toDefender, true, true, false);
         toAttacker = ExecuteOnDealDamageAddDamageAfterCalc(defender, attacker, toAttacker, true, false, false);
+        int defenderCardId = defender.CardId; // Cached before receive/deal callbacks.
         // ExecuteAttackCard i=104/202 captures locations before attack flags and receive callbacks.
         var attackerOldLocation = attacker.Location;
         var defenderOldLocation = defender.Location;
@@ -2008,15 +2009,22 @@ public sealed partial class CardApi
         }
         if (toDefender > 0) ExecuteOnCardDealDamageEffects(defender, attacker, toDefender, true, false, false);
         if (toAttacker > 0) ExecuteOnCardDealDamageEffects(attacker, defender, toAttacker, true, true, false);
-        if (defenderDestroyed && defender.IsHq)
+        // RULE-535: ExecuteAttackCard i=3525/3655 matches saved side HQ IDs,
+        // left first, after damage effects. Type and mutable owner are not identity.
+        if (defenderDestroyed && State.GetLocationCardId(Side.Left) == defenderCardId)
         {
-            State.Finish(defender.Owner.Opposite(), "Victory_DestroyHQ");
+            State.Finish(Side.Right, "Victory_DestroyHQ");
+            return (toDefender, toAttacker);
+        }
+        if (defenderDestroyed && State.GetLocationCardId(Side.Right) == defenderCardId)
+        {
+            State.Finish(Side.Left, "Victory_DestroyHQ");
             return (toDefender, toAttacker);
         }
         if (!defenderDestroyed && toDefender > 0 && defender.Keywords.Contains(Keyword.Mobilize)) RemoveMobilize(defender);
         if (attackerDestroyed && defenderDestroyed) _engine.DestroyCombatPair(defender, attacker, defenderOldLocation, attackerOldLocation);
-        else if (attackerDestroyed) _engine.Destroy(attacker, defender, destroyedInCombat: true);
-        else if (defenderDestroyed) _engine.Destroy(defender, attacker, destroyedInCombat: true);
+        else if (attackerDestroyed) _engine.DestroyFromCombatDamage(attacker, defender);
+        else if (defenderDestroyed) _engine.DestroyFromCombatDamage(defender, attacker);
         if (!attackerDestroyed && toAttacker > 0 && attacker.Keywords.Contains(Keyword.Mobilize)) RemoveMobilize(attacker);
         return (toDefender, toAttacker);
     }

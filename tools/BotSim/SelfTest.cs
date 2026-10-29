@@ -20,6 +20,8 @@ internal static partial class SelfTest
 
     private static readonly List<Case> Cases = new()
     {
+        new("战斗死亡：保存总部ID与回调后重绑定", CombatHqSavedIdentity),
+        new("战斗死亡：保留对象和双方死亡回调", CombatRetainedDeathCallbacks),
         new("总部保存槽：绑定、换主、重绑定与局部清理", HqSlotLifecycle),
         new("总部保存槽：致死回调与血腥镰刀真实IR", HqSlotDamageIntegration),
         new("伤害总部：按侧别ID确定胜方不按可变归属", DamageHqSideIdentity),

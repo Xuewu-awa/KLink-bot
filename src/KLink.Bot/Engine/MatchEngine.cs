@@ -3251,6 +3251,11 @@ public sealed class MatchEngine
     internal void DestroyFromAppliedDamage(CardInstance card, CardInstance? destroyer)
         => DestroyCore(card, destroyer, false, false, useLegacyGuards: false);
 
+    // ExecuteAttackCard single-death branches use the saved lethal flags and
+    // do not recheck the retained object's availability or location-card type.
+    internal void DestroyFromCombatDamage(CardInstance card, CardInstance? destroyer)
+        => DestroyCore(card, destroyer, true, false, useLegacyGuards: false);
+
     private void DestroyCore(CardInstance card, CardInstance? destroyer, bool destroyedInCombat,
                              bool recordDestroyAction, bool useLegacyGuards)
     {
@@ -3297,7 +3302,7 @@ public sealed class MatchEngine
         var killers = new[] { attacker, defender };
         var oldLocations = new[] { defenderOldLocation, attackerOldLocation };
         for (int i = 0; i < cards.Length; i++) BeforeDestroyed(cards[i], killers[i], true);
-        foreach (var card in cards) FireLeaveTrigger(card, CardLocation.Discard, method: 1);
+        foreach (var card in cards) FireLeaveTrigger(card, CardLocation.Discard, method: 1, includeLocationCards: true);
         for (int i = 0; i < cards.Length; i++)
         {
             // ExecuteAttackCard i=4151/4208 calls CardLocationMoved separately:
@@ -3307,7 +3312,7 @@ public sealed class MatchEngine
             Api.RefreshLocationStatus(new[] { oldLocations[i], CardLocation.Discard });
             State.CardMoved?.Invoke(cards[i], oldLocations[i], CardLocation.Discard, false, CardMoveReason.Destroyed);
         }
-        for (int i = 0; i < cards.Length; i++) FireAfterLeaveTrigger(cards[i], CardLocation.Discard, oldLocations[i]);
+        for (int i = 0; i < cards.Length; i++) FireAfterLeaveTrigger(cards[i], CardLocation.Discard, oldLocations[i], includeLocationCards: true);
         for (int i = 0; i < cards.Length; i++)
             ExecuteDestroyed(cards[i], killers[i], oldLocations[i], new[] { cards[i].CardId, killers[i].CardId }, true);
     }
