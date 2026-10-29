@@ -1,0 +1,116 @@
+{
+  "rule": "RULE-542",
+  "date": "2026-10-30",
+  "publishing_branch": "DinkyPuffer",
+  "base_commit": "199f93cf43a7bb6c6514d274b9991f2ad1c86b3b",
+  "client_exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "kernel_changed": true,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "findings": [
+    "Current T38 after both observer loops executes max(tmpDamage,0) at1508 and assigns finalDamage at1550. Simulator returned finalDamage without this unconditional last floor.",
+    "A valid suppressed source bypasses the own-event path and retains raw DamageAmount at157. With no registered observers/deferred entries, negative input reached the old direct return. New regression reproduced INT_MIN returning INT_MIN instead of zero.",
+    "T38 final bound is lower-only. Positive100 andINT_MAX remain unchanged; it is distinct from T37 final clamp0..99 at1300."
+  ],
+  "changes": [
+    "Replace the T38 final return with Math.Max(finalDamage,0), preserving own/observer/per-step clamps, immunity gate, callback ordering, signed additions and lack of upper cap."
+  ],
+  "validation": {
+    "authoritative_ast_vectors": 20,
+    "simulator_scenarios": 40,
+    "focused_before": "1 failed on original production source after final fixture packaged; INT_MIN negative output observed",
+    "focused_after": "1 passed",
+    "full_selftest": 976,
+    "prior_partial_units_exact_scope_revalidated": 18
+  },
+  "evidence_method": "Fresh read-only selected UFunction capture, saved raw script/hash/FName decode, suppressed branch/empty-loop/final-return dataflow and20 mechanically generated DeepSeek vectors independently derived from AST. No game process writes, injection, function invocation or match actions.",
+  "source_bindings": {
+    "src/KLink.Bot/Effects/CardApi.cs": "f715913937306cb94105f8220c34a05782c2edc9736e94342114f132aa154211",
+    "tools/BotSim/SelfTest.cs": "44f85c320e999cacd101cfb552060c743aab85417777edf0916f6601f536d1f3",
+    "tools/BotSim/BotSim.csproj": "abab008cb54e520ce2682ecbf2cbdddcb44a7fa13137fe72fbd7bcdbddd5b072",
+    "tools/BotSim/SelfTest.DamageModifierFloor.cs": "8a81c4282440039ab29364ef23259cc52d40752ed049f1acf6f05c9693a581d6",
+    "tools/BotSim/Fixtures/damage-modifier-final-floor-20261030.json": "729b0c454cf8bf4ff12abe2f4244cd7dbe6a3ee844ff5f3f4a63051ca7534ed7"
+  },
+  "evidence_bindings": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule542-damage-modifiers-20261030.json",
+      "sha256": "654105c7d97115afbb2f9572e079d7e0dee2688c66ef59b7ffc9f8c1557b91eb"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule542-modifiers.py",
+      "sha256": "b13474d69e9eb4d73b3193d85bb0a417b291e720d9a8263ff3cc3e53f7691389"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-498.py",
+      "sha256": "254664d0aa1146756993fda4ac54e58891709c0ec5bcdd2cfa852f874c4e67ef"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\prepare-rule542-worker.py",
+      "sha256": "25ba39e101bbfe4b74f38f78b3763ae4451cd3ecadafc3e6e30583e5c09f20d3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule542-worker\\input.json",
+      "sha256": "8f7ce315c49f0ccf3de0853564d1e6e9b5cece59a23929dc24d4988bf26f7b83"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule542-worker\\output.json",
+      "sha256": "53b01933769c201e497eff830d7f3a4da42a60187b85f469df32195751d65c68"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule542-worker\\calculate.py",
+      "sha256": "f91971c6bec08e997167389515f6972b0cfe88279d096a772f2bf2f43e140d5a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\Fixtures\\damage-modifier-final-floor-20261030.json",
+      "sha256": "729b0c454cf8bf4ff12abe2f4244cd7dbe6a3ee844ff5f3f4a63051ca7534ed7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule542.py",
+      "sha256": "e4bf66817fd2454be8856cdaa0c5ab25bd0edd787b2eb11ce29b1f630159d624"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule542-verified-20261030.json",
+      "sha256": "a20f051bf360e2650282da2a5e834bb1a0031ffe53919763d852a572dceca6c9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule542-prior-unit-scope-revalidation.json",
+      "sha256": "dd2f7cfde3b83ac5922fef80f388b11855bd0cf788619acaf265df6f7007a56b"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\patch-rule542.py",
+      "sha256": "40d515e4c10026e3a0a4456b27a4153b6bd810a43cd54b1a1b1aac7b720238a3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\prepare-rule542-test.py",
+      "sha256": "2c98e0d780d3906ef3c9d91a7731fcc5b78a23fcf413e909f4fef44f5c95e2b5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\package-rule542-fixture.py",
+      "sha256": "a97cb058fadeb1e08a40f0277fe4277a5895a362a6ac7ce186da9841f2af2348"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule542-before-test.log",
+      "sha256": "356d372037641f9bc998d5739da74419f2ae9c7c7baddb446b0d4e58cf247569"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule542-after-test.log",
+      "sha256": "532514d70fe44c870a4518bd728a0cf6ff78137e7537fb4e911e49b3be2c48b0"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule542-selftest.log",
+      "sha256": "89899b0f72f833e1688398c5a14cf863264dcaa4e2615ea693c3dae9125324eb"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\report-rule542.py",
+      "sha256": "832ce9d4a2edec86a9c29b15fcd1576f1ecb4fb4bea15d563a352efc06e9dc01"
+    }
+  ],
+  "remaining": [
+    "Final output lower bound only, scoped to valid action-process calls. IsActionProcess=false, invalid UObject/default wrappers and receiver lifetime are not certified.",
+    "Forty simulator scenarios use suppressed valid source, empty registered/deferred observers, two sides, immunity and20 saved-AST vectors including int32 extremes; no arithmetic overflow operation is executed by this fixture.",
+    "No current legal-card route producing a negative T38 entry value is established by this boundary test. The discrepancy is a shared API parity defect, not evidence of a frequent PvP mismatch.",
+    "Native unsuppressed no-local default return and its pre-observer clamp require separate proof. No new claim that all own-event defaults or inherited dispatch are restored.",
+    "T37/T38 selected scripts independently decode, but signed addition under callbacks, rerun/deferred/stopAdding behavior and container ordering remain separate bounded scopes. Earlier scope evidence is preserved without broad recertification.",
+    "No whole-card certification; synthetic boundary probe uses archived card definitions solely as neutral objects, and historical replays are not authority."
+  ]
+}

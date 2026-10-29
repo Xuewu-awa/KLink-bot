@@ -1,0 +1,105 @@
+{
+  "scope": "Current T38 action-process, suppressed valid dealer and empty trigger/deferred arrays. Immune early output or saved AST final max; both sides tested separately. No own native default or callback arithmetic certificate.",
+  "rows": [
+    {
+      "damage": -2147483648,
+      "immune": false,
+      "expected": 0
+    },
+    {
+      "damage": -2147483648,
+      "immune": true,
+      "expected": 0
+    },
+    {
+      "damage": -100,
+      "immune": false,
+      "expected": 0
+    },
+    {
+      "damage": -100,
+      "immune": true,
+      "expected": 0
+    },
+    {
+      "damage": -7,
+      "immune": false,
+      "expected": 0
+    },
+    {
+      "damage": -7,
+      "immune": true,
+      "expected": 0
+    },
+    {
+      "damage": -1,
+      "immune": false,
+      "expected": 0
+    },
+    {
+      "damage": -1,
+      "immune": true,
+      "expected": 0
+    },
+    {
+      "damage": 0,
+      "immune": false,
+      "expected": 0
+    },
+    {
+      "damage": 0,
+      "immune": true,
+      "expected": 0
+    },
+    {
+      "damage": 1,
+      "immune": false,
+      "expected": 1
+    },
+    {
+      "damage": 1,
+      "immune": true,
+      "expected": 0
+    },
+    {
+      "damage": 98,
+      "immune": false,
+      "expected": 98
+    },
+    {
+      "damage": 98,
+      "immune": true,
+      "expected": 0
+    },
+    {
+      "damage": 99,
+      "immune": false,
+      "expected": 99
+    },
+    {
+      "damage": 99,
+      "immune": true,
+      "expected": 0
+    },
+    {
+      "damage": 100,
+      "immune": false,
+      "expected": 100
+    },
+    {
+      "damage": 100,
+      "immune": true,
+      "expected": 0
+    },
+    {
+      "damage": 2147483647,
+      "immune": false,
+      "expected": 2147483647
+    },
+    {
+      "damage": 2147483647,
+      "immune": true,
+      "expected": 0
+    }
+  ]
+}

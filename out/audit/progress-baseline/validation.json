@@ -1,25 +1,25 @@
 {
   "date": "2026-10-30",
-  "batch": "RULE-541",
-  "documentation_records": 541,
-  "reports": 416,
-  "verification_scope": "Evidence-only loaded Blueprint direct-call and output-use audit. Prior17 source bindings unchanged. Baseline generator hashed historical evidence without semantic recertification.",
+  "batch": "RULE-542",
+  "documentation_records": 542,
+  "reports": 417,
+  "verification_scope": "Final T38 output floor,20 saved-AST cases and40 simulator scenarios, full976 tests. Prior18 scopes revalidated by exact source transforms, not blind fingerprint refresh. Historical evidence hashed by generator without semantic recertification.",
   "independently_rehashed_this_batch_files": 22,
   "baseline_counts": {
-    "ledger_rule_records": 541,
-    "json_reports": 416,
-    "ledger_rules_with_explicit_json_report": 415,
-    "json_reports_with_explicit_rule_identity": 415,
-    "distinct_declared_file_paths": 5307,
-    "file_binding_claims": 7538,
-    "physical_files_hashed": 5281,
-    "bytes_hashed": 2068573706,
+    "ledger_rule_records": 542,
+    "json_reports": 417,
+    "ledger_rules_with_explicit_json_report": 416,
+    "json_reports_with_explicit_rule_identity": 416,
+    "distinct_declared_file_paths": 5326,
+    "file_binding_claims": 7560,
+    "physical_files_hashed": 5299,
+    "bytes_hashed": 2073371833,
     "binding_states": {
-      "match": 6840,
-      "changed": 698
+      "match": 6857,
+      "changed": 703
     },
     "changed_binding_roles": {
-      "kernel_or_regression_source": 644,
+      "kernel_or_regression_source": 649,
       "other_audit_artifact": 14,
       "client_executable": 31,
       "captured_or_extracted_data": 1,
@@ -28,19 +28,19 @@
     },
     "distinct_changed_physical_files": 26,
     "report_provenance_states": {
-      "all_recognized_file_bindings_match": 176,
-      "declared_bindings_changed": 236,
+      "all_recognized_file_bindings_match": 174,
+      "declared_bindings_changed": 239,
       "no_recognized_file_bindings": 4
     },
     "report_version_states": {
-      "declared_current_exe_hash": 256,
+      "declared_current_exe_hash": 257,
       "not_declared": 128,
       "declared_other_exe_hash": 32
     },
-    "historical_remaining_claims": 2210,
+    "historical_remaining_claims": 2216,
     "remaining_dispositions": {
       "partially_addressed": 4,
-      "historical_untriaged": 2206
+      "historical_untriaged": 2212
     },
     "work_units": 14,
     "acceptance_criteria": 42,
@@ -71,15 +71,14 @@
     "remaining_work_percent": null
   },
   "tests": {
-    "focused_output_and_fight": 8,
+    "full_selftest": 976,
     "baseline_tool": 20,
     "matrix_tool": 16
   },
-  "full_selftest_not_rerun": true,
   "no_semantic_certification_promotion": true,
   "files_sha256": {
-    "out/audit/progress-baseline/baseline.json": "4349a2289b5e7338826b56c19465d6d1bae945acf8a8e7cda568509a7bef6010",
-    "klink bot/docs/audit-work-plan.json": "6a37b8261e7c7abc26e57e32c83bc311d14b8251cccb3653f8d5f4599b0e2ed8",
-    "klink bot/docs/audit-matrix-reviews.json": "838df08862b7e0d786f5f2e87d6f3998bf4bd8fb502c2b0d08fcb5c62a7c34d8"
+    "out/audit/progress-baseline/baseline.json": "8bf4e7a90971224fe9bc1bc581671b5c2373bfcdaf3126fed2dd9fc362010b75",
+    "klink bot/docs/audit-work-plan.json": "24e7eb62892c24cf63f17a8fdd441deab8299e035ab78b29ad834a7cb4050084",
+    "klink bot/docs/audit-matrix-reviews.json": "937148752a8bee1c7b65503ca19124dee28e0095788c31836e692e706eed189f"
   }
 }

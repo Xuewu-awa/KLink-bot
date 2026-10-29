@@ -19,6 +19,7 @@
           Link="Data\card-reservation-session-20261019.json" CopyToOutputDirectory="PreserveNewest" />
     <None Include="..\..\klink bot\docs\card-blacklist-session-20261019.json"
           Link="Data\card-blacklist-session-20261019.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="Fixtures/damage-modifier-final-floor-20261030.json" CopyToOutputDirectory="PreserveNewest" />
     <None Update="Fixtures/blacklist-fname-20261019.json" CopyToOutputDirectory="PreserveNewest" />
     <None Update="Fixtures/operation-cost-numeric-reference-20261023.json" CopyToOutputDirectory="PreserveNewest" />
     <None Update="Fixtures/pincer-removal-reference-20261025.json" CopyToOutputDirectory="PreserveNewest" />

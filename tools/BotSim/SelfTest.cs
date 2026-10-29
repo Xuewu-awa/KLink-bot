@@ -20,6 +20,7 @@ internal static partial class SelfTest
 
     private static readonly List<Case> Cases = new()
     {
+        new("伤害修正收尾：抑制来源负值归零且高值不截断", DamageModifierFinalFloor),
         new("预计算输出：无蓝图覆盖的被动零回退", PassiveDefaultZeroContract),
         new("预计算输出：攻击后冲击与通知标志分开", AfterShockOutputPayload),
         new("预计算输出：冲击取伤害修正后的反击结果", AfterShockOutputTiming),

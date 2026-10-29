@@ -1895,7 +1895,9 @@ public sealed partial class CardApi
             finalDamage = Math.Max(finalDamage + AsInt(hit.Outs.GetValueOrDefault("damageToAdd")), 0);
         }
 
-        return finalDamage;
+        // RULE-542: T38 i=1508/1550 always floors the final output,
+        // including suppressed-source paths with no observer callbacks.
+        return Math.Max(finalDamage, 0);
     }
 
     /// <summary>「造成伤害。所有伤害都走这里，保证事件顺序一致。」</summary>
