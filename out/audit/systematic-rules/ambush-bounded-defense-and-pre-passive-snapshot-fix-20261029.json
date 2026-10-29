@@ -1,0 +1,149 @@
+{
+  "rule": "RULE-537",
+  "date": "2026-10-29",
+  "publishing_branch": "DinkyPuffer",
+  "base_commit": "015653b66a2581b0545b358f1565063b4b4574bd",
+  "client_exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "kernel_changed": true,
+  "fully_certified_cards": 0,
+  "historical_replays_authoritative": false,
+  "finding": "CalculateDamageDealt captures bounded dealer defense and total armor before invoking GetPassiveDefenseBuff. Simulator invoked the passive first then used raw current defense/armor, causing incorrect suppression at numeric bounds and when callbacks mutate those fields.",
+  "authoritative_sequence": [
+    "Ordinary AttackCard3807/4004 passes action calculation with before-attack buffs/ignore flags false.",
+    "CalculateDamageDealt4784B:1653 reads getTotalDefense,1694 reads getTotalHeavyArmor,1735 adds them;1781 invokes dealer.GetPassiveDefenseBuff with receiver-calculated damage.",
+    "1835 adds passive amount to saved sum;1881 adds zero in ordinary action mode;1971 compares reverse damage>=threshold and2019 zeros dealer damage on predicted kill.",
+    "511th GetPassiveDefenseBuff264B returns0 when veteran, otherwise incomingDamage minus bounded defense minus armor plus1. Actual repo IR is exercised on fresh non-veteran card.",
+    "Native bounded defense accessor PE bytes revalidated; the fixture supplies valid armor values and passive outputs, not a complete native emulator."
+  ],
+  "changes": [
+    "Snapshot unchecked(bound(defense,0..99)+totalArmor) before passive evaluation.",
+    "Add returned passive amount to that saved scalar, preserving existing ambush gates, modifier calls and retaliation handling."
+  ],
+  "validation": {
+    "script_bytes": {
+      "CardFunctionsStub:GetLocationCardBySide": 0,
+      "BaseCardObject:GetPassiveDefenseBuff": 0,
+      "BP_GameState_Battle_C:SetLocationCardBySide": 239,
+      "BP_GameState_Battle_C:GetLocationCardBySide": 195,
+      "BP_GameState_Battle_C:ClearGameStateVariables": 1363,
+      "BP_CardFunctions_C:HQ_DestroyedEndMatch": 335,
+      "BP_CardFunctions_C:ApplyRemoveCardFromBoard": 1009,
+      "BP_CardFunctions_C:ExecuteAttackCard": 4794,
+      "BP_CardFunctions_C:AttackCard": 4789,
+      "BP_CardFunctions_C:ApplyDamageToCard": 2312,
+      "BP_CardFunctions_C:ApplyDamageToMultipleCards": 10676,
+      "BP_CardFunctions_C:CalculateDamageDealt": 4784,
+      "BP_CardFunctions_C:ExecuteOnBeforeOtherCardDestroyed": 788,
+      "BP_CardFunctions_C:GetLocationCardBySide": 112,
+      "card_unit_511th_regiment_C:GetPassiveDefenseBuff": 264,
+      "card_unit_48th_armored_infantry_C:GetPassiveDefenseBuff": 53
+    },
+    "numeric_rows": 216,
+    "callback_mutation_cases": 2,
+    "real_ir_cases": 1,
+    "new_regression_cases": 3,
+    "focused_before": "3/3 failed on old production after fixture installed",
+    "focused_after": "3/3 passed",
+    "selftest_passed": 968,
+    "selftest_total": 968,
+    "prior_partial_units_scope_revalidated": 12
+  },
+  "real_card_integration": "Fresh511th Regiment repository passive IR at controlled raw defense-4, armor0, incoming5 returns6. Bounded base0+6 exceeds reverse5, preserving dealer damage7; old raw-base threshold suppressed damage.",
+  "evidence_method": "DeepSeek computes216 formula rows. Primary independently evaluates captured scalar AST nodes, confirms getter/call order and native PE defense clamp, then emits fixture. Two controlled passive callbacks verify snapshot timing in opposite mutation directions.",
+  "remaining": [
+    "216 rows isolate eligible ambush threshold in ordinary action mode: applyBeforeAttackBuffs=false, all ambush gates true, fixed dealer damage7, supplied T37 reverse damage0..99, valid armor0..3 and controlled passive return. All gating combinations, damage previews/before-attack buffs and full combat are not certified.",
+    "CardInstance.Attack already projects unchecked BaseAttack+TemporaryAttack to0..99; no raw-attack input defect was established. Full native attack-accessor revalidation, T37/T38 arithmetic, receiver passive evaluation routing and other calculation outputs remain separate scopes.",
+    "Default BaseCardObject native passive return and all inheritance/native dispatch cases are not newly verified; scalar fixtures use a controlled local override, actual-card regression uses captured511th Blueprint.",
+    "Mutation probe changes defense/armor during a synthetic passive call; current legal-card reachability is not established. Stored negative defense real-IR input is controlled, not a claim about a legal live attack.",
+    "Extreme int32 addition/overflow, malformed UObject/encryption faults, all passive defender variants and global trigger ordering remain open. No whole-card certification.",
+    "HQ statistics, batch damage and other death/identity consumers remain outside this threshold fix."
+  ],
+  "source_bindings": {
+    "src/KLink.Bot/Effects/CardApi.cs": "ff21d6b6d7ec1cd63de18555d054ae9b45b9fcfb2a2cb1e31da28821e1e4f50f",
+    "src/KLink.Bot/Engine/MatchEngine.cs": "144475220eef3658cc97673b702098ac86b568a538e7e9812a8f5472b6f917f9",
+    "src/KLink.Bot/Engine/CardInstance.cs": "350c5d79a51fe68af6af4769abd18764dcbfa36cdcae06cc91b7d553754551da",
+    "klink bot/docs/card-ir.json": "526812fa8dc0934f1d6ecd3794053871fa6b701c2b5df3fd1edb3c38513ba2e9",
+    "tools/BotSim/SelfTest.cs": "03e0d79f46c67a1dd79849be6044f6814170732082d2a6e3b8a0256d17314316",
+    "tools/BotSim/BotSim.csproj": "739dbab6dd8426116884b06eb04a80797f7fb4e5a5c239dfb630f404d7c469ca",
+    "tools/BotSim/SelfTest.AmbushNumeric.cs": "9d492f98507eeecee87957f72c6f94b58f253f82eea31b315ec785b7f7855080",
+    "tools/BotSim/Fixtures/ambush-defense-reference-20261029.json": "47954c3b5fe7d87b8bcd6b642b6f2c1749aebc8f04670d53ac2452d097be70a9"
+  },
+  "evidence_bindings": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule537-ambush-calculation-functions-20261029.json",
+      "sha256": "9d8c5cb8a7defc1fad721b7c37af1feb1d2830c427121379bfc231c2e298ecc2"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\capture-rule537-ambush.py",
+      "sha256": "2d98c69c452df4dcbb620f8e7b760ea09401a254fe4ea1b0b0fa3f6c361b766a"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-kismet-subset-498.py",
+      "sha256": "254664d0aa1146756993fda4ac54e58891709c0ec5bcdd2cfa852f874c4e67ef"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule334-defense-accessors.py",
+      "sha256": "445595b9441d2883b47e2d9a9872f311bcf5e9c15603f255b9a2e826b1659325"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\defense-native-numeric-accessors-pe-20261023.json",
+      "sha256": "8213e9fb22facc40ec5ab1c3d3e7601d0f22318cb774a4fdf34613135cdef274"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule-delay-scope-native-20261020.json",
+      "sha256": "21e36301e3b2c801d2d93202df3ff94055630e06ee67cc9d8fe657dea8a4c543"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\prepare-rule537-worker.py",
+      "sha256": "32ebe9652cff2f42fc86d3854c8f224f5f0f75f53d91463bcf09dc87883eea46"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule537-worker\\input.json",
+      "sha256": "0f3db7c1ac9b42c479a23fcd10f3eaa6f9534f4e0b318aabddfb983acc46d490"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule537-worker\\output.json",
+      "sha256": "f06deecd4dcab939a68b692b1ca136542ffda64bb17e683b63b08034a2fd5d5e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule537-worker\\calculate.py",
+      "sha256": "c7d96e2fd8829df043b023601b89f7270d25f1c5040a3ed9930a69731b488b2e"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\Fixtures\\ambush-defense-reference-20261029.json",
+      "sha256": "47954c3b5fe7d87b8bcd6b642b6f2c1749aebc8f04670d53ac2452d097be70a9"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\verify-rule537.py",
+      "sha256": "1f09a351fd8ef3bf094fa6fa8832ba07511939a5066ec2183c3d5582d41301b5"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule537-verified-20261029.json",
+      "sha256": "a282ab590be6e04a14d5dc7323378b72b32f3ea10912a3412f4d7eae8c7befd7"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule537-prior-unit-scope-revalidation.json",
+      "sha256": "a4e3394d9a8fc34858e1dfc9d2e120e02144b8f18c6fe09d8e8ff8e00023ac97"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\patch-rule537.py",
+      "sha256": "8c8a41e11df527de7dad10d472a09c8ad35874e79c767578320c72579d21d4dc"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule537-focused-before.log",
+      "sha256": "14f2b4d6edff4953d93340cbb15bb51f15f1eed2b34269e2d127eabab0b07aab"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule537-focused-after.log",
+      "sha256": "cbb35b8c2b72584509c262da7db1b5790477261bfbcf27010a931d0c1e9959f1"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\rule537-selftest-final.log",
+      "sha256": "fd7f91b86384e649764f437d34d6c849cdaf683e022e7a5cea3091b3731abac3"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\report-rule537.py",
+      "sha256": "abc82b5fbe3885632c9b93cde3bbeeab19968ddd593518675a902f8c139fe1d2"
+    }
+  ]
+}

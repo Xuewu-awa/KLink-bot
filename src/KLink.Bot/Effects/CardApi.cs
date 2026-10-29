@@ -2043,9 +2043,13 @@ public sealed partial class CardApi
             && (!MatchEngine.IsBomber(dealer) || receiver.Definition.Type == "fighter" || IsAntiAir(receiver))
             && !dealer.Keywords.Contains(Keyword.Shock) && !MatchEngine.IsBomber(receiver))
         {
+            // RULE-537: i=1653..1735 reads bounded defense and armor before
+            // i=1781 invokes the passive function; its side effects cannot
+            // replace those already-read scalar values.
+            int defenseBeforePassive = unchecked(Math.Clamp(dealer.Defense, 0, 99) + dealer.HeavyArmor);
             var passive = RunOwnLocal(dealer, "GetPassiveDefenseBuff",
                 new Dictionary<string, object?> { ["incomingDamage"] = reverseDamage }, "amount");
-            if (reverseDamage >= dealer.Defense + dealer.HeavyArmor + AsInt(passive?.GetValueOrDefault("amount")))
+            if (reverseDamage >= unchecked(defenseBeforePassive + AsInt(passive?.GetValueOrDefault("amount"))))
                 damage = 0;
         }
         // i=2043..2853: artillery, bomber, anti-air and Shock retaliation gates.

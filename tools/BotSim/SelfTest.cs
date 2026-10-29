@@ -20,6 +20,9 @@ internal static partial class SelfTest
 
     private static readonly List<Case> Cases = new()
     {
+        new("伏击预判：216组有界防御、重甲及被动修正", AmbushThresholdReference),
+        new("伏击预判：防御重甲在被动函数之前缓存", AmbushSnapshotBeforePassive),
+        new("伏击预判：第511团真实被动防御IR", Regiment511AmbushIntegration),
         new("战斗数值：216组有界防御、回调后读取与溢出", CombatBoundedDefenseReference),
         new("战斗数值：预计算入口零负伤害仍写入", CombatPrecomputedSignedWrites),
         new("战斗数值：M18真实IR修正后按有界防御扣血", HellcatBoundedCombatIntegration),

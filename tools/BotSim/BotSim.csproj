@@ -10,6 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Update="Fixtures/ambush-defense-reference-20261029.json" CopyToOutputDirectory="PreserveNewest" />
     <None Update="Fixtures/combat-defense-reference-20261029.json" CopyToOutputDirectory="PreserveNewest" />
     <None Update="Fixtures/damage-defense-clamp-reference-20261029.json" CopyToOutputDirectory="PreserveNewest" />
     <ProjectReference Include="..\..\src\KLink.Bot\KLink.Bot.csproj" />
