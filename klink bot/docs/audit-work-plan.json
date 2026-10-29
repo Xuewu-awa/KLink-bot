@@ -482,13 +482,14 @@
     "active_plan": "klink bot/docs/训练闭环推进-20261030.md",
     "measurements": "out/training-readiness/baseline-20261030.json",
     "priority_order": [
-      "Observed1000game execution blockers, if any, by rejection frequency",
-      "Decision-level adapter and choice contracts",
-      "Observation/model contracts and admitted starter closure"
+      "Decision-level adapter and choice contracts for headless training",
+      "Observation/action/model contracts and admitted starter pool closure",
+      "ThreeQueenOwnlong-episode policy loops retained as rejection/regression seeds",
+      "New execution blockers only when observed"
     ],
     "deferred": "Unproven normal-PvP boundary refinements unless they block the active loop.",
     "batch_policy": "Integrate related changes and run complete tests/inventories once per completed batch.",
     "rule_scope_or_completion_denominator_changed": false,
-    "latest_result": "RULE-548:8exact empty played-event programs andGetEmptyText. Same100 admit100/2635rows. Broad1000 admit974/25328rows, reject26,unfinished3. Value-model interface smoke only; no whole-card or strength certification."
+    "latest_result": "RULE-549 adds6exact empty played-event programs. Same1000 now997admitted/26148rows;3QueenOwnlong episodes stillreject. All500calls advance,pending0;selectedcurrent rawgraph agreeswithreturncall shape. No forcedwinner or policy change. Next:decision-level adapter."
   }
 }

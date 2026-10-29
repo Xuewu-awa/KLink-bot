@@ -1,25 +1,25 @@
 {
   "date": "2026-10-30",
-  "batch": "RULE-548",
-  "documentation_records": 548,
-  "reports": 423,
-  "verification_scope": "GetEmptyText initialized singleton branch and eight exact empty played-event contracts; original25 scopes preserved by inverse byte/JSON proof and full986;2new partial scopes. No whole-card/full-ABI certification.",
+  "batch": "RULE-549",
+  "documentation_records": 549,
+  "reports": 424,
+  "verification_scope": "Six exact empty played-event contracts and diagnosis of3long episodes;old27scopes preserved by inverse test/JSON proof and full987;1new partial scope. No engine/policy/winner/admission source changes. No whole-card/full-ABI certification.",
   "baseline_counts": {
-    "ledger_rule_records": 548,
-    "json_reports": 423,
-    "ledger_rules_with_explicit_json_report": 422,
-    "json_reports_with_explicit_rule_identity": 422,
-    "distinct_declared_file_paths": 5468,
-    "file_binding_claims": 7745,
-    "physical_files_hashed": 5437,
-    "bytes_hashed": 2114021914,
+    "ledger_rule_records": 549,
+    "json_reports": 424,
+    "ledger_rules_with_explicit_json_report": 423,
+    "json_reports_with_explicit_rule_identity": 423,
+    "distinct_declared_file_paths": 5497,
+    "file_binding_claims": 7788,
+    "physical_files_hashed": 5466,
+    "bytes_hashed": 2125920053,
     "binding_states": {
-      "match": 7020,
-      "changed": 725
+      "match": 7061,
+      "changed": 727
     },
     "changed_binding_roles": {
-      "kernel_or_regression_source": 670,
-      "other_audit_artifact": 15,
+      "kernel_or_regression_source": 671,
+      "other_audit_artifact": 16,
       "client_executable": 31,
       "captured_or_extracted_data": 1,
       "parser_or_sdk_source": 4,
@@ -28,18 +28,18 @@
     "distinct_changed_physical_files": 30,
     "report_provenance_states": {
       "all_recognized_file_bindings_match": 174,
-      "declared_bindings_changed": 245,
+      "declared_bindings_changed": 246,
       "no_recognized_file_bindings": 4
     },
     "report_version_states": {
-      "declared_current_exe_hash": 263,
+      "declared_current_exe_hash": 264,
       "not_declared": 128,
       "declared_other_exe_hash": 32
     },
-    "historical_remaining_claims": 2253,
+    "historical_remaining_claims": 2258,
     "remaining_dispositions": {
       "partially_addressed": 4,
-      "historical_untriaged": 2249
+      "historical_untriaged": 2254
     },
     "work_units": 14,
     "acceptance_criteria": 42,
@@ -70,15 +70,15 @@
     "remaining_work_percent": null
   },
   "tests": {
-    "core_selftest": 986,
+    "core_selftest": 987,
     "admission": 17,
     "baseline_tool": 20,
     "matrix_tool": 16
   },
   "no_semantic_certification_promotion": true,
   "files_sha256": {
-    "out/audit/progress-baseline/baseline.json": "09d3fe51da01b58f3e2680a4e8c77729bb8458d7ffa7b38fe63af71cb0128d3b",
-    "klink bot/docs/audit-work-plan.json": "cd81fc9206467927b321310a08956165dd28ce53fef8859c3bf2c442478f518e",
-    "out/training-readiness/eight-default-events-progress-20261030.json": "415c556654329882fa8c6df9e79c9e78026aaa5051d5eff6e8bf66cb3f8d0b6d"
+    "out/audit/progress-baseline/baseline.json": "684f70054a598a1c02b880b7fcfbdda414c6f0a52748039cd1417e697b8f88db",
+    "klink bot/docs/audit-work-plan.json": "45fafec60c3daee962347edd6584a5fafdc294c42b2612b3455896744962bb3d",
+    "out/training-readiness/six-default-events-progress-20261030.json": "6e187f3fe9787be3c73f2bc26b6bbea0b1ca64bd743c9dbc0ef28ae0eec34343"
   }
 }

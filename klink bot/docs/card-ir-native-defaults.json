@@ -24,6 +24,21 @@
         "virtual_target_capture_sha256": "584894e444a1e78ac31efddb6143183adb50859bd73eb3dbfc7f252172e125af",
         "native_emulation_sha256": "2c01b74c260b71e25e51d1eb0f3308f22ea84f6bfc706e906f61fdea3ca9970b",
         "scope": "Selected exact classes have no own reflected functions; same BaseCardObject non-native empty event and ProcessEvent virtual target. Prior contract scope/ABI and runtime-hook limitations remain."
+      },
+      {
+        "cards": [
+          "card_unit_104th_infantry_regiment",
+          "card_unit_sissi",
+          "card_unit_light_infantry",
+          "card_unit_flak_37_spg",
+          "card_unit_panzer_iii_j",
+          "card_unit_swordfish"
+        ],
+        "class_capture_sha256": "a28ea19e8cc6b0618b7a53a0cd85fcabcaa54710241662aa03b060d0eb6ba7ff",
+        "virtual_target_capture_sha256": "7850cb72ac63a2f7c8f81a8774711470082787b939449c54deb0eddd2089e3b1",
+        "native_emulation_sha256": "8d916a227ebbc1795dfc682a64261e00e9ad351691dff5504ffa6c8f0d83c58a",
+        "native_body_recheck_sha256": "e36819247601504fe7b651ce6deaaad4634cdef54a791e88826b44255d1c7726",
+        "scope": "Six selected exact names only, same empty non-native base played event and ProcessEvent virtual target. Prior ABI/hook/other-event/whole-card limitations remain."
       }
     ]
   },
@@ -93,6 +108,48 @@
     },
     {
       "card": "card_unit_sbd3_dauntless",
+      "event": "OnPlayedFromHand",
+      "kind": "non_native_empty_script",
+      "script_bytes": 0,
+      "function_flags": 201459712
+    },
+    {
+      "card": "card_unit_104th_infantry_regiment",
+      "event": "OnPlayedFromHand",
+      "kind": "non_native_empty_script",
+      "script_bytes": 0,
+      "function_flags": 201459712
+    },
+    {
+      "card": "card_unit_sissi",
+      "event": "OnPlayedFromHand",
+      "kind": "non_native_empty_script",
+      "script_bytes": 0,
+      "function_flags": 201459712
+    },
+    {
+      "card": "card_unit_light_infantry",
+      "event": "OnPlayedFromHand",
+      "kind": "non_native_empty_script",
+      "script_bytes": 0,
+      "function_flags": 201459712
+    },
+    {
+      "card": "card_unit_flak_37_spg",
+      "event": "OnPlayedFromHand",
+      "kind": "non_native_empty_script",
+      "script_bytes": 0,
+      "function_flags": 201459712
+    },
+    {
+      "card": "card_unit_panzer_iii_j",
+      "event": "OnPlayedFromHand",
+      "kind": "non_native_empty_script",
+      "script_bytes": 0,
+      "function_flags": 201459712
+    },
+    {
+      "card": "card_unit_swordfish",
       "event": "OnPlayedFromHand",
       "kind": "non_native_empty_script",
       "script_bytes": 0,

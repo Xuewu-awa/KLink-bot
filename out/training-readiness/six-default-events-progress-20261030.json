@@ -1,0 +1,26 @@
+{
+  "date": "2026-10-30",
+  "batch": "RULE-549",
+  "report": "out/audit/systematic-rules/six-explicit-empty-play-events-and-long-episode-diagnosis-20261030.json",
+  "report_sha256": "acd082baf6d7787fd98a061942836f209bc1603e0e00c59e21c06bed0f9de344",
+  "same1000": {
+    "accepted_before": 974,
+    "accepted_after": 997,
+    "rows_before": 25328,
+    "rows_after": 26148,
+    "rejected": 3,
+    "unfinished_games": [
+      113,
+      247,
+      983
+    ]
+  },
+  "tests": {
+    "core": 987,
+    "admission": 17
+  },
+  "whole_card_certification": 0,
+  "semantic_completion_percent": null,
+  "engine_or_policy_source_changed": false,
+  "next_focus": "Decision-level adapter and choice/observation contracts"
+}

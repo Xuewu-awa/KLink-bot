@@ -20,6 +20,7 @@ internal static partial class SelfTest
 
     private static readonly List<Case> Cases = new()
     {
+        new("训练入口批次：六张单位显式空事件", SixNativeEmptyPlayedEvents),
         new("训练阻塞批次：空文本返回文本值", EmptyTextReturnsText),
         new("训练阻塞批次：八张单位显式空事件", EightNativeEmptyPlayedEvents),
         new("字面文本与默认事件：保留文本值", LiteralTextIdentity),
