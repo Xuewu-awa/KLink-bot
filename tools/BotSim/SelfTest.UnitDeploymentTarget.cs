@@ -93,4 +93,59 @@ internal static partial class SelfTest
         }
         return null;
     }
+    private static string? UnitDeploymentNullTargetGate(CardDatabase db)
+    {
+        foreach (var name in DeploymentTargetCards)
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (bool legal in new[] { true, false })
+        {
+            var (e, source, units) = ActionTargetSmoke.Fixture(db, side, name);
+            foreach (var unit in units) e.State.Move(unit, unit.Owner.HandOf(), unit.CardId);
+            var targetSide = name == "card_unit_tiger_moth" ? side : side.Opposite();
+            var target = e.State.CreateWithId("card_unit_panzer_35_t", targetSide, 85,
+                legal ? targetSide.HqOf() : targetSide.HandOf(), 3);
+            target.Defense = target.MaxDefense = 10;
+            target.Attack = 2;
+            string before = TargetRootEffects(e, source, units.Append(target).ToArray());
+            bool accepted = MainActionPolicyAdapter.ApplyRoot(e, side, new(MainActionKind.Play, 70));
+            if (accepted == legal) return $"null deployment decision mismatch: {name}/{side}/{legal}";
+            if (legal && before != TargetRootEffects(e, source, units.Append(target).ToArray()))
+                return "rejected null deployment changed root effects";
+            if (!legal && (source.Location != side.HqOf() || source.CurrentTarget is not null))
+                return "targetless deployment did not forward zero target";
+            if (!legal && (target.Defense != 10 || target.Attack != 2
+                || units.Any(u => u.Defense != 5)))
+                return $"targetless deployment changed unrelated unit: {name}/{side}";
+            if (e.Api.Vm.FaultedPrograms != 0) return "null deployment query faulted";
+        }
+        return null;
+    }
+
+    private static string? UnitDeploymentSearchWrites(CardDatabase db)
+    {
+        foreach (var side in new[] { Side.Left, Side.Right })
+        foreach (var mode in new[] { "success", "covert", "no_flag", "null_output" })
+        {
+            var (e, source, units) = ActionTargetSmoke.Fixture(db, side,
+                mode == "null_output" ? "card_unit_superman" : "card_unit_mosquito");
+            foreach (var unit in units) e.State.Move(unit, unit.Owner.HandOf(), unit.CardId);
+            source.SelectTargetOnPlayedFromHand = mode != "no_flag";
+            source.BlueprintVariables["targetOverride"] = units[0];
+            var target = e.State.CreateWithId("card_unit_panzer_35_t", side.Opposite(), 85,
+                mode == "null_output" ? side.Opposite().HandOf() : side.Opposite().HqOf(), 1);
+            target.BlueprintVariables["targetOverride"] = units[1];
+            if (mode == "covert") { target.Keywords.Add(Keyword.Covert); target.IsRevealed = false; }
+            bool found = e.Api.HasUnitDeploymentTarget(source);
+            if (found != (mode == "success")) return "deployment search result mismatch: " + mode;
+            var expectedSource = mode == "no_flag" ? units[0] : mode == "null_output" ? e.State.ById(41) : target;
+            if (!ReferenceEquals(source.BlueprintVariables["targetOverride"], expectedSource))
+                return "deployment search source override mismatch: " + mode;
+            var expectedCandidate = mode is "success" or "covert" ? null : units[1];
+            if (!ReferenceEquals(target.BlueprintVariables["targetOverride"], expectedCandidate)
+                || e.Api.Vm.FaultedPrograms != 0)
+                return "deployment search candidate clear mismatch: " + mode;
+        }
+        return null;
+    }
+
 }

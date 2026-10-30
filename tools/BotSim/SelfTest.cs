@@ -20,6 +20,8 @@ internal static partial class SelfTest
 
     private static readonly List<Case> Cases = new()
     {
+        new("单位部署空目标：有目标拒绝与无目标部署", UnitDeploymentNullTargetGate),
+        new("单位部署空目标：搜索写入和空返回目标", UnitDeploymentSearchWrites),
         new("单位部署目标：拒绝明确无效目标", UnitDeploymentRejectsExplicitTargets),
         new("单位部署目标：双侧具体目标效果", UnitDeploymentAcceptsExplicitTargets),
         new("单位部署目标：拒绝未支持的明确落点", TrainingPlayRejectsUnsupportedSlot),

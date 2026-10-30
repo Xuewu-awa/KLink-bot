@@ -1614,6 +1614,13 @@ public sealed class MatchEngine
             && !Api.CanTarget(card, target).Can)
             return false;
 
+        // BP_HandCard i=14336/14368: when any target exists, ordinary units
+        // enter target selection instead of submitting target ID zero. The
+        // choose-one UI follows a separate branch and remains outside this gate.
+        if (validateOrderTarget && card.Definition.IsUnit && target is null
+            && card.Definition.ChooseOneOptionCount == 0 && Api.HasUnitDeploymentTarget(card))
+            return false;
+
         if (validateOrderTarget && card.Definition.IsUnit && card.SelectTargetOnPlayedFromHand && target is not null)
         {
             if (!Api.CheckExplicitUnitDeployment(card, target, out var resolvedTarget).Can)

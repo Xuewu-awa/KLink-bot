@@ -7429,6 +7429,35 @@ public sealed partial class CardApi
         return false;
     }
 
+    // BP_HandCard.DoesThisCardHasAnyTarget, ordinary (non-choose-one) unit path.
+    // Query writes are intentional and differ from the order availability loop.
+    internal bool HasUnitDeploymentTarget(CardInstance card)
+    {
+        if (!card.SelectTargetOnPlayedFromHand) return false; // i=5/771.
+        for (int index = 0; index < State.AllCardsInBattleOrder.Count; index++)
+        {
+            var values = State.AllCardsInBattleOrder; // i=275, separate Map_Values.
+            var candidate = index < values.Count ? values[index] : null;
+            if (candidate is null || !candidate.Location.IsBoard()) continue;
+            card.BlueprintVariables["targetOverride"] = candidate; // i=449.
+            var outputs = RunOwnLocal(card, "CanPlayFromHand",
+                new Dictionary<string, object?>(StringComparer.Ordinal) { ["toCard"] = candidate },
+                "canIt", "reason", "reasonParam1", "reasonParam2", "targetedCard");
+            if (outputs is null)
+            {
+                NotifyUnimplemented("UnitDeploymentAvailability<missing-CanPlayFromHand-output>");
+                continue;
+            }
+            if (!Blueprint.KismetVm.Truthy(outputs.GetValueOrDefault("canIt"))
+                || outputs.GetValueOrDefault("targetedCard") is not CardInstance)
+                continue;
+            // i=620 explicitly clears currentCard, NOT fromCard. Do not repair it.
+            candidate.BlueprintVariables["targetOverride"] = null;
+            if (CanSelectAsTarget(card, candidate, byPlayFromHand: true).Can) return true;
+        }
+        return false;
+    }
+
     private TargetCheck CheckPlayFromHandOn(CardInstance card, CardInstance? target, bool requireTargetedCard)
         => CheckPlayFromHandOn(card, target, requireTargetedCard, out _);
 
