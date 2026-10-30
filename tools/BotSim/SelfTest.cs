@@ -20,6 +20,7 @@ internal static partial class SelfTest
 
     private static readonly List<Case> Cases = new()
     {
+        new("普通手牌落点：插入并在回调前刷新手牌与半场", HandDeploymentLocationRefresh),
         new("选择单位部署：四卡双侧分支和零目标效果", ChoiceUnitDeploymentBranches),
         new("选择单位部署：非法分支在根调用前拒绝", ChoiceUnitDeploymentInvalidOptions),
         new("单位部署空目标：有目标拒绝与无目标部署", UnitDeploymentNullTargetGate),

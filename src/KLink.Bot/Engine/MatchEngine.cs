@@ -2035,8 +2035,22 @@ public sealed class MatchEngine
         CardLocation destination = toFrontline ? CardLocation.BoardFrontline : card.Owner.HqOf();
         int slot = locationNumber >= 0
             ? locationNumber
-            : State.Cards(card.Owner, destination).Count;
-        State.Move(card, destination, slot, moveReason: moveReason);
+            : State.CardsUnordered().Count(x => x.Location == destination);
+        var oldLocation = card.Location;
+        // PlayCardFromHand i=1988 -> CardLocationMoved i=215/348/578:
+        // insert into the physical location, compact both locations, then notify.
+        // Preserve battle order for equal slots instead of normalizing by CardId.
+        var residents = State.AllCardsInBattleOrder
+            .Where(x => x.Location == destination && x != card)
+            .OrderBy(x => x.LocationNumber).ToArray();
+        if (oldLocation == destination)
+            for (int i = 0; i < residents.Length; i++) residents[i].LocationNumber = i;
+        foreach (var other in residents)
+            if (other.LocationNumber >= slot) other.LocationNumber++;
+        State.Move(card, destination, slot, moveReason: moveReason,
+            notifyMoved: false, normalizeLocation: false);
+        Api.RefreshLocationStatus(new[] { oldLocation, destination });
+        State.CardMoved?.Invoke(card, oldLocation, destination, false, moveReason);
         Say($"{card} 部署到{(toFrontline ? "前线" : "半场")} {destination} 槽位 {slot}");
     }
 

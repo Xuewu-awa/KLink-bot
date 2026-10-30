@@ -1,0 +1,663 @@
+{
+  "scope": "Ordinary unit hand deployment gap insertion and old/new physical location refresh before movement callback; no complete lifecycle certification.",
+  "authority_sources": {
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_BaseCard.functions.json": "460dfb0dfcdc71a0bd50f5d0b2741e41c641c3af008e9464e22c8c6c46329d2f",
+    "D:\\Codex Workshop\\kards-install-review\\extracted\\kards\\Content\\Blueprints\\Cards\\BP_BaseCard.uasset": "b0c06999dcb5dea811d14ffe9d4cc1a1a11ee930e1a24da38a96c41d435a93b5",
+    "D:\\Fmodel\\Output\\newOutput\\kards\\Content\\Blueprints\\Cards\\BP_BaseCard.uasset": "b0c06999dcb5dea811d14ffe9d4cc1a1a11ee930e1a24da38a96c41d435a93b5",
+    "D:\\Codex Workshop\\kards-install-review\\extracted\\kards\\Content\\Blueprints\\Cards\\BP_BaseCard.uexp": "15f9b225d82f3539ef016d3681961aef8fb214c9f81f7e33e470f69544fee09e",
+    "D:\\Fmodel\\Output\\newOutput\\kards\\Content\\Blueprints\\Cards\\BP_BaseCard.uexp": "15f9b225d82f3539ef016d3681961aef8fb214c9f81f7e33e470f69544fee09e",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\BP_PlayerMoves.functions.json": "2b9cf263476388bad08fc9432a16ecd9fee80fd051a746eac50355f0ee856b1b",
+    "D:\\Codex Workshop\\kards-install-review\\extracted\\kards\\Content\\Blueprints\\BP_PlayerMoves.uasset": "61073dadc8e58a76eb97dbee7651e5fee73cf350eca2df8798e505e025aea5f1",
+    "D:\\Fmodel\\Output\\newOutput\\kards\\Content\\Blueprints\\BP_PlayerMoves.uasset": "61073dadc8e58a76eb97dbee7651e5fee73cf350eca2df8798e505e025aea5f1",
+    "D:\\Codex Workshop\\kards-install-review\\extracted\\kards\\Content\\Blueprints\\BP_PlayerMoves.uexp": "307fc19460f0990cb557aa4c336517c157f97ea53fae515f64d9fdc2b9075279",
+    "D:\\Fmodel\\Output\\newOutput\\kards\\Content\\Blueprints\\BP_PlayerMoves.uexp": "307fc19460f0990cb557aa4c336517c157f97ea53fae515f64d9fdc2b9075279",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.functions.json": "b007f0f5689d266cdccee220f164db12582d3893c76a087228dd3ac55836f297",
+    "D:\\Codex Workshop\\kards-install-review\\extracted\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.uasset": "fdf43e4181189ee25a28301a1223d3bb3699eba4fd0275ba2a36f87db8ecac10",
+    "D:\\Fmodel\\Output\\newOutput\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.uasset": "fdf43e4181189ee25a28301a1223d3bb3699eba4fd0275ba2a36f87db8ecac10",
+    "D:\\Codex Workshop\\kards-install-review\\extracted\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.uexp": "67b6d1285af398bb3c7fe7ea6811a720449c610e9c820851f3d02ec54d00bb41",
+    "D:\\Fmodel\\Output\\newOutput\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.uexp": "67b6d1285af398bb3c7fe7ea6811a720449c610e9c820851f3d02ec54d00bb41",
+    "D:\\Codex Workshop\\KLink-hand-placement\\src\\KLink.Bot\\Engine\\MatchEngine.cs": "ce24b4e2f5376ad154ae36e9ec572535db3af2fc980666af943bf91848fcd325",
+    "D:\\Codex Workshop\\KLink-hand-placement\\tools\\BotSim\\SelfTest.HandDeploymentSlots.cs": "5eec58bde177be73bb1515afdc31b9bf95929ae8b7fb0a5262e50a8684585ae7"
+  },
+  "assets": [
+    {
+      "asset": "kards/Content/Blueprints/Cards/BP_BaseCard",
+      "new_export_byte_equal": {
+        ".uasset": true,
+        ".uexp": true
+      }
+    },
+    {
+      "asset": "kards/Content/Blueprints/BP_PlayerMoves",
+      "new_export_byte_equal": {
+        ".uasset": true,
+        ".uexp": true
+      }
+    },
+    {
+      "asset": "kards/Content/Blueprints/Cards/BP_CardFunctions",
+      "new_export_byte_equal": {
+        ".uasset": true,
+        ".uexp": true
+      }
+    }
+  ],
+  "raw_statements": {
+    "PlayCardFromHand": [
+      {
+        "Inst": "LocalVirtualFunction",
+        "FunctionName": "CardLocationMoved",
+        "Parameters": [
+          {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Int",
+              "PinSubCategory": "Int"
+            },
+            "Variable Name": "cardID"
+          },
+          {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Int",
+              "PinSubCategory": "Int"
+            },
+            "Variable Name": "cardID"
+          },
+          {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Byte",
+              "PinSubCategory": "Byte",
+              "PinSubCategoryObject": "/Script/kards.ECardLocationEnum"
+            },
+            "Variable Name": "tmpOldLocation"
+          },
+          {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Byte",
+              "PinSubCategory": "Byte",
+              "PinSubCategoryObject": "/Script/kards.ECardLocationEnum"
+            },
+            "Variable Name": "tmpnewLocation"
+          },
+          {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Int",
+              "PinSubCategory": "Int"
+            },
+            "Variable Name": "NewLocationNumber"
+          },
+          {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Int",
+              "PinSubCategory": "Int"
+            },
+            "Variable Name": "NewNonVisualLocationNumber"
+          },
+          {
+            "Inst": "ByteConst",
+            "Value": 4
+          },
+          {
+            "Inst": "False"
+          },
+          {
+            "Inst": "False"
+          }
+        ],
+        "StatementIndex": 1988
+      },
+      {
+        "Inst": "LocalVirtualFunction",
+        "FunctionName": "CardPlayedFromHand",
+        "Parameters": [
+          {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Object",
+              "PinSubCategory": "Object",
+              "PinSubCategoryObject": "/Script/kards.BaseCardObject"
+            },
+            "Variable Name": "tmpCardToPlay"
+          },
+          {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Int",
+              "PinSubCategory": "Int"
+            },
+            "Variable Name": "targetCardID"
+          }
+        ],
+        "StatementIndex": 2114
+      }
+    ],
+    "CardLocationMoved": [
+      {
+        "Inst": "LocalVirtualFunction",
+        "FunctionName": "InjectCardIntoLocation",
+        "Parameters": [
+          {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Byte",
+              "PinSubCategory": "Byte",
+              "PinSubCategoryObject": "/Script/kards.ECardLocationEnum"
+            },
+            "Variable Name": "newLocation"
+          },
+          {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Int",
+              "PinSubCategory": "Int"
+            },
+            "Variable Name": "nonVisualLocationNumber"
+          },
+          {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Int",
+              "PinSubCategory": "Int"
+            },
+            "Variable Name": "cardID"
+          }
+        ],
+        "StatementIndex": 215
+      },
+      {
+        "Inst": "LocalVirtualFunction",
+        "FunctionName": "RefreshLocationStatus",
+        "Parameters": [
+          {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Byte",
+              "PinSubCategory": "Byte",
+              "PinSubCategoryObject": "/Script/kards.ECardLocationEnum",
+              "ContainerType": 2
+            },
+            "Variable Name": "K2Node_MakeSet_Set"
+          }
+        ],
+        "StatementIndex": 348
+      },
+      {
+        "Inst": "LocalVirtualFunction",
+        "FunctionName": "ExecuteOnCardLocationMoved",
+        "Parameters": [
+          {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Int",
+              "PinSubCategory": "Int"
+            },
+            "Variable Name": "cardID"
+          },
+          {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Byte",
+              "PinSubCategory": "Byte",
+              "PinSubCategoryObject": "/Script/kards.ECardLocationEnum"
+            },
+            "Variable Name": "oldLocation"
+          },
+          {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Byte",
+              "PinSubCategory": "Byte",
+              "PinSubCategoryObject": "/Script/kards.ECardLocationEnum"
+            },
+            "Variable Name": "newLocation"
+          },
+          {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Bool",
+              "PinSubCategory": "Bool"
+            },
+            "Variable Name": "changeOwner"
+          },
+          {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Byte",
+              "PinSubCategory": "Byte",
+              "PinSubCategoryObject": "/Game/Structs/CardMoveReason.CardMoveReason"
+            },
+            "Variable Name": "moveReason"
+          }
+        ],
+        "StatementIndex": 578
+      },
+      {
+        "Inst": "Context",
+        "Context": {
+          "Inst": "InstanceVariable",
+          "Variable Outer": {
+            "PinCategory": "Object",
+            "PinSubCategory": "Object",
+            "PinSubCategoryObject": "/Game/Blueprints/Logic/U_CardFunctionsNotifier.U_CardFunctionsNotifier_C"
+          },
+          "Variable Name": "CardFunctionsNotifier"
+        },
+        "SkipOffsetForNull": 77,
+        "RValuePropertyOuter": "#Pointer Error#",
+        "RValuePropertyName": "^^^^^",
+        "Expression": {
+          "Inst": "LocalVirtualFunction",
+          "FunctionName": "NotifyMoveCardToNewLocation",
+          "Parameters": [
+            {
+              "Inst": "LocalVariable",
+              "Variable Outer": {
+                "PinCategory": "Int",
+                "PinSubCategory": "Int"
+              },
+              "Variable Name": "cardID"
+            },
+            {
+              "Inst": "LocalVariable",
+              "Variable Outer": {
+                "PinCategory": "Int",
+                "PinSubCategory": "Int"
+              },
+              "Variable Name": "instigatorID"
+            },
+            {
+              "Inst": "LocalVariable",
+              "Variable Outer": {
+                "PinCategory": "Byte",
+                "PinSubCategory": "Byte",
+                "PinSubCategoryObject": "/Script/kards.ECardLocationEnum"
+              },
+              "Variable Name": "oldLocation"
+            },
+            {
+              "Inst": "LocalVariable",
+              "Variable Outer": {
+                "PinCategory": "Byte",
+                "PinSubCategory": "Byte",
+                "PinSubCategoryObject": "/Script/kards.ECardLocationEnum"
+              },
+              "Variable Name": "newLocation"
+            },
+            {
+              "Inst": "LocalVariable",
+              "Variable Outer": {
+                "PinCategory": "Int",
+                "PinSubCategory": "Int"
+              },
+              "Variable Name": "newLocationNumber"
+            },
+            {
+              "Inst": "LocalVariable",
+              "Variable Outer": {
+                "PinCategory": "Int",
+                "PinSubCategory": "Int"
+              },
+              "Variable Name": "nonVisualLocationNumber"
+            },
+            {
+              "Inst": "LocalVariable",
+              "Variable Outer": {
+                "PinCategory": "Byte",
+                "PinSubCategory": "Byte",
+                "PinSubCategoryObject": "/Game/Structs/CardMoveReason.CardMoveReason"
+              },
+              "Variable Name": "moveReason"
+            }
+          ]
+        },
+        "StatementIndex": 1256
+      }
+    ],
+    "InjectCardIntoLocation": [
+      {
+        "Inst": "Context",
+        "Context": {
+          "Inst": "InstanceVariable",
+          "Variable Outer": {
+            "PinCategory": "Object",
+            "PinSubCategory": "Object",
+            "PinSubCategoryObject": "/Game/BP_GameState_Battle.BP_GameState_Battle_C"
+          },
+          "Variable Name": "GameStateRef"
+        },
+        "SkipOffsetForNull": 32,
+        "RValuePropertyOuter": "#Pointer Error#",
+        "RValuePropertyName": "^^^^^",
+        "Expression": {
+          "Inst": "LocalVirtualFunction",
+          "FunctionName": "FetchCardsByLocationSorted",
+          "Parameters": [
+            {
+              "Inst": "LocalVariable",
+              "Variable Outer": {
+                "PinCategory": "Byte",
+                "PinSubCategory": "Byte",
+                "PinSubCategoryObject": "/Script/kards.ECardLocationEnum"
+              },
+              "Variable Name": "location"
+            },
+            {
+              "Inst": "LocalVariable",
+              "Variable Outer": {
+                "PinCategory": "Int",
+                "PinSubCategory": "Int",
+                "ContainerType": 1
+              },
+              "Variable Name": "CallFunc_FetchCardsByLocationSorted_cardIDs"
+            }
+          ]
+        },
+        "StatementIndex": 0
+      },
+      {
+        "Inst": "LocalVirtualFunction",
+        "FunctionName": "CreateLocationNumberGapForCard",
+        "Parameters": [
+          {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Int",
+              "PinSubCategory": "Int",
+              "ContainerType": 1
+            },
+            "Variable Name": "CallFunc_FetchCardsByLocationSorted_cardIDs"
+          },
+          {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Int",
+              "PinSubCategory": "Int"
+            },
+            "Variable Name": "locationNumber"
+          },
+          {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Int",
+              "PinSubCategory": "Int"
+            },
+            "Variable Name": "cardID"
+          }
+        ],
+        "StatementIndex": 54
+      },
+      {
+        "Inst": "LocalVirtualFunction",
+        "FunctionName": "SetCardLocationAndLocNumber",
+        "Parameters": [
+          {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Int",
+              "PinSubCategory": "Int"
+            },
+            "Variable Name": "cardID"
+          },
+          {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Byte",
+              "PinSubCategory": "Byte",
+              "PinSubCategoryObject": "/Script/kards.ECardLocationEnum"
+            },
+            "Variable Name": "location"
+          },
+          {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Int",
+              "PinSubCategory": "Int"
+            },
+            "Variable Name": "locationNumber"
+          }
+        ],
+        "StatementIndex": 95
+      }
+    ],
+    "CreateLocationNumberGapForCard": [
+      {
+        "Inst": "LetBool",
+        "Variable": {
+          "Inst": "LocalVariable",
+          "Variable Outer": {
+            "PinCategory": "Bool",
+            "PinSubCategory": "Bool"
+          },
+          "Variable Name": "CallFunc_Array_Contains_ReturnValue"
+        },
+        "Expression": {
+          "Inst": "Context",
+          "Context": {
+            "Inst": "ObjectConst",
+            "Object": "/Script/Engine.Default__KismetArrayLibrary"
+          },
+          "SkipOffsetForNull": 28,
+          "RValuePropertyOuter": {
+            "PinCategory": "Bool",
+            "PinSubCategory": "Bool"
+          },
+          "RValuePropertyName": "CallFunc_Array_Contains_ReturnValue",
+          "Expression": {
+            "Inst": "FinalFunction",
+            "Function": "Array_Contains",
+            "Parameters": [
+              {
+                "Inst": "LocalOutVariable",
+                "Variable Outer": {
+                  "PinCategory": "Int",
+                  "PinSubCategory": "Int",
+                  "ContainerType": 1,
+                  "IsReference": true
+                },
+                "Variable Name": "cardsInLocation"
+              },
+              {
+                "Inst": "LocalVariable",
+                "Variable Outer": {
+                  "PinCategory": "Int",
+                  "PinSubCategory": "Int"
+                },
+                "Variable Name": "cardID"
+              }
+            ]
+          }
+        },
+        "StatementIndex": 10
+      },
+      {
+        "Inst": "PopExecutionFlowIfNot",
+        "Condition": {
+          "Inst": "LocalVariable",
+          "Variable Outer": {
+            "PinCategory": "Bool",
+            "PinSubCategory": "Bool"
+          },
+          "Variable Name": "CallFunc_Array_Contains_ReturnValue"
+        },
+        "StatementIndex": 70
+      },
+      {
+        "Inst": "Let",
+        "Variable": {
+          "Inst": "Context",
+          "Context": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Object",
+              "PinSubCategory": "Object",
+              "PinSubCategoryObject": "/Script/kards.BaseCardObject"
+            },
+            "Variable Name": "_otherCard"
+          },
+          "SkipOffsetForNull": 9,
+          "RValuePropertyOuter": "##NOT SERIALIZED##",
+          "RValuePropertyName": "locationNumber",
+          "Expression": {
+            "Inst": "InstanceVariable",
+            "Variable Outer": "##NOT SERIALIZED##",
+            "Variable Name": "locationNumber"
+          }
+        },
+        "Expression": {
+          "Inst": "LocalVariable",
+          "Variable Outer": {
+            "PinCategory": "Int",
+            "PinSubCategory": "Int"
+          },
+          "Variable Name": "tmpLocationNumber"
+        },
+        "StatementIndex": 482
+      },
+      {
+        "Inst": "LetBool",
+        "Variable": {
+          "Inst": "LocalVariable",
+          "Variable Outer": {
+            "PinCategory": "Bool",
+            "PinSubCategory": "Bool"
+          },
+          "Variable Name": "CallFunc_GreaterEqual_IntInt_ReturnValue"
+        },
+        "Expression": {
+          "Inst": "CallMath",
+          "Function": "GreaterEqual_IntInt",
+          "ContextClass": "/Script/Engine.KismetMathLibrary",
+          "Parameters": [
+            {
+              "Inst": "Context",
+              "Context": {
+                "Inst": "LocalVariable",
+                "Variable Outer": {
+                  "PinCategory": "Object",
+                  "PinSubCategory": "Object",
+                  "PinSubCategoryObject": "/Script/kards.BaseCardObject"
+                },
+                "Variable Name": "_otherCard"
+              },
+              "SkipOffsetForNull": 9,
+              "RValuePropertyOuter": "##NOT SERIALIZED##",
+              "RValuePropertyName": "locationNumber",
+              "Expression": {
+                "Inst": "InstanceVariable",
+                "Variable Outer": "##NOT SERIALIZED##",
+                "Variable Name": "locationNumber"
+              }
+            },
+            {
+              "Inst": "LocalVariable",
+              "Variable Outer": {
+                "PinCategory": "Int",
+                "PinSubCategory": "Int"
+              },
+              "Variable Name": "locationNumber"
+            }
+          ]
+        },
+        "StatementIndex": 1030
+      },
+      {
+        "Inst": "Let",
+        "Variable": {
+          "Inst": "Context",
+          "Context": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Object",
+              "PinSubCategory": "Object",
+              "PinSubCategoryObject": "/Script/kards.BaseCardObject"
+            },
+            "Variable Name": "_otherCard"
+          },
+          "SkipOffsetForNull": 9,
+          "RValuePropertyOuter": "##NOT SERIALIZED##",
+          "RValuePropertyName": "locationNumber",
+          "Expression": {
+            "Inst": "InstanceVariable",
+            "Variable Outer": "##NOT SERIALIZED##",
+            "Variable Name": "locationNumber"
+          }
+        },
+        "Expression": {
+          "Inst": "LocalVariable",
+          "Variable Outer": {
+            "PinCategory": "Int",
+            "PinSubCategory": "Int"
+          },
+          "Variable Name": "CallFunc_Add_IntInt_ReturnValue_3"
+        },
+        "StatementIndex": 1164
+      }
+    ]
+  },
+  "worker": {
+    "job": "20261030-224124-hand-placement-9d831072",
+    "result_sha256": "c3e29ae8815495865808b3ec253920db2299efa2c5bbf4291e0380aa4a2ccdd9",
+    "independent_checks": 98,
+    "exact_name_occurrences": 38,
+    "raw_call_records": 13
+  },
+  "regression": {
+    "before": "hand-placement-before.log: 1/1 failed",
+    "after_botsim": 1030,
+    "scenario_count": 24,
+    "routes": [
+      "default root",
+      "in-action autoplay slot 0",
+      "queued autoplay slot 0"
+    ],
+    "sides": 2,
+    "slot_shapes": [
+      "dense",
+      "sparse"
+    ],
+    "source_ids": [
+      40,
+      90
+    ],
+    "dataset_checks": 49,
+    "model_checks": 31
+  },
+  "probe": {
+    "counts": {
+      "Accepted": 107,
+      "Rejected": 418,
+      "Unknown": 10
+    },
+    "candidate_count": 535,
+    "steps": 12,
+    "reverse_exactly_equal": true,
+    "engines": 1070,
+    "prefix_roots": 7284,
+    "same_candidate_reports_as_prior": [
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      false,
+      false
+    ],
+    "interpretation": "First ten reports equal; subsequent state/candidate sets differ; these totals are not a same-state legality comparison or proof of changed legality."
+  },
+  "limitations": [
+    "Explicit root deployment slots remain unsupported and rejected.",
+    "Orders, full movement notifications, same-location queued autoplay, suppression/frontline lifecycle and full card certification remain open.",
+    "Parsed/raw asset evidence and historical snapshots do not establish whole-client version association.",
+    "Probe outcomes are simulator executability diagnostics, not authoritative game rules or reliable legal masks."
+  ]
+}
