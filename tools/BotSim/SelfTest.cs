@@ -20,6 +20,8 @@ internal static partial class SelfTest
 
     private static readonly List<Case> Cases = new()
     {
+        new("反制重复取消通知：字段累积与批次隔离", RepeatedCancellationNotice),
+        new("回合结束动作：效果前清除旧停止标志", EndTurnStopBoundary),
         new("选择回复动作：清除旧停止标志且保留新停止标志", SelectionReplyStopBoundary),
         new("反制取消批次：真实ULTRA与历史隔离", CountermeasureCancellationBatch),
         new("反制触发回执：通知顺序、取消标记及真实ULTRA", CountermeasureTriggerNotice),

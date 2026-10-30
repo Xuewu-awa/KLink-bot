@@ -844,6 +844,13 @@ public sealed class MatchEngine
 
     private void EndTurnCore(Side side)
     {
+        // PlayerMoves starts EndOfTurn -> InitStart -> SuperActionStarted before
+        // end-turn events/autoplay. Keep the existing final root-log placement,
+        // but isolate cancellation rewrites and clear stops before any effects.
+        _currentActionLogStart = State.ActionLog.Count;
+        State.StopFurtherActions = false;
+        State.StopAttack = false;
+
         // Blueprint ExecuteEndOfTurnEvents owns the complete queue, including
         // endofturn1/endofturn2 ordering and recursive subscribers.
         Api.ExecuteEndOfTurnEvents();

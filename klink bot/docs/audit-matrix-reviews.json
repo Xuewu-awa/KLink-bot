@@ -8017,6 +8017,35 @@
         "D:\\Codex Workshop\\kards-install-review\\selection-stop-actions-20261030.log": "3a5b384bdeba03c14f933b3d9a4d7f8cb377b4fd1fff975f98c2a68c2534cbad",
         "D:\\Codex Workshop\\kards-install-review\\selection-stop-model-20261030.log": "f4f5707f27410b7c3a6b92bd47562fef6af5356c380b7a152dee77587b293767"
       }
+    },
+    {
+      "id": "TRAINING/SuperActionStarted/endturn-boundary-20261031",
+      "symbol": "SuperActionStarted",
+      "modes": [
+        null
+      ],
+      "status": "partial",
+      "validated_scope": "回合结束效果前重置停止标志并隔离取消日志；双侧真实ULTRA结束阶段回归；重复取消通知仅局部序列化探针，非整卡认证。",
+      "report": "out/audit/systematic-rules/endturn-boundary-20261031.json",
+      "report_sha256": "e907e6697af502829fddbd1efff476122065fe11cab79c28dc522ba3520a4adc",
+      "client_exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+      "source_bindings": {
+        "src/KLink.Bot/Engine/MatchEngine.cs": "448b8c8980c4b69fe73b99259f22674f2114eb3870980a918df21addc01a31fe",
+        "tools/BotSim/SelfTest.cs": "1a5b0f6d0b2710a4aa991c45883c9143dc0c00f70e990de41e82923dd6ea35a0",
+        "tools/BotSim/SelfTest.CountermeasureReceipts.cs": "fe3ac32c48317fe58ef5f7a1d63a22ecbaf26630fd37ce4ce96edad422ea718b"
+      },
+      "evidence_bindings": {
+        "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Logic\\BP_OnlineMatch.functions.json": "630b523c5a575d1aa956aba41eea8c22a19bf20b6546ffa0a03ad122d73ffe98",
+        "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\BP_PlayerMoves.functions.json": "2b9cf263476388bad08fc9432a16ecd9fee80fd051a746eac50355f0ee856b1b",
+        "D:\\Codex Workshop\\kards-install-review\\movement-receipts-new-online.json": "aecaa9fe6b20c77a79c3162d482c40c5e38a9f00c1580017dfb1676d39baf4f8",
+        "D:\\Codex Workshop\\kards-install-review\\repeat-cancel-packet\\functions.json": "8607db71aeebabccc2687b93e28eaa036a53ac1dd9f4dbbfa97b2da98d2977d2",
+        "D:\\Codex Workshop\\kards-install-review\\repeat-cancel-packet\\result.json": "1db7a4cdf4bf3912e6c358666650c8e68a21cae6aeacf13078c7a2b7813ef857",
+        "D:\\Codex Workshop\\kards-install-review\\endturn-boundary-full-20261031.log": "f561ef2aa353946526c6af7ebc95a7cc88bef8327d55151d3263ef04973b9d5c",
+        "D:\\Codex Workshop\\kards-install-review\\endturn-boundary-actions-20261031.log": "3a5b384bdeba03c14f933b3d9a4d7f8cb377b4fd1fff975f98c2a68c2534cbad",
+        "D:\\Codex Workshop\\kards-install-review\\endturn-boundary-model-20261031.log": "f4f5707f27410b7c3a6b92bd47562fef6af5356c380b7a152dee77587b293767",
+        "D:\\Codex Workshop\\kards-install-review\\endturn-boundary-fail-flags-20261031.log": "dcc9189d62ad38741e0d386302c1c5245a028f88032b5edaf0b938252ae07e2d",
+        "D:\\Codex Workshop\\kards-install-review\\endturn-boundary-fail-history-20261031.log": "552d6204a38501d52049ba059099beefe05bc1f8eeb3a4f85432f2dd9990c50a"
+      }
     }
   ],
   "scope_reviews": {},
@@ -8081,8 +8110,8 @@
       "id": "RULE-TRAINING-EXPLICIT-TARGET",
       "title": "训练根动作具体目标与查询副作用",
       "status": "partial",
-      "scope": "已修复明确指令目标、选择指令目标标志、失效目标ID、定向单位明确非空目标的局部/公共检查与返回目标转发，以及非选择型单位在有合法目标时错误接受空目标的路径；无合法目标仍允许部署。保留权威搜索查询写入。Play 明确落点仍未支持并正式拒绝。四张选择单位的八个无目标分支已做默认部署和所选索引回归，未发现生产缺陷（见 choice-unit-deployment-20261030.json）；要求目标的选择单位及其他目标标记写入路径、非定向单位局部谓词、完整落点/移动生命周期、旧PlayCard入口、查询写入与完整回滚、原生兜底和重定向目标完整逐卡验证继续开放，不构成可靠合法掩码。 普通单位默认部署及两条自动出牌路径的槽位插入、旧/新位置在回调前刷新已按蓝图修复并完成24场景回归；普通单位三条路径的出牌/移动通知字段、请求槽位、通知在刷新和移动事件之前的顺序、移动原因4已局部核对并完成24场景回归（movement-receipts-20261030.json）；不覆盖明确根动作落点、指令、直接出牌、位置牌、同位置自动出牌及完整生命周期。 普通指令三入口的通知顺序、共享弃牌区插入、源编号保留和旧手牌在回调前刷新已完成14场景回归（order-boundary-20261030.json）；取消/保留指令接收链、完整选择组合与重入生命周期仍开放，不认证整卡。 反制触发三字段通知及本地延迟手牌整理已局部修复并通过16场景；cancelOrderRemove不据参数名解释为保留逻辑手牌。NotifyStopFurtherActions对当前批次出牌通知追加actionCancelled=1的改写尚缺失，下一批优先核清动作批次/嵌套边界；远端、完整取消生命周期仍开放。 后续action-cancel-batch-20261030批已修复当前批次actionCancelled通知改写、字段累积及选择回复批次隔离，双侧8场景通过；此前“尚缺失”属历史记录。完整重入、重复通知、被动动作入口和远端仍开放。 selection-stop-boundary-20261030已修复有效选择回复回调前清除旧停止标志，未回答保留；六场景。被动标记不启动新批次已静态核对。重复通知、重入根动作、完整元数据和远端仍开放。",
-      "source": "out/audit/systematic-rules/selection-stop-boundary-20261030.json; out/audit/systematic-rules/action-cancel-batch-20261030.json; out/audit/systematic-rules/countermeasure-receipts-20261030.json; out/training-readiness/order-boundary-20261030.json; out/training-readiness/movement-receipts-20261030.json"
+      "scope": "已修复明确指令目标、选择指令目标标志、失效目标ID、定向单位明确非空目标的局部/公共检查与返回目标转发，以及非选择型单位在有合法目标时错误接受空目标的路径；无合法目标仍允许部署。保留权威搜索查询写入。Play 明确落点仍未支持并正式拒绝。四张选择单位的八个无目标分支已做默认部署和所选索引回归，未发现生产缺陷（见 choice-unit-deployment-20261030.json）；要求目标的选择单位及其他目标标记写入路径、非定向单位局部谓词、完整落点/移动生命周期、旧PlayCard入口、查询写入与完整回滚、原生兜底和重定向目标完整逐卡验证继续开放，不构成可靠合法掩码。 普通单位默认部署及两条自动出牌路径的槽位插入、旧/新位置在回调前刷新已按蓝图修复并完成24场景回归；普通单位三条路径的出牌/移动通知字段、请求槽位、通知在刷新和移动事件之前的顺序、移动原因4已局部核对并完成24场景回归（movement-receipts-20261030.json）；不覆盖明确根动作落点、指令、直接出牌、位置牌、同位置自动出牌及完整生命周期。 普通指令三入口的通知顺序、共享弃牌区插入、源编号保留和旧手牌在回调前刷新已完成14场景回归（order-boundary-20261030.json）；取消/保留指令接收链、完整选择组合与重入生命周期仍开放，不认证整卡。 反制触发三字段通知及本地延迟手牌整理已局部修复并通过16场景；cancelOrderRemove不据参数名解释为保留逻辑手牌。NotifyStopFurtherActions对当前批次出牌通知追加actionCancelled=1的改写尚缺失，下一批优先核清动作批次/嵌套边界；远端、完整取消生命周期仍开放。 后续action-cancel-batch-20261030批已修复当前批次actionCancelled通知改写、字段累积及选择回复批次隔离，双侧8场景通过；此前“尚缺失”属历史记录。完整重入、重复通知、被动动作入口和远端仍开放。 selection-stop-boundary-20261030已修复有效选择回复回调前清除旧停止标志，未回答保留；六场景。被动标记不启动新批次已静态核对。重复通知、重入根动作、完整元数据和远端仍开放。 endturn-boundary-20261031已修复回合结束效果前停止标志和取消批次边界；重复通知的字段累积通过双侧序列化探针。自然重复反制可达性、其他根入口、重入生命周期及远端继续开放。",
+      "source": "out/audit/systematic-rules/endturn-boundary-20261031.json; out/audit/systematic-rules/selection-stop-boundary-20261030.json; out/audit/systematic-rules/action-cancel-batch-20261030.json; out/audit/systematic-rules/countermeasure-receipts-20261030.json; out/training-readiness/order-boundary-20261030.json; out/training-readiness/movement-receipts-20261030.json"
     }
   ]
 }

@@ -7,6 +7,73 @@ using KLink.Bot.Training;
 namespace KLink.Bot.Sim;
 internal static partial class SelfTest
 {
+    private static string? RepeatedCancellationNotice(CardDatabase db)
+    {
+        // Probe repeated notifier serialization directly; this does not assert
+        // that two real countermeasures necessarily fire in one effect chain.
+        var notify = typeof(MatchEngine).GetMethod("NotifyStopFurtherActions",
+            System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!;
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        {
+            var (engine, state) = EmptyBoard(db);
+            engine.RecordAction("historical", side, new());
+            engine.FireSubAction("ZActionPlayCardFromHand", new[] { ActionValue2.Int("cardID", 44) });
+            var history = state.ActionLog[^1];
+            engine.RecordAction("current", side, new());
+            var first = ActionValue2.Int("cardID", 70);
+            var second = ActionValue2.Int("cardID", 71);
+            var marker = ActionValue2.Int("actionCancelled", 1);
+            engine.FireSubAction("ZActionPlayCardFromHand", new[] { first });
+            engine.FireSubAction("unrelated", new[] { ActionValue2.Int("cardID", 90) });
+            var untouched = state.ActionLog[^1];
+            engine.FireSubAction("ZActionPlayCardFromHand", new[] { second });
+            notify.Invoke(engine, null);
+            var once = state.ActionLog[^1].SubActions[0].Values.ToArray();
+            notify.Invoke(engine, null);
+            var plays = state.ActionLog.SelectMany(a => a.SubActions).Where(a => a.Name == "ZActionPlayCardFromHand").ToArray();
+            if (!once.SequenceEqual(new[] { first, marker, second, marker })
+                || !plays[1].Values.SequenceEqual(new[] { first, marker, marker })
+                || !plays[2].Values.SequenceEqual(new[] { first, marker, marker, first, marker, second, marker, marker })
+                || !ReferenceEquals(state.ActionLog[1], history) || !ReferenceEquals(state.ActionLog[4], untouched))
+                return $"repeat must append markers and copy cumulative values while preserving other records: {side}";
+            var previous = state.ActionLog.ToArray();
+            engine.RecordAction("next", side, new());
+            notify.Invoke(engine, null);
+            if (!previous.SequenceEqual(state.ActionLog.Take(previous.Length)))
+                return "next empty batch must not recancel prior records";
+        }
+        return null;
+    }
+
+    private static string? EndTurnStopBoundary(CardDatabase db)
+    {
+        const string name = "card_unit_m36_destroyer";
+        // Synthetic event checks the boundary, not this card's live ability.
+        using var probe = InstallSelectionDrawProbe(name, "OnEndOfTurn");
+        var locals = (IDictionary<string, IReadOnlyList<KismetStep>>)KismetLibrary.Default!.Find(name)!.Locals!;
+        KismetStep Observe(int index, string key, string getter) => new(index, "call", "JSON_SetBool",
+            new[] { new KismetExpr { Int = 60 }, new KismetExpr { Str = key }, new KismetExpr { Call = getter } },
+            Array.Empty<int>(), null, null, -1, null, null) { ByteOffset = index };
+        locals["OnEndOfTurn"] = new[] {
+            Observe(0, "audit_stop", "GetStopFurtherActions"), Observe(1, "audit_attack", "GetStopAttack"),
+            new KismetStep(2, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null)
+                { ByteOffset = 2 }
+        };
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        {
+            var (engine, state) = EmptyBoard(db); state.ActiveSide = side;
+            var observer = state.CreateWithId(name, side, 60, side.HqOf(), 1);
+            observer.Definition = new CardDefinition { Name = name, Type = "tank", UsedTriggers = new[] { "OnEndOfTurn" } };
+            state.StopFurtherActions = true; state.StopAttack = true;
+            engine.EndTurn(side);
+            if (!observer.CustomJson.ContainsKey("audit_stop") || !observer.CustomJson.ContainsKey("audit_attack")
+                || engine.Api.JsonGetBool(observer, "audit_stop") || engine.Api.JsonGetBool(observer, "audit_attack")
+                || engine.Api.Vm.FaultedPrograms != 0)
+                return $"end-turn callback observed stale stop flags: {side}";
+        }
+        return null;
+    }
+
     private static string? SelectionReplyStopBoundary(CardDatabase db)
     {
         const string name = "card_unit_m36_destroyer";
@@ -71,7 +138,7 @@ internal static partial class SelfTest
     private static string? CountermeasureCancellationBatch(CardDatabase db)
     {
         foreach (Side side in new[] { Side.Left, Side.Right })
-        foreach (int route in new[] { 0, 1, 2, 3 })
+        foreach (int route in new[] { 0, 1, 2, 3, 4 })
         {
             var (engine, state) = EmptyBoard(db);
             state.ActiveSide = side; state.SetKredits(side, 12);
@@ -97,7 +164,8 @@ internal static partial class SelfTest
                 state.AddAutoPlayCards(70);
                 if (route == 1) engine.ExecuteAutoPlayCards();
                 else if (route == 2) engine.ExecuteQueuedAutoPlayActions();
-                else engine.ResolveHandSelection(order, () => { engine.ExecuteAutoPlayCards(); return true; }, false);
+                else if (route == 3) engine.ResolveHandSelection(order, () => { engine.ExecuteAutoPlayCards(); return true; }, false);
+                else engine.EndTurn(side);
             }
             var plays = state.ActionLog.SelectMany(a => a.SubActions).Where(a => a.Name == "ZActionPlayCardFromHand").ToArray();
             var current = plays[^1];
