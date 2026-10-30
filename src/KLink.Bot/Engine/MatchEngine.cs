@@ -1786,25 +1786,17 @@ public sealed class MatchEngine
                 ["location"] = "Hand",
                 ["side"] = card.Owner.ToWire(),
             });
-
-            // Ordinary units use the authoritative notifier below. Order receipts
-            // retain their separate, not-yet-audited path.
-            if (!card.Definition.IsUnit && !card.Definition.IsLocationCard)
-                FireSubAction("ZActionPlayOrderCardFromHand", new[]
-                {
-                    ActionValue2.Int("instigatorID", instigatorID),
-                    ActionValue2.Int("targetCardID", target?.CardId ?? 0),
-                    ActionValue2.Int("playedDirectly", 1),
-                });
         }
 
-        if (!playNotificationPrepared && (card.Definition.IsUnit || card.Definition.IsLocationCard))
+        if (!playNotificationPrepared)
         {
-            var destination = toFrontline ? CardLocation.BoardFrontline : card.Owner.HqOf();
+            bool onBoard = card.Definition.IsUnit || card.Definition.IsLocationCard;
+            var destination = onBoard
+                ? (toFrontline ? CardLocation.BoardFrontline : card.Owner.HqOf()) : CardLocation.Discard;
             int slot = locationNumber >= 0 ? locationNumber
-                : State.CardsUnordered().Count(x => x.Location == destination);
-            // PlayCardFromHand i=815 precedes i=1988; the latter passes reason 4
-            // for ordinary play including autoplay (not PlayCardDirectlyFromHand).
+                : onBoard ? State.CardsUnordered().Count(x => x.Location == destination) : 0;
+            // PlayCardFromHand i=815 also applies to orders; ordinary play
+            // passes playedDirectly=false, with the saved requested slot.
             NotifyPlayFromHand(card, instigatorID, slot, targetCardId, false, destination,
                 card.Definition.ChooseOneOptionCount > 0 ? card.ChooseOne : -1);
         }
@@ -1823,10 +1815,9 @@ public sealed class MatchEngine
         }
         else
         {
-            // 指令牌：先进弃牌堆再结算（游戏里指令是"用完即弃"，
-            // 结算期间它已经不在手牌里了）
-            State.Move(card, CardLocation.Discard, moveReason:
-                chargeKredits ? CardMoveReason.PlayCardPlayerMove : CardMoveReason.PlayCardForce);
+            // Same CardLocationMoved path as units (PlayCardFromHand i=1988).
+            MovePlayedCard(card, CardLocation.Discard, locationNumber >= 0 ? locationNumber : 0,
+                CardMoveReason.PlayCardPlayerMove);
         }
 
         // 「本回合进场的回合数」——**指令也要记**。
@@ -2048,9 +2039,15 @@ public sealed class MatchEngine
         int slot = locationNumber >= 0
             ? locationNumber
             : State.CardsUnordered().Count(x => x.Location == destination);
+        MovePlayedCard(card, destination, slot, moveReason);
+        Say($"{card} 部署到{(toFrontline ? "前线" : "半场")} {destination} 槽位 {slot}");
+    }
+
+    private void MovePlayedCard(CardInstance card, CardLocation destination, int slot, CardMoveReason moveReason)
+    {
         var oldLocation = card.Location;
         // PlayCardFromHand i=1988 -> CardLocationMoved i=215/348/578:
-        // insert into the physical location, compact both locations, then notify.
+        // insert, emit the movement notice, refresh locations, then run callbacks.
         // Preserve battle order for equal slots instead of normalizing by CardId.
         var residents = State.AllCardsInBattleOrder
             .Where(x => x.Location == destination && x != card)
@@ -2059,7 +2056,9 @@ public sealed class MatchEngine
             for (int i = 0; i < residents.Length; i++) residents[i].LocationNumber = i;
         foreach (var other in residents)
             if (other.LocationNumber >= slot) other.LocationNumber++;
-        State.Move(card, destination, slot, moveReason: moveReason,
+        // SetCardLocationAndLocNumber i=143..210 skips the locationNumber
+        // assignment for Discard, while gap insertion still shifts residents.
+        State.Move(card, destination, destination == CardLocation.Discard ? card.LocationNumber : slot, moveReason: moveReason,
             notifyMoved: false, normalizeLocation: false);
         // CardLocationMoved i=295/1256 returns to the flow stack: notification
         // precedes i=348 refresh and i=578 callbacks. Keep the requested slot,
@@ -2077,7 +2076,6 @@ public sealed class MatchEngine
         });
         Api.RefreshLocationStatus(new[] { oldLocation, destination });
         State.CardMoved?.Invoke(card, oldLocation, destination, false, moveReason);
-        Say($"{card} 部署到{(toFrontline ? "前线" : "半场")} {destination} 槽位 {slot}");
     }
 
     // ==================== 移动 ====================
