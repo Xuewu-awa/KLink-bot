@@ -1316,7 +1316,7 @@ public sealed class MatchEngine
                     if (!Api.IsGotcha(card))
                         PlayCardFromHandCore(card, target: null, skipLeaveTrigger: false,
                             chargeKredits: false, recordAction: false, toFrontline: false,
-                            locationNumber: 0, instigatorID: card.CardId, currentTargetPrepared: true);
+                            locationNumber: 0, instigatorID: card.CardId, currentTargetPrepared: true, playNotificationPrepared: true);
                 }
                 ApplyPendingLocalRuleReceipts(); // End i=12486 precedes index advance.
             }
@@ -1740,13 +1740,14 @@ public sealed class MatchEngine
     private bool PlayCardFromHandCore(CardInstance card, CardInstance? target,
                                       bool skipLeaveTrigger, bool chargeKredits,
                                       bool recordAction, bool toFrontline,
-                                      int locationNumber, int instigatorID, bool currentTargetPrepared = false)
+                                      int locationNumber, int instigatorID, bool currentTargetPrepared = false,
+                                      bool playNotificationPrepared = false)
     {
         BeginEffectResolution();
         try
         {
             return PlayCardFromHandCoreImpl(card, target, skipLeaveTrigger, chargeKredits,
-                recordAction, toFrontline, locationNumber, instigatorID, currentTargetPrepared);
+                recordAction, toFrontline, locationNumber, instigatorID, currentTargetPrepared, playNotificationPrepared);
         }
         finally
         {
@@ -1757,7 +1758,7 @@ public sealed class MatchEngine
     private bool PlayCardFromHandCoreImpl(CardInstance card, CardInstance? target,
                                           bool skipLeaveTrigger, bool chargeKredits,
                                           bool recordAction, bool toFrontline,
-                                          int locationNumber, int instigatorID, bool currentTargetPrepared)
+                                          int locationNumber, int instigatorID, bool currentTargetPrepared, bool playNotificationPrepared)
     {
         // Native PlayCardFromHand/CardPlayedFromHand pass an integer ID;
         // callbacks may replace the object mapped to it before each use.
@@ -1786,14 +1787,26 @@ public sealed class MatchEngine
                 ["side"] = card.Owner.ToWire(),
             });
 
-            FireSubAction(card.Definition.IsUnit || card.Definition.IsLocationCard
-                ? "ZActionPlayCardFromHand"
-                : "ZActionPlayOrderCardFromHand", new[]
-            {
-                ActionValue2.Int("instigatorID", instigatorID),
-                ActionValue2.Int("targetCardID", target?.CardId ?? 0),
-                ActionValue2.Int("playedDirectly", 1),
-            });
+            // Ordinary units use the authoritative notifier below. Order receipts
+            // retain their separate, not-yet-audited path.
+            if (!card.Definition.IsUnit && !card.Definition.IsLocationCard)
+                FireSubAction("ZActionPlayOrderCardFromHand", new[]
+                {
+                    ActionValue2.Int("instigatorID", instigatorID),
+                    ActionValue2.Int("targetCardID", target?.CardId ?? 0),
+                    ActionValue2.Int("playedDirectly", 1),
+                });
+        }
+
+        if (!playNotificationPrepared && (card.Definition.IsUnit || card.Definition.IsLocationCard))
+        {
+            var destination = toFrontline ? CardLocation.BoardFrontline : card.Owner.HqOf();
+            int slot = locationNumber >= 0 ? locationNumber
+                : State.CardsUnordered().Count(x => x.Location == destination);
+            // PlayCardFromHand i=815 precedes i=1988; the latter passes reason 4
+            // for ordinary play including autoplay (not PlayCardDirectlyFromHand).
+            NotifyPlayFromHand(card, instigatorID, slot, targetCardId, false, destination,
+                card.Definition.ChooseOneOptionCount > 0 ? card.ChooseOne : -1);
         }
 
         if (!skipLeaveTrigger && card.Location.IsBoard())
@@ -1806,8 +1819,7 @@ public sealed class MatchEngine
         // PlayCardFromHand i=1988 -> CardPlayedFromHand i=2114.
         if (card.Definition.IsUnit || card.Definition.IsLocationCard)
         {
-            PlaceOnBoard(card, toFrontline, locationNumber,
-                chargeKredits ? CardMoveReason.PlayCardPlayerMove : CardMoveReason.PlayCardForce);
+            PlaceOnBoard(card, toFrontline, locationNumber, CardMoveReason.PlayCardPlayerMove);
         }
         else
         {
@@ -2049,6 +2061,20 @@ public sealed class MatchEngine
             if (other.LocationNumber >= slot) other.LocationNumber++;
         State.Move(card, destination, slot, moveReason: moveReason,
             notifyMoved: false, normalizeLocation: false);
+        // CardLocationMoved i=295/1256 returns to the flow stack: notification
+        // precedes i=348 refresh and i=578 callbacks. Keep the requested slot,
+        // which may differ from the compacted physical slot afterward.
+        Effects.Blueprint.LiveRuleTables.TryGetEnumName("/Script/kards.ECardLocationEnum", (int)oldLocation, out string oldName);
+        Effects.Blueprint.LiveRuleTables.TryGetEnumName("/Script/kards.ECardLocationEnum", (int)destination, out string newName);
+        Effects.Blueprint.LiveRuleTables.TryGetEnumName("/Game/Structs/CardMoveReason.CardMoveReason", (int)moveReason, out string reasonName);
+        FireSubAction("ZActionMoveCardToNewLocation", new[] {
+            ActionValue2.Int("cardID", card.CardId), ActionValue2.Int("instigatorID", card.CardId),
+            ActionValue2.Str("oldLocation", oldName), ActionValue2.Str("newLocation", newName),
+            ActionValue2.Int("newLocationNumber", slot),
+            ActionValue2.Int("movementLeft", card.HasMovedThisTurn ? 0 : 1),
+            ActionValue2.Int("attackLeft", card.RemainingAttacks),
+            ActionValue2.Int("nonVisualLocationNumber", slot), ActionValue2.Str("moveReason", reasonName),
+        });
         Api.RefreshLocationStatus(new[] { oldLocation, destination });
         State.CardMoved?.Invoke(card, oldLocation, destination, false, moveReason);
         Say($"{card} 部署到{(toFrontline ? "前线" : "半场")} {destination} 槽位 {slot}");
