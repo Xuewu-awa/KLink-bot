@@ -27,13 +27,24 @@ public sealed class MatchEngine
     internal void ResolveHandSelection(CardInstance selecting, Func<bool> resolve, bool updateExtraTriggers,
         bool defer = true, bool consumeAutoPlay = true, bool updateExtraBeforeWait = false,
         Func<CardInstance?>? replySource = null)
+        => ResolveHandSelection(selecting, beginReply => { beginReply(); return resolve(); },
+            updateExtraTriggers, defer, consumeAutoPlay, updateExtraBeforeWait, replySource);
+
+    internal void ResolveHandSelection(CardInstance selecting, Func<Action, bool> resolve, bool updateExtraTriggers,
+        bool defer = true, bool consumeAutoPlay = true, bool updateExtraBeforeWait = false,
+        Func<CardInstance?>? replySource = null)
     {
         bool Complete()
         {
-            // PlayerMoves i=8750/9624 starts a separate selection-response
-            // action before its callback; effect-resolution depth stays shared.
-            _currentActionLogStart = State.ActionLog.Count;
-            if (!resolve()) return false; // No reply leaves this request at the queue head; ID 0 is a reply.
+            void BeginReply()
+            {
+                // PlayerMoves i8750/9624 -> InitStart -> SuperActionStarted.
+                // A policy without an answer has not sent a new action yet.
+                _currentActionLogStart = State.ActionLog.Count;
+                State.StopFurtherActions = false;
+                State.StopAttack = false;
+            }
+            if (!resolve(BeginReply)) return false; // ID 0 is a reply; no answer retains the queue head.
             // The hand reply supplies its pre-callback cache, including null.
             // Looking up the ID here would observe later callback mutations.
             var responseCard = replySource is null ? selecting : replySource();

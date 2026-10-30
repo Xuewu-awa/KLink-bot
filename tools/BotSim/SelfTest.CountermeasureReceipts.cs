@@ -1,10 +1,73 @@
 using KLink.Bot.Cards;
 using KLink.Bot.Engine;
+using KLink.Bot.Effects;
+using KLink.Bot.Effects.Blueprint;
 using KLink.Bot.Training;
 
 namespace KLink.Bot.Sim;
 internal static partial class SelfTest
 {
+    private static string? SelectionReplyStopBoundary(CardDatabase db)
+    {
+        const string name = "card_unit_m36_destroyer";
+        // A synthetic callback observes phase ordering, not this card's live effect.
+        using var probe = InstallSelectionDrawProbe(name, "OnHandTargetSelected");
+        var locals = (IDictionary<string, IReadOnlyList<KismetStep>>)KismetLibrary.Default!.Find(name)!.Locals!;
+        KismetStep Observe(int index, string key, string getter) => new(index, "call", "JSON_SetBool",
+            new[] { new KismetExpr { Int = 60 }, new KismetExpr { Str = key }, new KismetExpr { Call = getter } },
+            Array.Empty<int>(), null, null, -1, null, null) { ByteOffset = index };
+        locals["OnHandTargetSelected"] = new[] {
+            Observe(0, "audit_stop", "GetStopFurtherActions"), Observe(1, "audit_attack", "GetStopAttack"),
+            new KismetStep(2, "return", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), null, null, -1, null, null)
+                { ByteOffset = 2 }
+        };
+        foreach (Side side in new[] { Side.Left, Side.Right })
+        foreach (int route in new[] { 0, 1, 2 })
+        {
+            var (engine, state) = EmptyBoard(db); state.ActiveSide = side;
+            var source = state.CreateWithId(name, side, 60, side.HqOf(), 1);
+            state.CreateWithId("card_event_interception", side, 80, side.HandOf(), 0);
+            source.ExtraPlayTriggers = 1;
+            state.StopFurtherActions = true; state.StopAttack = true;
+            bool accepted = false, clean = false; int effects = 0;
+            engine.PickHandTargetId = (_, _) => accepted ? 80 : null;
+            CardEffectScripts.Register(name, _ => {
+                effects++; clean = !state.StopFurtherActions && !state.StopAttack;
+                // A flag raised within the reply must survive its remaining tail.
+                state.StopFurtherActions = true; state.StopAttack = true;
+            });
+            try
+            {
+                if (route == 1)
+                {
+                    if (engine.Api.DevelopChosenCard(source, PlainUnit) is null) return "develop reply missing";
+                }
+                else if (route == 2)
+                {
+                    var chosen = state.CreateWithId(PlainUnit, side, 90, side.DeckOf(), 0);
+                    if (engine.Api.DrawChosenCardToHand(source, chosen) is null) return "deck reply missing";
+                }
+                else
+                {
+                    engine.Api.InvokeByName("selectTargetFromHand", source, new object?[] { 60 },
+                        new EffectContext { Engine = engine, State = state, Self = source, Controller = side }, out _);
+                    if (engine.PendingSelectionCount != 1 || effects != 0
+                        || !state.StopFurtherActions || !state.StopAttack)
+                        return "unanswered selection changed stop flags or consumed callback";
+                    accepted = true;
+                    if (!engine.ResumePendingSelections()) return "accepted reply did not resume";
+                }
+                if (!source.CustomJson.ContainsKey("audit_stop") || !source.CustomJson.ContainsKey("audit_attack")
+                    || engine.Api.JsonGetBool(source, "audit_stop") || engine.Api.JsonGetBool(source, "audit_attack")
+                    || effects != 1 || !clean || !state.StopFurtherActions || !state.StopAttack
+                    || engine.PendingSelectionCount != 0 || engine.Api.Vm.FaultedPrograms != 0)
+                    return $"reply must clear old stops before callback/extra effect and retain new stops: {side}/{route}/{effects}/{clean}";
+            }
+            finally { CardEffectScripts.Unregister(name); }
+        }
+        return null;
+    }
+
     private static string? CountermeasureCancellationBatch(CardDatabase db)
     {
         foreach (Side side in new[] { Side.Left, Side.Right })

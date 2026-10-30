@@ -2175,12 +2175,14 @@ public sealed partial class CardApi
                 return only.CardId;
             }
 
-            _engine.ResolveHandSelection(selecting, () =>
+            _engine.ResolveHandSelection(selecting, beginReply =>
             {
                 var chosen = c.Engine.ChooseSpawnCard is { } chooseDeck
                     ? chooseDeck(selecting, deckCandidates)
                     : c.Engine.PickCardToDraw is { } pickDeck
                         ? pickDeck(selecting, true, isEffect) : deckCandidates[0];
+                if (chosen is null) return false;
+                beginReply();
                 return DrawChosenCardToHandCore(selecting, chosen) is not null;
             }, updateExtraTriggers: true);
             return 0; // Notifier branch returns before a player answer arrives.
@@ -2204,13 +2206,14 @@ public sealed partial class CardApi
             // is no inline callback or AfterWait here; do not invent a reply.
             return 0;
         }
-        _engine.ResolveHandSelection(selecting, () =>
+        _engine.ResolveHandSelection(selecting, beginReply =>
         {
             var picked = c.Engine.ChooseSpawnCard is { } chooseDevelop
                 ? chooseDevelop(selecting, candidates)
                 : c.Engine.PickCardToDraw is { } pickDevelop
                     ? pickDevelop(selecting, false, isEffect) : candidates[0];
             if (picked is null) return false;
+            beginReply();
             int index = candidates.FindIndex(x => ReferenceEquals(x, picked));
             if (index < 0) index = candidates.FindIndex(x => x.Name == picked.Name);
             string? code = c.State.Database.DeckCodeFor(picked.Name);
@@ -2235,8 +2238,9 @@ public sealed partial class CardApi
         }
 
         CardInstance? drawn = null;
-        _engine.ResolveHandSelection(selecting, () =>
+        _engine.ResolveHandSelection(selecting, beginReply =>
         {
+            beginReply();
             drawn = DrawChosenCardToHandCore(selecting, chosen);
             return drawn is not null;
         }, updateExtraTriggers: true);
@@ -2381,7 +2385,7 @@ public sealed partial class CardApi
         }
 
         CardInstance? replyCard = null;
-        _engine.ResolveHandSelection(selecting, () =>
+        _engine.ResolveHandSelection(selecting, beginReply =>
         {
             // Automatic choice resolves the queued ID before building candidates.
             var policyCard = GetCardFromID(selectingId);
@@ -2406,6 +2410,7 @@ public sealed partial class CardApi
                 if (hand.Count > 0 && (chosen is null || !hand.Contains(chosen))) return false;
             }
             // BP_Logic.autoPickHandTargets sends ID 0 when no valid target exists.
+            beginReply();
             c.Engine.RecordHandTargetPick(selectingId, chosen?.CardId ?? 0);
             // PlayerMoves resolves again when executing the answer, then shares
             // this cached object with the callback, extra trigger and AfterWait.
@@ -3378,8 +3383,9 @@ public sealed partial class CardApi
         }
 
         CardInstance? created = null;
-        _engine.ResolveHandSelection(selecting, () =>
+        _engine.ResolveHandSelection(selecting, beginReply =>
         {
+            beginReply();
             created = DevelopChosenCardCore(selecting, cardName, isEffect);
             return created is not null;
         }, updateExtraTriggers: true);
