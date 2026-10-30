@@ -30,6 +30,9 @@ public sealed class MatchEngine
     {
         bool Complete()
         {
+            // PlayerMoves i=8750/9624 starts a separate selection-response
+            // action before its callback; effect-resolution depth stays shared.
+            _currentActionLogStart = State.ActionLog.Count;
             if (!resolve()) return false; // No reply leaves this request at the queue head; ID 0 is a reply.
             // The hand reply supplies its pre-callback cache, including null.
             // Looking up the ID here would observe later callback mutations.
@@ -1856,7 +1859,7 @@ public sealed class MatchEngine
         var afterPlayGotchas = new List<CardInstance>();
         foreach (int id in Api.GetActiveGotchasOrdered())
         {
-            if (State.StopFurtherActions) return true;
+            if (State.StopFurtherActions) { NotifyStopFurtherActions(); return true; }
             if (State.ById(id) is not { } gotcha) continue;
             if (CardApi.CustomNameHasAttribute(gotcha, "customName1", "gotchaAfterPlayFromHand"))
                 afterPlayGotchas.Add(gotcha);
@@ -1868,7 +1871,7 @@ public sealed class MatchEngine
                 cardsDone.Add(id);
             }
         }
-        if (State.StopFurtherActions) return true;
+        if (State.StopFurtherActions) { NotifyStopFurtherActions(); return true; }
 
         // ---- 未揭示隐蔽牌的专用触发点 ----
         //
@@ -3597,8 +3600,35 @@ public sealed class MatchEngine
 
     // ==================== 动作记录 ====================
 
+    private int _currentActionLogStart;
+
+    private void NotifyStopFurtherActions()
+    {
+        // OnlineMatch.StopFurtherActions rebuilds only the current subActions.
+        // Its local values array is NOT cleared between matching play records.
+        // Array assignment / struct insertion copy each accumulated prefix.
+        var values = new List<ActionValue2>();
+        for (int i = _currentActionLogStart; i < State.ActionLog.Count; i++)
+        {
+            var action = State.ActionLog[i];
+            bool changed = false;
+            var subs = action.SubActions.Select(sub =>
+            {
+                if (sub.Name != "ZActionPlayCardFromHand") return sub;
+                values.AddRange(sub.Values);
+                values.Add(ActionValue2.Int("actionCancelled", 1));
+                changed = true;
+                return new SubAction(sub.Name, values.ToArray());
+            }).ToArray();
+            if (changed) State.ActionLog[i] = action with { SubActions = subs };
+        }
+    }
+
     internal void RecordAction(string actionType, Side player, Dictionary<string, object?> data, IReadOnlyList<SubAction>? subs = null)
     {
+        // CreateAction_InitStart i=1320 clears subActions. In-action autoplay
+        // does not start an action; DoNextInQueue starts one for every card.
+        _currentActionLogStart = State.ActionLog.Count;
         _actionId++;
         State.ActionLog.Add(new GameAction(
             _actionId, actionType, player, State.Turn,
