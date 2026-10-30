@@ -1,0 +1,2075 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-30",
+  "base_commit": "600932a0e35f351f067392dd19d075f744ce12e2",
+  "scope": "Four exported choose-one units, eight non-targeted options; default-slot training root deployment only.",
+  "authority": "Parsed pak functions, raw pak assets byte-equal to newOutput for these six assets, decoded static definitions and saved read-only CDO scalars. No replay authority or new native mapping.",
+  "sources": {
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_ChooseOneCard.functions.json": "9fa1ddf907757789ac5d7593f93d96bcfbb2f067200813d503ce11e81aadbecd",
+    "D:\\Codex Workshop\\kards-install-review\\cards.definitions.json": "122e051175ba711975269838fe1097946fe23bab41cbe0db535b3ec5f539f65e",
+    "D:\\Codex Workshop\\kards-install-review\\runtime-card-cdos.scalars.json": "f99ff49f8918d726f0fbce44793211a998b121bd92997fe01eb1b4198e6de91e",
+    "D:\\Codex Workshop\\KLink-choice-deployment\\tools\\BotSim\\bin\\Debug\\net10.0\\Data\\cards.json": "3550dc76eb0414c500166875f45909077aeeb3ea4d229b9b0ba9c66a81987c4b",
+    "D:\\Codex Workshop\\kards-install-review\\audit-choice-unit-deployment-20261030.py": "66534559f8b2aec67896962c8737ec64c163431378ed635f01cd1087e1395d0c",
+    "D:\\Codex Workshop\\kards-install-review\\extracted\\kards\\Content\\Blueprints\\Cards\\BP_ChooseOneCard.uasset": "8cac57ea1d50893d5980a5b06a0a5082ca6651ce5cf588bf5459e8093b77545e",
+    "D:\\Fmodel\\Output\\newOutput\\kards\\Content\\Blueprints\\Cards\\BP_ChooseOneCard.uasset": "8cac57ea1d50893d5980a5b06a0a5082ca6651ce5cf588bf5459e8093b77545e",
+    "D:\\Codex Workshop\\kards-install-review\\extracted\\kards\\Content\\Blueprints\\Cards\\BP_ChooseOneCard.uexp": "7ab0e57a0880a9e9c07c97a6b9a45859a9912d576d21ae462023bcf0db7477b3",
+    "D:\\Fmodel\\Output\\newOutput\\kards\\Content\\Blueprints\\Cards\\BP_ChooseOneCard.uexp": "7ab0e57a0880a9e9c07c97a6b9a45859a9912d576d21ae462023bcf0db7477b3",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_HandCard.functions.json": "6fe76657678e1f934d8d8775e35ad2c5bda5a13dc2a69fb4e7d64fb532b9e80a",
+    "D:\\Codex Workshop\\kards-install-review\\extracted\\kards\\Content\\Blueprints\\Cards\\BP_HandCard.uasset": "5e69c19d1886cc50286eed67f4bfc8a912509fba3450432e0a2c3a85d26484ca",
+    "D:\\Fmodel\\Output\\newOutput\\kards\\Content\\Blueprints\\Cards\\BP_HandCard.uasset": "5e69c19d1886cc50286eed67f4bfc8a912509fba3450432e0a2c3a85d26484ca",
+    "D:\\Codex Workshop\\kards-install-review\\extracted\\kards\\Content\\Blueprints\\Cards\\BP_HandCard.uexp": "ff79bf4bd43987f85c2b7e3248c3ae1cf70b657a94fbf24039ed16a04517167c",
+    "D:\\Fmodel\\Output\\newOutput\\kards\\Content\\Blueprints\\Cards\\BP_HandCard.uexp": "ff79bf4bd43987f85c2b7e3248c3ae1cf70b657a94fbf24039ed16a04517167c",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\France\\units\\card_unit_1er_regiment_etranger.functions.json": "73d055d0572413b452b748343986f8a0de19b2a94ce5b64b74c0118264d042ed",
+    "D:\\Codex Workshop\\kards-install-review\\extracted\\kards\\Content\\Blueprints\\Cards\\France\\units\\card_unit_1er_regiment_etranger.uasset": "6177fb9cfc97e467d9a30f0344838c78cf0bfb4e42d6741bdf5b36ad0ea6ed89",
+    "D:\\Fmodel\\Output\\newOutput\\kards\\Content\\Blueprints\\Cards\\France\\units\\card_unit_1er_regiment_etranger.uasset": "6177fb9cfc97e467d9a30f0344838c78cf0bfb4e42d6741bdf5b36ad0ea6ed89",
+    "D:\\Codex Workshop\\kards-install-review\\extracted\\kards\\Content\\Blueprints\\Cards\\France\\units\\card_unit_1er_regiment_etranger.uexp": "60b89ce6094f2cd504f19cf6de7052044e027fe8eaaadc1ee975cc44d65b9f63",
+    "D:\\Fmodel\\Output\\newOutput\\kards\\Content\\Blueprints\\Cards\\France\\units\\card_unit_1er_regiment_etranger.uexp": "60b89ce6094f2cd504f19cf6de7052044e027fe8eaaadc1ee975cc44d65b9f63",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\France\\units\\card_unit_51e_regiment.functions.json": "529c4b63cdccbf12cf300558b603c02284d890865f3442ca95b428f928402198",
+    "D:\\Codex Workshop\\kards-install-review\\extracted\\kards\\Content\\Blueprints\\Cards\\France\\units\\card_unit_51e_regiment.uasset": "bae0e4b03f12b38e7fd0245d1c59d5888fadad5a36939ffb5c0ea1ab26a0a6b1",
+    "D:\\Fmodel\\Output\\newOutput\\kards\\Content\\Blueprints\\Cards\\France\\units\\card_unit_51e_regiment.uasset": "bae0e4b03f12b38e7fd0245d1c59d5888fadad5a36939ffb5c0ea1ab26a0a6b1",
+    "D:\\Codex Workshop\\kards-install-review\\extracted\\kards\\Content\\Blueprints\\Cards\\France\\units\\card_unit_51e_regiment.uexp": "7ea7e7e921e2c4deb81c6bbbcf339711066a25b9652412c5c23a64433a1e8b71",
+    "D:\\Fmodel\\Output\\newOutput\\kards\\Content\\Blueprints\\Cards\\France\\units\\card_unit_51e_regiment.uexp": "7ea7e7e921e2c4deb81c6bbbcf339711066a25b9652412c5c23a64433a1e8b71",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\USA\\Breakthrough\\units\\card_unit_120mm_m1_gun.functions.json": "56ff709ee03d8106391d2f96f70a936dedccde9fe9d8a21a501a7d24ea063b48",
+    "D:\\Codex Workshop\\kards-install-review\\extracted\\kards\\Content\\Blueprints\\Cards\\USA\\Breakthrough\\units\\card_unit_120mm_m1_gun.uasset": "02674cb0a4a2baafd8b3345896ab80ee8d9f4344fb03fdc35122f5a603a0ea0c",
+    "D:\\Fmodel\\Output\\newOutput\\kards\\Content\\Blueprints\\Cards\\USA\\Breakthrough\\units\\card_unit_120mm_m1_gun.uasset": "02674cb0a4a2baafd8b3345896ab80ee8d9f4344fb03fdc35122f5a603a0ea0c",
+    "D:\\Codex Workshop\\kards-install-review\\extracted\\kards\\Content\\Blueprints\\Cards\\USA\\Breakthrough\\units\\card_unit_120mm_m1_gun.uexp": "3d95472fafddbd703ab8a6eabeb4d75974a86f50ff7e6955c45ad696ee98e5a1",
+    "D:\\Fmodel\\Output\\newOutput\\kards\\Content\\Blueprints\\Cards\\USA\\Breakthrough\\units\\card_unit_120mm_m1_gun.uexp": "3d95472fafddbd703ab8a6eabeb4d75974a86f50ff7e6955c45ad696ee98e5a1",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\USA\\WorldAtWar\\units\\card_unit_5th_rangers.functions.json": "99d1147bd8c8328520489599f61288c8a0831fdc81ee2eae57ea8fa135ce3615",
+    "D:\\Codex Workshop\\kards-install-review\\extracted\\kards\\Content\\Blueprints\\Cards\\USA\\WorldAtWar\\units\\card_unit_5th_rangers.uasset": "56747b93407e9af0ae3b8f6eaed161b66d2031bfa0870ab08d3f4bb3ea20c34d",
+    "D:\\Fmodel\\Output\\newOutput\\kards\\Content\\Blueprints\\Cards\\USA\\WorldAtWar\\units\\card_unit_5th_rangers.uasset": "56747b93407e9af0ae3b8f6eaed161b66d2031bfa0870ab08d3f4bb3ea20c34d",
+    "D:\\Codex Workshop\\kards-install-review\\extracted\\kards\\Content\\Blueprints\\Cards\\USA\\WorldAtWar\\units\\card_unit_5th_rangers.uexp": "23ec220b53dc0bfdad8c3c6d0319436d231980b7945058e7216e0fad4d3b36bb",
+    "D:\\Fmodel\\Output\\newOutput\\kards\\Content\\Blueprints\\Cards\\USA\\WorldAtWar\\units\\card_unit_5th_rangers.uexp": "23ec220b53dc0bfdad8c3c6d0319436d231980b7945058e7216e0fad4d3b36bb",
+    "D:\\Codex Workshop\\KLink-choice-deployment\\tools\\BotSim\\SelfTest.ChoiceUnitDeployment.cs": "5a1cc899f0c6b712d1fab712d37a75ebdab8dc6cf041560621117ec5bbbcd4c6",
+    "D:\\Codex Workshop\\KLink-choice-deployment\\tools\\BotSim\\SelfTest.cs": "44a55b2f9d7042751f1e49c1e47c8fbdb5d1babfaae94b8c407bf37c55c7739c",
+    "D:\\Codex Workshop\\kards-install-review\\choice-deployment-selftest.log": "fec6f7e61d925349fa7a454fa9015ab5d65ebf75e33cc77591ce46256cfe7c11",
+    "D:\\Codex Workshop\\kards-install-review\\choice-deployment-dataset.log": "3a5b384bdeba03c14f933b3d9a4d7f8cb377b4fd1fff975f98c2a68c2534cbad",
+    "D:\\Codex Workshop\\kards-install-review\\choice-deployment-model.log": "f4f5707f27410b7c3a6b92bd47562fef6af5356c380b7a152dee77587b293767"
+  },
+  "raw_asset_comparison": [
+    {
+      "asset": "kards/Content/Blueprints/Cards/BP_ChooseOneCard",
+      "new_export_byte_equal": {
+        ".uasset": true,
+        ".uexp": true
+      }
+    },
+    {
+      "asset": "kards/Content/Blueprints/Cards/BP_HandCard",
+      "new_export_byte_equal": {
+        ".uasset": true,
+        ".uexp": true
+      }
+    },
+    {
+      "asset": "kards/Content/Blueprints/Cards/France/units/card_unit_1er_regiment_etranger",
+      "new_export_byte_equal": {
+        ".uasset": true,
+        ".uexp": true
+      }
+    },
+    {
+      "asset": "kards/Content/Blueprints/Cards/France/units/card_unit_51e_regiment",
+      "new_export_byte_equal": {
+        ".uasset": true,
+        ".uexp": true
+      }
+    },
+    {
+      "asset": "kards/Content/Blueprints/Cards/USA/Breakthrough/units/card_unit_120mm_m1_gun",
+      "new_export_byte_equal": {
+        ".uasset": true,
+        ".uexp": true
+      }
+    },
+    {
+      "asset": "kards/Content/Blueprints/Cards/USA/WorldAtWar/units/card_unit_5th_rangers",
+      "new_export_byte_equal": {
+        ".uasset": true,
+        ".uexp": true
+      }
+    }
+  ],
+  "unit_options": {
+    "card_unit_1er_regiment_etranger": {
+      "flags": [
+        false,
+        false
+      ],
+      "saved_cdo_flag": false
+    },
+    "card_unit_51e_regiment": {
+      "flags": [
+        false,
+        false
+      ],
+      "saved_cdo_flag": false
+    },
+    "card_unit_120mm_m1_gun": {
+      "flags": [
+        false,
+        false
+      ],
+      "saved_cdo_flag": false
+    },
+    "card_unit_5th_rangers": {
+      "flags": [
+        false,
+        false
+      ],
+      "saved_cdo_flag": false
+    }
+  },
+  "choice_flow_excerpt": {
+    "1039": {
+      "Inst": "BindDelegate",
+      "FunctionName": "spawnArrow",
+      "Delegate": {
+        "Inst": "LocalVariable",
+        "Variable Outer": {
+          "PinCategory": "Delegate",
+          "PinSubCategory": "Delegate"
+        },
+        "Variable Name": "K2Node_CreateDelegate_OutputDelegate"
+      },
+      "Object": {
+        "Inst": "Self"
+      },
+      "StatementIndex": 1039
+    },
+    "1418": {
+      "Inst": "Context",
+      "Context": {
+        "Inst": "ObjectConst",
+        "Object": "/Script/Engine.Default__KismetArrayLibrary"
+      },
+      "SkipOffsetForNull": 59,
+      "RValuePropertyOuter": "#Pointer Error#",
+      "RValuePropertyName": "^^^^^",
+      "Expression": {
+        "Inst": "FinalFunction",
+        "Function": "Array_Get",
+        "Parameters": [
+          {
+            "Inst": "Context",
+            "Context": {
+              "Inst": "InstanceVariable",
+              "Variable Outer": {
+                "PinCategory": "Object",
+                "PinSubCategory": "Object",
+                "PinSubCategoryObject": "/Script/kards.BaseCardObject"
+              },
+              "Variable Name": "_card"
+            },
+            "SkipOffsetForNull": 9,
+            "RValuePropertyOuter": "##NOT SERIALIZED##",
+            "RValuePropertyName": "chooseOneCards",
+            "Expression": {
+              "Inst": "InstanceVariable",
+              "Variable Outer": "##NOT SERIALIZED##",
+              "Variable Name": "chooseOneCards"
+            }
+          },
+          {
+            "Inst": "InstanceVariable",
+            "Variable Outer": {
+              "PinCategory": "Int",
+              "PinSubCategory": "Int"
+            },
+            "Variable Name": "chooseOneIndex"
+          },
+          {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Struct",
+              "PinSubCategory": "Struct",
+              "PinSubCategoryObject": "/Script/kards.ChooseOneCardStruct"
+            },
+            "Variable Name": "CallFunc_Array_Get_Item_1"
+          }
+        ]
+      },
+      "StatementIndex": 1418
+    },
+    "1557": {
+      "Inst": "Context",
+      "Context": {
+        "Inst": "ObjectConst",
+        "Object": "/Script/Engine.Default__KismetArrayLibrary"
+      },
+      "SkipOffsetForNull": 59,
+      "RValuePropertyOuter": "#Pointer Error#",
+      "RValuePropertyName": "^^^^^",
+      "Expression": {
+        "Inst": "FinalFunction",
+        "Function": "Array_Get",
+        "Parameters": [
+          {
+            "Inst": "Context",
+            "Context": {
+              "Inst": "InstanceVariable",
+              "Variable Outer": {
+                "PinCategory": "Object",
+                "PinSubCategory": "Object",
+                "PinSubCategoryObject": "/Script/kards.BaseCardObject"
+              },
+              "Variable Name": "_card"
+            },
+            "SkipOffsetForNull": 9,
+            "RValuePropertyOuter": "##NOT SERIALIZED##",
+            "RValuePropertyName": "chooseOneCards",
+            "Expression": {
+              "Inst": "InstanceVariable",
+              "Variable Outer": "##NOT SERIALIZED##",
+              "Variable Name": "chooseOneCards"
+            }
+          },
+          {
+            "Inst": "InstanceVariable",
+            "Variable Outer": {
+              "PinCategory": "Int",
+              "PinSubCategory": "Int"
+            },
+            "Variable Name": "chooseOneIndex"
+          },
+          {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Struct",
+              "PinSubCategory": "Struct",
+              "PinSubCategoryObject": "/Script/kards.ChooseOneCardStruct"
+            },
+            "Variable Name": "CallFunc_Array_Get_Item_1"
+          }
+        ]
+      },
+      "StatementIndex": 1557
+    },
+    "1638": {
+      "Inst": "LetBool",
+      "Variable": {
+        "Inst": "InstanceVariable",
+        "Variable Outer": {
+          "PinCategory": "Bool",
+          "PinSubCategory": "Bool"
+        },
+        "Variable Name": "needsTarget"
+      },
+      "Expression": {
+        "Inst": "StructMemberContext",
+        "Property Outer": "##NOT SERIALIZED##",
+        "Property Name": "selectTargetOnPlayedFromHand",
+        "StructExpression": {
+          "Inst": "LocalVariable",
+          "Variable Outer": {
+            "PinCategory": "Struct",
+            "PinSubCategory": "Struct",
+            "PinSubCategoryObject": "/Script/kards.ChooseOneCardStruct"
+          },
+          "Variable Name": "CallFunc_Array_Get_Item_1"
+        }
+      },
+      "StatementIndex": 1638
+    },
+    "6614": {
+      "Inst": "Let",
+      "Variable": {
+        "Inst": "Context",
+        "Context": {
+          "Inst": "InstanceVariable",
+          "Variable Outer": {
+            "PinCategory": "Object",
+            "PinSubCategory": "Object",
+            "PinSubCategoryObject": "/Script/kards.BaseCardObject"
+          },
+          "Variable Name": "_originalCard"
+        },
+        "SkipOffsetForNull": 9,
+        "RValuePropertyOuter": "##NOT SERIALIZED##",
+        "RValuePropertyName": "chooseOneIndex",
+        "Expression": {
+          "Inst": "InstanceVariable",
+          "Variable Outer": "##NOT SERIALIZED##",
+          "Variable Name": "chooseOneIndex"
+        }
+      },
+      "Expression": {
+        "Inst": "InstanceVariable",
+        "Variable Outer": {
+          "PinCategory": "Int",
+          "PinSubCategory": "Int"
+        },
+        "Variable Name": "chooseOneIndex"
+      },
+      "StatementIndex": 6614
+    },
+    "7138": {
+      "Inst": "Let",
+      "Variable": {
+        "Inst": "Context",
+        "Context": {
+          "Inst": "InstanceVariable",
+          "Variable Outer": "##NOT SERIALIZED##",
+          "Variable Name": "logic"
+        },
+        "SkipOffsetForNull": 9,
+        "RValuePropertyOuter": "##NOT SERIALIZED##",
+        "RValuePropertyName": "cardBeingPlayedFromHand",
+        "Expression": {
+          "Inst": "InstanceVariable",
+          "Variable Outer": "##NOT SERIALIZED##",
+          "Variable Name": "cardBeingPlayedFromHand"
+        }
+      },
+      "Expression": {
+        "Inst": "InstanceVariable",
+        "Variable Outer": "##NOT SERIALIZED##",
+        "Variable Name": "cardID"
+      },
+      "StatementIndex": 7138
+    },
+    "7187": {
+      "Inst": "Let",
+      "Variable": {
+        "Inst": "Context",
+        "Context": {
+          "Inst": "InstanceVariable",
+          "Variable Outer": "##NOT SERIALIZED##",
+          "Variable Name": "logic"
+        },
+        "SkipOffsetForNull": 9,
+        "RValuePropertyOuter": "##NOT SERIALIZED##",
+        "RValuePropertyName": "cardBeingPlayedFromHandLocNum",
+        "Expression": {
+          "Inst": "InstanceVariable",
+          "Variable Outer": "##NOT SERIALIZED##",
+          "Variable Name": "cardBeingPlayedFromHandLocNum"
+        }
+      },
+      "Expression": {
+        "Inst": "InstanceVariable",
+        "Variable Outer": "##NOT SERIALIZED##",
+        "Variable Name": "cardLocationNumber"
+      },
+      "StatementIndex": 7187
+    },
+    "7236": {
+      "Inst": "JumpIfNot",
+      "Offset": 7255,
+      "Condition": {
+        "Inst": "InstanceVariable",
+        "Variable Outer": {
+          "PinCategory": "Bool",
+          "PinSubCategory": "Bool"
+        },
+        "Variable Name": "needsTarget"
+      },
+      "StatementIndex": 7236
+    },
+    "7250": {
+      "Inst": "Jump",
+      "Offset": 1039,
+      "StatementIndex": 7250
+    },
+    "7255": {
+      "Inst": "JumpIfNot",
+      "Offset": 7292,
+      "Condition": {
+        "Inst": "Context",
+        "Context": {
+          "Inst": "InstanceVariable",
+          "Variable Outer": "##NOT SERIALIZED##",
+          "Variable Name": "logic"
+        },
+        "SkipOffsetForNull": 9,
+        "RValuePropertyOuter": "##NOT SERIALIZED##",
+        "RValuePropertyName": "isReplayMatch",
+        "Expression": {
+          "Inst": "InstanceVariable",
+          "Variable Outer": "##NOT SERIALIZED##",
+          "Variable Name": "isReplayMatch"
+        }
+      },
+      "StatementIndex": 7255
+    },
+    "7292": {
+      "Inst": "LocalVirtualFunction",
+      "FunctionName": "PlaceHandCard",
+      "Parameters": [
+        {
+          "Inst": "InstanceVariable",
+          "Variable Outer": "##NOT SERIALIZED##",
+          "Variable Name": "cardLocationNumber"
+        },
+        {
+          "Inst": "IntConst",
+          "Value": 0
+        }
+      ],
+      "StatementIndex": 7292
+    }
+  },
+  "card_functions": {
+    "card_unit_1er_regiment_etranger": {
+      "ExecuteUbergraph_card_unit_1er_regiment_etranger": {
+        "function_flags": "FUNC_Final, FUNC_UbergraphFunction, FUNC_HasDefaults",
+        "expression_count": 15,
+        "bytecode": [
+          {
+            "Inst": "ComputedJump",
+            "OffsetExpression": {
+              "Inst": "LocalVariable",
+              "Variable Outer": {
+                "PinCategory": "Int",
+                "PinSubCategory": "Int"
+              },
+              "Variable Name": "EntryPoint"
+            },
+            "StatementIndex": 0
+          },
+          {
+            "Inst": "FinalFunction",
+            "Function": "WhichChooseOne",
+            "Parameters": [
+              {
+                "Inst": "LocalVariable",
+                "Variable Outer": {
+                  "PinCategory": "Byte",
+                  "PinSubCategory": "Byte",
+                  "PinSubCategoryObject": "/Script/kards.EnumChooseOneCardBeingPlayed"
+                },
+                "Variable Name": "CallFunc_WhichChooseOne_Branches"
+              }
+            ],
+            "StatementIndex": 10
+          },
+          {
+            "Inst": "LetBool",
+            "Variable": {
+              "Inst": "LocalVariable",
+              "Variable Outer": {
+                "PinCategory": "Bool",
+                "PinSubCategory": "Bool"
+              },
+              "Variable Name": "K2Node_SwitchEnum_CmpSuccess"
+            },
+            "Expression": {
+              "Inst": "CallMath",
+              "Function": "NotEqual_ByteByte",
+              "ContextClass": "/Script/Engine.KismetMathLibrary",
+              "Parameters": [
+                {
+                  "Inst": "LocalVariable",
+                  "Variable Outer": {
+                    "PinCategory": "Byte",
+                    "PinSubCategory": "Byte",
+                    "PinSubCategoryObject": "/Script/kards.EnumChooseOneCardBeingPlayed"
+                  },
+                  "Variable Name": "CallFunc_WhichChooseOne_Branches"
+                },
+                {
+                  "Inst": "ByteConst",
+                  "Value": 0
+                }
+              ]
+            },
+            "StatementIndex": 29
+          },
+          {
+            "Inst": "JumpIfNot",
+            "Offset": 124,
+            "Condition": {
+              "Inst": "LocalVariable",
+              "Variable Outer": {
+                "PinCategory": "Bool",
+                "PinSubCategory": "Bool"
+              },
+              "Variable Name": "K2Node_SwitchEnum_CmpSuccess"
+            },
+            "StatementIndex": 60
+          },
+          {
+            "Inst": "LetBool",
+            "Variable": {
+              "Inst": "LocalVariable",
+              "Variable Outer": {
+                "PinCategory": "Bool",
+                "PinSubCategory": "Bool"
+              },
+              "Variable Name": "K2Node_SwitchEnum_CmpSuccess"
+            },
+            "Expression": {
+              "Inst": "CallMath",
+              "Function": "NotEqual_ByteByte",
+              "ContextClass": "/Script/Engine.KismetMathLibrary",
+              "Parameters": [
+                {
+                  "Inst": "LocalVariable",
+                  "Variable Outer": {
+                    "PinCategory": "Byte",
+                    "PinSubCategory": "Byte",
+                    "PinSubCategoryObject": "/Script/kards.EnumChooseOneCardBeingPlayed"
+                  },
+                  "Variable Name": "CallFunc_WhichChooseOne_Branches"
+                },
+                {
+                  "Inst": "ByteConst",
+                  "Value": 1
+                }
+              ]
+            },
+            "StatementIndex": 74
+          },
+          {
+            "Inst": "JumpIfNot",
+            "Offset": 258,
+            "Condition": {
+              "Inst": "LocalVariable",
+              "Variable Outer": {
+                "PinCategory": "Bool",
+                "PinSubCategory": "Bool"
+              },
+              "Variable Name": "K2Node_SwitchEnum_CmpSuccess"
+            },
+            "StatementIndex": 105
+          },
+          {
+            "Inst": "Jump",
+            "Offset": 446,
+            "StatementIndex": 119
+          },
+          {
+            "Inst": "Context",
+            "Context": {
+              "Inst": "InstanceVariable",
+              "Variable Outer": "##NOT SERIALIZED##",
+              "Variable Name": "cardFunction"
+            },
+            "SkipOffsetForNull": 32,
+            "RValuePropertyOuter": "#Pointer Error#",
+            "RValuePropertyName": "^^^^^",
+            "Expression": {
+              "Inst": "LocalVirtualFunction",
+              "FunctionName": "GiveBlitz",
+              "Parameters": [
+                {
+                  "Inst": "InstanceVariable",
+                  "Variable Outer": "##NOT SERIALIZED##",
+                  "Variable Name": "cardID"
+                },
+                {
+                  "Inst": "InstanceVariable",
+                  "Variable Outer": "##NOT SERIALIZED##",
+                  "Variable Name": "cardID"
+                }
+              ]
+            },
+            "StatementIndex": 124
+          },
+          {
+            "Inst": "Context",
+            "Context": {
+              "Inst": "InstanceVariable",
+              "Variable Outer": "##NOT SERIALIZED##",
+              "Variable Name": "cardFunction"
+            },
+            "SkipOffsetForNull": 53,
+            "RValuePropertyOuter": "#Pointer Error#",
+            "RValuePropertyName": "^^^^^",
+            "Expression": {
+              "Inst": "LocalVirtualFunction",
+              "FunctionName": "DrawCardsFromDeckBySide",
+              "Parameters": [
+                {
+                  "Inst": "InstanceVariable",
+                  "Variable Outer": "##NOT SERIALIZED##",
+                  "Variable Name": "cardID"
+                },
+                {
+                  "Inst": "InstanceVariable",
+                  "Variable Outer": "##NOT SERIALIZED##",
+                  "Variable Name": "side"
+                },
+                {
+                  "Inst": "IntConst",
+                  "Value": 1
+                },
+                {
+                  "Inst": "False"
+                },
+                {
+                  "Inst": "False"
+                },
+                {
+                  "Inst": "LocalVariable",
+                  "Variable Outer": {
+                    "PinCategory": "Int",
+                    "PinSubCategory": "Int",
+                    "ContainerType": 1
+                  },
+                  "Variable Name": "CallFunc_DrawCardsFromDeckBySide_cardsIDs"
+                },
+                {
+                  "Inst": "FloatConst",
+                  "Value": 0.4000000059604645
+                }
+              ]
+            },
+            "StatementIndex": 178
+          },
+          {
+            "Inst": "Jump",
+            "Offset": 446,
+            "StatementIndex": 253
+          },
+          {
+            "Inst": "Context",
+            "Context": {
+              "Inst": "InstanceVariable",
+              "Variable Outer": "##NOT SERIALIZED##",
+              "Variable Name": "cardFunction"
+            },
+            "SkipOffsetForNull": 32,
+            "RValuePropertyOuter": "#Pointer Error#",
+            "RValuePropertyName": "^^^^^",
+            "Expression": {
+              "Inst": "LocalVirtualFunction",
+              "FunctionName": "GiveGuard",
+              "Parameters": [
+                {
+                  "Inst": "InstanceVariable",
+                  "Variable Outer": "##NOT SERIALIZED##",
+                  "Variable Name": "cardID"
+                },
+                {
+                  "Inst": "InstanceVariable",
+                  "Variable Outer": "##NOT SERIALIZED##",
+                  "Variable Name": "cardID"
+                }
+              ]
+            },
+            "StatementIndex": 258
+          },
+          {
+            "Inst": "Context",
+            "Context": {
+              "Inst": "InstanceVariable",
+              "Variable Outer": "##NOT SERIALIZED##",
+              "Variable Name": "cardFunction"
+            },
+            "SkipOffsetForNull": 41,
+            "RValuePropertyOuter": "#Pointer Error#",
+            "RValuePropertyName": "^^^^^",
+            "Expression": {
+              "Inst": "LocalVirtualFunction",
+              "FunctionName": "GetLocationCardBySide",
+              "Parameters": [
+                {
+                  "Inst": "LocalVariable",
+                  "Variable Outer": {
+                    "PinCategory": "Object",
+                    "PinSubCategory": "Object",
+                    "PinSubCategoryObject": "/Script/kards.BaseCardObject"
+                  },
+                  "Variable Name": "CallFunc_GetLocationCardBySide_card"
+                },
+                {
+                  "Inst": "LocalVariable",
+                  "Variable Outer": {
+                    "PinCategory": "Int",
+                    "PinSubCategory": "Int"
+                  },
+                  "Variable Name": "CallFunc_GetLocationCardBySide_locationCardID"
+                },
+                {
+                  "Inst": "InstanceVariable",
+                  "Variable Outer": "##NOT SERIALIZED##",
+                  "Variable Name": "side"
+                }
+              ]
+            },
+            "StatementIndex": 312
+          },
+          {
+            "Inst": "Context",
+            "Context": {
+              "Inst": "InstanceVariable",
+              "Variable Outer": "##NOT SERIALIZED##",
+              "Variable Name": "cardFunction"
+            },
+            "SkipOffsetForNull": 49,
+            "RValuePropertyOuter": "#Pointer Error#",
+            "RValuePropertyName": "^^^^^",
+            "Expression": {
+              "Inst": "LocalVirtualFunction",
+              "FunctionName": "ChangeDefense",
+              "Parameters": [
+                {
+                  "Inst": "LocalVariable",
+                  "Variable Outer": {
+                    "PinCategory": "Object",
+                    "PinSubCategory": "Object",
+                    "PinSubCategoryObject": "/Script/kards.BaseCardObject"
+                  },
+                  "Variable Name": "CallFunc_GetLocationCardBySide_card"
+                },
+                {
+                  "Inst": "InstanceVariable",
+                  "Variable Outer": "##NOT SERIALIZED##",
+                  "Variable Name": "cardID"
+                },
+                {
+                  "Inst": "IntConst",
+                  "Value": 4
+                },
+                {
+                  "Inst": "ByteConst",
+                  "Value": 1
+                },
+                {
+                  "Inst": "False"
+                },
+                {
+                  "Inst": "LocalVariable",
+                  "Variable Outer": {
+                    "PinCategory": "Bool",
+                    "PinSubCategory": "Bool"
+                  },
+                  "Variable Name": "CallFunc_ChangeDefense_qqq"
+                }
+              ]
+            },
+            "StatementIndex": 375
+          },
+          {
+            "Inst": "Return",
+            "Expression": {
+              "Inst": "Nothing"
+            },
+            "StatementIndex": 446
+          },
+          {
+            "Inst": "EndOfScript",
+            "StatementIndex": 448
+          }
+        ],
+        "bytecode_raw_size": 0
+      },
+      "OnPlayedFromHand": {
+        "function_flags": "FUNC_Event, FUNC_Public, FUNC_BlueprintCallable, FUNC_BlueprintEvent",
+        "expression_count": 4,
+        "bytecode": [
+          {
+            "Inst": "LetValueOnPersistentFrame",
+            "Property Outer": {
+              "PinCategory": "Object",
+              "PinSubCategory": "Object",
+              "PinSubCategoryObject": "/Script/kards.BaseCardObject"
+            },
+            "Property Name": "K2Node_Event_targetCard",
+            "Expression": {
+              "Inst": "LocalVariable",
+              "Variable Outer": {
+                "PinCategory": "Object",
+                "PinSubCategory": "Object",
+                "PinSubCategoryObject": "/Script/kards.BaseCardObject"
+              },
+              "Variable Name": "targetCard"
+            },
+            "StatementIndex": 0
+          },
+          {
+            "Inst": "LocalFinalFunction",
+            "Function": "ExecuteUbergraph_card_unit_1er_regiment_etranger",
+            "Parameters": [
+              {
+                "Inst": "IntConst",
+                "Value": 10
+              }
+            ],
+            "StatementIndex": 18
+          },
+          {
+            "Inst": "Return",
+            "Expression": {
+              "Inst": "Nothing"
+            },
+            "StatementIndex": 33
+          },
+          {
+            "Inst": "EndOfScript",
+            "StatementIndex": 35
+          }
+        ],
+        "bytecode_raw_size": 0
+      }
+    },
+    "card_unit_51e_regiment": {
+      "ExecuteUbergraph_card_unit_51e_regiment": {
+        "function_flags": "FUNC_Final, FUNC_UbergraphFunction",
+        "expression_count": 14,
+        "bytecode": [
+          {
+            "Inst": "ComputedJump",
+            "OffsetExpression": {
+              "Inst": "LocalVariable",
+              "Variable Outer": {
+                "PinCategory": "Int",
+                "PinSubCategory": "Int"
+              },
+              "Variable Name": "EntryPoint"
+            },
+            "StatementIndex": 0
+          },
+          {
+            "Inst": "FinalFunction",
+            "Function": "WhichChooseOne",
+            "Parameters": [
+              {
+                "Inst": "LocalVariable",
+                "Variable Outer": {
+                  "PinCategory": "Byte",
+                  "PinSubCategory": "Byte",
+                  "PinSubCategoryObject": "/Script/kards.EnumChooseOneCardBeingPlayed"
+                },
+                "Variable Name": "CallFunc_WhichChooseOne_Branches"
+              }
+            ],
+            "StatementIndex": 10
+          },
+          {
+            "Inst": "LetBool",
+            "Variable": {
+              "Inst": "LocalVariable",
+              "Variable Outer": {
+                "PinCategory": "Bool",
+                "PinSubCategory": "Bool"
+              },
+              "Variable Name": "K2Node_SwitchEnum_CmpSuccess"
+            },
+            "Expression": {
+              "Inst": "CallMath",
+              "Function": "NotEqual_ByteByte",
+              "ContextClass": "/Script/Engine.KismetMathLibrary",
+              "Parameters": [
+                {
+                  "Inst": "LocalVariable",
+                  "Variable Outer": {
+                    "PinCategory": "Byte",
+                    "PinSubCategory": "Byte",
+                    "PinSubCategoryObject": "/Script/kards.EnumChooseOneCardBeingPlayed"
+                  },
+                  "Variable Name": "CallFunc_WhichChooseOne_Branches"
+                },
+                {
+                  "Inst": "ByteConst",
+                  "Value": 0
+                }
+              ]
+            },
+            "StatementIndex": 29
+          },
+          {
+            "Inst": "JumpIfNot",
+            "Offset": 124,
+            "Condition": {
+              "Inst": "LocalVariable",
+              "Variable Outer": {
+                "PinCategory": "Bool",
+                "PinSubCategory": "Bool"
+              },
+              "Variable Name": "K2Node_SwitchEnum_CmpSuccess"
+            },
+            "StatementIndex": 60
+          },
+          {
+            "Inst": "LetBool",
+            "Variable": {
+              "Inst": "LocalVariable",
+              "Variable Outer": {
+                "PinCategory": "Bool",
+                "PinSubCategory": "Bool"
+              },
+              "Variable Name": "K2Node_SwitchEnum_CmpSuccess"
+            },
+            "Expression": {
+              "Inst": "CallMath",
+              "Function": "NotEqual_ByteByte",
+              "ContextClass": "/Script/Engine.KismetMathLibrary",
+              "Parameters": [
+                {
+                  "Inst": "LocalVariable",
+                  "Variable Outer": {
+                    "PinCategory": "Byte",
+                    "PinSubCategory": "Byte",
+                    "PinSubCategoryObject": "/Script/kards.EnumChooseOneCardBeingPlayed"
+                  },
+                  "Variable Name": "CallFunc_WhichChooseOne_Branches"
+                },
+                {
+                  "Inst": "ByteConst",
+                  "Value": 1
+                }
+              ]
+            },
+            "StatementIndex": 74
+          },
+          {
+            "Inst": "JumpIfNot",
+            "Offset": 246,
+            "Condition": {
+              "Inst": "LocalVariable",
+              "Variable Outer": {
+                "PinCategory": "Bool",
+                "PinSubCategory": "Bool"
+              },
+              "Variable Name": "K2Node_SwitchEnum_CmpSuccess"
+            },
+            "StatementIndex": 105
+          },
+          {
+            "Inst": "Jump",
+            "Offset": 363,
+            "StatementIndex": 119
+          },
+          {
+            "Inst": "Context",
+            "Context": {
+              "Inst": "InstanceVariable",
+              "Variable Outer": "##NOT SERIALIZED##",
+              "Variable Name": "cardFunction"
+            },
+            "SkipOffsetForNull": 41,
+            "RValuePropertyOuter": "#Pointer Error#",
+            "RValuePropertyName": "^^^^^",
+            "Expression": {
+              "Inst": "LocalVirtualFunction",
+              "FunctionName": "ChangeAttack",
+              "Parameters": [
+                {
+                  "Inst": "Self"
+                },
+                {
+                  "Inst": "InstanceVariable",
+                  "Variable Outer": "##NOT SERIALIZED##",
+                  "Variable Name": "cardID"
+                },
+                {
+                  "Inst": "IntConst",
+                  "Value": 3
+                },
+                {
+                  "Inst": "ByteConst",
+                  "Value": 1
+                },
+                {
+                  "Inst": "False"
+                },
+                {
+                  "Inst": "LocalVariable",
+                  "Variable Outer": {
+                    "PinCategory": "Bool",
+                    "PinSubCategory": "Bool"
+                  },
+                  "Variable Name": "CallFunc_ChangeAttack_qqq"
+                }
+              ]
+            },
+            "StatementIndex": 124
+          },
+          {
+            "Inst": "Context",
+            "Context": {
+              "Inst": "InstanceVariable",
+              "Variable Outer": "##NOT SERIALIZED##",
+              "Variable Name": "cardFunction"
+            },
+            "SkipOffsetForNull": 32,
+            "RValuePropertyOuter": "#Pointer Error#",
+            "RValuePropertyName": "^^^^^",
+            "Expression": {
+              "Inst": "LocalVirtualFunction",
+              "FunctionName": "GiveBlitz",
+              "Parameters": [
+                {
+                  "Inst": "InstanceVariable",
+                  "Variable Outer": "##NOT SERIALIZED##",
+                  "Variable Name": "cardID"
+                },
+                {
+                  "Inst": "InstanceVariable",
+                  "Variable Outer": "##NOT SERIALIZED##",
+                  "Variable Name": "cardID"
+                }
+              ]
+            },
+            "StatementIndex": 187
+          },
+          {
+            "Inst": "Jump",
+            "Offset": 363,
+            "StatementIndex": 241
+          },
+          {
+            "Inst": "Context",
+            "Context": {
+              "Inst": "InstanceVariable",
+              "Variable Outer": "##NOT SERIALIZED##",
+              "Variable Name": "cardFunction"
+            },
+            "SkipOffsetForNull": 41,
+            "RValuePropertyOuter": "#Pointer Error#",
+            "RValuePropertyName": "^^^^^",
+            "Expression": {
+              "Inst": "LocalVirtualFunction",
+              "FunctionName": "ChangeDefense",
+              "Parameters": [
+                {
+                  "Inst": "Self"
+                },
+                {
+                  "Inst": "InstanceVariable",
+                  "Variable Outer": "##NOT SERIALIZED##",
+                  "Variable Name": "cardID"
+                },
+                {
+                  "Inst": "IntConst",
+                  "Value": 3
+                },
+                {
+                  "Inst": "ByteConst",
+                  "Value": 1
+                },
+                {
+                  "Inst": "False"
+                },
+                {
+                  "Inst": "LocalVariable",
+                  "Variable Outer": {
+                    "PinCategory": "Bool",
+                    "PinSubCategory": "Bool"
+                  },
+                  "Variable Name": "CallFunc_ChangeDefense_qqq"
+                }
+              ]
+            },
+            "StatementIndex": 246
+          },
+          {
+            "Inst": "Context",
+            "Context": {
+              "Inst": "InstanceVariable",
+              "Variable Outer": "##NOT SERIALIZED##",
+              "Variable Name": "cardFunction"
+            },
+            "SkipOffsetForNull": 32,
+            "RValuePropertyOuter": "#Pointer Error#",
+            "RValuePropertyName": "^^^^^",
+            "Expression": {
+              "Inst": "LocalVirtualFunction",
+              "FunctionName": "GiveGuard",
+              "Parameters": [
+                {
+                  "Inst": "InstanceVariable",
+                  "Variable Outer": "##NOT SERIALIZED##",
+                  "Variable Name": "cardID"
+                },
+                {
+                  "Inst": "InstanceVariable",
+                  "Variable Outer": "##NOT SERIALIZED##",
+                  "Variable Name": "cardID"
+                }
+              ]
+            },
+            "StatementIndex": 309
+          },
+          {
+            "Inst": "Return",
+            "Expression": {
+              "Inst": "Nothing"
+            },
+            "StatementIndex": 363
+          },
+          {
+            "Inst": "EndOfScript",
+            "StatementIndex": 365
+          }
+        ],
+        "bytecode_raw_size": 0
+      },
+      "OnPlayedFromHand": {
+        "function_flags": "FUNC_Event, FUNC_Public, FUNC_BlueprintCallable, FUNC_BlueprintEvent",
+        "expression_count": 4,
+        "bytecode": [
+          {
+            "Inst": "LetValueOnPersistentFrame",
+            "Property Outer": {
+              "PinCategory": "Object",
+              "PinSubCategory": "Object",
+              "PinSubCategoryObject": "/Script/kards.BaseCardObject"
+            },
+            "Property Name": "K2Node_Event_targetCard",
+            "Expression": {
+              "Inst": "LocalVariable",
+              "Variable Outer": {
+                "PinCategory": "Object",
+                "PinSubCategory": "Object",
+                "PinSubCategoryObject": "/Script/kards.BaseCardObject"
+              },
+              "Variable Name": "targetCard"
+            },
+            "StatementIndex": 0
+          },
+          {
+            "Inst": "LocalFinalFunction",
+            "Function": "ExecuteUbergraph_card_unit_51e_regiment",
+            "Parameters": [
+              {
+                "Inst": "IntConst",
+                "Value": 10
+              }
+            ],
+            "StatementIndex": 18
+          },
+          {
+            "Inst": "Return",
+            "Expression": {
+              "Inst": "Nothing"
+            },
+            "StatementIndex": 33
+          },
+          {
+            "Inst": "EndOfScript",
+            "StatementIndex": 35
+          }
+        ],
+        "bytecode_raw_size": 0
+      }
+    },
+    "card_unit_120mm_m1_gun": {
+      "ExecuteUbergraph_card_unit_120mm_m1_gun": {
+        "function_flags": "FUNC_Final, FUNC_UbergraphFunction",
+        "expression_count": 6,
+        "bytecode": [
+          {
+            "Inst": "ComputedJump",
+            "OffsetExpression": {
+              "Inst": "LocalVariable",
+              "Variable Outer": {
+                "PinCategory": "Int",
+                "PinSubCategory": "Int"
+              },
+              "Variable Name": "EntryPoint"
+            },
+            "StatementIndex": 0
+          },
+          {
+            "Inst": "Context",
+            "Context": {
+              "Inst": "InstanceVariable",
+              "Variable Outer": "##NOT SERIALIZED##",
+              "Variable Name": "cardFunction"
+            },
+            "SkipOffsetForNull": 52,
+            "RValuePropertyOuter": "#Pointer Error#",
+            "RValuePropertyName": "^^^^^",
+            "Expression": {
+              "Inst": "LocalVirtualFunction",
+              "FunctionName": "CustomAbilityAdd",
+              "Parameters": [
+                {
+                  "Inst": "StringConst",
+                  "Value": "custom"
+                },
+                {
+                  "Inst": "InstanceVariable",
+                  "Variable Outer": "##NOT SERIALIZED##",
+                  "Variable Name": "cardID"
+                },
+                {
+                  "Inst": "InstanceVariable",
+                  "Variable Outer": "##NOT SERIALIZED##",
+                  "Variable Name": "cardID"
+                },
+                {
+                  "Inst": "False"
+                },
+                {
+                  "Inst": "False"
+                },
+                {
+                  "Inst": "False"
+                },
+                {
+                  "Inst": "LocalVariable",
+                  "Variable Outer": {
+                    "PinCategory": "Bool",
+                    "PinSubCategory": "Bool"
+                  },
+                  "Variable Name": "CallFunc_CustomAbilityAdd_qqq"
+                }
+              ]
+            },
+            "StatementIndex": 10
+          },
+          {
+            "Inst": "Jump",
+            "Offset": 161,
+            "StatementIndex": 84
+          },
+          {
+            "Inst": "Context",
+            "Context": {
+              "Inst": "InstanceVariable",
+              "Variable Outer": "##NOT SERIALIZED##",
+              "Variable Name": "cardFunction"
+            },
+            "SkipOffsetForNull": 50,
+            "RValuePropertyOuter": "#Pointer Error#",
+            "RValuePropertyName": "^^^^^",
+            "Expression": {
+              "Inst": "LocalVirtualFunction",
+              "FunctionName": "CustomAbilityRemove",
+              "Parameters": [
+                {
+                  "Inst": "StringConst",
+                  "Value": "custom"
+                },
+                {
+                  "Inst": "InstanceVariable",
+                  "Variable Outer": "##NOT SERIALIZED##",
+                  "Variable Name": "cardID"
+                },
+                {
+                  "Inst": "InstanceVariable",
+                  "Variable Outer": "##NOT SERIALIZED##",
+                  "Variable Name": "cardID"
+                },
+                {
+                  "Inst": "True"
+                },
+                {
+                  "Inst": "LocalVariable",
+                  "Variable Outer": {
+                    "PinCategory": "Bool",
+                    "PinSubCategory": "Bool"
+                  },
+                  "Variable Name": "CallFunc_CustomAbilityRemove_qqq"
+                }
+              ]
+            },
+            "StatementIndex": 89
+          },
+          {
+            "Inst": "Return",
+            "Expression": {
+              "Inst": "Nothing"
+            },
+            "StatementIndex": 161
+          },
+          {
+            "Inst": "EndOfScript",
+            "StatementIndex": 163
+          }
+        ],
+        "bytecode_raw_size": 0
+      },
+      "OnCardDealDamage_ModifyDamageDealt": {
+        "function_flags": "FUNC_Event, FUNC_Public, FUNC_HasOutParms, FUNC_BlueprintCallable, FUNC_BlueprintEvent",
+        "expression_count": 19,
+        "bytecode": [
+          {
+            "Inst": "FinalFunction",
+            "Function": "HasCustomAbility",
+            "Parameters": [
+              {
+                "Inst": "StringConst",
+                "Value": "custom"
+              },
+              {
+                "Inst": "LocalVariable",
+                "Variable Outer": {
+                  "PinCategory": "Bool",
+                  "PinSubCategory": "Bool"
+                },
+                "Variable Name": "CallFunc_HasCustomAbility_doesIt"
+              }
+            ],
+            "StatementIndex": 0
+          },
+          {
+            "Inst": "JumpIfNot",
+            "Offset": 242,
+            "Condition": {
+              "Inst": "LocalVariable",
+              "Variable Outer": {
+                "PinCategory": "Bool",
+                "PinSubCategory": "Bool"
+              },
+              "Variable Name": "CallFunc_HasCustomAbility_doesIt"
+            },
+            "StatementIndex": 27
+          },
+          {
+            "Inst": "Context",
+            "Context": {
+              "Inst": "LocalVariable",
+              "Variable Outer": {
+                "PinCategory": "Object",
+                "PinSubCategory": "Object",
+                "PinSubCategoryObject": "/Script/kards.BaseCardObject"
+              },
+              "Variable Name": "toCard"
+            },
+            "SkipOffsetForNull": 19,
+            "RValuePropertyOuter": "#Pointer Error#",
+            "RValuePropertyName": "^^^^^",
+            "Expression": {
+              "Inst": "FinalFunction",
+              "Function": "IsTank",
+              "Parameters": [
+                {
+                  "Inst": "LocalVariable",
+                  "Variable Outer": {
+                    "PinCategory": "Bool",
+                    "PinSubCategory": "Bool"
+                  },
+                  "Variable Name": "CallFunc_IsTank_isIt"
+                }
+              ]
+            },
+            "StatementIndex": 41
+          },
+          {
+            "Inst": "LetBool",
+            "Variable": {
+              "Inst": "LocalVariable",
+              "Variable Outer": {
+                "PinCategory": "Bool",
+                "PinSubCategory": "Bool"
+              },
+              "Variable Name": "CallFunc_EqualEqual_IntInt_ReturnValue_1"
+            },
+            "Expression": {
+              "Inst": "CallMath",
+              "Function": "EqualEqual_IntInt",
+              "ContextClass": "/Script/Engine.KismetMathLibrary",
+              "Parameters": [
+                {
+                  "Inst": "InstanceVariable",
+                  "Variable Outer": "##NOT SERIALIZED##",
+                  "Variable Name": "chooseOneIndex"
+                },
+                {
+                  "Inst": "IntConst",
+                  "Value": 1
+                }
+              ]
+            },
+            "StatementIndex": 82
+          },
+          {
+            "Inst": "LetBool",
+            "Variable": {
+              "Inst": "LocalVariable",
+              "Variable Outer": {
+                "PinCategory": "Bool",
+                "PinSubCategory": "Bool"
+              },
+              "Variable Name": "CallFunc_BooleanAND_ReturnValue_1"
+            },
+            "Expression": {
+              "Inst": "CallMath",
+              "Function": "BooleanAND",
+              "ContextClass": "/Script/Engine.KismetMathLibrary",
+              "Parameters": [
+                {
+                  "Inst": "LocalVariable",
+                  "Variable Outer": {
+                    "PinCategory": "Bool",
+                    "PinSubCategory": "Bool"
+                  },
+                  "Variable Name": "CallFunc_IsTank_isIt"
+                },
+                {
+                  "Inst": "LocalVariable",
+                  "Variable Outer": {
+                    "PinCategory": "Bool",
+                    "PinSubCategory": "Bool"
+                  },
+                  "Variable Name": "CallFunc_EqualEqual_IntInt_ReturnValue_1"
+                }
+              ]
+            },
+            "StatementIndex": 116
+          },
+          {
+            "Inst": "JumpIfNot",
+            "Offset": 274,
+            "Condition": {
+              "Inst": "LocalVariable",
+              "Variable Outer": {
+                "PinCategory": "Bool",
+                "PinSubCategory": "Bool"
+              },
+              "Variable Name": "CallFunc_BooleanAND_ReturnValue_1"
+            },
+            "StatementIndex": 154
+          },
+          {
+            "Inst": "Let",
+            "Variable": {
+              "Inst": "LocalVariable",
+              "Variable Outer": {
+                "PinCategory": "Int",
+                "PinSubCategory": "Int"
+              },
+              "Variable Name": "CallFunc_Multiply_IntInt_ReturnValue"
+            },
+            "Expression": {
+              "Inst": "CallMath",
+              "Function": "Multiply_IntInt",
+              "ContextClass": "/Script/Engine.KismetMathLibrary",
+              "Parameters": [
+                {
+                  "Inst": "LocalVariable",
+                  "Variable Outer": {
+                    "PinCategory": "Int",
+                    "PinSubCategory": "Int"
+                  },
+                  "Variable Name": "damage"
+                },
+                {
+                  "Inst": "IntConst",
+                  "Value": 2
+                }
+              ]
+            },
+            "StatementIndex": 168
+          },
+          {
+            "Inst": "Let",
+            "Variable": {
+              "Inst": "LocalOutVariable",
+              "Variable Outer": {
+                "PinCategory": "Int",
+                "PinSubCategory": "Int"
+              },
+              "Variable Name": "newDamage"
+            },
+            "Expression": {
+              "Inst": "LocalVariable",
+              "Variable Outer": {
+                "PinCategory": "Int",
+                "PinSubCategory": "Int"
+              },
+              "Variable Name": "CallFunc_Multiply_IntInt_ReturnValue"
+            },
+            "StatementIndex": 210
+          },
+          {
+            "Inst": "Jump",
+            "Offset": 433,
+            "StatementIndex": 237
+          },
+          {
+            "Inst": "Let",
+            "Variable": {
+              "Inst": "LocalOutVariable",
+              "Variable Outer": {
+                "PinCategory": "Int",
+                "PinSubCategory": "Int"
+              },
+              "Variable Name": "newDamage"
+            },
+            "Expression": {
+              "Inst": "LocalVariable",
+              "Variable Outer": {
+                "PinCategory": "Int",
+                "PinSubCategory": "Int"
+              },
+              "Variable Name": "damage"
+            },
+            "StatementIndex": 242
+          },
+          {
+            "Inst": "Jump",
+            "Offset": 433,
+            "StatementIndex": 269
+          },
+          {
+            "Inst": "Context",
+            "Context": {
+              "Inst": "LocalVariable",
+              "Variable Outer": {
+                "PinCategory": "Object",
+                "PinSubCategory": "Object",
+                "PinSubCategoryObject": "/Script/kards.BaseCardObject"
+              },
+              "Variable Name": "toCard"
+            },
+            "SkipOffsetForNull": 19,
+            "RValuePropertyOuter": "#Pointer Error#",
+            "RValuePropertyName": "^^^^^",
+            "Expression": {
+              "Inst": "FinalFunction",
+              "Function": "IsAirUnit",
+              "Parameters": [
+                {
+                  "Inst": "LocalVariable",
+                  "Variable Outer": {
+                    "PinCategory": "Bool",
+                    "PinSubCategory": "Bool"
+                  },
+                  "Variable Name": "CallFunc_IsAirUnit_isIt"
+                }
+              ]
+            },
+            "StatementIndex": 274
+          },
+          {
+            "Inst": "LetBool",
+            "Variable": {
+              "Inst": "LocalVariable",
+              "Variable Outer": {
+                "PinCategory": "Bool",
+                "PinSubCategory": "Bool"
+              },
+              "Variable Name": "CallFunc_EqualEqual_IntInt_ReturnValue"
+            },
+            "Expression": {
+              "Inst": "CallMath",
+              "Function": "EqualEqual_IntInt",
+              "ContextClass": "/Script/Engine.KismetMathLibrary",
+              "Parameters": [
+                {
+                  "Inst": "InstanceVariable",
+                  "Variable Outer": "##NOT SERIALIZED##",
+                  "Variable Name": "chooseOneIndex"
+                },
+                {
+                  "Inst": "IntConst",
+                  "Value": 0
+                }
+              ]
+            },
+            "StatementIndex": 315
+          },
+          {
+            "Inst": "LetBool",
+            "Variable": {
+              "Inst": "LocalVariable",
+              "Variable Outer": {
+                "PinCategory": "Bool",
+                "PinSubCategory": "Bool"
+              },
+              "Variable Name": "CallFunc_BooleanAND_ReturnValue"
+            },
+            "Expression": {
+              "Inst": "CallMath",
+              "Function": "BooleanAND",
+              "ContextClass": "/Script/Engine.KismetMathLibrary",
+              "Parameters": [
+                {
+                  "Inst": "LocalVariable",
+                  "Variable Outer": {
+                    "PinCategory": "Bool",
+                    "PinSubCategory": "Bool"
+                  },
+                  "Variable Name": "CallFunc_IsAirUnit_isIt"
+                },
+                {
+                  "Inst": "LocalVariable",
+                  "Variable Outer": {
+                    "PinCategory": "Bool",
+                    "PinSubCategory": "Bool"
+                  },
+                  "Variable Name": "CallFunc_EqualEqual_IntInt_ReturnValue"
+                }
+              ]
+            },
+            "StatementIndex": 349
+          },
+          {
+            "Inst": "JumpIfNot",
+            "Offset": 406,
+            "Condition": {
+              "Inst": "LocalVariable",
+              "Variable Outer": {
+                "PinCategory": "Bool",
+                "PinSubCategory": "Bool"
+              },
+              "Variable Name": "CallFunc_BooleanAND_ReturnValue"
+            },
+            "StatementIndex": 387
+          },
+          {
+            "Inst": "Jump",
+            "Offset": 168,
+            "StatementIndex": 401
+          },
+          {
+            "Inst": "Let",
+            "Variable": {
+              "Inst": "LocalOutVariable",
+              "Variable Outer": {
+                "PinCategory": "Int",
+                "PinSubCategory": "Int"
+              },
+              "Variable Name": "newDamage"
+            },
+            "Expression": {
+              "Inst": "LocalVariable",
+              "Variable Outer": {
+                "PinCategory": "Int",
+                "PinSubCategory": "Int"
+              },
+              "Variable Name": "damage"
+            },
+            "StatementIndex": 406
+          },
+          {
+            "Inst": "Return",
+            "Expression": {
+              "Inst": "Nothing"
+            },
+            "StatementIndex": 433
+          },
+          {
+            "Inst": "EndOfScript",
+            "StatementIndex": 435
+          }
+        ],
+        "bytecode_raw_size": 0
+      },
+      "OnPlayedFromHand": {
+        "function_flags": "FUNC_Event, FUNC_Public, FUNC_BlueprintCallable, FUNC_BlueprintEvent",
+        "expression_count": 4,
+        "bytecode": [
+          {
+            "Inst": "LetValueOnPersistentFrame",
+            "Property Outer": {
+              "PinCategory": "Object",
+              "PinSubCategory": "Object",
+              "PinSubCategoryObject": "/Script/kards.BaseCardObject"
+            },
+            "Property Name": "K2Node_Event_targetCard",
+            "Expression": {
+              "Inst": "LocalVariable",
+              "Variable Outer": {
+                "PinCategory": "Object",
+                "PinSubCategory": "Object",
+                "PinSubCategoryObject": "/Script/kards.BaseCardObject"
+              },
+              "Variable Name": "targetCard"
+            },
+            "StatementIndex": 0
+          },
+          {
+            "Inst": "LocalFinalFunction",
+            "Function": "ExecuteUbergraph_card_unit_120mm_m1_gun",
+            "Parameters": [
+              {
+                "Inst": "IntConst",
+                "Value": 10
+              }
+            ],
+            "StatementIndex": 18
+          },
+          {
+            "Inst": "Return",
+            "Expression": {
+              "Inst": "Nothing"
+            },
+            "StatementIndex": 33
+          },
+          {
+            "Inst": "EndOfScript",
+            "StatementIndex": 35
+          }
+        ],
+        "bytecode_raw_size": 0
+      },
+      "OnSuppressed": {
+        "function_flags": "FUNC_Event, FUNC_Public, FUNC_BlueprintCallable, FUNC_BlueprintEvent",
+        "expression_count": 3,
+        "bytecode": [
+          {
+            "Inst": "LocalFinalFunction",
+            "Function": "ExecuteUbergraph_card_unit_120mm_m1_gun",
+            "Parameters": [
+              {
+                "Inst": "IntConst",
+                "Value": 89
+              }
+            ],
+            "StatementIndex": 0
+          },
+          {
+            "Inst": "Return",
+            "Expression": {
+              "Inst": "Nothing"
+            },
+            "StatementIndex": 15
+          },
+          {
+            "Inst": "EndOfScript",
+            "StatementIndex": 17
+          }
+        ],
+        "bytecode_raw_size": 0
+      }
+    },
+    "card_unit_5th_rangers": {
+      "ExecuteUbergraph_card_unit_5th_rangers": {
+        "function_flags": "FUNC_Final, FUNC_UbergraphFunction",
+        "expression_count": 13,
+        "bytecode": [
+          {
+            "Inst": "ComputedJump",
+            "OffsetExpression": {
+              "Inst": "LocalVariable",
+              "Variable Outer": {
+                "PinCategory": "Int",
+                "PinSubCategory": "Int"
+              },
+              "Variable Name": "EntryPoint"
+            },
+            "StatementIndex": 0
+          },
+          {
+            "Inst": "FinalFunction",
+            "Function": "WhichChooseOne",
+            "Parameters": [
+              {
+                "Inst": "LocalVariable",
+                "Variable Outer": {
+                  "PinCategory": "Byte",
+                  "PinSubCategory": "Byte",
+                  "PinSubCategoryObject": "/Script/kards.EnumChooseOneCardBeingPlayed"
+                },
+                "Variable Name": "CallFunc_WhichChooseOne_Branches"
+              }
+            ],
+            "StatementIndex": 10
+          },
+          {
+            "Inst": "LetBool",
+            "Variable": {
+              "Inst": "LocalVariable",
+              "Variable Outer": {
+                "PinCategory": "Bool",
+                "PinSubCategory": "Bool"
+              },
+              "Variable Name": "K2Node_SwitchEnum_CmpSuccess"
+            },
+            "Expression": {
+              "Inst": "CallMath",
+              "Function": "NotEqual_ByteByte",
+              "ContextClass": "/Script/Engine.KismetMathLibrary",
+              "Parameters": [
+                {
+                  "Inst": "LocalVariable",
+                  "Variable Outer": {
+                    "PinCategory": "Byte",
+                    "PinSubCategory": "Byte",
+                    "PinSubCategoryObject": "/Script/kards.EnumChooseOneCardBeingPlayed"
+                  },
+                  "Variable Name": "CallFunc_WhichChooseOne_Branches"
+                },
+                {
+                  "Inst": "ByteConst",
+                  "Value": 0
+                }
+              ]
+            },
+            "StatementIndex": 29
+          },
+          {
+            "Inst": "JumpIfNot",
+            "Offset": 124,
+            "Condition": {
+              "Inst": "LocalVariable",
+              "Variable Outer": {
+                "PinCategory": "Bool",
+                "PinSubCategory": "Bool"
+              },
+              "Variable Name": "K2Node_SwitchEnum_CmpSuccess"
+            },
+            "StatementIndex": 60
+          },
+          {
+            "Inst": "LetBool",
+            "Variable": {
+              "Inst": "LocalVariable",
+              "Variable Outer": {
+                "PinCategory": "Bool",
+                "PinSubCategory": "Bool"
+              },
+              "Variable Name": "K2Node_SwitchEnum_CmpSuccess"
+            },
+            "Expression": {
+              "Inst": "CallMath",
+              "Function": "NotEqual_ByteByte",
+              "ContextClass": "/Script/Engine.KismetMathLibrary",
+              "Parameters": [
+                {
+                  "Inst": "LocalVariable",
+                  "Variable Outer": {
+                    "PinCategory": "Byte",
+                    "PinSubCategory": "Byte",
+                    "PinSubCategoryObject": "/Script/kards.EnumChooseOneCardBeingPlayed"
+                  },
+                  "Variable Name": "CallFunc_WhichChooseOne_Branches"
+                },
+                {
+                  "Inst": "ByteConst",
+                  "Value": 1
+                }
+              ]
+            },
+            "StatementIndex": 74
+          },
+          {
+            "Inst": "JumpIfNot",
+            "Offset": 185,
+            "Condition": {
+              "Inst": "LocalVariable",
+              "Variable Outer": {
+                "PinCategory": "Bool",
+                "PinSubCategory": "Bool"
+              },
+              "Variable Name": "K2Node_SwitchEnum_CmpSuccess"
+            },
+            "StatementIndex": 105
+          },
+          {
+            "Inst": "Jump",
+            "Offset": 311,
+            "StatementIndex": 119
+          },
+          {
+            "Inst": "Context",
+            "Context": {
+              "Inst": "InstanceVariable",
+              "Variable Outer": "##NOT SERIALIZED##",
+              "Variable Name": "cardFunction"
+            },
+            "SkipOffsetForNull": 34,
+            "RValuePropertyOuter": "#Pointer Error#",
+            "RValuePropertyName": "^^^^^",
+            "Expression": {
+              "Inst": "LocalVirtualFunction",
+              "FunctionName": "ChangeOperationCost",
+              "Parameters": [
+                {
+                  "Inst": "Self"
+                },
+                {
+                  "Inst": "InstanceVariable",
+                  "Variable Outer": "##NOT SERIALIZED##",
+                  "Variable Name": "cardID"
+                },
+                {
+                  "Inst": "IntConst",
+                  "Value": 0
+                },
+                {
+                  "Inst": "ByteConst",
+                  "Value": 2
+                },
+                {
+                  "Inst": "False"
+                },
+                {
+                  "Inst": "False"
+                },
+                {
+                  "Inst": "False"
+                }
+              ]
+            },
+            "StatementIndex": 124
+          },
+          {
+            "Inst": "Jump",
+            "Offset": 311,
+            "StatementIndex": 180
+          },
+          {
+            "Inst": "Context",
+            "Context": {
+              "Inst": "InstanceVariable",
+              "Variable Outer": "##NOT SERIALIZED##",
+              "Variable Name": "cardFunction"
+            },
+            "SkipOffsetForNull": 41,
+            "RValuePropertyOuter": "#Pointer Error#",
+            "RValuePropertyName": "^^^^^",
+            "Expression": {
+              "Inst": "LocalVirtualFunction",
+              "FunctionName": "ChangeAttack",
+              "Parameters": [
+                {
+                  "Inst": "Self"
+                },
+                {
+                  "Inst": "InstanceVariable",
+                  "Variable Outer": "##NOT SERIALIZED##",
+                  "Variable Name": "cardID"
+                },
+                {
+                  "Inst": "IntConst",
+                  "Value": 4
+                },
+                {
+                  "Inst": "ByteConst",
+                  "Value": 1
+                },
+                {
+                  "Inst": "False"
+                },
+                {
+                  "Inst": "LocalVariable",
+                  "Variable Outer": {
+                    "PinCategory": "Bool",
+                    "PinSubCategory": "Bool"
+                  },
+                  "Variable Name": "CallFunc_ChangeAttack_qqq"
+                }
+              ]
+            },
+            "StatementIndex": 185
+          },
+          {
+            "Inst": "Context",
+            "Context": {
+              "Inst": "InstanceVariable",
+              "Variable Outer": "##NOT SERIALIZED##",
+              "Variable Name": "cardFunction"
+            },
+            "SkipOffsetForNull": 41,
+            "RValuePropertyOuter": "#Pointer Error#",
+            "RValuePropertyName": "^^^^^",
+            "Expression": {
+              "Inst": "LocalVirtualFunction",
+              "FunctionName": "ChangeDefense",
+              "Parameters": [
+                {
+                  "Inst": "Self"
+                },
+                {
+                  "Inst": "InstanceVariable",
+                  "Variable Outer": "##NOT SERIALIZED##",
+                  "Variable Name": "cardID"
+                },
+                {
+                  "Inst": "IntConst",
+                  "Value": 4
+                },
+                {
+                  "Inst": "ByteConst",
+                  "Value": 1
+                },
+                {
+                  "Inst": "False"
+                },
+                {
+                  "Inst": "LocalVariable",
+                  "Variable Outer": {
+                    "PinCategory": "Bool",
+                    "PinSubCategory": "Bool"
+                  },
+                  "Variable Name": "CallFunc_ChangeDefense_qqq"
+                }
+              ]
+            },
+            "StatementIndex": 248
+          },
+          {
+            "Inst": "Return",
+            "Expression": {
+              "Inst": "Nothing"
+            },
+            "StatementIndex": 311
+          },
+          {
+            "Inst": "EndOfScript",
+            "StatementIndex": 313
+          }
+        ],
+        "bytecode_raw_size": 0
+      },
+      "OnPlayedFromHand": {
+        "function_flags": "FUNC_Event, FUNC_Public, FUNC_BlueprintCallable, FUNC_BlueprintEvent",
+        "expression_count": 4,
+        "bytecode": [
+          {
+            "Inst": "LetValueOnPersistentFrame",
+            "Property Outer": {
+              "PinCategory": "Object",
+              "PinSubCategory": "Object",
+              "PinSubCategoryObject": "/Script/kards.BaseCardObject"
+            },
+            "Property Name": "K2Node_Event_targetCard",
+            "Expression": {
+              "Inst": "LocalVariable",
+              "Variable Outer": {
+                "PinCategory": "Object",
+                "PinSubCategory": "Object",
+                "PinSubCategoryObject": "/Script/kards.BaseCardObject"
+              },
+              "Variable Name": "targetCard"
+            },
+            "StatementIndex": 0
+          },
+          {
+            "Inst": "LocalFinalFunction",
+            "Function": "ExecuteUbergraph_card_unit_5th_rangers",
+            "Parameters": [
+              {
+                "Inst": "IntConst",
+                "Value": 10
+              }
+            ],
+            "StatementIndex": 18
+          },
+          {
+            "Inst": "Return",
+            "Expression": {
+              "Inst": "Nothing"
+            },
+            "StatementIndex": 33
+          },
+          {
+            "Inst": "EndOfScript",
+            "StatementIndex": 35
+          }
+        ],
+        "bytecode_raw_size": 0
+      }
+    }
+  },
+  "worker": {
+    "job_id": "20261030-221842-choice-deployment-8578b895",
+    "result_sha256": "891188d24228f783f0210b9460cf4d321165231797a3308cf7aeb5d8475b7ebb",
+    "independently_verified_checks": 121,
+    "verified_scope": "Input equality, reported raw statements, exact-name ledger completeness, all 40 jump destinations, selected-option and commit expressions, metadata and raw assets. Worker uncertainty prose is not an authority conclusion."
+  },
+  "result": "No demonstrated production defect in these eight targetless branches; no production rule change.",
+  "tests": {
+    "botsim": 1029,
+    "dataset": 49,
+    "model": 31,
+    "deployment_scenarios": 32,
+    "invalid_option_scenarios": 32,
+    "post_deployment_m1_damage_checks": 16
+  },
+  "limitations": [
+    "These are the four choice units in the decoded asset inventory, not a proof of all current server/PvP card scope.",
+    "Target-requiring choice-unit options have no real example in this inventory; their root target gate is not certified.",
+    "Nonzero redundant target requests, original flag mutations outside this path, full lifecycle and suppression remain open.",
+    "Explicit slots remain unsupported; ownership gap-insertion evidence does not certify ordinary hand placement.",
+    "Complete single-card semantics, native fallback, query purity/rollback and reliable legal masks remain open.",
+    "Six raw assets match the newer export exactly; this does not establish whole-client/pak version association or refresh historical native mappings."
+  ]
+}
