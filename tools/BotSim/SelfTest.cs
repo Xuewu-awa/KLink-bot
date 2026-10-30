@@ -20,6 +20,9 @@ internal static partial class SelfTest
 
     private static readonly List<Case> Cases = new()
     {
+        new("根动作停止标志：普通出牌与反制", PlayRootStopBoundary),
+        new("根动作停止标志：移动回调", MoveRootStopBoundary),
+        new("根动作停止标志：攻击T30早于T31", AttackRootStopBoundary),
         new("反制重复取消通知：字段累积与批次隔离", RepeatedCancellationNotice),
         new("回合结束动作：效果前清除旧停止标志", EndTurnStopBoundary),
         new("选择回复动作：清除旧停止标志且保留新停止标志", SelectionReplyStopBoundary),

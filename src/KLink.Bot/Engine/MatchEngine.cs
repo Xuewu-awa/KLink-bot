@@ -1670,6 +1670,11 @@ public sealed class MatchEngine
             target = resolvedTarget;
         }
 
+        // Accepted PlayerMoves root: InitStart -> SuperActionStarted precedes
+        // cost, movement and play effects. Rejected queries do not start it.
+        State.StopFurtherActions = false;
+        State.StopAttack = false;
+
         if (Api.IsGotcha(card))
         {
             RecordAction("XActionPlayCardFromHand", card.Owner, new Dictionary<string, object?>
@@ -2368,6 +2373,9 @@ public sealed class MatchEngine
         // 事件签名携带的是这次推进实际支付的费用。先保存再扣费，避免后续
         // 任何费用重算让订阅卡读到错误值。
         int moveCost = unit.TotalOperationCost;
+        // MoveCardToLine_Start initializes the root before movement callbacks.
+        State.StopFurtherActions = false;
+        State.StopAttack = false;
         State.AddKredits(unit.Owner, -moveCost);
         State.AddOperationKreditsSpentThisTurn(moveCost);
 
@@ -2879,6 +2887,9 @@ public sealed class MatchEngine
         // i=4706/4747; PopExecutionFlow i=4774 returns to i=643, not a late reread.
         int attackCost = attacker.TotalOperationCost + Math.Max(0, defender.KreditsTaxAsEnemyTarget);
         int attackerCardIdAtStart = attacker.CardId;
+        // AttackCard_Start precedes reveal/T30, independently of T31's reset.
+        State.StopFurtherActions = false;
+        State.StopAttack = false;
         RecordAction("XActionAttackCard", attacker.Owner, new Dictionary<string, object?>
         {
             ["attackerCardID"] = attacker.CardId,
