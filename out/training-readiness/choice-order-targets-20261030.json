@@ -1,0 +1,214 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-30",
+  "base_commit": "59cf0ff",
+  "scope": "Training ApplyRoot choice-order branch preparation and explicit target gate; bounded three-card predicates, not full legal mask or complete card certification.",
+  "authority": [
+    {
+      "parsed_path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\USA\\CovertOp\\events\\card_event_hidden_plans.functions.json",
+      "parsed_sha256": "aeb38acfe1d10e9aed80d8139481d732e4f775a859511bf3026795e5ecde6c43",
+      "raw_assets": {
+        "D:\\Codex Workshop\\kards-install-review\\extracted\\kards\\Content\\Blueprints\\Cards\\USA\\CovertOp\\events\\card_event_hidden_plans.uasset": "df6652ea748c068f05fe29e95977a91446b4cf27296ce4f1e260073b5076d2b5",
+        "D:\\Codex Workshop\\kards-install-review\\extracted\\kards\\Content\\Blueprints\\Cards\\USA\\CovertOp\\events\\card_event_hidden_plans.uexp": "95be191677e2ad6ccc6abeb76ee9a84fb5fbc0dc5ae1a816c9a9cb5863d093d8"
+      }
+    },
+    {
+      "parsed_path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Soviet\\Allegiance\\events\\card_event_barrage.functions.json",
+      "parsed_sha256": "32d2ef9f96535b194273087a8b5bfb94f0f8e568bdddbf403c3c0227d2861ab0",
+      "raw_assets": {
+        "D:\\Codex Workshop\\kards-install-review\\extracted\\kards\\Content\\Blueprints\\Cards\\Soviet\\Allegiance\\events\\card_event_barrage.uasset": "19a462d4c06d2be74ddc7a44e31f4c963f8b0bc78a8d9ed3fe722df96d0ba73f",
+        "D:\\Codex Workshop\\kards-install-review\\extracted\\kards\\Content\\Blueprints\\Cards\\Soviet\\Allegiance\\events\\card_event_barrage.uexp": "4be3c566d9831b1132e8167326de19d70d4263a7e6aec9b58a9c5e40727849e4"
+      }
+    },
+    {
+      "parsed_path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Britain\\BrothersInArms\\events\\card_event_refit_bia.functions.json",
+      "parsed_sha256": "649deb5564a0f20e3bb876ee303e39a964cddafaa20d5bb9469c7856f9e9a4c3",
+      "raw_assets": {
+        "D:\\Codex Workshop\\kards-install-review\\extracted\\kards\\Content\\Blueprints\\Cards\\Britain\\BrothersInArms\\events\\card_event_refit_bia.uasset": "2682e46e3a271f861bb42b76ce6fb092447c128398ec77d9fb74b9fb4c89c213",
+        "D:\\Codex Workshop\\kards-install-review\\extracted\\kards\\Content\\Blueprints\\Cards\\Britain\\BrothersInArms\\events\\card_event_refit_bia.uexp": "75b61e9f0942456a752bebf2596d921627cecdeb7cb4b361903a5b3e2c13330f"
+      }
+    },
+    {
+      "parsed_path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Logic\\BP_Logic.functions.json",
+      "parsed_sha256": "905fff479fe79e6171c139f50c27b59c6b7cfb43e4155fede283ab144f7ee2b1",
+      "selected_functions": [
+        "CanPlayCardFromHand"
+      ],
+      "raw_assets": {
+        "D:\\Codex Workshop\\kards-install-review\\extracted\\kards\\Content\\Blueprints\\Logic\\BP_Logic.uasset": "79b357d32a90901b1d60a1a1f026f0196f7183d355fc65398494bc24553d5aae",
+        "D:\\Codex Workshop\\kards-install-review\\extracted\\kards\\Content\\Blueprints\\Logic\\BP_Logic.uexp": "59d2ccc5b638552d9f7088170046d24c33e9cb7f926aab2197c087a2fea1ecc2"
+      }
+    },
+    {
+      "parsed_path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Library\\cardsCheckFunctions.functions.json",
+      "parsed_sha256": "ed57bef6b025dfc6e513c0c6e10035a67a8bee45c9db547bcd4487b3d296408b",
+      "selected_functions": [
+        "CanSelectAsTarget"
+      ],
+      "raw_assets": {
+        "D:\\Codex Workshop\\kards-install-review\\extracted\\kards\\Content\\Library\\cardsCheckFunctions.uasset": "8850c6658ac0f9b7835de0b5b97047f7421c9204cfcda5842f5be3cb349ce69f",
+        "D:\\Codex Workshop\\kards-install-review\\extracted\\kards\\Content\\Library\\cardsCheckFunctions.uexp": "7b36d764184154c728e6a9cd3f328e8d868761bd159830c0a5f43633fc41ddc2"
+      }
+    }
+  ],
+  "native_reference": {
+    "path": "D:\\Codex Workshop\\kards-install-review\\which-choose-one-evidence-20261016.json",
+    "sha256": "8c102e1b184fc0559864a64ad29d89747c044f4eeefbb86d59cfb56dcecf9b1b",
+    "historic_rva": "0x4b13540",
+    "historic_code_hex": "4883ec2883b910030000000f95c0880248638110030000488d1440488b81380100000fb654d01088911d010000488d542430488b8950050000e8c2c1f6ff4883c428c3",
+    "current_exe": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
+    "current_exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "current_bytes_at_historic_rva": "fc488d4b50488d542440e8217f87fc4c8d442430488bd0488d4c2420e8df0d6cfc8b54242885d27404ffcaeb0233d24c8b442420488d4c246041b901000000e80c6e86",
+    "bytes_equal": false,
+    "limit": "Historic mapped function contract reused; current RVA comparison alone cannot establish current symbol mapping or full client/pak version association."
+  },
+  "worker": {
+    "job_id": "20261030-204857-choice-targets-9bf905f2",
+    "status": "timed_out",
+    "partial_result": "D:\\Codex Workshop\\kards-install-review\\choice-target-packet\\result.json",
+    "partial_result_sha256": "7e94c9648d7546e6fdbca825a9a678db093d33f80d1190320d16e9b66fdf51f9",
+    "verified_checks": 89,
+    "verified_scope": "Six functions: WhichChooseOne/getter/output indices, canIt/reason values, jump destinations, trampolines and returns. Other prose not certified; effects independently inspected."
+  },
+  "authority_effect_calls": {
+    "Blueprints\\Cards\\USA\\CovertOp\\events\\card_event_hidden_plans.functions.json": [
+      {
+        "statement_index": 1211,
+        "calls": [
+          "WhichChooseOne"
+        ]
+      },
+      {
+        "statement_index": 1379,
+        "calls": [
+          "RevealCard"
+        ]
+      },
+      {
+        "statement_index": 1464,
+        "calls": [
+          "ChangeAttack"
+        ]
+      },
+      {
+        "statement_index": 1535,
+        "calls": [
+          "ChangeDefense"
+        ]
+      }
+    ],
+    "Blueprints\\Cards\\Soviet\\Allegiance\\events\\card_event_barrage.functions.json": [
+      {
+        "statement_index": 652,
+        "calls": [
+          "WhichChooseOne"
+        ]
+      },
+      {
+        "statement_index": 794,
+        "calls": [
+          "DamageCard"
+        ]
+      }
+    ],
+    "Blueprints\\Cards\\Britain\\BrothersInArms\\events\\card_event_refit_bia.functions.json": [
+      {
+        "statement_index": 1116,
+        "calls": [
+          "WhichChooseOne"
+        ]
+      },
+      {
+        "statement_index": 1226,
+        "calls": [
+          "GiveBlitz"
+        ]
+      }
+    ]
+  },
+  "tests": {
+    "corrected_before": {
+      "failed": 2,
+      "passed": 1
+    },
+    "after": {
+      "BotSim": 1021,
+      "action_dataset": 49,
+      "action_model": 31
+    },
+    "fixture_cases": {
+      "rejected": 60,
+      "targeted_accepted": 24,
+      "untargeted_accepted": 12
+    },
+    "note": "Initial erroneous fixture corrected against authority before final before/after comparison."
+  },
+  "remaining": [
+    "Other choice-card predicates and full branch effects/interactions",
+    "Unit deployment and legacy PlayCard callers",
+    "Persistent query writes, atomic rejection and shared static state",
+    "Native target predicate fallback and full common dependencies",
+    "Current client/pak association and per-card certification"
+  ],
+  "probe_summary": {
+    "scope": "Experimental simulator executability only; not legality, not training admission, not strength.",
+    "contract": "simulator-executability/experimental-v2;fresh-engine-per-candidate;choice=first-index/v1;not-legal-mask",
+    "seed": 1,
+    "leftDeck": "英日",
+    "rightDeck": "日澳快攻",
+    "steps": 12,
+    "vectors": "empty map for execution-only diagnostic",
+    "enginesCreated": 1086,
+    "prefixRootsApplied": 7444,
+    "elapsedSeconds": 3.8722045,
+    "counts": {
+      "Accepted": 126,
+      "Rejected": 407,
+      "Unknown": 10
+    },
+    "reasons": {
+      "simulator_returned_true": 126,
+      "simulator_returned_false": 407,
+      "choice_policy_dependent": 6,
+      "unimplemented_call": 4
+    },
+    "batchErrors": {}
+  },
+  "artifacts": {
+    "D:\\Codex Workshop\\kards-install-review\\choice-target-after-build.log": "f3e754ff818b600102f4ba12c9363e1569f34da2b1ff2d998241d93ba648bd88",
+    "D:\\Codex Workshop\\kards-install-review\\choice-target-after-tests.log": "6be9f2e80aed6da642ec143ec09dd977a134ab8db2a3753841db699c63b1d75d",
+    "D:\\Codex Workshop\\kards-install-review\\choice-target-before-build.log": "9a59298ae6260dac2ade18d8a9a13039771561dc829f43edcfd775612ac900a6",
+    "D:\\Codex Workshop\\kards-install-review\\choice-target-before-tests.log": "decfc4efe59cac20fc23f6d6f253bcef87a0d8675fa6e24aedcc90716af0def2",
+    "D:\\Codex Workshop\\kards-install-review\\choice-target-dataset-tests.log": "3a5b384bdeba03c14f933b3d9a4d7f8cb377b4fd1fff975f98c2a68c2534cbad",
+    "D:\\Codex Workshop\\kards-install-review\\choice-target-final-build.log": "f14177abfff44876ba1bff98013241beb229559acddb5a92dc9fd0c48922a5a2",
+    "D:\\Codex Workshop\\kards-install-review\\choice-target-full-tests.log": "0c20e7ffeb5305a64535b5210fdd7bd4f7c3977e49373bee72f0aa55d875681e",
+    "D:\\Codex Workshop\\kards-install-review\\choice-target-model-tests.log": "f4f5707f27410b7c3a6b92bd47562fef6af5356c380b7a152dee77587b293767",
+    "D:\\Codex Workshop\\kards-install-review\\choice-target-nn-build.log": "709fd04328ec9b224b33cd9317c456a0a841ccf2545293f0c94f3ced9112951f",
+    "D:\\Codex Workshop\\kards-install-review\\choice-target-probes.log": "88af08264cc0b1cb83e6116a6747e7236f14c0e36c758ca6e282c0607997c4e9",
+    "D:\\Codex Workshop\\kards-install-review\\choice-target-probes.json": "894c61345697a6f25daeae983652e3012fd37a5198b43404ed0d7ae53fb37c8f",
+    "D:\\Codex Workshop\\kards-install-review\\audit-choice-targets-20261030.py": "16c93ace1155923095615b4795c7e9958ea4653341071ee9a84378fbcdb6b06f"
+  },
+  "runtime_data": {
+    "D:\\Codex Workshop\\KLink-choice-targets\\tools\\BotSim\\bin\\Debug\\net10.0\\Data\\card-blacklist-session-20261019.json": "69609c6db053676d2261fc7ee4ccf889222c671ab9f4a0c03473b67a9a16a863",
+    "D:\\Codex Workshop\\KLink-choice-targets\\tools\\BotSim\\bin\\Debug\\net10.0\\Data\\card-effects.json": "fc335d228779a2859627ee706d85949149ca595d0cfdfbc4971541831e5a8df0",
+    "D:\\Codex Workshop\\KLink-choice-targets\\tools\\BotSim\\bin\\Debug\\net10.0\\Data\\card-ir-native-defaults.json": "3319fb2d114a76f38356a8c726caa4dd56fe13f9283e50cc0f0d56a95986455b",
+    "D:\\Codex Workshop\\KLink-choice-targets\\tools\\BotSim\\bin\\Debug\\net10.0\\Data\\card-ir.json": "526812fa8dc0934f1d6ecd3794053871fa6b701c2b5df3fd1edb3c38513ba2e9",
+    "D:\\Codex Workshop\\KLink-choice-targets\\tools\\BotSim\\bin\\Debug\\net10.0\\Data\\card-reservation-session-20261019.json": "1c44051b04414ecd22f24217c62c07fde5974811d40c51238e68606bed7d2e09",
+    "D:\\Codex Workshop\\KLink-choice-targets\\tools\\BotSim\\bin\\Debug\\net10.0\\Data\\card-vectors.json": "b15b93cb02e7e8a712561a2da52127a5867084ecb878a6ad58539b56b1109ab9",
+    "D:\\Codex Workshop\\KLink-choice-targets\\tools\\BotSim\\bin\\Debug\\net10.0\\Data\\cards.json": "3550dc76eb0414c500166875f45909077aeeb3ea4d229b9b0ba9c66a81987c4b",
+    "D:\\Codex Workshop\\KLink-choice-targets\\tools\\BotSim\\bin\\Debug\\net10.0\\Data\\deck_code_ids.json": "261cfd518c1a1ce40488f141e8dbd617ff19abe0734c49319ebcd6ac5dcb257e",
+    "D:\\Codex Workshop\\KLink-choice-targets\\tools\\BotSim\\bin\\Debug\\net10.0\\Data\\event-contracts.json": "e4806dd48efbfc799a27c14b3660ad76ee03cd3f13e3e4320b213c5928efb112",
+    "D:\\Codex Workshop\\KLink-choice-targets\\tools\\BotSim\\bin\\Debug\\net10.0\\Data\\live-actions.json": "db413a4644afe75806e66c47e200d93c5d93e91ca03e23fca38465b7dcb4dab3"
+  },
+  "binaries": {
+    "D:\\Codex Workshop\\KLink-choice-targets\\tools\\BotSim\\bin\\Debug\\net10.0\\BotSim.dll": "03ee3231f973016d5fac7dfb062c0f34facda9b6c85d6bc82328a1e3e3d27df9",
+    "D:\\Codex Workshop\\KLink-choice-targets\\tools\\BotSim\\bin\\Debug\\net10.0\\KLink.Bot.dll": "e7eab378c13df16cc4607174bd7c87b781035005ee778438a36729bee751e25d",
+    "D:\\Codex Workshop\\KLink-choice-targets\\tools\\NNTrain\\bin\\Debug\\net10.0\\NNTrain.dll": "d6ed3a2eab20366d417a3ac95b67321672bf893d58ceb09205c8dbe99dbf8972",
+    "D:\\Codex Workshop\\KLink-choice-targets\\tools\\NNTrain\\bin\\Debug\\net10.0\\KLink.Bot.dll": "e7eab378c13df16cc4607174bd7c87b781035005ee778438a36729bee751e25d"
+  },
+  "runtime_data_note": "Copied validated original BotSim Data JSON byte-for-byte after build, preserving existing IR fingerprint checks.",
+  "matrix_generation": {
+    "source_root": "D:/Codex Workshop/KLink-bot",
+    "probe_source": "Temporarily use exact HEAD committed IsolatedActionProbe bytes for inventory generation; restore unrelated edits byte-for-byte. Existing review fingerprints not reset."
+  }
+}

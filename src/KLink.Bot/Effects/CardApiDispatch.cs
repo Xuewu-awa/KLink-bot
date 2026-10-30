@@ -2340,6 +2340,11 @@ public sealed partial class CardApi
     private object? DoWhichChooseOne(EffectContext c, object? r, object?[] a)
     {
         if (SelfArg(c, r, a) is not { } card) return 0;
+        return WhichChooseOne(card);
+    }
+
+    internal int WhichChooseOne(CardInstance card)
+    {
         int index = card.ChooseOne;
         // Native RVA 0x4b13540 writes the enum byte, then copies the selected
         // option's boolean at +0x10 to the card's +0x11d. No suppression/zone gate.

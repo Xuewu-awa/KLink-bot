@@ -7975,8 +7975,8 @@
       "id": "RULE-TRAINING-EXPLICIT-TARGET",
       "title": "训练根动作具体目标与查询副作用",
       "status": "partial",
-      "scope": "已修复非选择型定向指令的具体目标校验及不存在目标ID。仍待ChooseOne分支、单位部署、旧PlayCard入口、查询状态写入和原生目标谓词完整核对；不构成可靠合法掩码。",
-      "source": "out/training-readiness/explicit-order-targets-20261030.json"
+      "scope": "已修复非选择型定向指令、选择指令分支目标标记准备及具体目标校验、不存在目标ID。已核对三张混合目标选择指令；其他选择牌完整路径、单位部署、旧PlayCard入口、查询状态写入和原生目标谓词继续开放；不构成可靠合法掩码。",
+      "source": "out/training-readiness/choice-order-targets-20261030.json"
     }
   ]
 }

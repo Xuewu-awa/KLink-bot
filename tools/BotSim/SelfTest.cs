@@ -20,6 +20,9 @@ internal static partial class SelfTest
 
     private static readonly List<Case> Cases = new()
     {
+        new("选择指令目标：拒绝分支无效目标且不执行效果", ChoiceOrderRejectsWrongTargets),
+        new("选择指令目标：双侧具体谓词与目标效果", ChoiceOrderAcceptsPredicateTargets),
+        new("选择指令目标：无目标分支清除旧目标标记", ChoiceOrderNoTargetBranchClearsStaleFlag),
         new("明确指令目标：拒绝无效目标且不执行效果", ExplicitOrderRejectsWrongTargets),
         new("明确指令目标：受伤单位条件与双侧效果", ExplicitOrderDamagePredicate),
         new("明确指令目标：友方单位条件与双侧效果", ExplicitOrderFriendlyPredicate),

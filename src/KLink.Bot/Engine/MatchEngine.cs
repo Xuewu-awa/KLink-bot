@@ -1593,6 +1593,12 @@ public sealed class MatchEngine
     private bool PlayCardActionCore(CardInstance card, CardInstance? target, bool skipLeaveTrigger,
         bool validateOrderTarget)
     {
+        // The training command has already selected a valid option. Refresh its
+        // target flag with the shared WhichChooseOne contract before availability
+        // branches on it; a flag left by an earlier query describes another option.
+        if (validateOrderTarget && card.Definition.IsOrder && card.Definition.ChooseOneOptionCount > 0)
+            Api.WhichChooseOne(card);
+
         if (!CanPlay(card, out string reason, target))
         {
             return false;
@@ -1602,7 +1608,7 @@ public sealed class MatchEngine
         // CanPlayFromHand predicate and then CanSelectAsTarget. Existence of
         // some valid target does not validate the target in this root command.
         // CanTarget restores its temporary binding, but queries are not pure.
-        if (validateOrderTarget && card.Definition.IsOrder && card.Definition.ChooseOneOptionCount == 0
+        if (validateOrderTarget && card.Definition.IsOrder
             && card.SelectTargetOnPlayedFromHand
             && !Api.CanTarget(card, target).Can)
             return false;
