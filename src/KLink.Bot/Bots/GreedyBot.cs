@@ -1,4 +1,5 @@
 using KLink.Bot.Engine;
+using KLink.Bot.Training;
 
 namespace KLink.Bot.Bots;
 
@@ -33,6 +34,9 @@ public sealed class GreedyBot : IPlayerPolicy
 
     public string Name { get; }
 
+    /// <summary>Successful root call from the latest PlayStep; null on a blocked step.</summary>
+    public MainActionCommand? LastStepAction { get; private set; }
+
     public bool PlayTurn(MatchEngine engine, Side side)
     {
         for (int guard = 0; !engine.State.IsFinished && guard < _maxActionsPerTurn; guard++)
@@ -50,16 +54,18 @@ public sealed class GreedyBot : IPlayerPolicy
     /// </summary>
     public GreedyStepResult PlayStep(MatchEngine engine, Side side)
     {
+        LastStepAction = null;
         if (engine.State.IsFinished) return GreedyStepResult.Finished;
         if (engine.State.ActiveSide != side) return GreedyStepResult.NotActive;
         if (engine.PendingSelectionCount != 0) return GreedyStepResult.PendingSelection;
         if (TryPlayCard(engine, side) || TryAttack(engine, side) || TryMove(engine, side))
             return engine.State.IsFinished ? GreedyStepResult.Finished : GreedyStepResult.ActionApplied;
         engine.EndTurn(side);
+        LastStepAction = new(MainActionKind.EndTurn);
         return engine.State.IsFinished ? GreedyStepResult.Finished : GreedyStepResult.TurnEnded;
     }
 
-    private static bool TryPlayCard(MatchEngine engine, Side side)
+    private bool TryPlayCard(MatchEngine engine, Side side)
     {
         var state = engine.State;
         // 单位优先（能站场），其次按费用从高到低
@@ -83,6 +89,7 @@ public sealed class GreedyBot : IPlayerPolicy
 
             if (engine.PlayCard(card, target))
             {
+                LastStepAction = new(MainActionKind.Play, card.CardId, target?.CardId ?? 0);
                 return true;
             }
         }
@@ -90,7 +97,7 @@ public sealed class GreedyBot : IPlayerPolicy
         return false;
     }
 
-    private static bool TryAttack(MatchEngine engine, Side side)
+    private bool TryAttack(MatchEngine engine, Side side)
     {
         var state = engine.State;
         foreach (var unit in state.Board(side).Where(u => u.CanOperateThisTurn(state)).ToList())
@@ -111,6 +118,7 @@ public sealed class GreedyBot : IPlayerPolicy
 
             if (engine.Attack(unit, chosen))
             {
+                LastStepAction = new(MainActionKind.Attack, unit.CardId, chosen.CardId);
                 return true;
             }
         }
@@ -134,7 +142,7 @@ public sealed class GreedyBot : IPlayerPolicy
     /// 成本已由 `MoveUnit` 收（`OperationCost`），这里再挡一道是为了不去试
     /// 明知会被拒的动作（保持"每次成功返回都真的动了一步"这个契约）。
     /// </summary>
-    private static bool TryMove(MatchEngine engine, Side side)
+    private bool TryMove(MatchEngine engine, Side side)
     {
         var state = engine.State;
 
@@ -164,6 +172,7 @@ public sealed class GreedyBot : IPlayerPolicy
 
             if (engine.MoveUnit(unit, slot))
             {
+                LastStepAction = new(MainActionKind.Move, unit.CardId, Slot: slot);
                 return true;
             }
         }

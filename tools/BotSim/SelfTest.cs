@@ -20,6 +20,10 @@ internal static partial class SelfTest
 
     private static readonly List<Case> Cases = new()
     {
+        new("动作教师标签：双引擎整局与唯一候选", OracleLabelsComplete),
+        new("动作教师标签：缺失重复拒绝及状态分叉", OracleLabelsRejectDivergence),
+        new("动作教师标签：三类缓冲上限", OracleLabelsBufferLimits),
+        new("动作教师标签：真实卡组查询副作用拒绝", OracleLabelsRejectProbeEffects),
         new("主动作与模型契约：结构候选与16维特征", MainCandidatesAreStructural),
         new("主动作与模型契约：显式拒绝与错误", MainActionRejectionIsExplicit),
         new("主动作与模型契约：四类根动作复现", MainActionsMirrorGreedy),

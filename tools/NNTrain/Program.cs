@@ -65,6 +65,7 @@ internal static class Program
         try
         {
             if (cmd == "admission-selftest") return AdmissionSelfTest.Run();
+            if (cmd == "verify-actions") return ActionDatasetTool.VerifyCommand(opts);
             string dataDir = FindDir("card-effects.json");
             var db = CardDatabase.Load(dataDir);
             var vecs = StateEncoder.LoadCardVectors(FindDir("card-vectors.json"));
@@ -97,7 +98,9 @@ internal static class Program
 
             return cmd switch
             {
+                "actions-selftest" => ActionDatasetSelfTest.Run(db,vecs),
                 "dump" => Dump(db, vecs, opts),
+                "dump-actions" => ActionDatasetTool.Dump(db, vecs, opts, dataDir, Path.Combine(FindDir("card-vectors.json"), "card-vectors.json")),
                 "train" => Train(opts),
                 "verify" => Verify(opts),
                 _ => Help(),
@@ -945,6 +948,9 @@ internal static class Program
               NNTrain dump   --games 10000 --out nn-data.bin [--seed 1] [--every 1] [--sampling turn|decision]
             sampling=turn保留回合末样本；decision在贪心步骤及选牌回答前采样，every按边界序号抽样。
             两者均为左方视角的胜负价值样本；decision还不是动作标签/掩码数据。
+              NNTrain dump-actions --games 100 --seed 1 --out actions.jsonl.gz
+              NNTrain verify-actions --data actions.jsonl.gz
+              NNTrain actions-selftest
               NNTrain train  --data nn-data.bin [--epochs 30] [--hidden 64]
                              [--out nn-model.bin] [--split-seed N] [--target win|pair]
               NNTrain verify --data nn-data.bin [--model nn-model.bin] [--split-seed N]
