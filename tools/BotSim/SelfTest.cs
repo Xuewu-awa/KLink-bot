@@ -27,6 +27,7 @@ internal static partial class SelfTest
         new("动作教师标签：探测污染隔离与重建工作上限", OracleLabelsIsolatePlanning),
         new("主动作与模型契约：结构候选与18维分支特征", MainCandidatesAreStructural),
         new("主动作与模型契约：ChooseOne两分支根执行与隔离重建", MainChooseOneBranches),
+        new("主动作与模型契约：隐藏手牌与双侧牌库不变性", MainActionHiddenInputs),
         new("主动作与模型契约：显式拒绝与错误", MainActionRejectionIsExplicit),
         new("主动作与模型契约：四类根动作复现", MainActionsMirrorGreedy),
         new("主动作与模型契约：模型分布与输入绑定", ValueModelDistributionChecks),

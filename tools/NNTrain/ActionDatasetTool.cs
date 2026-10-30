@@ -85,10 +85,7 @@ internal static class ActionDatasetTool
             if(unknown.Count!=0)throw new InvalidDataException("Unknown deck codes: "+d.Name);
             return result;
         }).ToArray();
-        var inputs=Directory.GetFiles(dataDir,"*.json").OrderBy(p=>p,StringComparer.Ordinal).ToDictionary(Path.GetFileName,TrainingAdmission.Hash);
-        inputs["card-vectors.json"]=TrainingAdmission.Hash(vectorPath);
-        inputs["KLink.Bot.dll"]=TrainingAdmission.Hash(typeof(MatchEngine).Assembly.Location);
-        inputs["NNTrain.dll"]=TrainingAdmission.Hash(typeof(ActionDatasetTool).Assembly.Location);
+        var inputs=CurrentInputs(dataDir,vectorPath);
         var header=new ActionDatasetHeader(3,"KLink.MainActionLabels",StateEncoder.Spec,MainActionFeatures.Spec,
             "actor",OracleActionEpisodeRunner.ContractFor(choicePolicy),"structural-superset",seed,games,inputs);
         var quality=new ActionDatasetQuality {Header=header};
@@ -235,6 +232,15 @@ internal static class ActionDatasetTool
             return q;
         }
         catch(JsonException error){throw new InvalidDataException("Invalid action dataset JSON.",error);}
+    }
+
+    internal static Dictionary<string,string> CurrentInputs(string dataDir,string vectorPath)
+    {
+        var inputs=Directory.GetFiles(dataDir,"*.json").OrderBy(p=>p,StringComparer.Ordinal).ToDictionary(Path.GetFileName,TrainingAdmission.Hash);
+        inputs["card-vectors.json"]=TrainingAdmission.Hash(vectorPath);
+        inputs["KLink.Bot.dll"]=TrainingAdmission.Hash(typeof(MatchEngine).Assembly.Location);
+        inputs["NNTrain.dll"]=TrainingAdmission.Hash(typeof(ActionDatasetTool).Assembly.Location);
+        return inputs;
     }
 
     internal static OracleChooseOnePolicy ParseChooseOnePolicy(string value)=>value switch

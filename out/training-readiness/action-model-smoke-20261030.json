@@ -1,0 +1,157 @@
+{
+  "version": 1,
+  "date": "2026-10-30",
+  "baseCommit": "e1ea9db4918065e0d8402d099b891253a7e0afc1",
+  "scope": "Offline action behavior-cloning smoke pipeline; no autonomous game execution or new rule certification",
+  "sourceSha256": {
+    "src/KLink.Bot/NN/MainActionModel.cs": "2708cb38bf80b72ccb29be0a1eaadbe1b7b456f2bea2f4ecac6611bf41a566ec",
+    "tools/NNTrain/ActionModelTool.cs": "d0b4e340a45d33551d2c0c0245af864f1ead571d6741339f37198660232f69e1",
+    "tools/NNTrain/ActionModelSelfTest.cs": "d1d632528408c9f792fe4a987e3da16bddca96b371506c6fc77e89e36cf4dc49",
+    "tools/NNTrain/ActionDatasetTool.cs": "098d9a37d9540a2150af2721625f6b9932f2cd4e7e7afe085054d11fb721a17b",
+    "tools/NNTrain/Program.cs": "dccc78fafb1892002fb8a5f152b8a85a3dfdbaf091cc42cc51c63aa3654f6cca",
+    "tools/BotSim/SelfTest.MainActionContract.cs": "783abb99ac6023c17902bc37d376447d37fa033ff6f47d3e3052d22e63b3a12c",
+    "tools/BotSim/SelfTest.cs": "991783a85d33b0781119426bc66810c13167eebc99413912ef0be29969d24f8c"
+  },
+  "validation": {
+    "botSimChecks": 1006,
+    "targetedMainActionContractChecks": 7,
+    "actionDatasetChecks": 43,
+    "actionModelChecks": 28,
+    "auditMatrixChecks": 16,
+    "staleDatasetRejectedBeforeModelWrite": true,
+    "independentlyCheckedGameSplitsAndMetrics": true,
+    "verifierMatchesValidationMetricsExactly": true
+  },
+  "sampling": {
+    "requestedGames": 10,
+    "seed": 1,
+    "accepted": 10,
+    "rejected": 0,
+    "rows": 1309
+  },
+  "trainingReport": {
+    "scope": "Offline teacher imitation only; structural candidates, no legality mask or strength claim.",
+    "epochs": 3,
+    "learningRate": 0.01,
+    "contract": {
+      "version": 1,
+      "observationSpec": "v2/dim=745;order=global3,perspective371,opposite371;global=turn/30,activeIsPerspective,cardsPlayedThisTurn/10;perSideGlobal=hqDef/20,kredits/12,maxKredits/12,handCount/10,deckCount/40,boardCount/10;zones=Hand,BoardFrontline,OwnHalf,Discard,Deck;zone=mean(cardVec90)+count/10;deckZone=count/10only,noCardVec;oppHandZone=count/10only,noCardVec(hiddenInfo+deckFingerprint);cardVec=s[9]+k[0..80];label=P(perspective wins)",
+      "actionSpec": "main-action/v2;dim=18;play,attack,move,end;sourceAtk20,sourceDef20,kredit12,operation12;targetAtk20,targetDef20,targetRelation,targetHQ;slotByCapacity,sourceBoard,sourceHand,sourceOrder;chooseOneIndexPlusOne,chooseOneOptionCount",
+      "perspective": "actor",
+      "candidates": "structural-superset",
+      "objective": "teacher-index-softmax/v1",
+      "teacher": "greedy-isolated-prefix/v3+choose-one-last/v1+first-index/v1",
+      "datasetSha256": "0add1ad135e4cc8ec91d7f9697a70c7f5318780428c4db4d837d7adef9bbbd25",
+      "inputsSha256": {
+        "card-effects.json": "fc335d228779a2859627ee706d85949149ca595d0cfdfbc4971541831e5a8df0",
+        "card-ir-native-defaults.json": "3319fb2d114a76f38356a8c726caa4dd56fe13f9283e50cc0f0d56a95986455b",
+        "card-ir.json": "526812fa8dc0934f1d6ecd3794053871fa6b701c2b5df3fd1edb3c38513ba2e9",
+        "card-vectors.json": "b15b93cb02e7e8a712561a2da52127a5867084ecb878a6ad58539b56b1109ab9",
+        "cards.json": "3550dc76eb0414c500166875f45909077aeeb3ea4d229b9b0ba9c66a81987c4b",
+        "deck_code_ids.json": "261cfd518c1a1ce40488f141e8dbd617ff19abe0734c49319ebcd6ac5dcb257e",
+        "event-contracts.json": "e4806dd48efbfc799a27c14b3660ad76ee03cd3f13e3e4320b213c5928efb112",
+        "live-actions.json": "db413a4644afe75806e66c47e200d93c5d93e91ca03e23fca38465b7dcb4dab3",
+        "KLink.Bot.dll": "267a03ef6ef48a78a4326b0b4f9abfd3ed7525b4bc601e9038f93211d4895c85",
+        "NNTrain.dll": "d1c54f833d4e5f727a7619fbc1e32fea42d88bc605ae48084c764dfcaf44ec99"
+      },
+      "splitSeed": 1,
+      "trainingGames": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        7,
+        9
+      ],
+      "validationGames": [
+        6,
+        8
+      ]
+    },
+    "initialTrain": {
+      "rows": 1015,
+      "crossEntropy": 4.16834538344211,
+      "top1": 0.007881773399014778,
+      "uniformCrossEntropy": 4.140270277452167,
+      "endTurnTop1": 0.19704433497536947,
+      "chosenFeatureTieRows": 194
+    },
+    "train": {
+      "rows": 1015,
+      "crossEntropy": 3.152574490803818,
+      "top1": 0.2246305418719212,
+      "uniformCrossEntropy": 4.140270277452167,
+      "endTurnTop1": 0.19704433497536947,
+      "chosenFeatureTieRows": 194
+    },
+    "validation": {
+      "rows": 294,
+      "crossEntropy": 3.2211390777079414,
+      "top1": 0.1870748299319728,
+      "uniformCrossEntropy": 4.257271273744923,
+      "endTurnTop1": 0.17687074829931973,
+      "chosenFeatureTieRows": 55
+    },
+    "savedLoadedRowsCompared": 1309,
+    "modelSha256": "d539fabc3eab9a9edb0908e001e31fc5f2eb262448cd02d34b8b5c24d1d531b8"
+  },
+  "worker": {
+    "skill": "deepseek-worker",
+    "job": "20261030-182358-action-feature-collisions-e87720b2",
+    "statsSha256": "9ef6fa1f7b5e7bada8b6150be53303d5d7d53856c94017f345d272cee2267927",
+    "scriptSha256": "b3a52ed971a05d5aecf92c5c086f1585993dcf89c0bdd339cc1b5d075bb204cb",
+    "sourceSha256": "411580fbb6423fcefdac1bdb2245720acd5d120f383da30dbc4e8707078e2cd1",
+    "rows": 2460,
+    "candidates": 187748,
+    "sharedChosenFeatureRows": 427,
+    "verification": "Primary independently read original gzip, recomputed row/candidate counts, chosen kinds, branch counts and full chosen-feature multiplicity histogram; original and packet SHA match. No semantic certification."
+  },
+  "localArtifacts": {
+    "actions-model-smoke-10.jsonl.gz": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\actions-model-smoke-10.jsonl.gz",
+      "sha256": "0add1ad135e4cc8ec91d7f9697a70c7f5318780428c4db4d837d7adef9bbbd25"
+    },
+    "actions-model-smoke-10.jsonl.gz.quality.json": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\actions-model-smoke-10.jsonl.gz.quality.json",
+      "sha256": "9977d4b3aaed850046d4c33bbd9f917cc02d14e98e5035ccc981443339ee3c69"
+    },
+    "action-model-smoke.json": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\action-model-smoke.json",
+      "sha256": "d539fabc3eab9a9edb0908e001e31fc5f2eb262448cd02d34b8b5c24d1d531b8"
+    },
+    "action-model-smoke.json.report.json": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\action-model-smoke.json.report.json",
+      "sha256": "6754929d28aae987ebed92f3fbd2e4d043e5696ddc1e4573f38cd8392b687d94"
+    },
+    "action-model-botsim-full.log": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\action-model-botsim-full.log",
+      "sha256": "11e039ac617bb5ac88c3e248a4896a6f152cb15a166f1757664443055f58d288"
+    },
+    "action-model-dump.log": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\action-model-dump.log",
+      "sha256": "a584c4ec5c35886ea8fcfde099c239da2d6ca7793f7cf1596593ef3b808688aa"
+    },
+    "action-model-train.log": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\action-model-train.log",
+      "sha256": "0f068469ef61a5440f41b01f2bdf5593fbffd62b9bbf9fbdaf4fa9e3d28ff8c9"
+    },
+    "action-model-verify.log": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\action-model-verify.log",
+      "sha256": "ab6cfc8df3a99c31ce0f8397d2ba7855d3004ee8df6af7579063036627aac5bf"
+    },
+    "action-model-stale-rejection.log": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\action-model-stale-rejection.log",
+      "sha256": "709c79ce837b2a6b2cb2d724622e024da424d09eec903e2acbca32b232520041"
+    }
+  },
+  "limitations": [
+    "Structural superset, not a legal mask; rejected actions may mutate state.",
+    "18-dimensional features cannot distinguish all cards/effects or targets.",
+    "Hidden-input test covers enemy hand and both decks only, not full visibility semantics.",
+    "Game-disjoint smoke dataset is small and same-teacher; no strength or cross-dataset generalization claim.",
+    "Fixed-last branch teacher is a coverage strategy, not an optimal policy.",
+    "Client rule audit remains incomplete; no overall remaining percentage or card certification added."
+  ]
+}

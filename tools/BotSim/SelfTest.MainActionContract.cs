@@ -53,6 +53,32 @@ internal static partial class SelfTest
         return threw && adapter.Faults==1 && adapter.RejectedActions==1 ? null : "非法索引未独立报错";
     }
 
+    private static string? MainActionHiddenInputs(CardDatabase db)
+    {
+        foreach(var side in new[]{Side.Left,Side.Right})
+        {
+            var (engine,state)=EmptyBoard(db);state.ActiveSide=side;
+            var own=state.CreateWithId(PlainUnit,side,70,side.HandOf(),0);
+            var hidden=state.CreateWithId(PlainUnit,side.Opposite(),80,side.Opposite().HandOf(),0);
+            var leftDeck=state.CreateWithId(PlainUnit,side,90,side.DeckOf(),0);
+            var rightDeck=state.CreateWithId(PlainUnit,side.Opposite(),91,side.Opposite().DeckOf(),0);
+            var vectors=new StateEncoder.CardVecs();
+            vectors.ByName[PlainUnit]=Enumerable.Repeat(0.25f,StateEncoder.CardDim).ToArray();
+            vectors.ByName["card_unit_light_infantry"]=Enumerable.Repeat(0.75f,StateEncoder.CardDim).ToArray();
+            var adapter=new MainActionPolicyAdapter(engine,vectors);
+            string before=JsonSerializer.Serialize(adapter.DescribeCandidates(side));
+            foreach(var card in new[]{hidden,leftDeck,rightDeck})
+            {
+                card.Definition=db.All.Single(c=>c.Name=="card_unit_light_infantry");card.Attack=99;card.Defense=98;
+                card.ChooseOne=1;card.CardSeen=true;
+            }
+            if(before!=JsonSerializer.Serialize(adapter.DescribeCandidates(side)))return $"隐藏手牌/双方牌库身份或数值泄漏 {side}";
+            own.Definition=db.All.Single(c=>c.Name=="card_unit_light_infantry");
+            if(before==JsonSerializer.Serialize(adapter.DescribeCandidates(side)))return "非零卡向量观测测试未观察到自己手牌变化";
+        }
+        return null;
+    }
+
     private static string? MainChooseOneBranches(CardDatabase db)
     {
         const string research="card_event_advanced_royal_research";

@@ -99,6 +99,9 @@ internal static class Program
             return cmd switch
             {
                 "actions-selftest" => ActionDatasetSelfTest.Run(db,vecs),
+                "action-model-selftest" => ActionModelSelfTest.Run(),
+                "train-actions" => ActionModelTool.Train(opts,dataDir,Path.Combine(FindDir("card-vectors.json"),"card-vectors.json")),
+                "verify-action-model" => ActionModelTool.Verify(opts,dataDir,Path.Combine(FindDir("card-vectors.json"),"card-vectors.json")),
                 "dump" => Dump(db, vecs, opts),
                 "dump-actions" => ActionDatasetTool.Dump(db, vecs, opts, dataDir, Path.Combine(FindDir("card-vectors.json"), "card-vectors.json")),
                 "train" => Train(opts),
@@ -951,6 +954,10 @@ internal static class Program
               NNTrain dump-actions --games 100 --seed 1 --out actions.jsonl.gz [--choose-one-policy native|last]
               NNTrain verify-actions --data actions.jsonl.gz
               NNTrain actions-selftest
+              NNTrain action-model-selftest
+              NNTrain train-actions --data actions.jsonl.gz --out action-model.json [--epochs 3] [--hidden 16] [--lr 0.01] [--split-seed 1]
+              NNTrain verify-action-model --data actions.jsonl.gz --model action-model.json
+            动作评分器仅离线模仿教师，不提供合法掩码、不执行对局；按整局分离训练/验证，精确绑定输入和教师。
               NNTrain train  --data nn-data.bin [--epochs 30] [--hidden 64]
                              [--out nn-model.bin] [--split-seed N] [--target win|pair]
               NNTrain verify --data nn-data.bin [--model nn-model.bin] [--split-seed N]
