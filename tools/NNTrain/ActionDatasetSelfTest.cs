@@ -33,12 +33,12 @@ internal static class ActionDatasetSelfTest
         string path=Path.Combine(dir,"data.jsonl.gz");
         var hashes=new[]{"cards.json","card-ir.json","card-effects.json","card-vectors.json","KLink.Bot.dll","NNTrain.dll"}
             .ToDictionary(k=>k,_=>new string('0',64));
-        var header=new ActionDatasetHeader(1,"KLink.MainActionLabels",StateEncoder.Spec,MainActionFeatures.Spec,"actor",
-            "greedy-step/v1+first-index/v1","structural-superset",1,2,hashes);
+        var header=new ActionDatasetHeader(2,"KLink.MainActionLabels",StateEncoder.Spec,MainActionFeatures.Spec,"actor",
+            OracleActionEpisodeRunner.TeacherContract,"structural-superset",1,2,hashes);
         var option=new MainActionOption(0,new(MainActionKind.EndTurn),Array.AsReadOnly(new float[]{0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0}));
         var good=new ActionDatasetRow(0,0,Side.Left,1,new float[StateEncoder.Dim],[option],0,["legal-mask/unverified"]);
         ActionDatasetQuality Quality()=>new(){Header=header,AcceptedGames=1,RejectedGames=1,Rows=1,Games=[
-            new(){Game=0,Seed=1,Accepted=true,Finished=true,Winner=Side.Left,BufferedRows=1,WrittenRows=1,ComparedSteps=1,AppliedActions=1},
+            new(){Game=0,Seed=1,Accepted=true,Finished=true,Winner=Side.Left,BufferedRows=1,WrittenRows=1,ComparedSteps=1,AppliedActions=1,PlanningDecisions=1},
             new(){Game=1,Seed=2,Accepted=false,BufferedRows=5,Reasons=["forced_late_failure"]}]};
         void Save(ActionDatasetQuality q,ActionDatasetRow row,ActionDatasetHeader stored=null)
         {
@@ -55,6 +55,7 @@ internal static class ActionDatasetSelfTest
             complete.Games[0].BufferedRows=complete.Games[0].WrittenRows=complete.Games[0].ComparedSteps=written;
             complete.Games[0].AppliedActions=written;
             complete.Games[0].Winner=episode.Replay.State.Winner;
+            complete.Games[0].PlanningDecisions=written;complete.Games[0].PlanningPrefixRoots=episode.PlanningPrefixRoots;
             using(var file=File.Create(path))using(var zip=new GZipStream(file,CompressionLevel.Fastest))
             using(var writer=new StreamWriter(zip,new UTF8Encoding(false)))
             {writer.WriteLine(JsonSerializer.Serialize(header,ActionDatasetTool.Json));writer.Write(buffer.ToString());}
@@ -84,6 +85,11 @@ internal static class ActionDatasetSelfTest
             q=Quality();q.Games[1].WrittenRows=1;Save(q,good);Reject("rejected nonzero row manifest");
             Save(Quality(),good,header with {Teacher="other"});Reject("compressed header differs");
             q=Quality();q.Header=q.Header with {InputsSha256=new()};Save(q,good);Reject("missing input bindings");
+            q=Quality();q.Games[0].PlanningDecisions=0;Save(q,good);Reject("missing isolated planning count");
+            q=Quality();q.Games[0].PlanningPrefixRoots=1;Save(q,good);Reject("wrong isolated prefix count");
+            q=Quality();q.Header=q.Header with {Version=1,Teacher="greedy-step/v1+first-index/v1"};Save(q,good);Reject("legacy unisolated teacher rejected");
+            Assert(ActionDatasetTool.AdmissionReasons(episode with {PlanningCalls=new Dictionary<string,int>{{"<unknown-probe-call>",1}}},true)
+                .Contains("unimplemented:<unknown-probe-call>"),"discarded probe diagnostics still block admission");
             Save(Quality(),good);using(var file=new FileStream(path,FileMode.Append))file.WriteByte(42);Reject("data hash tampering");
         }
         finally{File.Delete(path);File.Delete(path+".quality.json");Directory.Delete(dir);}

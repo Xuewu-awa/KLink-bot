@@ -26,6 +26,8 @@ internal sealed class ActionGameQuality
     public int BufferedRows {get;set;}
     public int WrittenRows {get;set;}
     public int ComparedSteps {get;set;}
+    public long PlanningPrefixRoots {get;set;}
+    public int PlanningDecisions {get;set;}
     public long MainFaults {get;set;}
     public long MainRejections {get;set;}
     public long AppliedActions {get;set;}
@@ -57,6 +59,12 @@ internal static class ActionDatasetTool
             reasons.AddRange(TrainingAdmission.Check(engine.State.IsFinished,engine.State.Winner,engine.Api.Vm.FaultedPrograms,
                 engine.Api.Vm.UnsupportedOps,engine.UnimplementedCalls,irLoaded,result.Labels.Count,true,
                 result.ChoiceFaults,pendingChoices:engine.PendingSelectionCount));
+        reasons.AddRange(TrainingAdmission.Check(result.Replay.State.IsFinished,result.Replay.State.Winner,
+            result.PlanningVmFaults,result.PlanningUnsupported,result.PlanningCalls,irLoaded,result.Labels.Count,true,
+            result.PlanningChoiceFaults,pendingChoices:result.PlanningPendingChoices));
+        if(result.PlanningDecisions!=result.Labels.Count
+            || result.PlanningPrefixRoots!=(long)result.Labels.Count*(result.Labels.Count-1)/2)
+            reasons.Add("unverified_planning_count");
         if(result.MainFaults!=0)reasons.Add("main_action_fault");
         if(result.MainRejections!=0)reasons.Add("main_action_rejected");
         if(result.AppliedActions!=result.ComparedSteps || result.ComparedSteps!=result.Labels.Count)reasons.Add("unverified_root_count");
@@ -80,8 +88,8 @@ internal static class ActionDatasetTool
         inputs["card-vectors.json"]=TrainingAdmission.Hash(vectorPath);
         inputs["KLink.Bot.dll"]=TrainingAdmission.Hash(typeof(MatchEngine).Assembly.Location);
         inputs["NNTrain.dll"]=TrainingAdmission.Hash(typeof(ActionDatasetTool).Assembly.Location);
-        var header=new ActionDatasetHeader(1,"KLink.MainActionLabels",StateEncoder.Spec,MainActionFeatures.Spec,
-            "actor","greedy-step/v1+first-index/v1","structural-superset",seed,games,inputs);
+        var header=new ActionDatasetHeader(2,"KLink.MainActionLabels",StateEncoder.Spec,MainActionFeatures.Spec,
+            "actor",OracleActionEpisodeRunner.TeacherContract,"structural-superset",seed,games,inputs);
         var quality=new ActionDatasetQuality {Header=header};
         using(var file=File.Create(path))
         using(var zip=new GZipStream(file,CompressionLevel.Fastest))
@@ -97,13 +105,18 @@ internal static class ActionDatasetTool
                 var reasons=AdmissionReasons(result,true);var engines=new[]{result.Teacher,result.Replay};
                 Dictionary<string,int> Merge(Func<MatchEngine,IReadOnlyDictionary<string,int>> get)=>engines
                     .SelectMany(e=>get(e)).GroupBy(p=>p.Key).ToDictionary(p=>p.Key,p=>p.Sum(v=>v.Value));
+                Dictionary<string,int> WithPlanning(Dictionary<string,int> values,IReadOnlyDictionary<string,int> planning)
+                {foreach(var p in planning)values[p.Key]=values.GetValueOrDefault(p.Key)+p.Value;return values;}
                 var game=new ActionGameQuality {Game=g,Seed=seed+(ulong)g,LeftDeck=decks[l].Name,RightDeck=decks[r].Name,
                     Accepted=reasons.Length==0,Finished=engines.All(e=>e.State.IsFinished),Winner=result.Replay.State.Winner,
                     BufferedRows=result.Labels.Count,WrittenRows=reasons.Length==0?result.Labels.Count:0,
-                    ComparedSteps=result.ComparedSteps,MainFaults=result.MainFaults,MainRejections=result.MainRejections,
-                    AppliedActions=result.AppliedActions,ChoiceFaults=result.ChoiceFaults,
-                    PendingChoices=engines.Sum(e=>e.PendingSelectionCount),VmFaults=engines.Sum(e=>(long)e.Api.Vm.FaultedPrograms),
-                    Unsupported=Merge(e=>e.Api.Vm.UnsupportedOps),Calls=Merge(e=>e.UnimplementedCalls),Reasons=reasons,
+                    ComparedSteps=result.ComparedSteps,PlanningPrefixRoots=result.PlanningPrefixRoots,PlanningDecisions=result.PlanningDecisions,
+                    MainFaults=result.MainFaults,MainRejections=result.MainRejections,
+                    AppliedActions=result.AppliedActions,ChoiceFaults=result.ChoiceFaults+result.PlanningChoiceFaults,
+                    PendingChoices=engines.Sum(e=>e.PendingSelectionCount)+result.PlanningPendingChoices,
+                    VmFaults=engines.Sum(e=>(long)e.Api.Vm.FaultedPrograms)+result.PlanningVmFaults,
+                    Unsupported=WithPlanning(Merge(e=>e.Api.Vm.UnsupportedOps),result.PlanningUnsupported),
+                    Calls=WithPlanning(Merge(e=>e.UnimplementedCalls),result.PlanningCalls),Reasons=reasons,
                     SnapshotDifference=result.SnapshotDifference};
                 quality.Games.Add(game);
                 if(!game.Accepted){quality.RejectedGames++;continue;}
@@ -145,9 +158,9 @@ internal static class ActionDatasetTool
             var q=JsonSerializer.Deserialize<ActionDatasetQuality>(File.ReadAllText(path+".quality.json"),Json)
                 ?? throw new InvalidDataException("Missing action quality manifest.");
             var h=q.Header;
-            if(h is null || h.Version!=1 || h.Kind!="KLink.MainActionLabels" || h.Perspective!="actor"
+            if(h is null || h.Version!=2 || h.Kind!="KLink.MainActionLabels" || h.Perspective!="actor"
                 || h.ObservationSpec!=StateEncoder.Spec || h.ActionSpec!=MainActionFeatures.Spec
-                || h.Teacher!="greedy-step/v1+first-index/v1" || h.Candidates!="structural-superset"
+                || h.Teacher!=OracleActionEpisodeRunner.TeacherContract || h.Candidates!="structural-superset"
                 || q.Rows<=0 || q.AcceptedGames<=0 || q.Games.Count!=h.RequestedGames
                 || q.Games.Select(g=>g.Game).Distinct().Count()!=q.Games.Count
                 || q.Games.Any(g=>g.Game<0 || g.Game>=h.RequestedGames || g.Seed!=h.Seed+(ulong)g.Game)
@@ -160,7 +173,10 @@ internal static class ActionDatasetTool
             foreach(var g in q.Games)
             {
                 if(g.WrittenRows<0 || g.BufferedRows<g.WrittenRows || g.BufferedRows>OracleActionEpisodeRunner.MaxRows
+                    || g.PlanningPrefixRoots<0 || g.PlanningPrefixRoots>OracleActionEpisodeRunner.MaxPlanningPrefixRoots
+                    || g.PlanningDecisions<0 || g.PlanningDecisions>g.BufferedRows+1
                     || g.Accepted && (!g.Finished || g.Winner is not (Side.Left or Side.Right) || g.Reasons.Length!=0
+                        || g.PlanningDecisions!=g.WrittenRows || g.PlanningPrefixRoots!=(long)g.WrittenRows*(g.WrittenRows-1)/2
                         || g.WrittenRows==0 || g.BufferedRows!=g.WrittenRows || g.WrittenRows!=g.ComparedSteps || g.AppliedActions!=g.ComparedSteps
                         || g.MainFaults!=0 || g.MainRejections!=0 || g.ChoiceFaults!=0 || g.PendingChoices!=0 || g.VmFaults!=0
                         || g.Unsupported.Any(p=>p.Value>0) || g.Calls.Any(p=>p.Value>0 && !TrainingAdmission.IsInformational(p.Key)))

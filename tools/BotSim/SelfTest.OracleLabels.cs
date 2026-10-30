@@ -81,12 +81,59 @@ internal static partial class SelfTest
             if(unknown.Count!=0)throw new InvalidOperationException("Unknown regression deck cards");
             return cards.ToArray();
         }
-        var result=OracleActionEpisodeRunner.Run(db,new StateEncoder.CardVecs(),Expand("英日"),Expand("日澳快攻"),1);
-        return result.Errors.Contains("root_snapshot_mismatch") && result.Labels.Count>0
-            && result.SnapshotDifference?.Contains("targetOverride")==true
-            && System.Text.Json.JsonSerializer.Serialize(result.Teacher.State.ActionLog)
-                ==System.Text.Json.JsonSerializer.Serialize(result.Replay.State.ActionLog)
-            && result.Teacher.State.Random.State==result.Replay.State.Random.State
-            ? null : "真实查询副作用未被拒绝，或未复现日志/RNG相等的状态分叉";
+        var vectors=new StateEncoder.CardVecs();var left=Expand("英日");var right=Expand("日澳快攻");
+        // Keep the original failure demonstrated independently of the new planner:
+        // raw Greedy queries change targetOverride even when root logs/RNG agree.
+        var raw=new MatchEngine(db,left,right,1);var replay=new MatchEngine(db,left,right,1);
+        using var rc=new ChoicePolicyAdapter(raw,vectors,_=>0);
+        using var pc=new ChoicePolicyAdapter(replay,vectors,_=>0);
+        raw.Start();replay.Start();var bot=new GreedyBot();bool sawDifference=false;
+        for(int step=0;step<12 && !raw.State.IsFinished;step++)
+        {
+            var actor=raw.State.ActiveSide;bot.PlayStep(raw,actor);
+            if(bot.LastStepAction is not {} command || !MainActionPolicyAdapter.ApplyRoot(replay,actor,command))return "原始根动作拒绝";
+            if(raw.State.SnapshotJson()==replay.State.SnapshotJson())continue;
+            sawDifference=raw.State.SnapshotJson().Contains("targetOverride")
+                && System.Text.Json.JsonSerializer.Serialize(raw.State.ActionLog)==System.Text.Json.JsonSerializer.Serialize(replay.State.ActionLog)
+                && raw.State.Random.State==replay.State.Random.State;
+            break;
+        }
+        if(!sawDifference)return "未复现原始查询副作用";
+        var result=OracleActionEpisodeRunner.RunCore(db,vectors,left,right,1,maxRows:12);
+        return result.Labels.Count>=7 && !result.Errors.Contains("root_snapshot_mismatch")
+            && !result.Errors.Contains("planning_prefix_mismatch") && result.SnapshotDifference is null
+            && result.Teacher.State.SnapshotJson()==result.Replay.State.SnapshotJson()
+            ? null : "隔离后未越过原始分叉: "+string.Join(',',result.Errors)+" / "+result.Labels.Count;
+    }
+
+    private static string? OracleLabelsIsolatePlanning(CardDatabase db)
+    {
+        var vectors=new StateEncoder.CardVecs();var deck=OracleDeck();
+        var baseline=OracleActionEpisodeRunner.RunCore(db,vectors,deck,deck,1,maxRows:12);
+        var polluted=OracleActionEpisodeRunner.RunCore(db,vectors,deck,deck,1,maxRows:12,afterProbe:(probe,n)=>
+        {
+            // Pollute several state families after selection; none may leak into
+            // the next planner, observation, label, or either execution engine.
+            probe.State.Hq(Side.Left).BlueprintVariables["targetOverride"]=999;
+            probe.State.Hq(Side.Right).BaseAttack+=100;
+            probe.State.Random.Next(10);probe.State.ActionLog.Clear();
+            probe.State.AddAutoPlayCards(9999);
+        });
+        if(baseline.Labels.Count!=12 || polluted.Labels.Count!=12
+            || baseline.Teacher.State.SnapshotJson()!=polluted.Teacher.State.SnapshotJson()
+            || baseline.Replay.State.SnapshotJson()!=polluted.Replay.State.SnapshotJson()
+            || System.Text.Json.JsonSerializer.Serialize(baseline.Labels)!=System.Text.Json.JsonSerializer.Serialize(polluted.Labels))
+            return "探测状态泄漏到后续重建/标签/执行";
+        if(polluted.PlanningDecisions!=12 || polluted.PlanningPrefixRoots!=66)return "重建工作计数错误";
+        var mismatch=OracleActionEpisodeRunner.RunCore(db,vectors,deck,deck,1,beforeProbe:(p,n)=>
+        {if(n==1)p.State.Hq(Side.Right).BaseAttack++;});
+        if(!mismatch.Errors.Contains("planning_prefix_mismatch") || mismatch.Labels.Count!=1)return "未拒绝重建状态分叉";
+        var fault=OracleActionEpisodeRunner.RunCore(db,vectors,deck,deck,1,afterProbe:(p,n)=>
+        {if(n==1)p.Api.Vm.UnsupportedOps["<forced-probe-fault>"]=1;});
+        if(!fault.Errors.Contains("planning_execution_fault") || fault.Labels.Count!=1
+            || fault.PlanningUnsupported.GetValueOrDefault("<forced-probe-fault>")!=1)return "被丢弃探测故障丢失";
+        var limited=OracleActionEpisodeRunner.RunCore(db,vectors,deck,deck,1,maxPlanningPrefixRoots:0);
+        return limited.Errors.Contains("planning_work_limit") && limited.Labels.Count==1 && limited.PlanningPrefixRoots==0
+            ? null : "探测工作上限无效";
     }
 }

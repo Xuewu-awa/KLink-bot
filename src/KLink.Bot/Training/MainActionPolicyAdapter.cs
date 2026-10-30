@@ -103,19 +103,7 @@ public sealed class MainActionPolicyAdapter
                     throw new InvalidOperationException("Policy changed the engine during a synchronous decision.");
                 if(index<0 || index>=request.Candidates.Count)throw new InvalidOperationException("Main policy index outside offer.");
                 var command=request.Candidates[index].Command;
-                bool accepted;
-                if(command.Kind==MainActionKind.EndTurn){_engine.EndTurn(actor);accepted=true;}
-                else
-                {
-                    var source=state.ById(command.SourceId);var target=state.ById(command.TargetId);
-                    accepted=source is not null && (command.Kind switch
-                    {
-                        MainActionKind.Play=>_engine.PlayCard(source,target),
-                        MainActionKind.Attack=>target is not null && _engine.Attack(source,target),
-                        MainActionKind.Move=>_engine.MoveUnit(source,command.Slot),
-                        _=>false
-                    });
-                }
+                bool accepted=ApplyRoot(_engine,actor,command);
                 if(accepted)AppliedActions++;else RejectedActions++;
                 return new(command,accepted,_engine.Api.Vm.FaultedPrograms,_engine.PendingSelectionCount);
             }
@@ -123,4 +111,20 @@ public sealed class MainActionPolicyAdapter
         }
         catch{Faults++;throw;}
     }
+    // Shared root dispatch for live execution and deterministic prefix rebuilds.
+    // No candidate probes, retry or rollback are performed here.
+    internal static bool ApplyRoot(MatchEngine engine,Side actor,MainActionCommand command)
+    {
+        if(engine.State.IsFinished || engine.State.ActiveSide!=actor || engine.PendingSelectionCount!=0)return false;
+        if(command.Kind==MainActionKind.EndTurn){engine.EndTurn(actor);return true;}
+        var source=engine.State.ById(command.SourceId);var target=engine.State.ById(command.TargetId);
+        return source is not null && (command.Kind switch
+        {
+            MainActionKind.Play=>engine.PlayCard(source,target),
+            MainActionKind.Attack=>target is not null && engine.Attack(source,target),
+            MainActionKind.Move=>engine.MoveUnit(source,command.Slot),
+            _=>false
+        });
+    }
+
 }
