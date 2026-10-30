@@ -1569,8 +1569,9 @@ public sealed class MatchEngine
 
     // Training root commands carry a final target, unlike legacy callers that
     // may still be driving a staged hand-play flow. This bounded check covers
-    // non-choice targeted orders; choose-one target flags need a separate audit.
-    internal bool PlayCardWithOrderTargetCheck(CardInstance card, CardInstance? target)
+    // targeted orders and explicitly targeted unit deployments. Unit no-target
+    // deployment and placement enumeration retain their separate audit scope.
+    internal bool PlayCardWithTrainingTargetCheck(CardInstance card, CardInstance? target)
         => ResolveHandPlayAction(card, target, skipLeaveTrigger: false, validateOrderTarget: true);
 
     private bool ResolveHandPlayAction(CardInstance card, CardInstance? target,
@@ -1612,6 +1613,13 @@ public sealed class MatchEngine
             && card.SelectTargetOnPlayedFromHand
             && !Api.CanTarget(card, target).Can)
             return false;
+
+        if (validateOrderTarget && card.Definition.IsUnit && card.SelectTargetOnPlayedFromHand && target is not null)
+        {
+            if (!Api.CheckExplicitUnitDeployment(card, target, out var resolvedTarget).Can)
+                return false;
+            target = resolvedTarget;
+        }
 
         if (Api.IsGotcha(card))
         {

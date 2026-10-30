@@ -7975,8 +7975,8 @@
       "id": "RULE-TRAINING-EXPLICIT-TARGET",
       "title": "训练根动作具体目标与查询副作用",
       "status": "partial",
-      "scope": "已修复非选择型定向指令、选择指令分支目标标记准备及具体目标校验、不存在目标ID。已核对三张混合目标选择指令；其他选择牌完整路径、单位部署、旧PlayCard入口、查询状态写入和原生目标谓词继续开放；不构成可靠合法掩码。",
-      "source": "out/training-readiness/choice-order-targets-20261030.json"
+      "scope": "已修复定向指令具体目标、选择指令目标标记准备、不存在目标ID，以及定向单位明确非空目标的局部/公共检查和返回目标转发。Play 明确落点尚未支持，改为显式拒绝；三张单位目标/效果已作双侧回归。单位空目标提交、非定向单位局部谓词、落点插入、其他选择牌、旧PlayCard入口、查询写入、原生兜底和目标重定向逐卡验证继续开放；不构成可靠合法掩码。",
+      "source": "out/training-readiness/unit-deployment-targets-20261030.json"
     }
   ]
 }

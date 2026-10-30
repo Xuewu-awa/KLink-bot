@@ -20,6 +20,10 @@ internal static partial class SelfTest
 
     private static readonly List<Case> Cases = new()
     {
+        new("单位部署目标：拒绝明确无效目标", UnitDeploymentRejectsExplicitTargets),
+        new("单位部署目标：双侧具体目标效果", UnitDeploymentAcceptsExplicitTargets),
+        new("单位部署目标：拒绝未支持的明确落点", TrainingPlayRejectsUnsupportedSlot),
+        new("单位部署目标：局部输出和空目标契约", UnitDeploymentPredicateOutput),
         new("选择指令目标：拒绝分支无效目标且不执行效果", ChoiceOrderRejectsWrongTargets),
         new("选择指令目标：双侧具体谓词与目标效果", ChoiceOrderAcceptsPredicateTargets),
         new("选择指令目标：无目标分支清除旧目标标记", ChoiceOrderNoTargetBranchClearsStaleFlag),

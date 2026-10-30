@@ -7430,7 +7430,22 @@ public sealed partial class CardApi
     }
 
     private TargetCheck CheckPlayFromHandOn(CardInstance card, CardInstance? target, bool requireTargetedCard)
+        => CheckPlayFromHandOn(card, target, requireTargetedCard, out _);
+
+    // GlobalMouseUpBattle i=351/478 checks the local predicate, then the
+    // requested target's common gate. i=613/736/3787 forwards the local output
+    // (including None), rather than necessarily forwarding the requested card.
+    internal TargetCheck CheckExplicitUnitDeployment(CardInstance card, CardInstance target,
+        out CardInstance? resolvedTarget)
     {
+        var own = CheckPlayFromHandOn(card, target, false, out resolvedTarget);
+        return own.Can ? CanSelectAsTarget(card, target, byPlayFromHand: true) : own;
+    }
+
+    private TargetCheck CheckPlayFromHandOn(CardInstance card, CardInstance? target, bool requireTargetedCard,
+        out CardInstance? resolvedTarget)
+    {
+        resolvedTarget = target;
         // This API accepts an explicit candidate. Bind it for the card-local call
         // so the shared getter can use the real caller fields. Restore only this
         // adapter binding; other query side effects (e.g. WhichChooseOne) remain.
@@ -7457,6 +7472,7 @@ public sealed partial class CardApi
         }
 
         bool can = Blueprint.KismetVm.Truthy(outs.GetValueOrDefault("canIt"));
+        resolvedTarget = outs.GetValueOrDefault("targetedCard") as CardInstance;
         // BP_Logic.CanPlayCardFromHand i=2266..2305 requires both canIt
         // and a valid BaseCardObject output before the common target checks.
         if (can && requireTargetedCard && outs.GetValueOrDefault("targetedCard") is not CardInstance)

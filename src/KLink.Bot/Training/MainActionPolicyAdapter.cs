@@ -141,6 +141,9 @@ public sealed class MainActionPolicyAdapter
     {
         if(engine.State.IsFinished || engine.State.ActiveSide!=actor || engine.PendingSelectionCount!=0)return false;
         if(command.Kind!=MainActionKind.Play && command.ChooseOne!=-1)return false;
+        // This contract offers only default placement. Refuse unsupported input
+        // instead of silently executing a different command; not a legality claim.
+        if(command.Kind==MainActionKind.Play && command.Slot!=-1)return false;
         if(command.Kind==MainActionKind.EndTurn){engine.EndTurn(actor);return true;}
         var source=engine.State.ById(command.SourceId);var target=engine.State.ById(command.TargetId);
         // A missing explicit ID must not silently turn into the no-target command.
@@ -156,7 +159,7 @@ public sealed class MainActionPolicyAdapter
         }
         return source is not null && (command.Kind switch
         {
-            MainActionKind.Play=>engine.PlayCardWithOrderTargetCheck(source,target),
+            MainActionKind.Play=>engine.PlayCardWithTrainingTargetCheck(source,target),
             MainActionKind.Attack=>target is not null && engine.Attack(source,target),
             MainActionKind.Move=>engine.MoveUnit(source,command.Slot),
             _=>false
