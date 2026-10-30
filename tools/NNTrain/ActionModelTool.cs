@@ -2,15 +2,16 @@ using System.Globalization;
 using System.IO.Compression;
 using System.Text.Json;
 using KLink.Bot.NN;
+using KLink.Bot.Training;
 
 namespace KLink.Bot.NNTrain;
 
 internal static class ActionModelTool
 {
     internal sealed record Metrics(int Rows,double CrossEntropy,double Top1,double UniformCrossEntropy,
-        double EndTurnTop1,int ChosenFeatureTieRows);
+        double EndTurnTop1,int ChosenFeatureTieRows,int ScalarOnlyChosenFeatureTieRows);
     internal const int MaxLoadedRows=20000;
-    internal const int MaxLoadedCandidates=2000000;
+    internal const int MaxLoadedCandidates=200000;
 
     private static (ActionDatasetQuality Quality,ActionDatasetRow[] Rows) Read(string path)
     {
@@ -45,7 +46,7 @@ internal static class ActionModelTool
     internal static Metrics Evaluate(MainActionModel model,IReadOnlyList<ActionDatasetRow> rows)
     {
         if(rows.Count==0)throw new InvalidDataException("Empty action evaluation split.");
-        double loss=0,uniform=0;int hits=0,end=0,ties=0;
+        double loss=0,uniform=0;int hits=0,end=0,ties=0,scalarTies=0;
         foreach(var row in rows)
         {
             var actions=Features(row);var p=model.Probabilities(row.Observation,actions);
@@ -55,8 +56,9 @@ internal static class ActionModelTool
             if(best==row.ChosenIndex)hits++;
             if(row.Candidates[row.ChosenIndex].Command.Kind==Training.MainActionKind.EndTurn)end++;
             if(actions.Count(a=>a.SequenceEqual(actions[row.ChosenIndex]))>1)ties++;
+            if(actions.Count(a=>a.Take(MainActionFeatures.ScalarDim).SequenceEqual(actions[row.ChosenIndex].Take(MainActionFeatures.ScalarDim)))>1)scalarTies++;
         }
-        return new(rows.Count,loss/rows.Count,hits/(double)rows.Count,uniform/rows.Count,end/(double)rows.Count,ties);
+        return new(rows.Count,loss/rows.Count,hits/(double)rows.Count,uniform/rows.Count,end/(double)rows.Count,ties,scalarTies);
     }
 
     internal static int Train(Dictionary<string,string> opts,string dataDir,string vectorPath)

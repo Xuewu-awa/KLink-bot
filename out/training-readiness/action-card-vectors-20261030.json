@@ -1,0 +1,181 @@
+{
+  "version": 1,
+  "date": "2026-10-30",
+  "baseCommit": "47c92756b1b7917f1723150ac268fdb7c755dae0",
+  "scope": "Own-card action feature representation and offline training smoke; no new rule/card certification or autonomous model execution.",
+  "contracts": {
+    "requestVersion": 3,
+    "datasetVersion": 4,
+    "actionDimension": 200,
+    "observationDimension": 745,
+    "candidateSemantics": "structural-superset",
+    "maxLoadedCandidates": 200000
+  },
+  "sourceSha256": {
+    "src/KLink.Bot/Training/MainActionPolicyAdapter.cs": "524e8e2b79dfba5ddfc2c62fca3450274a50f29d85bed2ffb293baa011e9fd45",
+    "src/KLink.Bot/NN/MainActionModel.cs": "2708cb38bf80b72ccb29be0a1eaadbe1b7b456f2bea2f4ecac6611bf41a566ec",
+    "tools/BotSim/SelfTest.MainActionContract.cs": "b2f21f1f3779e78e7780f5f6fae8c22ea08d7057688fc51bdedd6db92c6a4b99",
+    "tools/BotSim/SelfTest.cs": "436925fc488f955ed5ef1c074a4b1722e00efe8efa3664a3da4f52c83c27ce37",
+    "tools/NNTrain/ActionDatasetSelfTest.cs": "b369dcebe6867356cf177e9378622fa2c2ec9c64be10e170530726586d62914e",
+    "tools/NNTrain/ActionDatasetTool.cs": "77679fad72d606988ec9d970b0daf8f7f1d290ed876622d720a33884b9414103",
+    "tools/NNTrain/ActionModelSelfTest.cs": "d508595e82a1c1ebaae2abe1b65ec3c87b23190849af5d469fe790bb287ca14b",
+    "tools/NNTrain/ActionModelTool.cs": "5f925378c1551f81e76bddf67364cc11093d7f4a74f6bbaec54cf30766713e7f",
+    "src/KLink.Bot/NN/StateEncoder.cs": "8da023351d65a32e1ca22ccf1dd9e86f86652316ffb6735b60374516752e90e7"
+  },
+  "validation": {
+    "botSimChecks": 1007,
+    "targetedMainActionChecks": 8,
+    "actionDatasetChecks": 49,
+    "actionModelChecks": 31,
+    "auditMatrixChecks": 16,
+    "verifierExactlyMatchesValidationMetrics": true,
+    "savedLoadedRowsCompared": 1309,
+    "negativeCli": {
+      "oldDataExit": 1,
+      "oldModelExit": 1,
+      "oldDataOutputExists": false
+    }
+  },
+  "sampling": {
+    "requestedGames": 10,
+    "seed": 1,
+    "accepted": 10,
+    "rejected": 0,
+    "rows": 1309
+  },
+  "independentSameSampleComparison": {
+    "rows": 1309,
+    "candidates": 98106,
+    "scalar18ChosenTieRows": 249,
+    "full200ChosenTieRows": 178,
+    "chosenSourceVectorMissing": 104,
+    "sourceVectorPresentCandidates": 87760,
+    "targetVectorPresentCandidates": 24967,
+    "projectedTraceExactlyEqual": true,
+    "scope": "Software trace comparison only; not game-rule evidence or strength proof."
+  },
+  "trainingReport": {
+    "scope": "Offline teacher imitation only; structural candidates, no legality mask or strength claim.",
+    "epochs": 3,
+    "learningRate": 0.01,
+    "contract": {
+      "version": 1,
+      "observationSpec": "v2/dim=745;order=global3,perspective371,opposite371;global=turn/30,activeIsPerspective,cardsPlayedThisTurn/10;perSideGlobal=hqDef/20,kredits/12,maxKredits/12,handCount/10,deckCount/40,boardCount/10;zones=Hand,BoardFrontline,OwnHalf,Discard,Deck;zone=mean(cardVec90)+count/10;deckZone=count/10only,noCardVec;oppHandZone=count/10only,noCardVec(hiddenInfo+deckFingerprint);cardVec=s[9]+k[0..80];label=P(perspective wins)",
+      "actionSpec": "main-action/v3;dim=200;scalar18=play,attack,move,end,sourceAtk20,sourceDef20,kredit12,operation12,targetAtk20,targetDef20,targetRelation,targetHQ,slotByCapacity,sourceBoard,sourceHand,sourceOrder,chooseOneIndexPlusOne,chooseOneOptionCount;sourceOwnVectorPresent,sourceOwnCardVec90;targetOwnVectorPresent,targetOwnCardVec90;vectors=StateEncoder.CardVecs.ByName[Definition.Name];missingOrNonOwn=zero;ownHandOrBoardOnly",
+      "perspective": "actor",
+      "candidates": "structural-superset",
+      "objective": "teacher-index-softmax/v1",
+      "teacher": "greedy-isolated-prefix/v3+choose-one-last/v1+first-index/v1",
+      "datasetSha256": "f072b6bc3ddc7dccc7a913417f49b29190246308529ef5cf9011a802149ada3d",
+      "inputsSha256": {
+        "card-effects.json": "fc335d228779a2859627ee706d85949149ca595d0cfdfbc4971541831e5a8df0",
+        "card-ir-native-defaults.json": "3319fb2d114a76f38356a8c726caa4dd56fe13f9283e50cc0f0d56a95986455b",
+        "card-ir.json": "526812fa8dc0934f1d6ecd3794053871fa6b701c2b5df3fd1edb3c38513ba2e9",
+        "card-vectors.json": "b15b93cb02e7e8a712561a2da52127a5867084ecb878a6ad58539b56b1109ab9",
+        "cards.json": "3550dc76eb0414c500166875f45909077aeeb3ea4d229b9b0ba9c66a81987c4b",
+        "deck_code_ids.json": "261cfd518c1a1ce40488f141e8dbd617ff19abe0734c49319ebcd6ac5dcb257e",
+        "event-contracts.json": "e4806dd48efbfc799a27c14b3660ad76ee03cd3f13e3e4320b213c5928efb112",
+        "live-actions.json": "db413a4644afe75806e66c47e200d93c5d93e91ca03e23fca38465b7dcb4dab3",
+        "KLink.Bot.dll": "d873a5936f1c18ee403b3187618891293c405734bdd83cdcf7dd41251091e305",
+        "NNTrain.dll": "7c82170a490f3fe8b6e31cd3e4720432e23ccb75e490f802e365e76fbe442bc1"
+      },
+      "splitSeed": 1,
+      "trainingGames": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        7,
+        9
+      ],
+      "validationGames": [
+        6,
+        8
+      ]
+    },
+    "initialTrain": {
+      "rows": 1015,
+      "crossEntropy": 4.147683625098254,
+      "top1": 0.024630541871921183,
+      "uniformCrossEntropy": 4.140270277452167,
+      "endTurnTop1": 0.19704433497536947,
+      "chosenFeatureTieRows": 146,
+      "scalarOnlyChosenFeatureTieRows": 194
+    },
+    "train": {
+      "rows": 1015,
+      "crossEntropy": 3.1584029268864686,
+      "top1": 0.20886699507389161,
+      "uniformCrossEntropy": 4.140270277452167,
+      "endTurnTop1": 0.19704433497536947,
+      "chosenFeatureTieRows": 146,
+      "scalarOnlyChosenFeatureTieRows": 194
+    },
+    "validation": {
+      "rows": 294,
+      "crossEntropy": 3.39128978606943,
+      "top1": 0.1564625850340136,
+      "uniformCrossEntropy": 4.257271273744923,
+      "endTurnTop1": 0.17687074829931973,
+      "chosenFeatureTieRows": 32,
+      "scalarOnlyChosenFeatureTieRows": 55
+    },
+    "savedLoadedRowsCompared": 1309,
+    "modelSha256": "f4db6679004827573d2bd377dd2084d2123aac0931ecb72cad633000fa0a63ba"
+  },
+  "worker": {
+    "skill": "C:/Users/AWQ/.codex/skills/deepseek-worker/SKILL.md",
+    "job": "20261030-185241-action-legality-inventory-ea870684",
+    "status": "completed",
+    "scope": "Mechanical entrypoint inventory on three private source copies; no rule authority, source integration or publishing delegated.",
+    "independentlyMatchedCurrentSourceSha256": {
+      "src/KLink.Bot/Engine/MatchEngine.cs": "8b32754076c45a546c4f39cf9971e909b254a705d675c2ca8a47eac13ac69cdd",
+      "src/KLink.Bot/Bots/GreedyBot.cs": "5aa057ad859fd2d42014bb3f3666b090f8fcca7f96a3a5e525ef13e80c313979",
+      "src/KLink.Bot/Engine/CardInstance.cs": "350c5d79a51fe68af6af4769abd18764dcbfa36cdcae06cc91b7d553754551da"
+    },
+    "independentlyReviewedPaths": [
+      "MatchEngine.CanPlay diagnostics and blueprint callees",
+      "CardApi.IsBlockedFromPlay RunOwnLocal",
+      "CardApiDispatch.HasPlayableOrderTarget targetOverride writes",
+      "CardApiDispatch.CheckPlayFromHandOn partial restore",
+      "MatchEngine.LegalTargets deferred filter versus execution",
+      "CardInstance.CanMoveThisTurn local gate",
+      "MainActionPolicyAdapter.ApplyRoot pre-execution ChooseOne write"
+    ],
+    "notCertified": "Entire worker inventory and transitive query purity remain unverified."
+  },
+  "limitations": [
+    "Only own hand/board vectors appended; enemy vectors deliberately omitted pending visibility audit.",
+    "745d observation and original18d visibility not completely certified.",
+    "90d card feature vectors are neither unique identity nor complete blueprint logic.",
+    "104 selected actions with positive source ID lacked a source vector in this sample; they remain marked missing.",
+    "178 of1309 teacher rows still have identical full action features among candidates.",
+    "Validation Top1 is below always-EndTurn baseline; no strength improvement claim.",
+    "CanPlay and other query chains have state effects; no reliable legal mask integrated.",
+    "Candidate target/placement completeness and isolated executability probing remain open.",
+    "Software trace comparison is not replay-based game-rule authority."
+  ],
+  "artifactSha256": {
+    "D:\\Codex Workshop\\kards-install-review\\actions-v3-smoke-10.jsonl.gz": "f072b6bc3ddc7dccc7a913417f49b29190246308529ef5cf9011a802149ada3d",
+    "D:\\Codex Workshop\\kards-install-review\\actions-v3-smoke-10.jsonl.gz.quality.json": "dbbdaae3a49ba258fbc6c2d7e85a952ccb3a31f00f4c6d8fe81d233396ab2df3",
+    "D:\\Codex Workshop\\kards-install-review\\actions-model-smoke-10.jsonl.gz": "0add1ad135e4cc8ec91d7f9697a70c7f5318780428c4db4d837d7adef9bbbd25",
+    "D:\\Codex Workshop\\kards-install-review\\action-v3-model.json": "f4db6679004827573d2bd377dd2084d2123aac0931ecb72cad633000fa0a63ba",
+    "D:\\Codex Workshop\\kards-install-review\\action-v3-model.json.report.json": "1a4b4c059e60afe71dd63a4c48a13f768addc7f5ab8225c500e9203e566276f8",
+    "D:\\Codex Workshop\\kards-install-review\\action-v3-verify.log": "a4c974ebbb1e23a7953b51987ba0c997b7770252181acd540b1e3e08145f2a69",
+    "D:\\Codex Workshop\\kards-install-review\\action-v3-train.log": "43312cb597b4dab63d9a8a56e641892cadc5c6e81ae4f82a4c24d6918a66f3a2",
+    "D:\\Codex Workshop\\kards-install-review\\action-v3-botsim.log": "194aa0d80a0dde317c9b9a81e6aec94c3e8575da7199c9b9b47951ef28ea6a7d",
+    "D:\\Codex Workshop\\kards-install-review\\action-v3-dataset-selftest.log": "3a5b384bdeba03c14f933b3d9a4d7f8cb377b4fd1fff975f98c2a68c2534cbad",
+    "D:\\Codex Workshop\\kards-install-review\\action-v3-model-selftest.log": "f4f5707f27410b7c3a6b92bd47562fef6af5356c380b7a152dee77587b293767",
+    "D:\\Codex Workshop\\kards-install-review\\action-v3-dump.log": "51de17052da2830e8075aa467bbf5b35574075edd757cddd93a069b04561d274",
+    "D:\\Codex Workshop\\kards-install-review\\action-v3-independent-comparison.json": "fe4c4ea75c6329a52696c1ffaab796e8060a91966a0ec87326f3476c3345d41a",
+    "D:\\Codex Workshop\\kards-install-review\\compare-action-v3.py": "2c43dedbfc8f0005f16a694036b9775586b5975cbc0c5cee4a81d6c7e772868c",
+    "D:\\Codex Workshop\\kards-install-review\\action-v3-negative-results.json": "f71e6d3d866340f664b7da2fb9db297892412e2524e60b9ffb1e17fae7f1939d",
+    "D:\\Codex Workshop\\kards-install-review\\action-v3-old-data-rejection.log": "c92a3e2801da264d275fb3c87bbb778eff531eb9ae26be47c32b86d24c6f3707",
+    "D:\\Codex Workshop\\kards-install-review\\action-v3-old-model-rejection.log": "71354b3b5c2aa23ed9d99430461cf653b047768b7bfdb834dcdb64a384ef7c56",
+    "D:\\Codex Workshop\\kards-install-review\\action-v3-matrix-build.log": "59b81eaa74135fc7181dd767f46fac82f2816d09dbc508b39edd78f2135884ea",
+    "D:\\Codex Workshop\\kards-install-review\\action-v3-packet\\query-inventory.json": "4fa6e5fe787aceca026e198376a718368ed53af42de6e12356941e457258a2ac",
+    "D:\\Codex Workshop\\kards-install-review\\action-v3-packet\\answer.md": "ed742fc050029b66b86198e31ace77aae2a07711c95b94a24e0935550b34f65d"
+  }
+}

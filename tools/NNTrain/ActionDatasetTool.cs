@@ -86,7 +86,7 @@ internal static class ActionDatasetTool
             return result;
         }).ToArray();
         var inputs=CurrentInputs(dataDir,vectorPath);
-        var header=new ActionDatasetHeader(3,"KLink.MainActionLabels",StateEncoder.Spec,MainActionFeatures.Spec,
+        var header=new ActionDatasetHeader(4,"KLink.MainActionLabels",StateEncoder.Spec,MainActionFeatures.Spec,
             "actor",OracleActionEpisodeRunner.ContractFor(choicePolicy),"structural-superset",seed,games,inputs);
         var quality=new ActionDatasetQuality {Header=header};
         using(var file=File.Create(path))
@@ -156,7 +156,7 @@ internal static class ActionDatasetTool
             var q=JsonSerializer.Deserialize<ActionDatasetQuality>(File.ReadAllText(path+".quality.json"),Json)
                 ?? throw new InvalidDataException("Missing action quality manifest.");
             var h=q.Header;
-            if(h is null || h.Version!=3 || h.Kind!="KLink.MainActionLabels" || h.Perspective!="actor"
+            if(h is null || h.Version!=4 || h.Kind!="KLink.MainActionLabels" || h.Perspective!="actor"
                 || h.ObservationSpec!=StateEncoder.Spec || h.ActionSpec!=MainActionFeatures.Spec
                 || h.Teacher is not (OracleActionEpisodeRunner.TeacherContract or OracleActionEpisodeRunner.LastChoiceTeacherContract)
                 || h.Candidates!="structural-superset"
@@ -218,6 +218,15 @@ internal static class ActionDatasetTool
                             || (branches==0 ? c.ChooseOne!=-1 : c.ChooseOne<0 || c.ChooseOne>=branches)
                         : choice!=0 || branches!=0)
                         throw new InvalidDataException("Action choose-one command/feature mismatch.");
+                    foreach(var (present,start,allowed) in new[]{
+                        (MainActionFeatures.SourceVectorPresent,MainActionFeatures.SourceVectorStart,c.SourceId>0),
+                        (MainActionFeatures.TargetVectorPresent,MainActionFeatures.TargetVectorStart,c.TargetId>0 && option.Features[10]==1)})
+                    {
+                        float flag=option.Features[present];
+                        if(flag is not (0 or 1) || (!allowed && flag!=0)
+                            || flag==0 && option.Features.Skip(start).Take(StateEncoder.CardDim).Any(v=>v!=0))
+                            throw new InvalidDataException("Action own-card vector marker/payload mismatch.");
+                    }
                 }
                 var chosen=row.Candidates[row.ChosenIndex];
                 if(h.Teacher==OracleActionEpisodeRunner.LastChoiceTeacherContract && chosen.Command.Kind==MainActionKind.Play

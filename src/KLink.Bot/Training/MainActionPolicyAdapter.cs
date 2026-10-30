@@ -10,7 +10,7 @@ public sealed record MainActionOption(int Index, MainActionCommand Command, IRea
 public sealed record MainActionRequest(Side Actor, int Turn, IReadOnlyList<MainActionOption> Candidates,
     IReadOnlyList<float> Observation, IReadOnlyList<string> CoverageGaps)
 {
-    public int ContractVersion => 2;
+    public int ContractVersion => 3;
     public string ObservationSpec => StateEncoder.Spec;
     public string ActionSpec => MainActionFeatures.Spec;
 }
@@ -18,10 +18,15 @@ public sealed record MainActionResult(MainActionCommand Command, bool Accepted, 
 
 public static class MainActionFeatures
 {
-    public const int Dim = 18;
-    public const string Spec = "main-action/v2;dim=18;play,attack,move,end;sourceAtk20,sourceDef20,kredit12,operation12;targetAtk20,targetDef20,targetRelation,targetHQ;slotByCapacity,sourceBoard,sourceHand,sourceOrder;chooseOneIndexPlusOne,chooseOneOptionCount";
+    public const int ScalarDim = 18;
+    public const int SourceVectorPresent = ScalarDim;
+    public const int SourceVectorStart = SourceVectorPresent+1;
+    public const int TargetVectorPresent = SourceVectorStart+StateEncoder.CardDim;
+    public const int TargetVectorStart = TargetVectorPresent+1;
+    public const int Dim = TargetVectorStart+StateEncoder.CardDim;
+    public const string Spec = "main-action/v3;dim=200;scalar18=play,attack,move,end,sourceAtk20,sourceDef20,kredit12,operation12,targetAtk20,targetDef20,targetRelation,targetHQ,slotByCapacity,sourceBoard,sourceHand,sourceOrder,chooseOneIndexPlusOne,chooseOneOptionCount;sourceOwnVectorPresent,sourceOwnCardVec90;targetOwnVectorPresent,targetOwnCardVec90;vectors=StateEncoder.CardVecs.ByName[Definition.Name];missingOrNonOwn=zero;ownHandOrBoardOnly";
 
-    internal static IReadOnlyList<float> Encode(GameState state, Side actor, MainActionCommand command)
+    internal static IReadOnlyList<float> Encode(GameState state, StateEncoder.CardVecs vectors, Side actor, MainActionCommand command)
     {
         var source=state.ById(command.SourceId);var target=state.ById(command.TargetId);var f=new float[Dim];
         f[command.Kind switch {MainActionKind.Play=>0,MainActionKind.Attack=>1,MainActionKind.Move=>2,_=>3}]=1;
@@ -37,6 +42,18 @@ public static class MainActionFeatures
         if(command.Kind==MainActionKind.Move)f[12]=command.Slot/(float)Math.Max(1,state.FrontlineCapacity-1);
         if(command.Kind==MainActionKind.Play)
         {f[16]=command.ChooseOne+1;f[17]=source?.Definition.ChooseOneOptionCount??0;}
+        // Conservatively enrich only our hand/board. Enemy board visibility has
+        // not been established, so do not add enemy identity/effect vectors here.
+        void CopyOwnVector(CardInstance? card,int present,int start)
+        {
+            if(card is null || card.Owner!=actor || !(card.Location==actor.HandOf() || card.Location.IsBoard())
+                || !vectors.ByName.TryGetValue(card.Definition.Name,out var vector))return;
+            if(vector is null || vector.Length!=StateEncoder.CardDim || vector.Any(v=>!float.IsFinite(v)))
+                throw new InvalidDataException("Invalid action card vector.");
+            f[present]=1;vector.CopyTo(f,start);
+        }
+        CopyOwnVector(source,SourceVectorPresent,SourceVectorStart);
+        CopyOwnVector(target,TargetVectorPresent,TargetVectorStart);
         return Array.AsReadOnly(f);
     }
 }
@@ -73,7 +90,7 @@ public sealed class MainActionPolicyAdapter
     {
         RequireReady(actor);var state=_engine.State;
         var commands=new List<MainActionCommand> {new(MainActionKind.EndTurn)};
-        var gaps=new List<string> {"legal-mask/unverified","play-placement/default-only","play-targets/board-only"};
+        var gaps=new List<string> {"legal-mask/unverified","play-placement/default-only","play-targets/board-only","action-enemy-card-vectors/omitted"};
         var board=state.AllCards.Where(c=>c.Location.IsBoard()).OrderBy(c=>c.CardId).ToArray();
         foreach(var card in state.Hand(actor).OrderBy(c=>c.CardId))
         {
@@ -90,7 +107,7 @@ public sealed class MainActionPolicyAdapter
             foreach(var target in board.Where(c=>c.Owner!=actor))commands.Add(new(MainActionKind.Attack,unit.CardId,target.CardId));
             for(int slot=0;slot<state.FrontlineCapacity;slot++)commands.Add(new(MainActionKind.Move,unit.CardId,Slot:slot));
         }
-        var options=commands.Select((command,index)=>new MainActionOption(index,command,MainActionFeatures.Encode(state,actor,command))).ToArray();
+        var options=commands.Select((command,index)=>new MainActionOption(index,command,MainActionFeatures.Encode(state,_vectors,actor,command))).ToArray();
         return new(actor,state.Turn,Array.AsReadOnly(options),Array.AsReadOnly(StateEncoder.Encode(state,_vectors,actor)),gaps.AsReadOnly());
     }
 

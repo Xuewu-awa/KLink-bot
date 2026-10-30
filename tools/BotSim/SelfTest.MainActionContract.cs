@@ -27,10 +27,10 @@ internal static partial class SelfTest
                 return "结构候选枚举调用了效果/随机流";
             var branches=request.Candidates.Where(o=>o.Command.SourceId==72).ToArray();
             if(request.CoverageGaps.Any(g=>g.StartsWith("choose-one/")) || branches.Length!=2*(1+state.AllCards.Count(c=>c.Location.IsBoard()))
-                || branches.Select(o=>o.Features.Last()).Distinct().Single()!=2
-                || branches.Select(o=>o.Features[^2]).Distinct().Order().SequenceEqual(new float[]{1,2})==false
+                || branches.Select(o=>o.Features[17]).Distinct().Single()!=2
+                || branches.Select(o=>o.Features[16]).Distinct().Order().SequenceEqual(new float[]{1,2})==false
                 || request.Candidates.Any(o=>o.Command.SourceId==90 || o.Command.TargetId==90))return "分支候选缺失或枚举了隐藏手牌";
-            if(request.Candidates.Any(o=>o.Features.Count!=18 || !o.Features.All(float.IsFinite) || o.Features.Take(4).Sum()!=1))
+            if(request.Candidates.Any(o=>o.Features.Count!=MainActionFeatures.Dim || !o.Features.All(float.IsFinite) || o.Features.Take(4).Sum()!=1))
                 return "动作特征规格错误";
             hidden.Attack=99;hidden.Defense=99;
             var again=adapter.DescribeCandidates(side);
@@ -75,6 +75,44 @@ internal static partial class SelfTest
             if(before!=JsonSerializer.Serialize(adapter.DescribeCandidates(side)))return $"隐藏手牌/双方牌库身份或数值泄漏 {side}";
             own.Definition=db.All.Single(c=>c.Name=="card_unit_light_infantry");
             if(before==JsonSerializer.Serialize(adapter.DescribeCandidates(side)))return "非零卡向量观测测试未观察到自己手牌变化";
+        }
+        return null;
+    }
+
+    private static string? MainActionCardVectors(CardDatabase db)
+    {
+        foreach(var side in new[]{Side.Left,Side.Right})
+        {
+            var (engine,state)=EmptyBoard(db);state.ActiveSide=side;
+            var a=state.CreateWithId(PlainUnit,side,70,side.HandOf(),0);
+            var b=state.CreateWithId(PlainUnit,side,71,side.HandOf(),1);
+            b.Definition=db.All.Single(c=>c.Name=="card_unit_light_infantry");
+            b.Attack=a.Attack;b.Defense=a.Defense;
+            var ownTarget=state.CreateWithId(PlainUnit,side,80,side.HqOf(),0);
+            var enemy=state.CreateWithId(PlainUnit,side.Opposite(),90,side.Opposite().HqOf(),0);
+            var vectors=new StateEncoder.CardVecs();
+            vectors.ByName[PlainUnit]=Enumerable.Repeat(.25f,StateEncoder.CardDim).ToArray();
+            vectors.ByName[b.Definition.Name]=Enumerable.Repeat(.75f,StateEncoder.CardDim).ToArray();
+            var adapter=new MainActionPolicyAdapter(engine,vectors);
+            var request=adapter.DescribeCandidates(side);
+            var fa=request.Candidates.Single(o=>o.Command==new MainActionCommand(MainActionKind.Play,70)).Features;
+            var fb=request.Candidates.Single(o=>o.Command==new MainActionCommand(MainActionKind.Play,71)).Features;
+            if(fa.Count!=200 || fb.Count!=200 || !fa.Take(18).SequenceEqual(fb.Take(18))
+                || fa.Skip(18).SequenceEqual(fb.Skip(18)))return "源卡向量未区分原标量相同的不同卡牌";
+            if(fa[18]!=1 || !fa.Skip(19).Take(90).All(v=>v==.25f))return "源卡向量布局错误";
+            var ft=request.Candidates.Single(o=>o.Command==new MainActionCommand(MainActionKind.Play,70,80)).Features;
+            var fe=request.Candidates.Single(o=>o.Command==new MainActionCommand(MainActionKind.Play,70,90)).Features;
+            if(ft[109]!=1 || !ft.Skip(110).All(v=>v==.25f) || fe.Skip(109).Any(v=>v!=0))return "己方目标向量/敌方保守屏蔽错误";
+            if(request.Candidates[0].Features.Skip(18).Any(v=>v!=0))return "结束回合带入卡身份";
+            vectors.ByName.Remove(PlainUnit);
+            fa=adapter.DescribeCandidates(side).Candidates.Single(o=>o.Command==new MainActionCommand(MainActionKind.Play,70)).Features;
+            if(fa.Skip(18).Any(v=>v!=0))return "缺失向量未显式归零";
+            vectors.ByName[PlainUnit]=new float[89];
+            bool rejected=false;try{adapter.DescribeCandidates(side);}catch(InvalidDataException){rejected=true;}
+            if(!rejected)return "错误宽度卡向量未拒绝";
+            vectors.ByName[PlainUnit]=Enumerable.Repeat(float.NaN,90).ToArray();
+            rejected=false;try{adapter.DescribeCandidates(side);}catch(InvalidDataException){rejected=true;}
+            if(!rejected)return "非有限卡向量未拒绝";
         }
         return null;
     }

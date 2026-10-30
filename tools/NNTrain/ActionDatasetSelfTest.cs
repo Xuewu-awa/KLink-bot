@@ -33,9 +33,11 @@ internal static class ActionDatasetSelfTest
         string path=Path.Combine(dir,"data.jsonl.gz");
         var hashes=new[]{"cards.json","card-ir.json","card-effects.json","card-vectors.json","KLink.Bot.dll","NNTrain.dll"}
             .ToDictionary(k=>k,_=>new string('0',64));
-        var header=new ActionDatasetHeader(3,"KLink.MainActionLabels",StateEncoder.Spec,MainActionFeatures.Spec,"actor",
+        var header=new ActionDatasetHeader(4,"KLink.MainActionLabels",StateEncoder.Spec,MainActionFeatures.Spec,"actor",
             OracleActionEpisodeRunner.TeacherContract,"structural-superset",1,2,hashes);
-        var option=new MainActionOption(0,new(MainActionKind.EndTurn),Array.AsReadOnly(new float[]{0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0}));
+        float[] Features(params float[] prefix)=>prefix.Concat(new float[MainActionFeatures.Dim-prefix.Length]).ToArray();
+        var option=new MainActionOption(0,new(MainActionKind.EndTurn),Array.AsReadOnly(Features(0,0,0,1)));
+        float[] ChangedFeature(int index,float value){var f=option.Features.ToArray();f[index]=value;return f;}
         var good=new ActionDatasetRow(0,0,Side.Left,1,new float[StateEncoder.Dim],[option],0,["legal-mask/unverified"]);
         ActionDatasetQuality Quality()=>new(){Header=header,AcceptedGames=1,RejectedGames=1,Rows=1,Games=[
             new(){Game=0,Seed=1,Accepted=true,Finished=true,Winner=Side.Left,BufferedRows=1,WrittenRows=1,ComparedSteps=1,AppliedActions=1,PlanningDecisions=1},
@@ -78,9 +80,14 @@ internal static class ActionDatasetSelfTest
                 ("null command",r=>r with {Candidates=[option with {Command=null}]}),
                 ("null features",r=>r with {Candidates=[option with {Features=null}]}),
                 ("wrong feature width",r=>r with {Candidates=[option with {Features=Array.Empty<float>()}]}),
-                ("wrong kind onehot",r=>r with {Candidates=[option with {Features=new float[18]}]}),
+                ("wrong kind onehot",r=>r with {Candidates=[option with {Features=new float[MainActionFeatures.Dim]}]}),
+                ("legacy scalar width",r=>r with {Candidates=[option with {Features=option.Features.Take(18).ToArray()}]}),
+                ("invalid vector marker",r=>r with {Candidates=[option with {Features=ChangedFeature(18,.5f)}]}),
+                ("endturn source vector",r=>r with {Candidates=[option with {Features=ChangedFeature(18,1)}]}),
+                ("unmarked source payload",r=>r with {Candidates=[option with {Features=ChangedFeature(19,1)}]}),
+                ("unmarked target payload",r=>r with {Candidates=[option with {Features=ChangedFeature(110,1)}]}),
                 ("choice on end turn",r=>r with {Candidates=[option with {Command=new(MainActionKind.EndTurn,ChooseOne:0)}]}),
-                ("choice feature on end turn",r=>r with {Candidates=[option with {Features=option.Features.Take(16).Concat(new float[]{1,2}).ToArray()}]})};
+                ("choice feature on end turn",r=>r with {Candidates=[option with {Features=Features(option.Features.Take(16).Concat(new float[]{1,2}).ToArray())}]})};
             foreach(var m in mutations){Save(Quality(),m.Mutate(good));Reject(m.Name);}
             var q=Quality();q.Games[0].MainRejections=1;Save(q,good);Reject("accepted root rejection");
             q=Quality();q.Games[0].BufferedRows=2;Save(q,good);Reject("accepted incomplete prefix");
@@ -91,11 +98,12 @@ internal static class ActionDatasetSelfTest
             q=Quality();q.Games[0].PlanningPrefixRoots=1;Save(q,good);Reject("wrong isolated prefix count");
             q=Quality();q.Header=q.Header with {Version=1,Teacher="greedy-step/v1+first-index/v1"};Save(q,good);Reject("legacy unisolated teacher rejected");
             q=Quality();q.Header=q.Header with {Version=2,Teacher="greedy-isolated-prefix/v2+first-index/v1"};Save(q,good);Reject("legacy no-branch contract rejected");
-            var play=option with {Command=new(MainActionKind.Play,70,ChooseOne:1),Features=new float[]{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,2}};
+            q=Quality();q.Header=q.Header with {Version=3};Save(q,good);Reject("legacy scalar-only dataset version rejected");
+            var play=option with {Command=new(MainActionKind.Play,70,ChooseOne:1),Features=Features(1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,2)};
             Save(Quality(),good with {Candidates=[play]});Assert(ActionDatasetTool.Verify(path).Rows==1,"branch one roundtrip");
             q=Quality();q.Header=q.Header with {Teacher=OracleActionEpisodeRunner.LastChoiceTeacherContract};
             Save(q,good with {Candidates=[play]});Assert(ActionDatasetTool.Verify(path).Rows==1,"fixed-last branch one roundtrip");
-            var first=play with {Command=play.Command with {ChooseOne=0},Features=play.Features.Take(16).Concat(new float[]{1,2}).ToArray()};
+            var first=play with {Command=play.Command with {ChooseOne=0},Features=Features(play.Features.Take(16).Concat(new float[]{1,2}).ToArray())};
             Save(q,good with {Candidates=[first]});Reject("fixed-last label must match policy");
             q=Quality();q.Header=q.Header with {Teacher="unknown-teacher"};Save(q,good);Reject("unknown teacher rejected");
             Assert(ActionDatasetTool.ParseChooseOnePolicy("native")==OracleChooseOnePolicy.Native

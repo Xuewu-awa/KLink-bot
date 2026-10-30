@@ -17,7 +17,7 @@ internal static class ActionModelSelfTest
             DatasetSha256=new string('0',64),InputsSha256=inputs,TrainingGames=[0,2],ValidationGames=[1],SplitSeed=7};
         var model=MainActionModel.Create(contract,3,1);
         var observation=new float[StateEncoder.Dim];observation[0]=0.7f;observation[3]=0.5f;
-        IReadOnlyList<IReadOnlyList<float>> actions=[new float[18],Enumerable.Repeat(0.3f,18).ToArray(),Enumerable.Repeat(-0.2f,18).ToArray()];
+        IReadOnlyList<IReadOnlyList<float>> actions=[new float[MainActionFeatures.Dim],Enumerable.Repeat(0.3f,MainActionFeatures.Dim).ToArray(),Enumerable.Repeat(-0.2f,MainActionFeatures.Dim).ToArray()];
         var p=model.Probabilities(observation,actions);
         Assert(p.All(double.IsFinite) && Math.Abs(p.Sum()-1)<1e-12,"finite normalized ragged softmax");
         Assert(p.SequenceEqual(MainActionModel.Create(contract,3,1).Probabilities(observation,actions)),"seeded initialization repeats");
@@ -31,6 +31,8 @@ internal static class ActionModelSelfTest
         Assert(Reject(()=>model.Probabilities(request with {CoverageGaps=Array.Empty<string>()})),"unmarked candidate semantics rejected");
         // Check independent central differences for context, action, bias and output gradients.
         foreach(var (name,weights,index) in new[]{("context",model.ContextWeights,0),("action",model.ActionWeights,0),
+            ("action",model.ActionWeights,MainActionFeatures.SourceVectorStart),
+            ("action",model.ActionWeights,MainActionFeatures.TargetVectorStart),
             ("bias",model.Bias,0),("output",model.OutputWeights,0)})
         {
             double original=weights[index],epsilon=1e-5;
@@ -65,6 +67,7 @@ internal static class ActionModelSelfTest
         var bad=(float[])observation.Clone();bad[1]=float.NaN;
         Assert(Reject(()=>model.Probabilities(bad,actions)),"nonfinite observation rejected");
         Assert(Reject(()=>model.Probabilities(observation,new[]{(IReadOnlyList<float>)new float[17]})),"wrong action width rejected");
+        Assert(Reject(()=>model.Probabilities(observation,new[]{(IReadOnlyList<float>)new float[18]})),"legacy scalar action width rejected");
         Assert(Reject(()=>model.Probabilities(observation,Array.Empty<IReadOnlyList<float>>())),"empty candidates rejected");
         string file=Path.Combine(Path.GetTempPath(),"klink-action-model-"+Guid.NewGuid().ToString("N")+".json");
         try
