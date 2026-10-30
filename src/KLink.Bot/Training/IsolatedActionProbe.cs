@@ -8,7 +8,14 @@ namespace KLink.Bot.Training;
 
 public enum SimulatorExecutability { Unknown, Accepted, Rejected }
 public sealed record ConfirmedRoot(Side Actor, MainActionCommand Command);
-public sealed record CandidateExecutionProbe(int Index, SimulatorExecutability Status, string Reason);
+// Offline diagnostic evidence only; never expose these counters or names as policy features.
+public sealed record ProbeExecutionEvidence(MainActionCommand Command, string? OwnSourceName, string Phase,
+    IReadOnlyDictionary<string,int> MissingCalls, IReadOnlyDictionary<string,int> UnsupportedOps,
+    int VmFaults, long ChoiceFaults, long CompletedChoices);
+public sealed record CandidateExecutionProbe(int Index, SimulatorExecutability Status, string Reason)
+{
+    public ProbeExecutionEvidence? Evidence { get; init; }
+}
 public sealed record ActionProbeLimits(int MaxCandidates = 128, int MaxPrefixRoots = 4096,
     long MaxTotalPrefixRoots = 20000);
 public sealed record ActionProbeReport(IReadOnlyList<CandidateExecutionProbe> Candidates,
@@ -28,7 +35,7 @@ public sealed record ActionProbeReport(IReadOnlyList<CandidateExecutionProbe> Ca
 /// </summary>
 public static class IsolatedActionProbe
 {
-    public const string Contract = "simulator-executability/experimental-v1;fresh-engine-per-candidate;choice=first-index/v1;not-legal-mask";
+    public const string Contract = "simulator-executability/experimental-v2;fresh-engine-per-candidate;choice=first-index/v1;not-legal-mask";
 
     public static ActionProbeReport Run(CardDatabase database, StateEncoder.CardVecs vectors,
         IReadOnlyList<string> left, IReadOnlyList<string> right, ulong seed,
@@ -85,22 +92,26 @@ public static class IsolatedActionProbe
             foreach (var option in order)
             {
                 var status = SimulatorExecutability.Unknown; string reason = "not_executed";
+                string phase = "construction"; MatchEngine? probe = null; ChoicePolicyAdapter? choices = null;
+                var missingBefore = new Dictionary<string,int>(); var unsupportedBefore = new Dictionary<string,int>();
+                int faultsBefore = 0; long choiceFaultsBefore = 0, completedBefore = 0;
+                ProbeExecutionEvidence? evidence = null;
                 try
                 {
-                    var probe = new MatchEngine(database,leftDeck,rightDeck,seed); engines++;
-                    using var choices = new ChoicePolicyAdapter(probe,vectors,r=>r.Options.Count==0 && r.CanCancel ? -1 : 0);
-                    probe.Start();
+                    probe = new MatchEngine(database,leftDeck,rightDeck,seed); engines++;
+                    choices = new ChoicePolicyAdapter(probe,vectors,r=>r.Options.Count==0 && r.CanCancel ? -1 : 0);
+                    phase = "start"; probe.Start();
                     string? failure = Health(probe,choices);
                     foreach (var root in history)
                     {
                         if (failure is not null) break;
-                        roots++;
+                        phase = "prefix"; roots++;
                         if (!MainActionPolicyAdapter.ApplyRoot(probe,root.Actor,root.Command)) failure = "prefix_rejected";
                         failure ??= Health(probe,choices);
                     }
                     if (failure is null)
                     {
-                        afterRebuild?.Invoke(probe,option.Index);
+                        phase = "comparison"; afterRebuild?.Invoke(probe,option.Index);
                         failure = Health(probe,choices);
                         if (failure is null && (clock!=Clock(probe) || snapshot!=probe.State.SnapshotJson()
                             || trace!=Trace(probe) || expectedRequest!=JsonSerializer.Serialize(
@@ -110,6 +121,11 @@ public static class IsolatedActionProbe
                     if (failure is not null) reason = failure;
                     else
                     {
+                        phase = "root";
+                        missingBefore = probe.UnimplementedCalls.ToDictionary(p=>p.Key,p=>p.Value);
+                        unsupportedBefore = probe.Api.Vm.UnsupportedOps.ToDictionary(p=>p.Key,p=>p.Value);
+                        faultsBefore = probe.Api.Vm.FaultedPrograms;
+                        choiceFaultsBefore = choices.Faults; completedBefore = choices.CompletedChoices;
                         long completed = choices.CompletedChoices;
                         bool accepted = MainActionPolicyAdapter.ApplyRoot(probe,actor,option.Command);
                         afterApply?.Invoke(probe,option.Index);
@@ -124,7 +140,27 @@ public static class IsolatedActionProbe
                 }
                 catch (Exception ex) when (ex is not OutOfMemoryException)
                 { reason = "probe_exception:"+ex.GetType().Name; }
-                results.Add(new(option.Index,status,reason));
+                finally
+                {
+                    if (probe is not null)
+                    {
+                        static IReadOnlyDictionary<string,int> Delta(IReadOnlyDictionary<string,int> after,
+                            IReadOnlyDictionary<string,int> before, bool calls)
+                            => new System.Collections.ObjectModel.ReadOnlyDictionary<string,int>(after
+                                .Where(p=>p.Value-before.GetValueOrDefault(p.Key)>0 && (!calls || !Informational(p.Key)))
+                                .OrderBy(p=>p.Key,StringComparer.Ordinal)
+                                .ToDictionary(p=>p.Key,p=>p.Value-before.GetValueOrDefault(p.Key),StringComparer.Ordinal));
+                        evidence = new(option.Command, reference.State.ById(option.Command.SourceId) is { } own
+                            && own.Owner == actor ? own.Name : null, phase,
+                            Delta(probe.UnimplementedCalls,missingBefore,true),
+                            Delta(probe.Api.Vm.UnsupportedOps,unsupportedBefore,false),
+                            probe.Api.Vm.FaultedPrograms-faultsBefore,
+                            (choices?.Faults ?? 0)-choiceFaultsBefore,
+                            (choices?.CompletedChoices ?? 0)-completedBefore);
+                    }
+                    choices?.Dispose();
+                }
+                results.Add(new(option.Index,status,reason) { Evidence = evidence });
             }
             // Detect observable cross-instance contamination; do not silently use
             // earlier labels if the reference changed anywhere during the batch.

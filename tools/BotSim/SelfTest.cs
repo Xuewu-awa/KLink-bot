@@ -1,4 +1,4 @@
-﻿using System.Text.Json.Nodes;
+using System.Text.Json.Nodes;
 using KLink.Bot.Cards;
 using KLink.Bot.Engine;
 using KLink.Bot.Effects;
@@ -20,6 +20,8 @@ internal static partial class SelfTest
 
     private static readonly List<Case> Cases = new()
     {
+        new("隔离候选探测：命令与根诊断增量", ProbeEvidenceIsRootDelta),
+        new("隔离候选探测：双侧指定目标效果", ProbeTargetForwarding),
         new("隔离候选探测：三态分类与正式状态不变", ProbeClassifiesAndPreservesReference),
         new("隔离候选探测：逆序与污染丢弃", ProbeOrderAndDiscardIsolation),
         new("隔离候选探测：前缀拒绝和分叉为未知", ProbeRejectsRebuildMismatch),

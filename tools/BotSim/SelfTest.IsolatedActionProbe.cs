@@ -101,4 +101,44 @@ internal static partial class SelfTest
             && polluted.Candidates.All(c=>c.Status==SimulatorExecutability.Unknown && c.Reason=="reference_changed")
             ? null : "正式状态变化未使整个批次失效";
     }
+    private static string? ProbeEvidenceIsRootDelta(CardDatabase db)
+    {
+        var (engine,deck,prefix)=ProbeFixture(db,2);var vectors=new StateEncoder.CardVecs();
+        var request=new MainActionPolicyAdapter(engine,vectors).DescribeCandidates(engine.State.ActiveSide);
+        var report=IsolatedActionProbe.RunCore(db,vectors,deck,deck,1,prefix,engine,new(),afterApply:(p,i)=>{
+            p.State.UnimplementedCalls["<local-ran:probe-evidence>"]=4;
+            p.State.UnimplementedCalls["<probe-evidence-missing>"]=2;
+            p.Api.Vm.UnsupportedOps["<probe-evidence-op>"]=3;
+        });
+        if(report.Errors.Count!=0 || report.Candidates.Count!=request.Candidates.Count)return "证据报告为空";
+        foreach(var c in report.Candidates)
+        {
+            var e=c.Evidence;
+            if(e is null || e.Command!=request.Candidates[c.Index].Command || e.Phase!="root"
+                || e.MissingCalls.Count!=1 || e.MissingCalls.GetValueOrDefault("<probe-evidence-missing>")!=2
+                || e.UnsupportedOps.GetValueOrDefault("<probe-evidence-op>")!=3 || e.VmFaults!=0
+                || e.ChoiceFaults!=0 || e.CompletedChoices!=0 || c.Status!=SimulatorExecutability.Unknown)
+                return "根增量/命令/信息性排除不正确";
+        }
+        return null;
+    }
+
+    private static string? ProbeTargetForwarding(CardDatabase db)
+    {
+        foreach(var side in new[]{Side.Left,Side.Right})
+        foreach(var target in new[]{80,81})
+        {
+            var r=ActionTargetSmoke.Execute(db,side,target);
+            if(!r.Accepted || r.CurrentTargetId!=target || r.VmFaults!=0 || r.DiagnosticCalls.Any(p=>p.Key!="<local-ran:GetPlayFromHandDamage>" && p.Value>0))
+                return "指定敌方目标的执行路径有故障";
+            foreach(var unit in r.After)
+            {
+                var before=r.Before.Single(c=>c.Id==unit.Id);
+                if(unit.Id==target ? unit.Defense!=before.Defense-1 || unit.PinnedTurns<=0
+                    : unit!=before)return "伤害/压制没有严格作用于指定目标";
+            }
+        }
+        return null;
+    }
+
 }

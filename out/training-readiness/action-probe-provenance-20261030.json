@@ -1,0 +1,925 @@
+{
+  "scope": "Offline simulator diagnostic evidence only; no new game-rule or card certification, legality mask, dataset, or model.",
+  "baseCommit": "c6ec773677c75f424382211b7762babb777bdff5",
+  "contract": "simulator-executability/experimental-v2;fresh-engine-per-candidate;choice=first-index/v1;not-legal-mask",
+  "validationWorkspace": "D:\\Codex Workshop\\KLink-probe-provenance",
+  "sourceSha256": {
+    "src/KLink.Bot/Training/IsolatedActionProbe.cs": "0383b32b10d98000745a36d66397bc3cc9cc634408f0418a6efe6d8c5ff9295e",
+    "src/KLink.Bot/Training/MainActionPolicyAdapter.cs": "cb7d795fb53e3e4923daf775d72830020752a9ac6c3adae1b9dc6ef8b245f047",
+    "src/KLink.Bot/Engine/MatchEngine.cs": "8b32754076c45a546c4f39cf9971e909b254a705d675c2ca8a47eac13ac69cdd",
+    "tools/BotSim/ActionTargetSmoke.cs": "c5471259268daed7d0f237ed03ef12203d7a91c170de0e779ba21a35c6804511",
+    "tools/BotSim/ActionProbeSmoke.cs": "39d44c4460e3ef3c0a7af2fa121e68007ea8fad740a1f093a630613b2e7b3e56",
+    "tools/BotSim/SelfTest.IsolatedActionProbe.cs": "02e78d0a082a0372b5f64e109f2f86f8dbcead93d5a127c39b943d427079003e",
+    "tools/BotSim/SelfTest.cs": "ceb2888bd711dc8d379f553ba7cf1fc80faf988116ae664c28c1381b3b6345bc",
+    "tools/BotSim/Program.cs": "0eacc86bf394e0f536379ced83c79fbd3f52c4ce5180cf767dbed68f4b3c6c02"
+  },
+  "loadedDataSha256": {
+    "card-blacklist-session-20261019.json": "69609c6db053676d2261fc7ee4ccf889222c671ab9f4a0c03473b67a9a16a863",
+    "card-effects.json": "fc335d228779a2859627ee706d85949149ca595d0cfdfbc4971541831e5a8df0",
+    "card-ir-native-defaults.json": "3319fb2d114a76f38356a8c726caa4dd56fe13f9283e50cc0f0d56a95986455b",
+    "card-ir.json": "526812fa8dc0934f1d6ecd3794053871fa6b701c2b5df3fd1edb3c38513ba2e9",
+    "card-reservation-session-20261019.json": "1c44051b04414ecd22f24217c62c07fde5974811d40c51238e68606bed7d2e09",
+    "card-vectors.json": "b15b93cb02e7e8a712561a2da52127a5867084ecb878a6ad58539b56b1109ab9",
+    "cards.json": "3550dc76eb0414c500166875f45909077aeeb3ea4d229b9b0ba9c66a81987c4b",
+    "deck_code_ids.json": "261cfd518c1a1ce40488f141e8dbd617ff19abe0734c49319ebcd6ac5dcb257e",
+    "event-contracts.json": "e4806dd48efbfc799a27c14b3660ad76ee03cd3f13e3e4320b213c5928efb112",
+    "live-actions.json": "db413a4644afe75806e66c47e200d93c5d93e91ca03e23fca38465b7dcb4dab3"
+  },
+  "runtimeDataNote": "After build, exact JSON bytes copied from original KLink-bot known-valid BotSim output Data (same base commit). Checkout line-ending changes otherwise invalidate the existing IR contract hashes. No hashes or admission checks bypassed. Tests run --no-build in isolated worktree.",
+  "summary": {
+    "scope": "Experimental simulator executability only; not legality, not training admission, not strength.",
+    "contract": "simulator-executability/experimental-v2;fresh-engine-per-candidate;choice=first-index/v1;not-legal-mask",
+    "seed": 1,
+    "leftDeck": "英日",
+    "rightDeck": "日澳快攻",
+    "steps": 12,
+    "vectors": "empty map for execution-only diagnostic",
+    "enginesCreated": 1086,
+    "prefixRootsApplied": 7444,
+    "elapsedSeconds": 4.0574119,
+    "counts": {
+      "Accepted": 130,
+      "Rejected": 397,
+      "Unknown": 16
+    },
+    "reasons": {
+      "simulator_returned_true": 130,
+      "simulator_returned_false": 397,
+      "choice_policy_dependent": 12,
+      "unimplemented_call": 4
+    },
+    "batchErrors": {}
+  },
+  "unknownCandidates": [
+    {
+      "prefixStep": 6,
+      "index": 25,
+      "status": "Unknown",
+      "reason": "choice_policy_dependent",
+      "evidence": {
+        "command": {
+          "kind": "Play",
+          "sourceId": 67,
+          "targetId": 0,
+          "slot": -1,
+          "chooseOne": -1
+        },
+        "ownSourceName": "card_event_task_force_44",
+        "phase": "root",
+        "missingCalls": {},
+        "unsupportedOps": {},
+        "vmFaults": 0,
+        "choiceFaults": 0,
+        "completedChoices": 1
+      }
+    },
+    {
+      "prefixStep": 6,
+      "index": 26,
+      "status": "Unknown",
+      "reason": "choice_policy_dependent",
+      "evidence": {
+        "command": {
+          "kind": "Play",
+          "sourceId": 67,
+          "targetId": 15,
+          "slot": -1,
+          "chooseOne": -1
+        },
+        "ownSourceName": "card_event_task_force_44",
+        "phase": "root",
+        "missingCalls": {},
+        "unsupportedOps": {},
+        "vmFaults": 0,
+        "choiceFaults": 0,
+        "completedChoices": 1
+      }
+    },
+    {
+      "prefixStep": 6,
+      "index": 27,
+      "status": "Unknown",
+      "reason": "choice_policy_dependent",
+      "evidence": {
+        "command": {
+          "kind": "Play",
+          "sourceId": 67,
+          "targetId": 20,
+          "slot": -1,
+          "chooseOne": -1
+        },
+        "ownSourceName": "card_event_task_force_44",
+        "phase": "root",
+        "missingCalls": {},
+        "unsupportedOps": {},
+        "vmFaults": 0,
+        "choiceFaults": 0,
+        "completedChoices": 1
+      }
+    },
+    {
+      "prefixStep": 6,
+      "index": 28,
+      "status": "Unknown",
+      "reason": "choice_policy_dependent",
+      "evidence": {
+        "command": {
+          "kind": "Play",
+          "sourceId": 67,
+          "targetId": 75,
+          "slot": -1,
+          "chooseOne": -1
+        },
+        "ownSourceName": "card_event_task_force_44",
+        "phase": "root",
+        "missingCalls": {},
+        "unsupportedOps": {},
+        "vmFaults": 0,
+        "choiceFaults": 0,
+        "completedChoices": 1
+      }
+    },
+    {
+      "prefixStep": 6,
+      "index": 29,
+      "status": "Unknown",
+      "reason": "choice_policy_dependent",
+      "evidence": {
+        "command": {
+          "kind": "Play",
+          "sourceId": 67,
+          "targetId": 1001,
+          "slot": -1,
+          "chooseOne": -1
+        },
+        "ownSourceName": "card_event_task_force_44",
+        "phase": "root",
+        "missingCalls": {},
+        "unsupportedOps": {},
+        "vmFaults": 0,
+        "choiceFaults": 0,
+        "completedChoices": 1
+      }
+    },
+    {
+      "prefixStep": 6,
+      "index": 30,
+      "status": "Unknown",
+      "reason": "choice_policy_dependent",
+      "evidence": {
+        "command": {
+          "kind": "Play",
+          "sourceId": 67,
+          "targetId": 1002,
+          "slot": -1,
+          "chooseOne": -1
+        },
+        "ownSourceName": "card_event_task_force_44",
+        "phase": "root",
+        "missingCalls": {},
+        "unsupportedOps": {},
+        "vmFaults": 0,
+        "choiceFaults": 0,
+        "completedChoices": 1
+      }
+    },
+    {
+      "prefixStep": 6,
+      "index": 31,
+      "status": "Unknown",
+      "reason": "choice_policy_dependent",
+      "evidence": {
+        "command": {
+          "kind": "Play",
+          "sourceId": 68,
+          "targetId": 0,
+          "slot": -1,
+          "chooseOne": -1
+        },
+        "ownSourceName": "card_event_task_force_44",
+        "phase": "root",
+        "missingCalls": {},
+        "unsupportedOps": {},
+        "vmFaults": 0,
+        "choiceFaults": 0,
+        "completedChoices": 1
+      }
+    },
+    {
+      "prefixStep": 6,
+      "index": 32,
+      "status": "Unknown",
+      "reason": "choice_policy_dependent",
+      "evidence": {
+        "command": {
+          "kind": "Play",
+          "sourceId": 68,
+          "targetId": 15,
+          "slot": -1,
+          "chooseOne": -1
+        },
+        "ownSourceName": "card_event_task_force_44",
+        "phase": "root",
+        "missingCalls": {},
+        "unsupportedOps": {},
+        "vmFaults": 0,
+        "choiceFaults": 0,
+        "completedChoices": 1
+      }
+    },
+    {
+      "prefixStep": 6,
+      "index": 33,
+      "status": "Unknown",
+      "reason": "choice_policy_dependent",
+      "evidence": {
+        "command": {
+          "kind": "Play",
+          "sourceId": 68,
+          "targetId": 20,
+          "slot": -1,
+          "chooseOne": -1
+        },
+        "ownSourceName": "card_event_task_force_44",
+        "phase": "root",
+        "missingCalls": {},
+        "unsupportedOps": {},
+        "vmFaults": 0,
+        "choiceFaults": 0,
+        "completedChoices": 1
+      }
+    },
+    {
+      "prefixStep": 6,
+      "index": 34,
+      "status": "Unknown",
+      "reason": "choice_policy_dependent",
+      "evidence": {
+        "command": {
+          "kind": "Play",
+          "sourceId": 68,
+          "targetId": 75,
+          "slot": -1,
+          "chooseOne": -1
+        },
+        "ownSourceName": "card_event_task_force_44",
+        "phase": "root",
+        "missingCalls": {},
+        "unsupportedOps": {},
+        "vmFaults": 0,
+        "choiceFaults": 0,
+        "completedChoices": 1
+      }
+    },
+    {
+      "prefixStep": 6,
+      "index": 35,
+      "status": "Unknown",
+      "reason": "choice_policy_dependent",
+      "evidence": {
+        "command": {
+          "kind": "Play",
+          "sourceId": 68,
+          "targetId": 1001,
+          "slot": -1,
+          "chooseOne": -1
+        },
+        "ownSourceName": "card_event_task_force_44",
+        "phase": "root",
+        "missingCalls": {},
+        "unsupportedOps": {},
+        "vmFaults": 0,
+        "choiceFaults": 0,
+        "completedChoices": 1
+      }
+    },
+    {
+      "prefixStep": 6,
+      "index": 36,
+      "status": "Unknown",
+      "reason": "choice_policy_dependent",
+      "evidence": {
+        "command": {
+          "kind": "Play",
+          "sourceId": 68,
+          "targetId": 1002,
+          "slot": -1,
+          "chooseOne": -1
+        },
+        "ownSourceName": "card_event_task_force_44",
+        "phase": "root",
+        "missingCalls": {},
+        "unsupportedOps": {},
+        "vmFaults": 0,
+        "choiceFaults": 0,
+        "completedChoices": 1
+      }
+    },
+    {
+      "prefixStep": 6,
+      "index": 38,
+      "status": "Unknown",
+      "reason": "unimplemented_call",
+      "evidence": {
+        "command": {
+          "kind": "Attack",
+          "sourceId": 75,
+          "targetId": 20,
+          "slot": -1,
+          "chooseOne": -1
+        },
+        "ownSourceName": "card_unit_shibata_regiment",
+        "phase": "root",
+        "missingCalls": {
+          "<attack-on-guarded-target>": 1
+        },
+        "unsupportedOps": {},
+        "vmFaults": 0,
+        "choiceFaults": 0,
+        "completedChoices": 0
+      }
+    },
+    {
+      "prefixStep": 6,
+      "index": 39,
+      "status": "Unknown",
+      "reason": "unimplemented_call",
+      "evidence": {
+        "command": {
+          "kind": "Attack",
+          "sourceId": 75,
+          "targetId": 1001,
+          "slot": -1,
+          "chooseOne": -1
+        },
+        "ownSourceName": "card_unit_shibata_regiment",
+        "phase": "root",
+        "missingCalls": {
+          "<attack-on-guarded-target>": 1
+        },
+        "unsupportedOps": {},
+        "vmFaults": 0,
+        "choiceFaults": 0,
+        "completedChoices": 0
+      }
+    },
+    {
+      "prefixStep": 7,
+      "index": 45,
+      "status": "Unknown",
+      "reason": "unimplemented_call",
+      "evidence": {
+        "command": {
+          "kind": "Attack",
+          "sourceId": 75,
+          "targetId": 20,
+          "slot": -1,
+          "chooseOne": -1
+        },
+        "ownSourceName": "card_unit_shibata_regiment",
+        "phase": "root",
+        "missingCalls": {
+          "<attack-on-guarded-target>": 1
+        },
+        "unsupportedOps": {},
+        "vmFaults": 0,
+        "choiceFaults": 0,
+        "completedChoices": 0
+      }
+    },
+    {
+      "prefixStep": 7,
+      "index": 46,
+      "status": "Unknown",
+      "reason": "unimplemented_call",
+      "evidence": {
+        "command": {
+          "kind": "Attack",
+          "sourceId": 75,
+          "targetId": 1001,
+          "slot": -1,
+          "chooseOne": -1
+        },
+        "ownSourceName": "card_unit_shibata_regiment",
+        "phase": "root",
+        "missingCalls": {
+          "<attack-on-guarded-target>": 1
+        },
+        "unsupportedOps": {},
+        "vmFaults": 0,
+        "choiceFaults": 0,
+        "completedChoices": 0
+      }
+    }
+  ],
+  "targetFixtures": {
+    "scope": "Crafted simulator target-forwarding observations only; not authoritative legality or a mask.",
+    "card": "card_event_desert_rats",
+    "rows": [
+      {
+        "actor": "Left",
+        "requestedTargetId": 80,
+        "accepted": true,
+        "currentTargetId": 80,
+        "before": [
+          {
+            "id": 80,
+            "defense": 5,
+            "pinnedTurns": 0
+          },
+          {
+            "id": 81,
+            "defense": 5,
+            "pinnedTurns": 0
+          },
+          {
+            "id": 82,
+            "defense": 5,
+            "pinnedTurns": 0
+          }
+        ],
+        "after": [
+          {
+            "id": 80,
+            "defense": 4,
+            "pinnedTurns": 2
+          },
+          {
+            "id": 81,
+            "defense": 5,
+            "pinnedTurns": 0
+          },
+          {
+            "id": 82,
+            "defense": 5,
+            "pinnedTurns": 0
+          }
+        ],
+        "diagnosticCalls": {
+          "<local-ran:GetPlayFromHandDamage>": 1
+        },
+        "vmFaults": 0
+      },
+      {
+        "actor": "Left",
+        "requestedTargetId": 81,
+        "accepted": true,
+        "currentTargetId": 81,
+        "before": [
+          {
+            "id": 80,
+            "defense": 5,
+            "pinnedTurns": 0
+          },
+          {
+            "id": 81,
+            "defense": 5,
+            "pinnedTurns": 0
+          },
+          {
+            "id": 82,
+            "defense": 5,
+            "pinnedTurns": 0
+          }
+        ],
+        "after": [
+          {
+            "id": 80,
+            "defense": 5,
+            "pinnedTurns": 0
+          },
+          {
+            "id": 81,
+            "defense": 4,
+            "pinnedTurns": 2
+          },
+          {
+            "id": 82,
+            "defense": 5,
+            "pinnedTurns": 0
+          }
+        ],
+        "diagnosticCalls": {
+          "<local-ran:GetPlayFromHandDamage>": 1
+        },
+        "vmFaults": 0
+      },
+      {
+        "actor": "Left",
+        "requestedTargetId": 82,
+        "accepted": true,
+        "currentTargetId": 82,
+        "before": [
+          {
+            "id": 80,
+            "defense": 5,
+            "pinnedTurns": 0
+          },
+          {
+            "id": 81,
+            "defense": 5,
+            "pinnedTurns": 0
+          },
+          {
+            "id": 82,
+            "defense": 5,
+            "pinnedTurns": 0
+          }
+        ],
+        "after": [
+          {
+            "id": 80,
+            "defense": 5,
+            "pinnedTurns": 0
+          },
+          {
+            "id": 81,
+            "defense": 5,
+            "pinnedTurns": 0
+          },
+          {
+            "id": 82,
+            "defense": 4,
+            "pinnedTurns": 3
+          }
+        ],
+        "diagnosticCalls": {
+          "<local-ran:GetPlayFromHandDamage>": 1
+        },
+        "vmFaults": 0
+      },
+      {
+        "actor": "Left",
+        "requestedTargetId": 0,
+        "accepted": true,
+        "currentTargetId": null,
+        "before": [
+          {
+            "id": 80,
+            "defense": 5,
+            "pinnedTurns": 0
+          },
+          {
+            "id": 81,
+            "defense": 5,
+            "pinnedTurns": 0
+          },
+          {
+            "id": 82,
+            "defense": 5,
+            "pinnedTurns": 0
+          }
+        ],
+        "after": [
+          {
+            "id": 80,
+            "defense": 5,
+            "pinnedTurns": 0
+          },
+          {
+            "id": 81,
+            "defense": 5,
+            "pinnedTurns": 0
+          },
+          {
+            "id": 82,
+            "defense": 5,
+            "pinnedTurns": 0
+          }
+        ],
+        "diagnosticCalls": {
+          "<local-ran:GetPlayFromHandDamage>": 1
+        },
+        "vmFaults": 0
+      },
+      {
+        "actor": "Left",
+        "requestedTargetId": 99999,
+        "accepted": true,
+        "currentTargetId": null,
+        "before": [
+          {
+            "id": 80,
+            "defense": 5,
+            "pinnedTurns": 0
+          },
+          {
+            "id": 81,
+            "defense": 5,
+            "pinnedTurns": 0
+          },
+          {
+            "id": 82,
+            "defense": 5,
+            "pinnedTurns": 0
+          }
+        ],
+        "after": [
+          {
+            "id": 80,
+            "defense": 5,
+            "pinnedTurns": 0
+          },
+          {
+            "id": 81,
+            "defense": 5,
+            "pinnedTurns": 0
+          },
+          {
+            "id": 82,
+            "defense": 5,
+            "pinnedTurns": 0
+          }
+        ],
+        "diagnosticCalls": {
+          "<local-ran:GetPlayFromHandDamage>": 1
+        },
+        "vmFaults": 0
+      },
+      {
+        "actor": "Right",
+        "requestedTargetId": 80,
+        "accepted": true,
+        "currentTargetId": 80,
+        "before": [
+          {
+            "id": 80,
+            "defense": 5,
+            "pinnedTurns": 0
+          },
+          {
+            "id": 81,
+            "defense": 5,
+            "pinnedTurns": 0
+          },
+          {
+            "id": 82,
+            "defense": 5,
+            "pinnedTurns": 0
+          }
+        ],
+        "after": [
+          {
+            "id": 80,
+            "defense": 4,
+            "pinnedTurns": 2
+          },
+          {
+            "id": 81,
+            "defense": 5,
+            "pinnedTurns": 0
+          },
+          {
+            "id": 82,
+            "defense": 5,
+            "pinnedTurns": 0
+          }
+        ],
+        "diagnosticCalls": {
+          "<local-ran:GetPlayFromHandDamage>": 1
+        },
+        "vmFaults": 0
+      },
+      {
+        "actor": "Right",
+        "requestedTargetId": 81,
+        "accepted": true,
+        "currentTargetId": 81,
+        "before": [
+          {
+            "id": 80,
+            "defense": 5,
+            "pinnedTurns": 0
+          },
+          {
+            "id": 81,
+            "defense": 5,
+            "pinnedTurns": 0
+          },
+          {
+            "id": 82,
+            "defense": 5,
+            "pinnedTurns": 0
+          }
+        ],
+        "after": [
+          {
+            "id": 80,
+            "defense": 5,
+            "pinnedTurns": 0
+          },
+          {
+            "id": 81,
+            "defense": 4,
+            "pinnedTurns": 2
+          },
+          {
+            "id": 82,
+            "defense": 5,
+            "pinnedTurns": 0
+          }
+        ],
+        "diagnosticCalls": {
+          "<local-ran:GetPlayFromHandDamage>": 1
+        },
+        "vmFaults": 0
+      },
+      {
+        "actor": "Right",
+        "requestedTargetId": 82,
+        "accepted": true,
+        "currentTargetId": 82,
+        "before": [
+          {
+            "id": 80,
+            "defense": 5,
+            "pinnedTurns": 0
+          },
+          {
+            "id": 81,
+            "defense": 5,
+            "pinnedTurns": 0
+          },
+          {
+            "id": 82,
+            "defense": 5,
+            "pinnedTurns": 0
+          }
+        ],
+        "after": [
+          {
+            "id": 80,
+            "defense": 5,
+            "pinnedTurns": 0
+          },
+          {
+            "id": 81,
+            "defense": 5,
+            "pinnedTurns": 0
+          },
+          {
+            "id": 82,
+            "defense": 4,
+            "pinnedTurns": 3
+          }
+        ],
+        "diagnosticCalls": {
+          "<local-ran:GetPlayFromHandDamage>": 1
+        },
+        "vmFaults": 0
+      },
+      {
+        "actor": "Right",
+        "requestedTargetId": 0,
+        "accepted": true,
+        "currentTargetId": null,
+        "before": [
+          {
+            "id": 80,
+            "defense": 5,
+            "pinnedTurns": 0
+          },
+          {
+            "id": 81,
+            "defense": 5,
+            "pinnedTurns": 0
+          },
+          {
+            "id": 82,
+            "defense": 5,
+            "pinnedTurns": 0
+          }
+        ],
+        "after": [
+          {
+            "id": 80,
+            "defense": 5,
+            "pinnedTurns": 0
+          },
+          {
+            "id": 81,
+            "defense": 5,
+            "pinnedTurns": 0
+          },
+          {
+            "id": 82,
+            "defense": 5,
+            "pinnedTurns": 0
+          }
+        ],
+        "diagnosticCalls": {
+          "<local-ran:GetPlayFromHandDamage>": 1
+        },
+        "vmFaults": 0
+      },
+      {
+        "actor": "Right",
+        "requestedTargetId": 99999,
+        "accepted": true,
+        "currentTargetId": null,
+        "before": [
+          {
+            "id": 80,
+            "defense": 5,
+            "pinnedTurns": 0
+          },
+          {
+            "id": 81,
+            "defense": 5,
+            "pinnedTurns": 0
+          },
+          {
+            "id": 82,
+            "defense": 5,
+            "pinnedTurns": 0
+          }
+        ],
+        "after": [
+          {
+            "id": 80,
+            "defense": 5,
+            "pinnedTurns": 0
+          },
+          {
+            "id": 81,
+            "defense": 5,
+            "pinnedTurns": 0
+          },
+          {
+            "id": 82,
+            "defense": 5,
+            "pinnedTurns": 0
+          }
+        ],
+        "diagnosticCalls": {
+          "<local-ran:GetPlayFromHandDamage>": 1
+        },
+        "vmFaults": 0
+      }
+    ]
+  },
+  "validation": {
+    "BotSim": 1014,
+    "actionDataset": 49,
+    "actionModel": 31,
+    "auditMatrix": 16
+  },
+  "worker": {
+    "jobId": "20261030-200149-target-plumbing-35d764e1",
+    "sourceCopiesMatch": true,
+    "exactExcerptWindows": 73,
+    "excerptWindowErrors": 3,
+    "correction": "Three multiline excerpts extend one closing-brace line beyond the reported range (1927-1930, 1934-1936, 1944-1948); primary checked following closing brace. Worker semantic summaries are not rule authority."
+  },
+  "artifacts": {
+    "D:\\Codex Workshop\\kards-install-review\\provenance-build.log": {
+      "sha256": "5fe8fb0e45a0f25015030fb5d00ca68799ef15c0a4f8d5768ef10d61509c9114"
+    },
+    "D:\\Codex Workshop\\kards-install-review\\provenance-full.log": {
+      "sha256": "ae92abe2d01b50c481538670827b77b7798a2cbbbbae5b5b3ad6ee9acbbda165"
+    },
+    "D:\\Codex Workshop\\kards-install-review\\provenance-smoke.log": {
+      "sha256": "ecabe1d69f2499f4c97956d60ccb6c3ee9c02b55fbfe99873705b14366255b3d"
+    },
+    "D:\\Codex Workshop\\kards-install-review\\provenance-smoke-12.json": {
+      "sha256": "85ad07695aa037d7c690caa9d6a14ef1ca41edbe7bedc6f027219f84d182513c"
+    },
+    "D:\\Codex Workshop\\kards-install-review\\provenance-targets.json": {
+      "sha256": "44aebf23501ec9e6449e135b2c2e9ae620341aba9c6558ee2000d180fb9e9436"
+    },
+    "D:\\Codex Workshop\\kards-install-review\\provenance-targets.log": {
+      "sha256": "0e8d27feda93c6cada68ce741f40b3726040a20a5d514bcb89116e9f0f08e3f5"
+    },
+    "D:\\Codex Workshop\\kards-install-review\\provenance-actions.log": {
+      "sha256": "3a5b384bdeba03c14f933b3d9a4d7f8cb377b4fd1fff975f98c2a68c2534cbad"
+    },
+    "D:\\Codex Workshop\\kards-install-review\\provenance-model.log": {
+      "sha256": "f4f5707f27410b7c3a6b92bd47562fef6af5356c380b7a152dee77587b293767"
+    },
+    "D:\\Codex Workshop\\kards-install-review\\probe-target-packet\\result.json": {
+      "sha256": "be0e69d889a31802bd72819de5cd6db6e788960d664b7cceb81348878c3cfd2c"
+    },
+    "D:\\Codex Workshop\\KLink-probe-provenance\\tools\\BotSim\\bin\\Debug\\net10.0\\BotSim.dll": {
+      "sha256": "bb04a39927bc22ea5997136d311dddf2811df914d8ef7a5c0ae191dfc2db859a"
+    },
+    "D:\\Codex Workshop\\KLink-probe-provenance\\tools\\BotSim\\bin\\Debug\\net10.0\\KLink.Bot.dll": {
+      "sha256": "6de29bfee12f82b68caa1665b9a1c240d4183db3d3eaa14eb1ef58cfdb7e93c4"
+    },
+    "D:\\Codex Workshop\\KLink-probe-provenance\\tools\\NNTrain\\bin\\Debug\\net10.0\\NNTrain.dll": {
+      "sha256": "3063c3c0dcaa04fe91f53e3ab6246ef10bb066327a874218e08efe6f17fe7e6e"
+    },
+    "D:\\Codex Workshop\\kards-install-review\\provenance-matrix-build.log": {
+      "sha256": "59b81eaa74135fc7181dd767f46fac82f2816d09dbc508b39edd78f2135884ea"
+    },
+    "D:\\Codex Workshop\\kards-install-review\\provenance-matrix-tests.log": {
+      "sha256": "31f7577cd5808147954cc1f2f7adcb1ee9ab4fbe462a6a426be0f710f64f70ea"
+    }
+  },
+  "openItems": [
+    "CanPlay targeted orders checks existence of any usable target rather than validating the specific supplied target; crafted Desert Rats accepts friendly, zero and missing ID. Before changing rules, trace authoritative explicit-target predicates and add side-effect-safe validation.",
+    "12 task_force_44 candidates require nested-choice policy semantics; keep Unknown.",
+    "4 guarded-target markers remain Unknown; separate diagnostic channels only after validating rejection semantics.",
+    "Fresh-engine probes still share static objects; full private VM equivalence not proven."
+  ],
+  "matrixNote": "Matrix generated in primary repo with reviewed isolated probe source temporarily restored; prior local probe edits restored byte-for-byte afterwards. No historical review fingerprints reset; no card certifications added."
+}
