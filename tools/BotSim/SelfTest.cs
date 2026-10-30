@@ -20,6 +20,10 @@ internal static partial class SelfTest
 
     private static readonly List<Case> Cases = new()
     {
+        new("明确指令目标：拒绝无效目标且不执行效果", ExplicitOrderRejectsWrongTargets),
+        new("明确指令目标：受伤单位条件与双侧效果", ExplicitOrderDamagePredicate),
+        new("明确指令目标：友方单位条件与双侧效果", ExplicitOrderFriendlyPredicate),
+        new("明确指令目标：无目标指令与旧查询契约", ExplicitOrderNoTargetAndLegacyQueries),
         new("隔离候选探测：命令与根诊断增量", ProbeEvidenceIsRootDelta),
         new("隔离候选探测：双侧指定目标效果", ProbeTargetForwarding),
         new("隔离候选探测：三态分类与正式状态不变", ProbeClassifiesAndPreservesReference),

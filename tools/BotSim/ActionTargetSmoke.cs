@@ -16,6 +16,17 @@ internal static class ActionTargetSmoke
 
     internal static Result Execute(CardDatabase db, Side actor, int targetId)
     {
+        var (engine,source,units)=Fixture(db,actor);
+        TargetState[] Capture()=>units.Select(c=>new TargetState(c.CardId,c.Defense,c.PinnedTurns)).ToArray();
+        var before=Capture();
+        bool accepted=MainActionPolicyAdapter.ApplyRoot(engine,actor,new(MainActionKind.Play,70,targetId));
+        return new(actor,targetId,accepted,source.CurrentTarget?.CardId,before,Capture(),
+            engine.UnimplementedCalls.ToDictionary(p=>p.Key,p=>p.Value),engine.Api.Vm.FaultedPrograms);
+    }
+
+    internal static (MatchEngine Engine, CardInstance Source, CardInstance[] Units) Fixture(
+        CardDatabase db, Side actor, string cardName="card_event_desert_rats")
+    {
         var engine = new MatchEngine(db,Array.Empty<string>(),Array.Empty<string>(),1);
         var state=engine.State; state.ActiveSide=actor; state.SetKredits(actor,12);
         foreach(var side in new[]{Side.Left,Side.Right})
@@ -23,16 +34,12 @@ internal static class ActionTargetSmoke
             var hq=state.CreateWithId("card_location_berlin",side,side==Side.Left?1:41,side.HqOf(),0);
             state.SetLocationCardBySide(side,hq);state.SetHqDefense(side,20);
         }
-        var source=state.CreateWithId("card_event_desert_rats",actor,70,actor.HandOf(),0);
+        var source=state.CreateWithId(cardName,actor,70,actor.HandOf(),0);
         var units=new[]{state.CreateWithId("card_unit_arado_ar_196",actor.Opposite(),80,actor.Opposite().HqOf(),1),
             state.CreateWithId("card_unit_arado_ar_196",actor.Opposite(),81,actor.Opposite().HqOf(),2),
             state.CreateWithId("card_unit_arado_ar_196",actor,82,actor.HqOf(),1)};
         foreach(var unit in units){unit.Defense=unit.MaxDefense=5;unit.PinnedTurns=0;}
-        TargetState[] Capture()=>units.Select(c=>new TargetState(c.CardId,c.Defense,c.PinnedTurns)).ToArray();
-        var before=Capture();
-        bool accepted=MainActionPolicyAdapter.ApplyRoot(engine,actor,new(MainActionKind.Play,70,targetId));
-        return new(actor,targetId,accepted,source.CurrentTarget?.CardId,before,Capture(),
-            engine.UnimplementedCalls.ToDictionary(p=>p.Key,p=>p.Value),engine.Api.Vm.FaultedPrograms);
+        return (engine,source,units);
     }
 
     internal static int Run(CardDatabase db, Dictionary<string,string> opts)

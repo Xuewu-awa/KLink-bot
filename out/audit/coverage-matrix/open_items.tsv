@@ -7,3 +7,4 @@ RULE-NATIVE-BOUNDARY	原生边界	open	qqq输出、空上下文、对象生命�
 RULE-SPAWN-BOUNDARY	生成边界	open	相邻缺来源/无效控制方/默认位置；共享满位置/overrideCardID及完整分配通知。	primary reviewed matrix bootstrap; not exhaustive defect inventory
 MATRIX-004	版本关联	open	保留当前EXE与资产版本指纹和失效状态；按用户工作安排逐步补齐，不将旧卡表当作当前权威。	primary reviewed matrix bootstrap; not exhaustive defect inventory
 MATRIX-005	逐卡闭合与准入	open	依赖闭合后执行逐卡全部路径及联动验证，建立独立完整认证准入记录。	primary reviewed matrix bootstrap; not exhaustive defect inventory
+RULE-TRAINING-EXPLICIT-TARGET	训练根动作具体目标与查询副作用	partial	已修复非选择型定向指令的具体目标校验及不存在目标ID。仍待ChooseOne分支、单位部署、旧PlayCard入口、查询状态写入和原生目标谓词完整核对；不构成可靠合法掩码。	out/training-readiness/explicit-order-targets-20261030.json

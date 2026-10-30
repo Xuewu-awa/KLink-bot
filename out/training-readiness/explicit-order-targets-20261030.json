@@ -1,0 +1,258 @@
+{
+  "schema_version": 1,
+  "base_commit": "a299a05",
+  "date": "2026-10-30",
+  "scope": "Training ApplyRoot: explicit missing target ID rejection and non-choice targeted orders; not a complete legal mask.",
+  "authority": [
+    {
+      "parsed_path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Britain\\Base\\events\\card_event_desert_rats.functions.json",
+      "parsed_sha256": "9445a37ca850bfcd60fcf72749d3fcb4618f761346b716959545759ff54e76af",
+      "selected_functions": [
+        "CanPlayFromHand"
+      ],
+      "raw_assets": {
+        "D:\\Codex Workshop\\kards-install-review\\extracted\\kards\\Content\\Blueprints\\Cards\\Britain\\Base\\events\\card_event_desert_rats.uasset": "bfeebed4bcb72382440a0f887f59b1fb28d3b0efa46df27a4a06a3dbc8c71666",
+        "D:\\Codex Workshop\\kards-install-review\\extracted\\kards\\Content\\Blueprints\\Cards\\Britain\\Base\\events\\card_event_desert_rats.uexp": "79cf5429d143f52ae332e13ac18d349ba6529bcd4335b68f9f60c443a83457f7"
+      }
+    },
+    {
+      "parsed_path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Soviet\\Base\\events\\card_event_critical_hit.functions.json",
+      "parsed_sha256": "d0fdb27d1e68a2d67d9c37ce0d679d717a22c6cb8982b024c8f78e5b435b406b",
+      "selected_functions": [
+        "CanPlayFromHand"
+      ],
+      "raw_assets": {
+        "D:\\Codex Workshop\\kards-install-review\\extracted\\kards\\Content\\Blueprints\\Cards\\Soviet\\Base\\events\\card_event_critical_hit.uasset": "33cbc1ad860087cb59627ced0809a9d4325251596bab58e90321a2c38409c3f2",
+        "D:\\Codex Workshop\\kards-install-review\\extracted\\kards\\Content\\Blueprints\\Cards\\Soviet\\Base\\events\\card_event_critical_hit.uexp": "83fa2be6e7c967c359fca764baf9673da2ccfbbe5b97f74fbdaa52b3fa1a200f"
+      }
+    },
+    {
+      "parsed_path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Logic\\BP_Logic.functions.json",
+      "parsed_sha256": "905fff479fe79e6171c139f50c27b59c6b7cfb43e4155fede283ab144f7ee2b1",
+      "selected_functions": [
+        "CanPlayCardFromHand"
+      ],
+      "raw_assets": {
+        "D:\\Codex Workshop\\kards-install-review\\extracted\\kards\\Content\\Blueprints\\Logic\\BP_Logic.uasset": "79b357d32a90901b1d60a1a1f026f0196f7183d355fc65398494bc24553d5aae",
+        "D:\\Codex Workshop\\kards-install-review\\extracted\\kards\\Content\\Blueprints\\Logic\\BP_Logic.uexp": "59d2ccc5b638552d9f7088170046d24c33e9cb7f926aab2197c087a2fea1ecc2"
+      }
+    },
+    {
+      "parsed_path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Library\\cardsCheckFunctions.functions.json",
+      "parsed_sha256": "ed57bef6b025dfc6e513c0c6e10035a67a8bee45c9db547bcd4487b3d296408b",
+      "selected_functions": [
+        "CanSelectAsTarget"
+      ],
+      "raw_assets": {
+        "D:\\Codex Workshop\\kards-install-review\\extracted\\kards\\Content\\Library\\cardsCheckFunctions.uasset": "8850c6658ac0f9b7835de0b5b97047f7421c9204cfcda5842f5be3cb349ce69f",
+        "D:\\Codex Workshop\\kards-install-review\\extracted\\kards\\Content\\Library\\cardsCheckFunctions.uexp": "7b36d764184154c728e6a9cd3f328e8d868761bd159830c0a5f43633fc41ddc2"
+      }
+    },
+    {
+      "parsed_path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\USA\\BloodIron\\events\\card_event_air_corps_ferrying.functions.json",
+      "parsed_sha256": "23d3fac681037dae6cf4f5dbe736bd89e477009ba65f832730a322687f15aeb1",
+      "selected_functions": [
+        "CanPlayFromHand"
+      ],
+      "raw_assets": {
+        "D:\\Codex Workshop\\kards-install-review\\extracted\\kards\\Content\\Blueprints\\Cards\\USA\\BloodIron\\events\\card_event_air_corps_ferrying.uasset": "75f1521c1c4d172b4a7da3335e1a9878c48608dba977ff15035a672d2e6650b6",
+        "D:\\Codex Workshop\\kards-install-review\\extracted\\kards\\Content\\Blueprints\\Cards\\USA\\BloodIron\\events\\card_event_air_corps_ferrying.uexp": "0998bf0afdb3a438f3d10b32c3b2260e4549d9687d8bb52151304e9023eb55e0"
+      }
+    }
+  ],
+  "authority_excerpt": {
+    "path": "D:\\Codex Workshop\\kards-install-review\\explicit-target-authority.json",
+    "sha256": "2394ea669da11894c9f045fe11324b76eeb688ed7be2fac60b6e7baa269be2da"
+  },
+  "authority_statement_offsets": {
+    "desert_rats": [
+      0,
+      55,
+      69,
+      88,
+      138,
+      152,
+      223,
+      247,
+      258
+    ],
+    "critical_hit": [
+      0,
+      55,
+      69,
+      110,
+      151,
+      211,
+      249,
+      263,
+      334,
+      358,
+      369
+    ],
+    "air_corps_ferrying": [
+      0,
+      55,
+      69,
+      119,
+      133,
+      228,
+      239
+    ],
+    "BP_Logic.CanPlayCardFromHand": [
+      2144,
+      2185,
+      2266,
+      2276,
+      2305,
+      2315,
+      2452,
+      2544,
+      2554
+    ],
+    "CanSelectAsTarget": [
+      0,
+      29,
+      43,
+      84,
+      98,
+      185,
+      302,
+      316,
+      327
+    ]
+  },
+  "regressions": {
+    "before": {
+      "failed": 3,
+      "passed": 1
+    },
+    "after": {
+      "BotSim": 1018,
+      "action_dataset": 49,
+      "action_model": 31,
+      "matrix": 16
+    },
+    "crafted_target_cases": {
+      "total": 10,
+      "accepted": 4,
+      "rejected": 6
+    },
+    "new_test_scenarios": {
+      "wrong_targets_both_sides": 14,
+      "damaged_predicate_both_sides": 6,
+      "friendly_predicate_both_sides": 4,
+      "query_and_untargeted_both_sides": 2
+    }
+  },
+  "probe": {
+    "steps": 12,
+    "counts": {
+      "Accepted": 126,
+      "Rejected": 407,
+      "Unknown": 10
+    },
+    "reasons": {
+      "simulator_returned_true": 126,
+      "simulator_returned_false": 407,
+      "choice_policy_dependent": 6,
+      "unimplemented_call": 4
+    },
+    "enginesCreated": 1086,
+    "prefixRootsApplied": 7444,
+    "elapsedSeconds": 3.8736833,
+    "batchErrors": {}
+  },
+  "worker_verification": {
+    "job": "20261030-202443-explicit-target-check-f7900ac3",
+    "source_hashes_verified": 4,
+    "verbatim_citations_verified": 81,
+    "rejected_citations": [
+      {
+        "citation": {
+          "source": "MainActionPolicyAdapter.cs",
+          "line": 63,
+          "code": "/// A structural candidate superset, never a legal mask. Enumeration calls no"
+        },
+        "actual": "/// engine predicates. One synchronous pure policy answer executes at most one"
+      },
+      {
+        "citation": {
+          "source": "MainActionPolicyAdapter.cs",
+          "line": 64,
+          "code": "/// engine predicates. One synchronous pure policy answer executes at most one"
+        },
+        "actual": "/// root engine call. A rejected call is not rolled back: hosts must discard"
+      },
+      {
+        "citation": {
+          "source": "MainActionPolicyAdapter.cs",
+          "line": 65,
+          "code": "/// root engine call. A rejected call is not rolled back: hosts must discard"
+        },
+        "actual": "/// the episode if RejectedActions/Faults increase, rather than retry blindly."
+      }
+    ],
+    "rows": {
+      "writes": 16,
+      "returns": 19,
+      "unresolved": 14
+    },
+    "semantic_limit": "Mechanical inventory only. Delegated call bodies and query purity are not established by this packet.",
+    "output_sha256": "ab0a7fa0351c7e789b5a5aa139ee9747e62be1f2d47fbde706102933f852f3af"
+  },
+  "sources": {
+    "src/KLink.Bot/Engine/MatchEngine.cs": "e5fe29cd2e157b31b3a11f1562e89252c7571991af382da0294820a0e03491d5",
+    "src/KLink.Bot/Training/MainActionPolicyAdapter.cs": "40c7e8b02d1844f6472667ccc35e12e781151fb84d9d5f71567a6be9b78a1ecb",
+    "src/KLink.Bot/Training/IsolatedActionProbe.cs": "1e25455424536cf08ccf38c2c4ec8b30c5d13be5b70548d16bb199fa423b02f5",
+    "tools/BotSim/ActionProbeSmoke.cs": "39d44c4460e3ef3c0a7af2fa121e68007ea8fad740a1f093a630613b2e7b3e56",
+    "tools/BotSim/ActionTargetSmoke.cs": "6fd22258ac8ec39ee583073422d88ed231e484e56cf55adfab42750c344de20e",
+    "tools/BotSim/SelfTest.ExplicitOrderTarget.cs": "b38f880edb9f6061bf5d13c7968ebdb50cfd8a3bc81e9f3a7c27249d3c2ad03b",
+    "tools/BotSim/SelfTest.cs": "ac0c6c5b26e520d31cc8b8443a92f8f23eb396854ed423040ddecb70980e99fe"
+  },
+  "runtime_data": {
+    "D:\\Codex Workshop\\KLink-target-validation\\tools\\BotSim\\bin\\Debug\\net10.0\\Data\\card-blacklist-session-20261019.json": "69609c6db053676d2261fc7ee4ccf889222c671ab9f4a0c03473b67a9a16a863",
+    "D:\\Codex Workshop\\KLink-target-validation\\tools\\BotSim\\bin\\Debug\\net10.0\\Data\\card-effects.json": "fc335d228779a2859627ee706d85949149ca595d0cfdfbc4971541831e5a8df0",
+    "D:\\Codex Workshop\\KLink-target-validation\\tools\\BotSim\\bin\\Debug\\net10.0\\Data\\card-ir-native-defaults.json": "3319fb2d114a76f38356a8c726caa4dd56fe13f9283e50cc0f0d56a95986455b",
+    "D:\\Codex Workshop\\KLink-target-validation\\tools\\BotSim\\bin\\Debug\\net10.0\\Data\\card-ir.json": "526812fa8dc0934f1d6ecd3794053871fa6b701c2b5df3fd1edb3c38513ba2e9",
+    "D:\\Codex Workshop\\KLink-target-validation\\tools\\BotSim\\bin\\Debug\\net10.0\\Data\\card-reservation-session-20261019.json": "1c44051b04414ecd22f24217c62c07fde5974811d40c51238e68606bed7d2e09",
+    "D:\\Codex Workshop\\KLink-target-validation\\tools\\BotSim\\bin\\Debug\\net10.0\\Data\\card-vectors.json": "b15b93cb02e7e8a712561a2da52127a5867084ecb878a6ad58539b56b1109ab9",
+    "D:\\Codex Workshop\\KLink-target-validation\\tools\\BotSim\\bin\\Debug\\net10.0\\Data\\cards.json": "3550dc76eb0414c500166875f45909077aeeb3ea4d229b9b0ba9c66a81987c4b",
+    "D:\\Codex Workshop\\KLink-target-validation\\tools\\BotSim\\bin\\Debug\\net10.0\\Data\\deck_code_ids.json": "261cfd518c1a1ce40488f141e8dbd617ff19abe0734c49319ebcd6ac5dcb257e",
+    "D:\\Codex Workshop\\KLink-target-validation\\tools\\BotSim\\bin\\Debug\\net10.0\\Data\\event-contracts.json": "e4806dd48efbfc799a27c14b3660ad76ee03cd3f13e3e4320b213c5928efb112",
+    "D:\\Codex Workshop\\KLink-target-validation\\tools\\BotSim\\bin\\Debug\\net10.0\\Data\\live-actions.json": "db413a4644afe75806e66c47e200d93c5d93e91ca03e23fca38465b7dcb4dab3"
+  },
+  "runtime_data_note": "Build output Data JSON copied byte-for-byte from the existing validated original BotSim output to preserve the IR contract fingerprint; no hash guard bypass. Repository checkout line endings differ.",
+  "binaries": {
+    "D:\\Codex Workshop\\KLink-target-validation\\tools\\BotSim\\bin\\Debug\\net10.0\\BotSim.dll": "daa7c3a650d443bdf32801a472e0b05aed551ff78469caa08217d576698b9b44",
+    "D:\\Codex Workshop\\KLink-target-validation\\tools\\BotSim\\bin\\Debug\\net10.0\\KLink.Bot.dll": "3e8e8c013b3e71c0d20c101c27a1b3f97656086fee6c1dba9fdc21b8b937d27f",
+    "D:\\Codex Workshop\\KLink-target-validation\\tools\\NNTrain\\bin\\Debug\\net10.0\\NNTrain.dll": "69899f7b4e792136127d3889d7fc419049f04c00409e2883e5d5caebeb04eaa7"
+  },
+  "artifacts": {
+    "D:\\Codex Workshop\\kards-install-review\\explicit-target-authority.json": "2394ea669da11894c9f045fe11324b76eeb688ed7be2fac60b6e7baa269be2da",
+    "D:\\Codex Workshop\\kards-install-review\\explicit-target-before-build.log": "e7cfe2647d7fdecfe6280ae22af2aae5ca7b262ce4e9626545706b86649c22f7",
+    "D:\\Codex Workshop\\kards-install-review\\explicit-target-before-tests.log": "4b556d0a912421b38b9c1d85f69f264dbf3f586157fb0d63837057f1e02ae200",
+    "D:\\Codex Workshop\\kards-install-review\\explicit-target-build.log": "9a59298ae6260dac2ade18d8a9a13039771561dc829f43edcfd775612ac900a6",
+    "D:\\Codex Workshop\\kards-install-review\\explicit-target-dataset-tests.log": "3a5b384bdeba03c14f933b3d9a4d7f8cb377b4fd1fff975f98c2a68c2534cbad",
+    "D:\\Codex Workshop\\kards-install-review\\explicit-target-fixtures.log": "0e8d27feda93c6cada68ce741f40b3726040a20a5d514bcb89116e9f0f08e3f5",
+    "D:\\Codex Workshop\\kards-install-review\\explicit-target-full-tests.log": "3701c6f7866e1e942afaa78c9196b5a0c96c5684f2ef66cfe7d3169b0c2e07f2",
+    "D:\\Codex Workshop\\kards-install-review\\explicit-target-model-tests.log": "f4f5707f27410b7c3a6b92bd47562fef6af5356c380b7a152dee77587b293767",
+    "D:\\Codex Workshop\\kards-install-review\\explicit-target-nn-build.log": "6b9441bd25a35af7951b0b5cd0ef2030a08f22db2de46c685eab07ca3cb0beaf",
+    "D:\\Codex Workshop\\kards-install-review\\explicit-target-probes.json": "769c0652e06a5b0ba6990f7e01baf3844df7df9b3d7df272f2fdebdcd35f9b47",
+    "D:\\Codex Workshop\\kards-install-review\\explicit-target-probes.log": "702c665e3efcb91ca34c4d7a766f0cf0057140786204e6391f50ffa467a22f6c",
+    "D:\\Codex Workshop\\kards-install-review\\explicit-target-results.json": "a302bebe852b996ec1aae25387a426c71f9ba5dd56cf800656f31721547d2a85",
+    "D:\\Codex Workshop\\kards-install-review\\explicit-target-tests.log": "4b7ecbb36444fe19b55599329ec41ab6e1107d1439ac35708f40d84395bf8803",
+    "D:\\Codex Workshop\\kards-install-review\\explicit-target-worker-verification.json": "8871e7cf58fe2c4ebf1ba1efad103e92ad5b1f7a5795b46d7c67d00d3d1d4647"
+  },
+  "remaining": [
+    "ChooseOne branch target semantics and persistent ChooseOne query writes",
+    "Unit deployment and staged/legacy PlayCard callers",
+    "Query state writes and shared static state; rejected requests are not generally pure or atomic",
+    "Native target predicate fallback and full common target dependencies",
+    "Current client/pak version association and per-card certification"
+  ],
+  "matrix_generation": {
+    "source_root": "D:\\Codex Workshop\\KLink-bot",
+    "probe_source": "Committed a299a05 probe bytes from prior validated worktree temporarily substituted for inventory generation; original unrelated edits restored byte-for-byte. Prior review fingerprints were not reset.",
+    "log": "D:/Codex Workshop/kards-install-review/explicit-target-matrix-tests.log"
+  }
+}

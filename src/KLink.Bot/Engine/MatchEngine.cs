@@ -1565,11 +1565,21 @@ public sealed class MatchEngine
     /// `OnEnterPlay` 会各触发一次，光环类卡会被撤销再重挂。
     /// </param>
     public bool PlayCard(CardInstance card, CardInstance? target = null, bool skipLeaveTrigger = false)
+        => ResolveHandPlayAction(card, target, skipLeaveTrigger, validateOrderTarget: false);
+
+    // Training root commands carry a final target, unlike legacy callers that
+    // may still be driving a staged hand-play flow. This bounded check covers
+    // non-choice targeted orders; choose-one target flags need a separate audit.
+    internal bool PlayCardWithOrderTargetCheck(CardInstance card, CardInstance? target)
+        => ResolveHandPlayAction(card, target, skipLeaveTrigger: false, validateOrderTarget: true);
+
+    private bool ResolveHandPlayAction(CardInstance card, CardInstance? target,
+        bool skipLeaveTrigger, bool validateOrderTarget)
     {
         BeginEffectResolution();
         try
         {
-            bool completed = PlayCardActionCore(card, target, skipLeaveTrigger);
+            bool completed = PlayCardActionCore(card, target, skipLeaveTrigger, validateOrderTarget);
             if (completed)
             {
                 ExecuteAutoPlayCards();
@@ -1580,12 +1590,22 @@ public sealed class MatchEngine
         finally { EndEffectResolution(); }
     }
 
-    private bool PlayCardActionCore(CardInstance card, CardInstance? target, bool skipLeaveTrigger)
+    private bool PlayCardActionCore(CardInstance card, CardInstance? target, bool skipLeaveTrigger,
+        bool validateOrderTarget)
     {
         if (!CanPlay(card, out string reason, target))
         {
             return false;
         }
+
+        // BP_Logic.CanPlayCardFromHand order search uses the card-local
+        // CanPlayFromHand predicate and then CanSelectAsTarget. Existence of
+        // some valid target does not validate the target in this root command.
+        // CanTarget restores its temporary binding, but queries are not pure.
+        if (validateOrderTarget && card.Definition.IsOrder && card.Definition.ChooseOneOptionCount == 0
+            && card.SelectTargetOnPlayedFromHand
+            && !Api.CanTarget(card, target).Can)
+            return false;
 
         if (Api.IsGotcha(card))
         {

@@ -143,6 +143,8 @@ public sealed class MainActionPolicyAdapter
         if(command.Kind!=MainActionKind.Play && command.ChooseOne!=-1)return false;
         if(command.Kind==MainActionKind.EndTurn){engine.EndTurn(actor);return true;}
         var source=engine.State.ById(command.SourceId);var target=engine.State.ById(command.TargetId);
+        // A missing explicit ID must not silently turn into the no-target command.
+        if(command.TargetId!=0 && target is null)return false;
         if(command.Kind==MainActionKind.Play && source is not null)
         {
             int count=source.Definition.ChooseOneOptionCount;
@@ -154,7 +156,7 @@ public sealed class MainActionPolicyAdapter
         }
         return source is not null && (command.Kind switch
         {
-            MainActionKind.Play=>engine.PlayCard(source,target),
+            MainActionKind.Play=>engine.PlayCardWithOrderTargetCheck(source,target),
             MainActionKind.Attack=>target is not null && engine.Attack(source,target),
             MainActionKind.Move=>engine.MoveUnit(source,command.Slot),
             _=>false

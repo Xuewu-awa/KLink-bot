@@ -7970,6 +7970,13 @@
       "status": "open",
       "scope": "依赖闭合后执行逐卡全部路径及联动验证，建立独立完整认证准入记录。",
       "source": "primary reviewed matrix bootstrap; not exhaustive defect inventory"
+    },
+    {
+      "id": "RULE-TRAINING-EXPLICIT-TARGET",
+      "title": "训练根动作具体目标与查询副作用",
+      "status": "partial",
+      "scope": "已修复非选择型定向指令的具体目标校验及不存在目标ID。仍待ChooseOne分支、单位部署、旧PlayCard入口、查询状态写入和原生目标谓词完整核对；不构成可靠合法掩码。",
+      "source": "out/training-readiness/explicit-order-targets-20261030.json"
     }
   ]
 }
