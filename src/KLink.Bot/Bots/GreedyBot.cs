@@ -87,9 +87,10 @@ public sealed class GreedyBot : IPlayerPolicy
                 continue;
             }
 
+            int choice=card.Definition.ChooseOneOptionCount>0?card.ChooseOne:-1;
             if (engine.PlayCard(card, target))
             {
-                LastStepAction = new(MainActionKind.Play, card.CardId, target?.CardId ?? 0);
+                LastStepAction = new(MainActionKind.Play, card.CardId, target?.CardId ?? 0, ChooseOne:choice);
                 return true;
             }
         }

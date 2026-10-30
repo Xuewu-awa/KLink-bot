@@ -88,7 +88,7 @@ internal static class ActionDatasetTool
         inputs["card-vectors.json"]=TrainingAdmission.Hash(vectorPath);
         inputs["KLink.Bot.dll"]=TrainingAdmission.Hash(typeof(MatchEngine).Assembly.Location);
         inputs["NNTrain.dll"]=TrainingAdmission.Hash(typeof(ActionDatasetTool).Assembly.Location);
-        var header=new ActionDatasetHeader(2,"KLink.MainActionLabels",StateEncoder.Spec,MainActionFeatures.Spec,
+        var header=new ActionDatasetHeader(3,"KLink.MainActionLabels",StateEncoder.Spec,MainActionFeatures.Spec,
             "actor",OracleActionEpisodeRunner.TeacherContract,"structural-superset",seed,games,inputs);
         var quality=new ActionDatasetQuality {Header=header};
         using(var file=File.Create(path))
@@ -158,7 +158,7 @@ internal static class ActionDatasetTool
             var q=JsonSerializer.Deserialize<ActionDatasetQuality>(File.ReadAllText(path+".quality.json"),Json)
                 ?? throw new InvalidDataException("Missing action quality manifest.");
             var h=q.Header;
-            if(h is null || h.Version!=2 || h.Kind!="KLink.MainActionLabels" || h.Perspective!="actor"
+            if(h is null || h.Version!=3 || h.Kind!="KLink.MainActionLabels" || h.Perspective!="actor"
                 || h.ObservationSpec!=StateEncoder.Spec || h.ActionSpec!=MainActionFeatures.Spec
                 || h.Teacher!=OracleActionEpisodeRunner.TeacherContract || h.Candidates!="structural-superset"
                 || q.Rows<=0 || q.AcceptedGames<=0 || q.Games.Count!=h.RequestedGames
@@ -208,10 +208,17 @@ internal static class ActionDatasetTool
                         MainActionKind.Play=>c.SourceId>0 && c.TargetId>=0 && c.Slot==-1,
                         MainActionKind.Attack=>c.SourceId>0 && c.TargetId>0 && c.Slot==-1,
                         MainActionKind.Move=>c.SourceId>0 && c.TargetId==0 && c.Slot>=0,_=>false};
+                    shape &= c.Kind==MainActionKind.Play ? c.ChooseOne>=-1 : c.ChooseOne==-1;
                     int bit=c.Kind switch {MainActionKind.Play=>0,MainActionKind.Attack=>1,MainActionKind.Move=>2,_=>3};
                     if(!shape || option.Index!=i || !commands.Add(c) || option.Features is null || option.Features.Count!=MainActionFeatures.Dim
                         || !option.Features.All(float.IsFinite) || option.Features.Take(4).Where((f,j)=>f!=(j==bit?1:0)).Any())
                         throw new InvalidDataException("Action candidate/feature mismatch.");
+                    float choice=option.Features[16],branches=option.Features[17];
+                    if(c.Kind==MainActionKind.Play
+                        ? choice!=(float)c.ChooseOne+1 || branches<0 || branches!=MathF.Truncate(branches)
+                            || (branches==0 ? c.ChooseOne!=-1 : c.ChooseOne<0 || c.ChooseOne>=branches)
+                        : choice!=0 || branches!=0)
+                        throw new InvalidDataException("Action choose-one command/feature mismatch.");
                 }
                 optionCounts[row.Game]+=row.Candidates.Length;
                 if(optionCounts[row.Game]>OracleActionEpisodeRunner.MaxOptionsPerEpisode)

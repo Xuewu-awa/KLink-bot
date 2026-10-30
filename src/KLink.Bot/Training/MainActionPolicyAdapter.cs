@@ -4,12 +4,13 @@ using KLink.Bot.NN;
 namespace KLink.Bot.Training;
 
 public enum MainActionKind { EndTurn, Play, Attack, Move }
-public sealed record MainActionCommand(MainActionKind Kind, int SourceId = 0, int TargetId = 0, int Slot = -1);
+public sealed record MainActionCommand(MainActionKind Kind, int SourceId = 0, int TargetId = 0, int Slot = -1,
+    int ChooseOne = -1);
 public sealed record MainActionOption(int Index, MainActionCommand Command, IReadOnlyList<float> Features);
 public sealed record MainActionRequest(Side Actor, int Turn, IReadOnlyList<MainActionOption> Candidates,
     IReadOnlyList<float> Observation, IReadOnlyList<string> CoverageGaps)
 {
-    public int ContractVersion => 1;
+    public int ContractVersion => 2;
     public string ObservationSpec => StateEncoder.Spec;
     public string ActionSpec => MainActionFeatures.Spec;
 }
@@ -17,8 +18,8 @@ public sealed record MainActionResult(MainActionCommand Command, bool Accepted, 
 
 public static class MainActionFeatures
 {
-    public const int Dim = 16;
-    public const string Spec = "main-action/v1;dim=16;play,attack,move,end;sourceAtk20,sourceDef20,kredit12,operation12;targetAtk20,targetDef20,targetRelation,targetHQ;slotByCapacity,sourceBoard,sourceHand,sourceOrder";
+    public const int Dim = 18;
+    public const string Spec = "main-action/v2;dim=18;play,attack,move,end;sourceAtk20,sourceDef20,kredit12,operation12;targetAtk20,targetDef20,targetRelation,targetHQ;slotByCapacity,sourceBoard,sourceHand,sourceOrder;chooseOneIndexPlusOne,chooseOneOptionCount";
 
     internal static IReadOnlyList<float> Encode(GameState state, Side actor, MainActionCommand command)
     {
@@ -34,6 +35,8 @@ public static class MainActionFeatures
             f[8]=target.Attack/20f;f[9]=target.Defense/20f;f[10]=target.Owner==actor?1:-1;f[11]=target.IsHq?1:0;
         }
         if(command.Kind==MainActionKind.Move)f[12]=command.Slot/(float)Math.Max(1,state.FrontlineCapacity-1);
+        if(command.Kind==MainActionKind.Play)
+        {f[16]=command.ChooseOne+1;f[17]=source?.Definition.ChooseOneOptionCount??0;}
         return Array.AsReadOnly(f);
     }
 }
@@ -74,9 +77,13 @@ public sealed class MainActionPolicyAdapter
         var board=state.AllCards.Where(c=>c.Location.IsBoard()).OrderBy(c=>c.CardId).ToArray();
         foreach(var card in state.Hand(actor).OrderBy(c=>c.CardId))
         {
-            if(card.Definition.ChooseOneOptionCount>0){gaps.Add($"choose-one/{card.CardId}");continue;}
-            commands.Add(new(MainActionKind.Play,card.CardId));
-            foreach(var target in board)commands.Add(new(MainActionKind.Play,card.CardId,target.CardId));
+            int count=card.Definition.ChooseOneOptionCount;
+            for(int branch=0;branch<Math.Max(1,count);branch++)
+            {
+                int choice=count>0?branch:-1;
+                commands.Add(new(MainActionKind.Play,card.CardId,ChooseOne:choice));
+                foreach(var target in board)commands.Add(new(MainActionKind.Play,card.CardId,target.CardId,ChooseOne:choice));
+            }
         }
         foreach(var unit in state.Board(actor).OrderBy(c=>c.CardId))
         {
@@ -116,8 +123,18 @@ public sealed class MainActionPolicyAdapter
     internal static bool ApplyRoot(MatchEngine engine,Side actor,MainActionCommand command)
     {
         if(engine.State.IsFinished || engine.State.ActiveSide!=actor || engine.PendingSelectionCount!=0)return false;
+        if(command.Kind!=MainActionKind.Play && command.ChooseOne!=-1)return false;
         if(command.Kind==MainActionKind.EndTurn){engine.EndTurn(actor);return true;}
         var source=engine.State.ById(command.SourceId);var target=engine.State.ById(command.TargetId);
+        if(command.Kind==MainActionKind.Play && source is not null)
+        {
+            int count=source.Definition.ChooseOneOptionCount;
+            if(source.Owner!=actor || source.Location!=actor.HandOf()
+                || (count>0 ? (uint)command.ChooseOne>=(uint)count : command.ChooseOne!=-1))return false;
+            // Input to the native ChooseOne member, before CanPlay/Blueprint queries.
+            // Do not overwrite derived BlueprintVariables or emulate WhichChooseOne.
+            if(count>0)source.ChooseOne=command.ChooseOne;
+        }
         return source is not null && (command.Kind switch
         {
             MainActionKind.Play=>engine.PlayCard(source,target),

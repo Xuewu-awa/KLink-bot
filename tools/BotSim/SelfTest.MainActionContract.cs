@@ -25,9 +25,12 @@ internal static partial class SelfTest
             var request=adapter.DescribeCandidates(side);
             if(before!=ActionJournal.Fingerprint(engine) || rng!=state.Random.State || engine.Api.Vm.ProgramsExecuted!=programs)
                 return "结构候选枚举调用了效果/随机流";
-            if(!request.CoverageGaps.Contains("choose-one/72") || request.Candidates.Any(o=>o.Command.SourceId==72
-                || o.Command.SourceId==90 || o.Command.TargetId==90))return "未标记缺口或枚举了隐藏手牌";
-            if(request.Candidates.Any(o=>o.Features.Count!=16 || !o.Features.All(float.IsFinite) || o.Features.Take(4).Sum()!=1))
+            var branches=request.Candidates.Where(o=>o.Command.SourceId==72).ToArray();
+            if(request.CoverageGaps.Any(g=>g.StartsWith("choose-one/")) || branches.Length!=2*(1+state.AllCards.Count(c=>c.Location.IsBoard()))
+                || branches.Select(o=>o.Features.Last()).Distinct().Single()!=2
+                || branches.Select(o=>o.Features[^2]).Distinct().Order().SequenceEqual(new float[]{1,2})==false
+                || request.Candidates.Any(o=>o.Command.SourceId==90 || o.Command.TargetId==90))return "分支候选缺失或枚举了隐藏手牌";
+            if(request.Candidates.Any(o=>o.Features.Count!=18 || !o.Features.All(float.IsFinite) || o.Features.Take(4).Sum()!=1))
                 return "动作特征规格错误";
             hidden.Attack=99;hidden.Defense=99;
             var again=adapter.DescribeCandidates(side);
@@ -48,6 +51,45 @@ internal static partial class SelfTest
             return "拒绝后自动换候选或伪装成功";
         bool threw=false;try{adapter.ChooseAndApply(Side.Left,_=>int.MaxValue);}catch(InvalidOperationException){threw=true;}
         return threw && adapter.Faults==1 && adapter.RejectedActions==1 ? null : "非法索引未独立报错";
+    }
+
+    private static string? MainChooseOneBranches(CardDatabase db)
+    {
+        const string research="card_event_advanced_royal_research";
+        foreach(Side side in new[]{Side.Left,Side.Right})
+        foreach(int branch in new[]{0,1})
+        {
+            var (direct,ds)=EmptyBoard(db);var (applied,st)=EmptyBoard(db);
+            ds.ActiveSide=st.ActiveSide=side;ds.SetKredits(side,12);st.SetKredits(side,12);
+            var a=ds.CreateWithId(research,side,70,side.HandOf(),0);
+            var b=st.CreateWithId(research,side,70,side.HandOf(),0);
+            a.BlueprintVariables["ChooseOne"]=b.BlueprintVariables["ChooseOne"]=77;
+            a.ChooseOne=branch;b.ChooseOne=1-branch;
+            var command=new MainActionCommand(MainActionKind.Play,70,ChooseOne:branch);
+            var adapter=new MainActionPolicyAdapter(applied,new StateEncoder.CardVecs());
+            if(!direct.PlayCard(a) || !adapter.ChooseAndApply(side,r=>r.Candidates.ToList().FindIndex(o=>o.Command==command)).Accepted)
+                return $"分支执行拒绝 {side}/{branch}";
+            string expected=branch==0?"card_event_active_sonar":"card_event_bletchley_park";
+            if(!st.Hand(side).Any(c=>c.Name==expected) || b.ChooseOne!=branch || !Equals(b.BlueprintVariables["ChooseOne"],77)
+                || ds.SnapshotJson()!=st.SnapshotJson() || JsonSerializer.Serialize(ds.ActionLog)!=JsonSerializer.Serialize(st.ActionLog)
+                || ds.Random.State!=st.Random.State)return $"分支结果或独立字段/轨迹不一致 {side}/{branch}";
+        }
+        foreach(int branch in new[]{-2,-1,2,int.MaxValue})
+        {
+            var (engine,state)=EmptyBoard(db);state.ActiveSide=Side.Left;
+            var source=state.CreateWithId(research,Side.Left,70,Side.Left.HandOf(),0);
+            source.ChooseOne=1;string before=state.SnapshotJson();
+            if(MainActionPolicyAdapter.ApplyRoot(engine,Side.Left,new(MainActionKind.Play,70,ChooseOne:branch))
+                || before!=state.SnapshotJson())return "非法分支未在根调用前拒绝";
+        }
+        // Prefix rebuilds must retain the explicit native member even where the
+        // Blueprint never calls WhichChooseOne (the M1 gun reads it in damage).
+        var deck=Enumerable.Repeat("card_unit_120mm_m1_gun",39).ToArray();
+        var result=OracleActionEpisodeRunner.RunCore(db,new StateEncoder.CardVecs(),deck,deck,1,maxRows:20);
+        if(result.Labels.Count!=20 || result.Errors.Any(e=>e!="episode_buffer_limit" && e!="unfinished")
+            || !result.Labels.Any(l=>l.Request.Candidates[l.ChosenIndex].Command is {Kind:MainActionKind.Play,ChooseOne:0}))
+            return "选择卡教师/前缀重建失败："+string.Join(',',result.Errors);
+        return null;
     }
 
     private static string? MainActionsMirrorGreedy(CardDatabase db)

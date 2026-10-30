@@ -29,7 +29,7 @@ public sealed record OracleActionEpisodeResult(MatchEngine Teacher, MatchEngine 
 /// </summary>
 public static class OracleActionEpisodeRunner
 {
-    public const string TeacherContract = "greedy-isolated-prefix/v2+first-index/v1";
+    public const string TeacherContract = "greedy-isolated-prefix/v3+choose-one-explicit/v1+first-index/v1";
     public const int MaxPlanningPrefixRoots = 250000;
     public const int MaxRows = 5000;
     public const int MaxCandidatesPerRow = 4096;

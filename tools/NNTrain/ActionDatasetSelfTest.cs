@@ -33,9 +33,9 @@ internal static class ActionDatasetSelfTest
         string path=Path.Combine(dir,"data.jsonl.gz");
         var hashes=new[]{"cards.json","card-ir.json","card-effects.json","card-vectors.json","KLink.Bot.dll","NNTrain.dll"}
             .ToDictionary(k=>k,_=>new string('0',64));
-        var header=new ActionDatasetHeader(2,"KLink.MainActionLabels",StateEncoder.Spec,MainActionFeatures.Spec,"actor",
+        var header=new ActionDatasetHeader(3,"KLink.MainActionLabels",StateEncoder.Spec,MainActionFeatures.Spec,"actor",
             OracleActionEpisodeRunner.TeacherContract,"structural-superset",1,2,hashes);
-        var option=new MainActionOption(0,new(MainActionKind.EndTurn),Array.AsReadOnly(new float[]{0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0}));
+        var option=new MainActionOption(0,new(MainActionKind.EndTurn),Array.AsReadOnly(new float[]{0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0}));
         var good=new ActionDatasetRow(0,0,Side.Left,1,new float[StateEncoder.Dim],[option],0,["legal-mask/unverified"]);
         ActionDatasetQuality Quality()=>new(){Header=header,AcceptedGames=1,RejectedGames=1,Rows=1,Games=[
             new(){Game=0,Seed=1,Accepted=true,Finished=true,Winner=Side.Left,BufferedRows=1,WrittenRows=1,ComparedSteps=1,AppliedActions=1,PlanningDecisions=1},
@@ -78,7 +78,9 @@ internal static class ActionDatasetSelfTest
                 ("null command",r=>r with {Candidates=[option with {Command=null}]}),
                 ("null features",r=>r with {Candidates=[option with {Features=null}]}),
                 ("wrong feature width",r=>r with {Candidates=[option with {Features=Array.Empty<float>()}]}),
-                ("wrong kind onehot",r=>r with {Candidates=[option with {Features=new float[16]}]})};
+                ("wrong kind onehot",r=>r with {Candidates=[option with {Features=new float[18]}]}),
+                ("choice on end turn",r=>r with {Candidates=[option with {Command=new(MainActionKind.EndTurn,ChooseOne:0)}]}),
+                ("choice feature on end turn",r=>r with {Candidates=[option with {Features=option.Features.Take(16).Concat(new float[]{1,2}).ToArray()}]})};
             foreach(var m in mutations){Save(Quality(),m.Mutate(good));Reject(m.Name);}
             var q=Quality();q.Games[0].MainRejections=1;Save(q,good);Reject("accepted root rejection");
             q=Quality();q.Games[0].BufferedRows=2;Save(q,good);Reject("accepted incomplete prefix");
@@ -88,6 +90,11 @@ internal static class ActionDatasetSelfTest
             q=Quality();q.Games[0].PlanningDecisions=0;Save(q,good);Reject("missing isolated planning count");
             q=Quality();q.Games[0].PlanningPrefixRoots=1;Save(q,good);Reject("wrong isolated prefix count");
             q=Quality();q.Header=q.Header with {Version=1,Teacher="greedy-step/v1+first-index/v1"};Save(q,good);Reject("legacy unisolated teacher rejected");
+            q=Quality();q.Header=q.Header with {Version=2,Teacher="greedy-isolated-prefix/v2+first-index/v1"};Save(q,good);Reject("legacy no-branch contract rejected");
+            var play=option with {Command=new(MainActionKind.Play,70,ChooseOne:1),Features=new float[]{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,2}};
+            Save(Quality(),good with {Candidates=[play]});Assert(ActionDatasetTool.Verify(path).Rows==1,"branch one roundtrip");
+            Save(Quality(),good with {Candidates=[play with {Command=play.Command with {ChooseOne=2}}]});Reject("branch out of range");
+            Save(Quality(),good with {Candidates=[play with {Command=play.Command with {ChooseOne=0}}]});Reject("branch features disagree");
             Assert(ActionDatasetTool.AdmissionReasons(episode with {PlanningCalls=new Dictionary<string,int>{{"<unknown-probe-call>",1}}},true)
                 .Contains("unimplemented:<unknown-probe-call>"),"discarded probe diagnostics still block admission");
             Save(Quality(),good);using(var file=new FileStream(path,FileMode.Append))file.WriteByte(42);Reject("data hash tampering");
