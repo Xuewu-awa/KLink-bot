@@ -948,7 +948,7 @@ internal static class Program
               NNTrain dump   --games 10000 --out nn-data.bin [--seed 1] [--every 1] [--sampling turn|decision]
             sampling=turn保留回合末样本；decision在贪心步骤及选牌回答前采样，every按边界序号抽样。
             两者均为左方视角的胜负价值样本；decision还不是动作标签/掩码数据。
-              NNTrain dump-actions --games 100 --seed 1 --out actions.jsonl.gz
+              NNTrain dump-actions --games 100 --seed 1 --out actions.jsonl.gz [--choose-one-policy native|last]
               NNTrain verify-actions --data actions.jsonl.gz
               NNTrain actions-selftest
               NNTrain train  --data nn-data.bin [--epochs 30] [--hidden 64]

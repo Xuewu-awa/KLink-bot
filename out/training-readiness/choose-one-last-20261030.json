@@ -1,0 +1,55 @@
+{
+  "version": 1,
+  "date": "2026-10-30",
+  "baseCommit": "116ff27f9468cf97120ff98a7fb163cf1e49d95c",
+  "scope": "Fixed-last branch sampling and software trace checks; no new game-rule certification",
+  "teacher": "greedy-isolated-prefix/v3+choose-one-last/v1+first-index/v1",
+  "sourceSha256": {
+    "src/KLink.Bot/Training/OracleActionEpisodeRunner.cs": "43b8db368e5e90d7095a20b86791c1a3ec3ecdc65876d1d1a46be58582bf260b",
+    "tools/BotSim/SelfTest.MainActionContract.cs": "dd234a496e72beac42165e0dcd5b1e5049bcf7c1a44a2d7f236a8457e3443c05",
+    "tools/NNTrain/ActionDatasetTool.cs": "587d05e95ddfb5de25fd9e3d2bd8fa52b170d3b6078accf4c0c919c0b8911634",
+    "tools/NNTrain/ActionDatasetSelfTest.cs": "4db17eee066d6c811e5065b8e45524698fd5a788bee173ae00585795d5a0ad4e",
+    "tools/NNTrain/Program.cs": "21eb45c4d3efaf08cf1e2c3d463f73e216b08e44f3c950cc8951b7f6b85104ac"
+  },
+  "validation": {
+    "botSimChecks": 1005,
+    "actionDatasetChecks": 43,
+    "auditMatrixChecks": 16,
+    "compressedDatasetVerified": true
+  },
+  "sampling": {
+    "requestedGames": 20,
+    "seed": 1,
+    "accepted": 20,
+    "rejected": 0,
+    "rows": 2460,
+    "chosenBranches": {
+      "1": 47
+    },
+    "offeredBranches": {
+      "0": 4466,
+      "1": 4466
+    },
+    "rejectionReasons": {}
+  },
+  "worker": {
+    "skill": "deepseek-worker",
+    "job": "20261030-181120-choose-one-last-inventory-9a5fc7d7",
+    "inventorySha256": "017fb9387a76b4f12badd3691198dc19aee8499a85c4bbdd4ea349ac2a65a5a9",
+    "verified": "Independently recomputed all 51 entries, all fields, total count and source hash; inventory only"
+  },
+  "localArtifacts": {
+    "data": "D:\\Codex Workshop\\kards-install-review\\actions-choose-one-last-20.jsonl.gz",
+    "dataSha256": "411580fbb6423fcefdac1bdb2245720acd5d120f383da30dbc4e8707078e2cd1",
+    "manifestSha256": "bad869ab84e7e639dfab6caeed8cda276183f4d79708887e9b99a481040c6d0d",
+    "selftestLogSha256": "50253395e8a310c110d898946703dbe68e5d3a5ba9289b8960ac6b0ad6ef4f1c"
+  },
+  "limitations": [
+    "Fixed-last is a coverage strategy, not an optimal teacher.",
+    "Does not certify all 51 choice cards or current-client behavior.",
+    "Structural candidate superset, board targets and default placement only.",
+    "Snapshot and trace checks do not prove full private state equivalence.",
+    "Prefix reconstruction retains quadratic work and strict episode limits.",
+    "No action network trained."
+  ]
+}

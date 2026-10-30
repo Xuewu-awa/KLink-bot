@@ -93,6 +93,15 @@ internal static class ActionDatasetSelfTest
             q=Quality();q.Header=q.Header with {Version=2,Teacher="greedy-isolated-prefix/v2+first-index/v1"};Save(q,good);Reject("legacy no-branch contract rejected");
             var play=option with {Command=new(MainActionKind.Play,70,ChooseOne:1),Features=new float[]{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,2}};
             Save(Quality(),good with {Candidates=[play]});Assert(ActionDatasetTool.Verify(path).Rows==1,"branch one roundtrip");
+            q=Quality();q.Header=q.Header with {Teacher=OracleActionEpisodeRunner.LastChoiceTeacherContract};
+            Save(q,good with {Candidates=[play]});Assert(ActionDatasetTool.Verify(path).Rows==1,"fixed-last branch one roundtrip");
+            var first=play with {Command=play.Command with {ChooseOne=0},Features=play.Features.Take(16).Concat(new float[]{1,2}).ToArray()};
+            Save(q,good with {Candidates=[first]});Reject("fixed-last label must match policy");
+            q=Quality();q.Header=q.Header with {Teacher="unknown-teacher"};Save(q,good);Reject("unknown teacher rejected");
+            Assert(ActionDatasetTool.ParseChooseOnePolicy("native")==OracleChooseOnePolicy.Native
+                && ActionDatasetTool.ParseChooseOnePolicy("last")==OracleChooseOnePolicy.Last,"explicit teacher policy parser");
+            bool badPolicy=false;try{ActionDatasetTool.ParseChooseOnePolicy("typo");}catch(ArgumentException){badPolicy=true;}
+            Assert(badPolicy,"unknown teacher policy rejected");
             Save(Quality(),good with {Candidates=[play with {Command=play.Command with {ChooseOne=2}}]});Reject("branch out of range");
             Save(Quality(),good with {Candidates=[play with {Command=play.Command with {ChooseOne=0}}]});Reject("branch features disagree");
             Assert(ActionDatasetTool.AdmissionReasons(episode with {PlanningCalls=new Dictionary<string,int>{{"<unknown-probe-call>",1}}},true)

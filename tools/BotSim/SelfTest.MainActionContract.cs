@@ -89,6 +89,28 @@ internal static partial class SelfTest
         if(result.Labels.Count!=20 || result.Errors.Any(e=>e!="episode_buffer_limit" && e!="unfinished")
             || !result.Labels.Any(l=>l.Request.Candidates[l.ChosenIndex].Command is {Kind:MainActionKind.Play,ChooseOne:0}))
             return "选择卡教师/前缀重建失败："+string.Join(',',result.Errors);
+        int probes=0;
+        var last=OracleActionEpisodeRunner.RunCore(db,new StateEncoder.CardVecs(),deck,deck,1,maxRows:20,
+            chooseOnePolicy:OracleChooseOnePolicy.Last,
+            afterProbe:(probe,step)=>
+            {
+                probes++;
+                // Unplayed hand choices on the probe must not contaminate execution engines.
+                foreach(var card in probe.State.Hand(probe.State.ActiveSide))
+                    if(card.Definition.ChooseOneOptionCount>0)card.ChooseOne=12345;
+            });
+        var again=OracleActionEpisodeRunner.RunCore(db,new StateEncoder.CardVecs(),deck,deck,1,maxRows:20,
+            chooseOnePolicy:OracleChooseOnePolicy.Last);
+        if(last.Labels.Count!=20 || probes!=20 || last.Errors.Any(e=>e!="episode_buffer_limit" && e!="unfinished")
+            || !last.Labels.Any(l=>l.Request.Candidates[l.ChosenIndex].Command is {Kind:MainActionKind.Play,ChooseOne:1})
+            || last.Labels.Any(l=>l.Request.Candidates[l.ChosenIndex].Command is {Kind:MainActionKind.Play,ChooseOne:0})
+            || JsonSerializer.Serialize(last.Labels)!=JsonSerializer.Serialize(again.Labels)
+            || last.Replay.State.SnapshotJson()!=again.Replay.State.SnapshotJson())
+            return "固定末项分支/探测隔离/重复性失败："+string.Join(',',last.Errors);
+        bool badPolicy=false;
+        try{OracleActionEpisodeRunner.Run(db,new StateEncoder.CardVecs(),deck,deck,1,(OracleChooseOnePolicy)99);}
+        catch(ArgumentOutOfRangeException){badPolicy=true;}
+        if(!badPolicy)return "未知教师选择策略未拒绝";
         return null;
     }
 

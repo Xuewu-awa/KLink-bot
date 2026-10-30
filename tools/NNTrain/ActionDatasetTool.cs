@@ -75,6 +75,7 @@ internal static class ActionDatasetTool
     {
         int games=Int(opts,"games",100);int rawSeed=Int(opts,"seed",1);
         if(games<=0 || rawSeed<0)throw new ArgumentException("--games must be positive and --seed nonnegative.");
+        var choicePolicy=ParseChooseOnePolicy(opts.GetValueOrDefault("choose-one-policy","native"));
         if(KismetLibrary.Default is null)throw new InvalidOperationException("IR must be loaded for action labels.");
         ulong seed=(ulong)rawSeed;string path=opts.GetValueOrDefault("out","action-labels.jsonl.gz");
         var decks=MetaDecks.All;
@@ -89,7 +90,7 @@ internal static class ActionDatasetTool
         inputs["KLink.Bot.dll"]=TrainingAdmission.Hash(typeof(MatchEngine).Assembly.Location);
         inputs["NNTrain.dll"]=TrainingAdmission.Hash(typeof(ActionDatasetTool).Assembly.Location);
         var header=new ActionDatasetHeader(3,"KLink.MainActionLabels",StateEncoder.Spec,MainActionFeatures.Spec,
-            "actor",OracleActionEpisodeRunner.TeacherContract,"structural-superset",seed,games,inputs);
+            "actor",OracleActionEpisodeRunner.ContractFor(choicePolicy),"structural-superset",seed,games,inputs);
         var quality=new ActionDatasetQuality {Header=header};
         using(var file=File.Create(path))
         using(var zip=new GZipStream(file,CompressionLevel.Fastest))
@@ -101,7 +102,7 @@ internal static class ActionDatasetTool
                 var pick=new DeterministicRandom(seed^(0x9E3779B97F4A7C15UL*((ulong)g+1)));
                 int di=pick.Next(decks.Count),dj=pick.Next(decks.Count-1);if(dj>=di)dj++;
                 bool swap=pick.Next(2)==1;int l=swap?dj:di,r=swap?di:dj;
-                var result=OracleActionEpisodeRunner.Run(db,vectors,expanded[l],expanded[r],seed+(ulong)g);
+                var result=OracleActionEpisodeRunner.Run(db,vectors,expanded[l],expanded[r],seed+(ulong)g,choicePolicy);
                 var reasons=AdmissionReasons(result,true);var engines=new[]{result.Teacher,result.Replay};
                 Dictionary<string,int> Merge(Func<MatchEngine,IReadOnlyDictionary<string,int>> get)=>engines
                     .SelectMany(e=>get(e)).GroupBy(p=>p.Key).ToDictionary(p=>p.Key,p=>p.Sum(v=>v.Value));
@@ -160,7 +161,8 @@ internal static class ActionDatasetTool
             var h=q.Header;
             if(h is null || h.Version!=3 || h.Kind!="KLink.MainActionLabels" || h.Perspective!="actor"
                 || h.ObservationSpec!=StateEncoder.Spec || h.ActionSpec!=MainActionFeatures.Spec
-                || h.Teacher!=OracleActionEpisodeRunner.TeacherContract || h.Candidates!="structural-superset"
+                || h.Teacher is not (OracleActionEpisodeRunner.TeacherContract or OracleActionEpisodeRunner.LastChoiceTeacherContract)
+                || h.Candidates!="structural-superset"
                 || q.Rows<=0 || q.AcceptedGames<=0 || q.Games.Count!=h.RequestedGames
                 || q.Games.Select(g=>g.Game).Distinct().Count()!=q.Games.Count
                 || q.Games.Any(g=>g.Game<0 || g.Game>=h.RequestedGames || g.Seed!=h.Seed+(ulong)g.Game)
@@ -220,6 +222,10 @@ internal static class ActionDatasetTool
                         : choice!=0 || branches!=0)
                         throw new InvalidDataException("Action choose-one command/feature mismatch.");
                 }
+                var chosen=row.Candidates[row.ChosenIndex];
+                if(h.Teacher==OracleActionEpisodeRunner.LastChoiceTeacherContract && chosen.Command.Kind==MainActionKind.Play
+                    && chosen.Features[17]>0 && chosen.Command.ChooseOne!=chosen.Features[17]-1)
+                    throw new InvalidDataException("Chosen branch differs from fixed-last teacher contract.");
                 optionCounts[row.Game]+=row.Candidates.Length;
                 if(optionCounts[row.Game]>OracleActionEpisodeRunner.MaxOptionsPerEpisode)
                     throw new InvalidDataException("Action episode option limit exceeded.");
@@ -230,6 +236,13 @@ internal static class ActionDatasetTool
         }
         catch(JsonException error){throw new InvalidDataException("Invalid action dataset JSON.",error);}
     }
+
+    internal static OracleChooseOnePolicy ParseChooseOnePolicy(string value)=>value switch
+    {
+        "native"=>OracleChooseOnePolicy.Native,
+        "last"=>OracleChooseOnePolicy.Last,
+        _=>throw new ArgumentException("--choose-one-policy must be native or last.")
+    };
 
     private static int Int(Dictionary<string,string> opts,string key,int fallback)=>opts.TryGetValue(key,out var value)
         ? int.Parse(value,System.Globalization.CultureInfo.InvariantCulture):fallback;

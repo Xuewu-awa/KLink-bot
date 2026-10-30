@@ -21,6 +21,8 @@ public sealed record OracleActionEpisodeResult(MatchEngine Teacher, MatchEngine 
     public IReadOnlyDictionary<string,int> PlanningCalls {get;init;}=new Dictionary<string,int>();
 }
 
+public enum OracleChooseOnePolicy { Native, Last }
+
 /// <summary>
 /// Collects labels on two independently initialized execution engines. Greedy
 /// probes run only on a disposable third engine rebuilt from seed and root history.
@@ -30,14 +32,22 @@ public sealed record OracleActionEpisodeResult(MatchEngine Teacher, MatchEngine 
 public static class OracleActionEpisodeRunner
 {
     public const string TeacherContract = "greedy-isolated-prefix/v3+choose-one-explicit/v1+first-index/v1";
+    public const string LastChoiceTeacherContract = "greedy-isolated-prefix/v3+choose-one-last/v1+first-index/v1";
+    public static string ContractFor(OracleChooseOnePolicy policy) => policy switch
+    {
+        OracleChooseOnePolicy.Native => TeacherContract,
+        OracleChooseOnePolicy.Last => LastChoiceTeacherContract,
+        _ => throw new ArgumentOutOfRangeException(nameof(policy))
+    };
     public const int MaxPlanningPrefixRoots = 250000;
     public const int MaxRows = 5000;
     public const int MaxCandidatesPerRow = 4096;
     public const int MaxOptionsPerEpisode = 200000;
 
     public static OracleActionEpisodeResult Run(CardDatabase database, StateEncoder.CardVecs vectors,
-        IReadOnlyList<string> left, IReadOnlyList<string> right, ulong seed)
-        => RunCore(database,vectors,left,right,seed);
+        IReadOnlyList<string> left, IReadOnlyList<string> right, ulong seed,
+        OracleChooseOnePolicy chooseOnePolicy=OracleChooseOnePolicy.Native)
+        => RunCore(database,vectors,left,right,seed,chooseOnePolicy:chooseOnePolicy);
 
     // Test seams stay internal: production callers cannot mutate a collecting episode.
     internal static OracleActionEpisodeResult RunCore(CardDatabase database, StateEncoder.CardVecs vectors,
@@ -48,8 +58,10 @@ public static class OracleActionEpisodeRunner
         Func<MainActionRequest,int,int>? select=null,
         int maxPlanningPrefixRoots=MaxPlanningPrefixRoots,
         Action<MatchEngine,int>? beforeProbe=null,
-        Action<MatchEngine,int>? afterProbe=null)
+        Action<MatchEngine,int>? afterProbe=null,
+        OracleChooseOnePolicy chooseOnePolicy=OracleChooseOnePolicy.Native)
     {
+        _=ContractFor(chooseOnePolicy);
         var teacher=new MatchEngine(database,left,right,seed);var replay=new MatchEngine(database,left,right,seed);
         var labels=new List<OracleActionLabel>();var errors=new List<string>();
         var main=new MainActionPolicyAdapter(replay,vectors);var teacherView=new MainActionPolicyAdapter(teacher,vectors);
@@ -125,6 +137,11 @@ public static class OracleActionEpisodeRunner
                                 errors.Add("planning_prefix_mismatch");
                             if(errors.Count==0)
                             {
+                                // Select before CanPlay/target queries, only on the disposable probe.
+                                if(chooseOnePolicy==OracleChooseOnePolicy.Last)
+                                    foreach(var card in probe.State.Hand(actor))
+                                        if(card.Definition.ChooseOneOptionCount>0)
+                                            card.ChooseOne=card.Definition.ChooseOneOptionCount-1;
                                 var bot=new GreedyBot();planningDecisions++;
                                 bot.PlayStep(probe,actor);command=bot.LastStepAction;
                                 afterProbe?.Invoke(probe,compared);
@@ -145,6 +162,11 @@ public static class OracleActionEpisodeRunner
                         errors.Add("planning_execution_fault");
                     if(errors.Count!=0)break;
                     if(command is null){errors.Add("oracle_no_root");break;}
+                    if(chooseOnePolicy==OracleChooseOnePolicy.Last && command.Kind==MainActionKind.Play)
+                    {
+                        int branches=teacher.State.ById(command.SourceId)?.Definition.ChooseOneOptionCount??0;
+                        if(branches>0 && command.ChooseOne!=branches-1){errors.Add("teacher_choice_policy_mismatch");break;}
+                    }
                     int index=-1,matches=0;
                     for(int i=0;i<request.Candidates.Count;i++)if(request.Candidates[i].Command==command){index=i;matches++;}
                     if(matches!=1)

@@ -23,3 +23,11 @@ MainActionCommand 增加 ChooseOne：-1 表示非选择卡；选择卡使用从0
 完整1005项BotSim、38项动作数据检查和16项矩阵测试通过，最终压缩数据通过verify-actions。机器记录：[ChooseOne动作检查](../../out/training-readiness/choose-one-actions-20261030.json)。
 
 候选仍不是合法掩码；目标空间仍限场上对象、部署仍使用默认落点。贪心教师通常沿用默认分支0，接口能表示分支1不等于样本已覆盖所有选择卡的两个分支。first-index/v1 是嵌套选牌策略，与本次根ChooseOne参数不是同一接口。现有快照/日志比较不是完整私有状态、队列与静态状态等价证明。未训练动作模型；前缀重建仍有二次累计成本和每局250000根重放上限。
+
+## 后续：固定末项采样模式
+
+`dump-actions --choose-one-policy native|last` 显式区分原有教师和固定末项教师；省略参数仍为 native。last 在每次独立探测引擎完成前缀一致性检查后、GreedyBot 的 CanPlay/目标查询之前，仅设置当前手牌选择卡的原生 ChooseOne 索引为选项数减一。正式引擎仍只执行确认后的根命令。嵌套选牌仍使用 first-index/v1。
+
+末项教师使用独立契约 `greedy-isolated-prefix/v3+choose-one-last/v1+first-index/v1`，保持数据版本3和18维特征。生成器与校验器都拒绝末项标签不符；未知参数和未知教师契约拒绝。选择卡前缀回归验证分支1、相同种子可重复，以及探测手牌字段污染不会进入正式引擎。
+
+这是用于分支执行覆盖的固定策略，不是分支优劣判断或最优教师。清点静态卡表所得51张选择卡各有2项，只描述现有输入，不能据此认定全部可达分支已完成权威规则认证。真实采样结果与验证记录见 `out/training-readiness/choose-one-last-20261030.json`；完整规则、合法掩码、场外目标和默认部署落点等既有缺口仍保留。
