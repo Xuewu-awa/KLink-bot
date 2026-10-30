@@ -20,6 +20,8 @@ internal static partial class SelfTest
 
     private static readonly List<Case> Cases = new()
     {
+        new("反制触发回执：通知顺序、取消标记及真实ULTRA", CountermeasureTriggerNotice),
+        new("反制触发回执：延迟刷新读取当前阵营且只执行一次", CountermeasureLocalReceiptRefresh),
         new("指令手牌移动：通知顺序与弃牌编号", OrderHandMovement),
         new("普通手牌落点：插入并在回调前刷新手牌与半场", HandDeploymentLocationRefresh),
         new("选择单位部署：四卡双侧分支和零目标效果", ChoiceUnitDeploymentBranches),

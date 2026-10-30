@@ -7911,6 +7911,54 @@
           }
         }
       ]
+    },
+    {
+      "id": "TRAINING/GotchaTriggered/local-receipt-20261030",
+      "symbol": "GotchaTriggered",
+      "modes": [
+        null
+      ],
+      "status": "partial",
+      "validated_scope": "触发通知三字段与T21之前顺序；本地回执按当前卡阵营整理手牌、不重复触发；双侧stop/skip、真实ULTRA及非正ID边界。远端回执、actionCancelled通知改写、取消批次与整卡认证不在范围。",
+      "report": "out/audit/systematic-rules/countermeasure-receipts-20261030.json",
+      "report_sha256": "c02e54860a5ecab090c91689ae93f42e360f5f693dda2241f91920c3bd5b692a",
+      "client_exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+      "source_bindings": {
+        "src/KLink.Bot/Effects/CardApi.cs": "152e10394a2b9f38bd81128f8ab3192eaae19fd3d74ae1cd9276c19acda904c4",
+        "src/KLink.Bot/Engine/MatchEngine.cs": "995d38b560581ff48b84e003520b10ba8ff6f11fc484b327077072393c3cba62",
+        "tools/BotSim/SelfTest.CountermeasureReceipts.cs": "3ab227e228ff602b20c96b14fa13da7ee8f6c30210fdd4d9e37317cc81e729d2"
+      },
+      "evidence_bindings": {
+        "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.functions.json": "b007f0f5689d266cdccee220f164db12582d3893c76a087228dd3ac55836f297",
+        "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Logic\\BP_OnlineMatch.functions.json": "630b523c5a575d1aa956aba41eea8c22a19bf20b6546ffa0a03ad122d73ffe98",
+        "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\BP_Board.functions.json": "73b7c91507fd7711d5ca3b5348e9de8c5315d28d07409dc42a04f00cc5c5480f",
+        "D:\\Codex Workshop\\kards-install-review\\movement-receipts-new-online.json": "aecaa9fe6b20c77a79c3162d482c40c5e38a9f00c1580017dfb1676d39baf4f8",
+        "D:\\Codex Workshop\\kards-install-review\\order-cancel-packet\\result.json": "5dc4306989ebc06256d5634805918bfd39e1cf593f0eb900e2e384fd17b2308a",
+        "D:\\Codex Workshop\\kards-install-review\\extracted\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.uasset": "fdf43e4181189ee25a28301a1223d3bb3699eba4fd0275ba2a36f87db8ecac10",
+        "D:\\Fmodel\\Output\\newOutput\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.uasset": "fdf43e4181189ee25a28301a1223d3bb3699eba4fd0275ba2a36f87db8ecac10",
+        "D:\\Codex Workshop\\kards-install-review\\extracted\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.uexp": "67b6d1285af398bb3c7fe7ea6811a720449c610e9c820851f3d02ec54d00bb41",
+        "D:\\Fmodel\\Output\\newOutput\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.uexp": "67b6d1285af398bb3c7fe7ea6811a720449c610e9c820851f3d02ec54d00bb41",
+        "D:\\Codex Workshop\\kards-install-review\\extracted\\kards\\Content\\Blueprints\\Logic\\U_CardFunctionsNotifier.uasset": "20cf3925bd3f8d5417364ea61bd4fa4609f33ba8abc7ea1df4908ccf84a383a1",
+        "D:\\Fmodel\\Output\\newOutput\\kards\\Content\\Blueprints\\Logic\\U_CardFunctionsNotifier.uasset": "20cf3925bd3f8d5417364ea61bd4fa4609f33ba8abc7ea1df4908ccf84a383a1",
+        "D:\\Codex Workshop\\kards-install-review\\extracted\\kards\\Content\\Blueprints\\Logic\\U_CardFunctionsNotifier.uexp": "cc8d964f193507e0d0a21e7b9db51f33bc662059f8b114ec8d38a3682874f705",
+        "D:\\Fmodel\\Output\\newOutput\\kards\\Content\\Blueprints\\Logic\\U_CardFunctionsNotifier.uexp": "cc8d964f193507e0d0a21e7b9db51f33bc662059f8b114ec8d38a3682874f705",
+        "D:\\Codex Workshop\\kards-install-review\\extracted\\kards\\Content\\Blueprints\\BP_Board.uasset": "19a4da2bb98e6f3fbbec2f0e0cf7ca6dc91640fd098cb322c622ae88bf20b89c",
+        "D:\\Fmodel\\Output\\newOutput\\kards\\Content\\Blueprints\\BP_Board.uasset": "19a4da2bb98e6f3fbbec2f0e0cf7ca6dc91640fd098cb322c622ae88bf20b89c",
+        "D:\\Codex Workshop\\kards-install-review\\extracted\\kards\\Content\\Blueprints\\BP_Board.uexp": "0b936d9516e7f5dc89963f7a1d787e3f90f2fc30567454eddf713b8eb7bd4293",
+        "D:\\Fmodel\\Output\\newOutput\\kards\\Content\\Blueprints\\BP_Board.uexp": "0b936d9516e7f5dc89963f7a1d787e3f90f2fc30567454eddf713b8eb7bd4293",
+        "D:\\Codex Workshop\\kards-install-review\\extracted\\kards\\Content\\Blueprints\\Cards\\BP_HandCard.uasset": "5e69c19d1886cc50286eed67f4bfc8a912509fba3450432e0a2c3a85d26484ca",
+        "D:\\Fmodel\\Output\\newOutput\\kards\\Content\\Blueprints\\Cards\\BP_HandCard.uasset": "5e69c19d1886cc50286eed67f4bfc8a912509fba3450432e0a2c3a85d26484ca",
+        "D:\\Codex Workshop\\kards-install-review\\extracted\\kards\\Content\\Blueprints\\Cards\\BP_HandCard.uexp": "ff79bf4bd43987f85c2b7e3248c3ae1cf70b657a94fbf24039ed16a04517167c",
+        "D:\\Fmodel\\Output\\newOutput\\kards\\Content\\Blueprints\\Cards\\BP_HandCard.uexp": "ff79bf4bd43987f85c2b7e3248c3ae1cf70b657a94fbf24039ed16a04517167c",
+        "D:\\Codex Workshop\\kards-install-review\\extracted\\kards\\Content\\Blueprints\\Cards\\BP_ChooseOneCard.uasset": "8cac57ea1d50893d5980a5b06a0a5082ca6651ce5cf588bf5459e8093b77545e",
+        "D:\\Fmodel\\Output\\newOutput\\kards\\Content\\Blueprints\\Cards\\BP_ChooseOneCard.uasset": "8cac57ea1d50893d5980a5b06a0a5082ca6651ce5cf588bf5459e8093b77545e",
+        "D:\\Codex Workshop\\kards-install-review\\extracted\\kards\\Content\\Blueprints\\Cards\\BP_ChooseOneCard.uexp": "7ab0e57a0880a9e9c07c97a6b9a45859a9912d576d21ae462023bcf0db7477b3",
+        "D:\\Fmodel\\Output\\newOutput\\kards\\Content\\Blueprints\\Cards\\BP_ChooseOneCard.uexp": "7ab0e57a0880a9e9c07c97a6b9a45859a9912d576d21ae462023bcf0db7477b3",
+        "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Logic\\U_CardFunctionsNotifier.functions.json": "e4acd16b57b7a1da30780ecbf598c4d177b7e2d57a27dbb04c269bba9f6e1c94",
+        "D:\\Codex Workshop\\kards-install-review\\countermeasure-receipts-full-20261030.log": "65ffeca56888af84b90e4c686c1d94f6066e28c808a8d5dbe910a31b5ff9c1b2",
+        "D:\\Codex Workshop\\kards-install-review\\countermeasure-actions-20261030.log": "3a5b384bdeba03c14f933b3d9a4d7f8cb377b4fd1fff975f98c2a68c2534cbad",
+        "D:\\Codex Workshop\\kards-install-review\\countermeasure-model-20261030.log": "f4f5707f27410b7c3a6b92bd47562fef6af5356c380b7a152dee77587b293767"
+      }
     }
   ],
   "scope_reviews": {},
@@ -7975,8 +8023,8 @@
       "id": "RULE-TRAINING-EXPLICIT-TARGET",
       "title": "训练根动作具体目标与查询副作用",
       "status": "partial",
-      "scope": "已修复明确指令目标、选择指令目标标志、失效目标ID、定向单位明确非空目标的局部/公共检查与返回目标转发，以及非选择型单位在有合法目标时错误接受空目标的路径；无合法目标仍允许部署。保留权威搜索查询写入。Play 明确落点仍未支持并正式拒绝。四张选择单位的八个无目标分支已做默认部署和所选索引回归，未发现生产缺陷（见 choice-unit-deployment-20261030.json）；要求目标的选择单位及其他目标标记写入路径、非定向单位局部谓词、完整落点/移动生命周期、旧PlayCard入口、查询写入与完整回滚、原生兜底和重定向目标完整逐卡验证继续开放，不构成可靠合法掩码。 普通单位默认部署及两条自动出牌路径的槽位插入、旧/新位置在回调前刷新已按蓝图修复并完成24场景回归；普通单位三条路径的出牌/移动通知字段、请求槽位、通知在刷新和移动事件之前的顺序、移动原因4已局部核对并完成24场景回归（movement-receipts-20261030.json）；不覆盖明确根动作落点、指令、直接出牌、位置牌、同位置自动出牌及完整生命周期。 普通指令三入口的通知顺序、共享弃牌区插入、源编号保留和旧手牌在回调前刷新已完成14场景回归（order-boundary-20261030.json）；取消/保留指令接收链、完整选择组合与重入生命周期仍开放，不认证整卡。",
-      "source": "out/training-readiness/order-boundary-20261030.json; out/training-readiness/movement-receipts-20261030.json"
+      "scope": "已修复明确指令目标、选择指令目标标志、失效目标ID、定向单位明确非空目标的局部/公共检查与返回目标转发，以及非选择型单位在有合法目标时错误接受空目标的路径；无合法目标仍允许部署。保留权威搜索查询写入。Play 明确落点仍未支持并正式拒绝。四张选择单位的八个无目标分支已做默认部署和所选索引回归，未发现生产缺陷（见 choice-unit-deployment-20261030.json）；要求目标的选择单位及其他目标标记写入路径、非定向单位局部谓词、完整落点/移动生命周期、旧PlayCard入口、查询写入与完整回滚、原生兜底和重定向目标完整逐卡验证继续开放，不构成可靠合法掩码。 普通单位默认部署及两条自动出牌路径的槽位插入、旧/新位置在回调前刷新已按蓝图修复并完成24场景回归；普通单位三条路径的出牌/移动通知字段、请求槽位、通知在刷新和移动事件之前的顺序、移动原因4已局部核对并完成24场景回归（movement-receipts-20261030.json）；不覆盖明确根动作落点、指令、直接出牌、位置牌、同位置自动出牌及完整生命周期。 普通指令三入口的通知顺序、共享弃牌区插入、源编号保留和旧手牌在回调前刷新已完成14场景回归（order-boundary-20261030.json）；取消/保留指令接收链、完整选择组合与重入生命周期仍开放，不认证整卡。 反制触发三字段通知及本地延迟手牌整理已局部修复并通过16场景；cancelOrderRemove不据参数名解释为保留逻辑手牌。NotifyStopFurtherActions对当前批次出牌通知追加actionCancelled=1的改写尚缺失，下一批优先核清动作批次/嵌套边界；远端、完整取消生命周期仍开放。",
+      "source": "out/audit/systematic-rules/countermeasure-receipts-20261030.json; out/training-readiness/order-boundary-20261030.json; out/training-readiness/movement-receipts-20261030.json"
     }
   ]
 }

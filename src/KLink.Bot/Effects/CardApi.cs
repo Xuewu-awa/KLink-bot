@@ -6361,8 +6361,9 @@ public sealed partial class CardApi
         }
 
         // ---- :23793 / :23808 ----
-        // `NotifyGotchaTriggered(CardFunctionsNotifier, …)` 是纯客户端通知，
-        // 内核没有 notifier（与 `AddToBattleLog` 同一条约定），不实现。
+        // GotchaTriggered i=525 precedes T21 observers. Its local receiver also
+        // refreshes the current owner's hand after action resolution.
+        _engine.NotifyGotchaTriggered(gotcha.CardId, instigatorID, stopFurtherCardActions);
 
         // ---- :23810-23855 ----
         // ★★ 实参必须是 **gotcha 卡**（`:23839` 的第二项是 `TmpGotcha`）。

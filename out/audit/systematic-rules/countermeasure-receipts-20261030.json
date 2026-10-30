@@ -1,0 +1,4532 @@
+{
+  "scope": "Countermeasure trigger notice and deferred LOCAL hand-refresh receiver only; partial shared mechanism, no whole-card certification.",
+  "authority_sources": {
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.functions.json": "b007f0f5689d266cdccee220f164db12582d3893c76a087228dd3ac55836f297",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Logic\\BP_OnlineMatch.functions.json": "630b523c5a575d1aa956aba41eea8c22a19bf20b6546ffa0a03ad122d73ffe98",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\BP_Board.functions.json": "73b7c91507fd7711d5ca3b5348e9de8c5315d28d07409dc42a04f00cc5c5480f",
+    "D:\\Codex Workshop\\kards-install-review\\movement-receipts-new-online.json": "aecaa9fe6b20c77a79c3162d482c40c5e38a9f00c1580017dfb1676d39baf4f8",
+    "D:\\Codex Workshop\\kards-install-review\\order-cancel-packet\\result.json": "5dc4306989ebc06256d5634805918bfd39e1cf593f0eb900e2e384fd17b2308a",
+    "D:\\Codex Workshop\\kards-install-review\\extracted\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.uasset": "fdf43e4181189ee25a28301a1223d3bb3699eba4fd0275ba2a36f87db8ecac10",
+    "D:\\Fmodel\\Output\\newOutput\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.uasset": "fdf43e4181189ee25a28301a1223d3bb3699eba4fd0275ba2a36f87db8ecac10",
+    "D:\\Codex Workshop\\kards-install-review\\extracted\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.uexp": "67b6d1285af398bb3c7fe7ea6811a720449c610e9c820851f3d02ec54d00bb41",
+    "D:\\Fmodel\\Output\\newOutput\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.uexp": "67b6d1285af398bb3c7fe7ea6811a720449c610e9c820851f3d02ec54d00bb41",
+    "D:\\Codex Workshop\\kards-install-review\\extracted\\kards\\Content\\Blueprints\\Logic\\U_CardFunctionsNotifier.uasset": "20cf3925bd3f8d5417364ea61bd4fa4609f33ba8abc7ea1df4908ccf84a383a1",
+    "D:\\Fmodel\\Output\\newOutput\\kards\\Content\\Blueprints\\Logic\\U_CardFunctionsNotifier.uasset": "20cf3925bd3f8d5417364ea61bd4fa4609f33ba8abc7ea1df4908ccf84a383a1",
+    "D:\\Codex Workshop\\kards-install-review\\extracted\\kards\\Content\\Blueprints\\Logic\\U_CardFunctionsNotifier.uexp": "cc8d964f193507e0d0a21e7b9db51f33bc662059f8b114ec8d38a3682874f705",
+    "D:\\Fmodel\\Output\\newOutput\\kards\\Content\\Blueprints\\Logic\\U_CardFunctionsNotifier.uexp": "cc8d964f193507e0d0a21e7b9db51f33bc662059f8b114ec8d38a3682874f705",
+    "D:\\Codex Workshop\\kards-install-review\\extracted\\kards\\Content\\Blueprints\\BP_Board.uasset": "19a4da2bb98e6f3fbbec2f0e0cf7ca6dc91640fd098cb322c622ae88bf20b89c",
+    "D:\\Fmodel\\Output\\newOutput\\kards\\Content\\Blueprints\\BP_Board.uasset": "19a4da2bb98e6f3fbbec2f0e0cf7ca6dc91640fd098cb322c622ae88bf20b89c",
+    "D:\\Codex Workshop\\kards-install-review\\extracted\\kards\\Content\\Blueprints\\BP_Board.uexp": "0b936d9516e7f5dc89963f7a1d787e3f90f2fc30567454eddf713b8eb7bd4293",
+    "D:\\Fmodel\\Output\\newOutput\\kards\\Content\\Blueprints\\BP_Board.uexp": "0b936d9516e7f5dc89963f7a1d787e3f90f2fc30567454eddf713b8eb7bd4293",
+    "D:\\Codex Workshop\\kards-install-review\\extracted\\kards\\Content\\Blueprints\\Cards\\BP_HandCard.uasset": "5e69c19d1886cc50286eed67f4bfc8a912509fba3450432e0a2c3a85d26484ca",
+    "D:\\Fmodel\\Output\\newOutput\\kards\\Content\\Blueprints\\Cards\\BP_HandCard.uasset": "5e69c19d1886cc50286eed67f4bfc8a912509fba3450432e0a2c3a85d26484ca",
+    "D:\\Codex Workshop\\kards-install-review\\extracted\\kards\\Content\\Blueprints\\Cards\\BP_HandCard.uexp": "ff79bf4bd43987f85c2b7e3248c3ae1cf70b657a94fbf24039ed16a04517167c",
+    "D:\\Fmodel\\Output\\newOutput\\kards\\Content\\Blueprints\\Cards\\BP_HandCard.uexp": "ff79bf4bd43987f85c2b7e3248c3ae1cf70b657a94fbf24039ed16a04517167c",
+    "D:\\Codex Workshop\\kards-install-review\\extracted\\kards\\Content\\Blueprints\\Cards\\BP_ChooseOneCard.uasset": "8cac57ea1d50893d5980a5b06a0a5082ca6651ce5cf588bf5459e8093b77545e",
+    "D:\\Fmodel\\Output\\newOutput\\kards\\Content\\Blueprints\\Cards\\BP_ChooseOneCard.uasset": "8cac57ea1d50893d5980a5b06a0a5082ca6651ce5cf588bf5459e8093b77545e",
+    "D:\\Codex Workshop\\kards-install-review\\extracted\\kards\\Content\\Blueprints\\Cards\\BP_ChooseOneCard.uexp": "7ab0e57a0880a9e9c07c97a6b9a45859a9912d576d21ae462023bcf0db7477b3",
+    "D:\\Fmodel\\Output\\newOutput\\kards\\Content\\Blueprints\\Cards\\BP_ChooseOneCard.uexp": "7ab0e57a0880a9e9c07c97a6b9a45859a9912d576d21ae462023bcf0db7477b3",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Logic\\U_CardFunctionsNotifier.functions.json": "e4acd16b57b7a1da30780ecbf598c4d177b7e2d57a27dbb04c269bba9f6e1c94"
+  },
+  "worker_validation": {
+    "job": "20261030-232723-order-cancel-ca06776c",
+    "accepted_exact_occurrences": 5,
+    "verified_against_originals": true
+  },
+  "new_online_exact_functions": [
+    "AddSubActionGotchaTriggered",
+    "ReceiveActionGotchaTriggered",
+    "StopFurtherActions",
+    "HandleGotchaTriggered",
+    "HandleStopFurtherActions"
+  ],
+  "raw_asset_comparison": {
+    "Cards/BP_CardFunctions.uasset": true,
+    "Cards/BP_CardFunctions.uexp": true,
+    "Logic/U_CardFunctionsNotifier.uasset": true,
+    "Logic/U_CardFunctionsNotifier.uexp": true,
+    "BP_Board.uasset": true,
+    "BP_Board.uexp": true,
+    "Cards/BP_HandCard.uasset": true,
+    "Cards/BP_HandCard.uexp": true,
+    "Cards/BP_ChooseOneCard.uasset": true,
+    "Cards/BP_ChooseOneCard.uexp": true
+  },
+  "authority_functions": {
+    "NotifyGotchaTriggered": {
+      "function_flags": "FUNC_Public, FUNC_BlueprintCallable, FUNC_BlueprintEvent",
+      "expression_count": 3,
+      "bytecode": [
+        {
+          "Inst": "Context",
+          "Context": {
+            "Inst": "InterfaceContext",
+            "Expression": {
+              "Inst": "InstanceVariable",
+              "Variable Outer": {
+                "PinCategory": "Interface",
+                "PinSubCategory": "Interface",
+                "PinSubCategoryObject": "/Game/Blueprints/Logic/I_OnlineMatchReceiver.I_OnlineMatchReceiver_C"
+              },
+              "Variable Name": "OnlineMatchReceiver"
+            }
+          },
+          "SkipOffsetForNull": 41,
+          "RValuePropertyOuter": "#Pointer Error#",
+          "RValuePropertyName": "^^^^^",
+          "Expression": {
+            "Inst": "LocalVirtualFunction",
+            "FunctionName": "HandleGotchaTriggered",
+            "Parameters": [
+              {
+                "Inst": "LocalVariable",
+                "Variable Outer": {
+                  "PinCategory": "Int",
+                  "PinSubCategory": "Int"
+                },
+                "Variable Name": "CardID"
+              },
+              {
+                "Inst": "LocalVariable",
+                "Variable Outer": {
+                  "PinCategory": "Int",
+                  "PinSubCategory": "Int"
+                },
+                "Variable Name": "InstigatorID"
+              },
+              {
+                "Inst": "LocalVariable",
+                "Variable Outer": {
+                  "PinCategory": "Bool",
+                  "PinSubCategory": "Bool"
+                },
+                "Variable Name": "StopCard"
+              }
+            ]
+          },
+          "StatementIndex": 0
+        },
+        {
+          "Inst": "Return",
+          "Expression": {
+            "Inst": "Nothing"
+          },
+          "StatementIndex": 64
+        },
+        {
+          "Inst": "EndOfScript",
+          "StatementIndex": 66
+        }
+      ],
+      "bytecode_raw_size": 0
+    },
+    "GotchaTriggered": {
+      "function_flags": "FUNC_Event, FUNC_Public, FUNC_HasOutParms, FUNC_HasDefaults, FUNC_BlueprintCallable, FUNC_BlueprintEvent",
+      "expression_count": 50,
+      "bytecode": [
+        {
+          "Inst": "PushExecutionFlow",
+          "Offset": 1505,
+          "StatementIndex": 0
+        },
+        {
+          "Inst": "LetObj",
+          "Variable": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Object",
+              "PinSubCategory": "Object",
+              "PinSubCategoryObject": "/Script/kards.BaseCardObject"
+            },
+            "Variable Name": "TmpGotcha"
+          },
+          "Expression": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Object",
+              "PinSubCategory": "Object",
+              "PinSubCategoryObject": "/Script/kards.BaseCardObject"
+            },
+            "Variable Name": "card"
+          },
+          "StatementIndex": 5
+        },
+        {
+          "Inst": "Let",
+          "Variable": {
+            "Inst": "Context",
+            "Context": {
+              "Inst": "LocalVariable",
+              "Variable Outer": {
+                "PinCategory": "Object",
+                "PinSubCategory": "Object",
+                "PinSubCategoryObject": "/Script/kards.BaseCardObject"
+              },
+              "Variable Name": "TmpGotcha"
+            },
+            "SkipOffsetForNull": 9,
+            "RValuePropertyOuter": "##NOT SERIALIZED##",
+            "RValuePropertyName": "gotchaActivated",
+            "Expression": {
+              "Inst": "InstanceVariable",
+              "Variable Outer": "##NOT SERIALIZED##",
+              "Variable Name": "gotchaActivated"
+            }
+          },
+          "Expression": {
+            "Inst": "IntConst",
+            "Value": 0
+          },
+          "StatementIndex": 24
+        },
+        {
+          "Inst": "LocalVirtualFunction",
+          "FunctionName": "GetTurnNumber",
+          "Parameters": [
+            {
+              "Inst": "LocalVariable",
+              "Variable Outer": {
+                "PinCategory": "Int",
+                "PinSubCategory": "Int"
+              },
+              "Variable Name": "CallFunc_GetTurnNumber_turnNumber"
+            }
+          ],
+          "StatementIndex": 69
+        },
+        {
+          "Inst": "Let",
+          "Variable": {
+            "Inst": "Context",
+            "Context": {
+              "Inst": "LocalVariable",
+              "Variable Outer": {
+                "PinCategory": "Object",
+                "PinSubCategory": "Object",
+                "PinSubCategoryObject": "/Script/kards.BaseCardObject"
+              },
+              "Variable Name": "TmpGotcha"
+            },
+            "SkipOffsetForNull": 9,
+            "RValuePropertyOuter": "##NOT SERIALIZED##",
+            "RValuePropertyName": "enterPlayOnTurn",
+            "Expression": {
+              "Inst": "InstanceVariable",
+              "Variable Outer": "##NOT SERIALIZED##",
+              "Variable Name": "enterPlayOnTurn"
+            }
+          },
+          "Expression": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Int",
+              "PinSubCategory": "Int"
+            },
+            "Variable Name": "CallFunc_GetTurnNumber_turnNumber"
+          },
+          "StatementIndex": 92
+        },
+        {
+          "Inst": "Let",
+          "Variable": {
+            "Inst": "Context",
+            "Context": {
+              "Inst": "LocalVariable",
+              "Variable Outer": {
+                "PinCategory": "Object",
+                "PinSubCategory": "Object",
+                "PinSubCategoryObject": "/Script/kards.BaseCardObject"
+              },
+              "Variable Name": "TmpGotcha"
+            },
+            "SkipOffsetForNull": 9,
+            "RValuePropertyOuter": "##NOT SERIALIZED##",
+            "RValuePropertyName": "location",
+            "Expression": {
+              "Inst": "InstanceVariable",
+              "Variable Outer": "##NOT SERIALIZED##",
+              "Variable Name": "location"
+            }
+          },
+          "Expression": {
+            "Inst": "ByteConst",
+            "Value": 8
+          },
+          "StatementIndex": 141
+        },
+        {
+          "Inst": "Let",
+          "Variable": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Byte",
+              "PinSubCategory": "Byte",
+              "PinSubCategoryObject": "/Script/kards.ECardLocationEnum"
+            },
+            "Variable Name": "CallFunc_GetHandLocationBySide_ReturnValue"
+          },
+          "Expression": {
+            "Inst": "CallMath",
+            "Function": "GetHandLocationBySide",
+            "ContextClass": "/Script/kards.CombatHelperFunctions",
+            "Parameters": [
+              {
+                "Inst": "Context",
+                "Context": {
+                  "Inst": "LocalVariable",
+                  "Variable Outer": {
+                    "PinCategory": "Object",
+                    "PinSubCategory": "Object",
+                    "PinSubCategoryObject": "/Script/kards.BaseCardObject"
+                  },
+                  "Variable Name": "TmpGotcha"
+                },
+                "SkipOffsetForNull": 9,
+                "RValuePropertyOuter": "##NOT SERIALIZED##",
+                "RValuePropertyName": "side",
+                "Expression": {
+                  "Inst": "InstanceVariable",
+                  "Variable Outer": "##NOT SERIALIZED##",
+                  "Variable Name": "side"
+                }
+              },
+              {
+                "Inst": "Self"
+              }
+            ]
+          },
+          "StatementIndex": 183
+        },
+        {
+          "Inst": "LocalVirtualFunction",
+          "FunctionName": "RearrangeLocation",
+          "Parameters": [
+            {
+              "Inst": "LocalVariable",
+              "Variable Outer": {
+                "PinCategory": "Byte",
+                "PinSubCategory": "Byte",
+                "PinSubCategoryObject": "/Script/kards.ECardLocationEnum"
+              },
+              "Variable Name": "CallFunc_GetHandLocationBySide_ReturnValue"
+            }
+          ],
+          "StatementIndex": 243
+        },
+        {
+          "Inst": "PushExecutionFlow",
+          "Offset": 1008,
+          "StatementIndex": 266
+        },
+        {
+          "Inst": "PushExecutionFlow",
+          "Offset": 492,
+          "StatementIndex": 271
+        },
+        {
+          "Inst": "LocalVirtualFunction",
+          "FunctionName": "IsActionProcess",
+          "Parameters": [
+            {
+              "Inst": "LocalVariable",
+              "Variable Outer": {
+                "PinCategory": "Bool",
+                "PinSubCategory": "Bool"
+              },
+              "Variable Name": "CallFunc_IsActionProcess_ActionProcess"
+            }
+          ],
+          "StatementIndex": 276
+        },
+        {
+          "Inst": "PopExecutionFlowIfNot",
+          "Condition": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Bool",
+              "PinSubCategory": "Bool"
+            },
+            "Variable Name": "CallFunc_IsActionProcess_ActionProcess"
+          },
+          "StatementIndex": 299
+        },
+        {
+          "Inst": "LetBool",
+          "Variable": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Bool",
+              "PinSubCategory": "Bool"
+            },
+            "Variable Name": "CallFunc_Greater_IntInt_ReturnValue"
+          },
+          "Expression": {
+            "Inst": "CallMath",
+            "Function": "Greater_IntInt",
+            "ContextClass": "/Script/Engine.KismetMathLibrary",
+            "Parameters": [
+              {
+                "Inst": "Context",
+                "Context": {
+                  "Inst": "LocalVariable",
+                  "Variable Outer": {
+                    "PinCategory": "Object",
+                    "PinSubCategory": "Object",
+                    "PinSubCategoryObject": "/Script/kards.BaseCardObject"
+                  },
+                  "Variable Name": "TmpGotcha"
+                },
+                "SkipOffsetForNull": 9,
+                "RValuePropertyOuter": "##NOT SERIALIZED##",
+                "RValuePropertyName": "cipher",
+                "Expression": {
+                  "Inst": "InstanceVariable",
+                  "Variable Outer": "##NOT SERIALIZED##",
+                  "Variable Name": "cipher"
+                }
+              },
+              {
+                "Inst": "IntConst",
+                "Value": 0
+              }
+            ]
+          },
+          "StatementIndex": 309
+        },
+        {
+          "Inst": "PopExecutionFlowIfNot",
+          "Condition": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Bool",
+              "PinSubCategory": "Bool"
+            },
+            "Variable Name": "CallFunc_Greater_IntInt_ReturnValue"
+          },
+          "StatementIndex": 365
+        },
+        {
+          "Inst": "LocalVirtualFunction",
+          "FunctionName": "SetCardsSeenByCipher",
+          "Parameters": [
+            {
+              "Inst": "Context",
+              "Context": {
+                "Inst": "LocalVariable",
+                "Variable Outer": {
+                  "PinCategory": "Object",
+                  "PinSubCategory": "Object",
+                  "PinSubCategoryObject": "/Script/kards.BaseCardObject"
+                },
+                "Variable Name": "TmpGotcha"
+              },
+              "SkipOffsetForNull": 9,
+              "RValuePropertyOuter": "##NOT SERIALIZED##",
+              "RValuePropertyName": "cipher",
+              "Expression": {
+                "Inst": "InstanceVariable",
+                "Variable Outer": "##NOT SERIALIZED##",
+                "Variable Name": "cipher"
+              }
+            },
+            {
+              "Inst": "Context",
+              "Context": {
+                "Inst": "LocalVariable",
+                "Variable Outer": {
+                  "PinCategory": "Object",
+                  "PinSubCategory": "Object",
+                  "PinSubCategoryObject": "/Script/kards.BaseCardObject"
+                },
+                "Variable Name": "TmpGotcha"
+              },
+              "SkipOffsetForNull": 9,
+              "RValuePropertyOuter": "##NOT SERIALIZED##",
+              "RValuePropertyName": "cardID",
+              "Expression": {
+                "Inst": "InstanceVariable",
+                "Variable Outer": "##NOT SERIALIZED##",
+                "Variable Name": "cardID"
+              }
+            },
+            {
+              "Inst": "Context",
+              "Context": {
+                "Inst": "LocalVariable",
+                "Variable Outer": {
+                  "PinCategory": "Object",
+                  "PinSubCategory": "Object",
+                  "PinSubCategoryObject": "/Script/kards.BaseCardObject"
+                },
+                "Variable Name": "TmpGotcha"
+              },
+              "SkipOffsetForNull": 9,
+              "RValuePropertyOuter": "##NOT SERIALIZED##",
+              "RValuePropertyName": "side",
+              "Expression": {
+                "Inst": "InstanceVariable",
+                "Variable Outer": "##NOT SERIALIZED##",
+                "Variable Name": "side"
+              }
+            },
+            {
+              "Inst": "LocalVariable",
+              "Variable Outer": {
+                "PinCategory": "Int",
+                "PinSubCategory": "Int"
+              },
+              "Variable Name": "CallFunc_SetCardsSeenByCipher_qqq"
+            }
+          ],
+          "StatementIndex": 375
+        },
+        {
+          "Inst": "PopExecutionFlow",
+          "StatementIndex": 491
+        },
+        {
+          "Inst": "LocalVirtualFunction",
+          "FunctionName": "IsActionProcess",
+          "Parameters": [
+            {
+              "Inst": "LocalVariable",
+              "Variable Outer": {
+                "PinCategory": "Bool",
+                "PinSubCategory": "Bool"
+              },
+              "Variable Name": "CallFunc_IsActionProcess_ActionProcess_1"
+            }
+          ],
+          "StatementIndex": 492
+        },
+        {
+          "Inst": "PopExecutionFlowIfNot",
+          "Condition": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Bool",
+              "PinSubCategory": "Bool"
+            },
+            "Variable Name": "CallFunc_IsActionProcess_ActionProcess_1"
+          },
+          "StatementIndex": 515
+        },
+        {
+          "Inst": "Context",
+          "Context": {
+            "Inst": "InstanceVariable",
+            "Variable Outer": {
+              "PinCategory": "Object",
+              "PinSubCategory": "Object",
+              "PinSubCategoryObject": "/Game/Blueprints/Logic/U_CardFunctionsNotifier.U_CardFunctionsNotifier_C"
+            },
+            "Variable Name": "CardFunctionsNotifier"
+          },
+          "SkipOffsetForNull": 63,
+          "RValuePropertyOuter": "#Pointer Error#",
+          "RValuePropertyName": "^^^^^",
+          "Expression": {
+            "Inst": "LocalVirtualFunction",
+            "FunctionName": "NotifyGotchaTriggered",
+            "Parameters": [
+              {
+                "Inst": "Context",
+                "Context": {
+                  "Inst": "LocalVariable",
+                  "Variable Outer": {
+                    "PinCategory": "Object",
+                    "PinSubCategory": "Object",
+                    "PinSubCategoryObject": "/Script/kards.BaseCardObject"
+                  },
+                  "Variable Name": "TmpGotcha"
+                },
+                "SkipOffsetForNull": 9,
+                "RValuePropertyOuter": "##NOT SERIALIZED##",
+                "RValuePropertyName": "cardID",
+                "Expression": {
+                  "Inst": "InstanceVariable",
+                  "Variable Outer": "##NOT SERIALIZED##",
+                  "Variable Name": "cardID"
+                }
+              },
+              {
+                "Inst": "LocalVariable",
+                "Variable Outer": {
+                  "PinCategory": "Int",
+                  "PinSubCategory": "Int"
+                },
+                "Variable Name": "instigatorID"
+              },
+              {
+                "Inst": "LocalVariable",
+                "Variable Outer": {
+                  "PinCategory": "Bool",
+                  "PinSubCategory": "Bool"
+                },
+                "Variable Name": "stopFurtherCardActions"
+              }
+            ]
+          },
+          "StatementIndex": 525
+        },
+        {
+          "Inst": "LocalVirtualFunction",
+          "FunctionName": "FetchAllCardsWithEventTrigger",
+          "Parameters": [
+            {
+              "Inst": "ByteConst",
+              "Value": 21
+            },
+            {
+              "Inst": "LocalVariable",
+              "Variable Outer": {
+                "PinCategory": "Object",
+                "PinSubCategory": "Object",
+                "PinSubCategoryObject": "/Script/kards.BaseCardObject",
+                "ContainerType": 1
+              },
+              "Variable Name": "CallFunc_FetchAllCardsWithEventTrigger_cardsWithThisTrigger"
+            }
+          ],
+          "StatementIndex": 610
+        },
+        {
+          "Inst": "Let",
+          "Variable": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Int",
+              "PinSubCategory": "Int"
+            },
+            "Variable Name": "Temp_int_Loop_Counter_Variable"
+          },
+          "Expression": {
+            "Inst": "IntConst",
+            "Value": 0
+          },
+          "StatementIndex": 635
+        },
+        {
+          "Inst": "Let",
+          "Variable": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Int",
+              "PinSubCategory": "Int"
+            },
+            "Variable Name": "Temp_int_Array_Index_Variable"
+          },
+          "Expression": {
+            "Inst": "IntConst",
+            "Value": 0
+          },
+          "StatementIndex": 658
+        },
+        {
+          "Inst": "Let",
+          "Variable": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Int",
+              "PinSubCategory": "Int"
+            },
+            "Variable Name": "CallFunc_Array_Length_ReturnValue"
+          },
+          "Expression": {
+            "Inst": "Context",
+            "Context": {
+              "Inst": "ObjectConst",
+              "Object": "/Script/Engine.Default__KismetArrayLibrary"
+            },
+            "SkipOffsetForNull": 19,
+            "RValuePropertyOuter": {
+              "PinCategory": "Int",
+              "PinSubCategory": "Int"
+            },
+            "RValuePropertyName": "CallFunc_Array_Length_ReturnValue",
+            "Expression": {
+              "Inst": "FinalFunction",
+              "Function": "Array_Length",
+              "Parameters": [
+                {
+                  "Inst": "LocalVariable",
+                  "Variable Outer": {
+                    "PinCategory": "Object",
+                    "PinSubCategory": "Object",
+                    "PinSubCategoryObject": "/Script/kards.BaseCardObject",
+                    "ContainerType": 1
+                  },
+                  "Variable Name": "CallFunc_FetchAllCardsWithEventTrigger_cardsWithThisTrigger"
+                }
+              ]
+            }
+          },
+          "StatementIndex": 681
+        },
+        {
+          "Inst": "LetBool",
+          "Variable": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Bool",
+              "PinSubCategory": "Bool"
+            },
+            "Variable Name": "CallFunc_Less_IntInt_ReturnValue"
+          },
+          "Expression": {
+            "Inst": "CallMath",
+            "Function": "Less_IntInt",
+            "ContextClass": "/Script/Engine.KismetMathLibrary",
+            "Parameters": [
+              {
+                "Inst": "LocalVariable",
+                "Variable Outer": {
+                  "PinCategory": "Int",
+                  "PinSubCategory": "Int"
+                },
+                "Variable Name": "Temp_int_Loop_Counter_Variable"
+              },
+              {
+                "Inst": "LocalVariable",
+                "Variable Outer": {
+                  "PinCategory": "Int",
+                  "PinSubCategory": "Int"
+                },
+                "Variable Name": "CallFunc_Array_Length_ReturnValue"
+              }
+            ]
+          },
+          "StatementIndex": 740
+        },
+        {
+          "Inst": "PopExecutionFlowIfNot",
+          "Condition": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Bool",
+              "PinSubCategory": "Bool"
+            },
+            "Variable Name": "CallFunc_Less_IntInt_ReturnValue"
+          },
+          "StatementIndex": 778
+        },
+        {
+          "Inst": "Let",
+          "Variable": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Int",
+              "PinSubCategory": "Int"
+            },
+            "Variable Name": "Temp_int_Array_Index_Variable"
+          },
+          "Expression": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Int",
+              "PinSubCategory": "Int"
+            },
+            "Variable Name": "Temp_int_Loop_Counter_Variable"
+          },
+          "StatementIndex": 788
+        },
+        {
+          "Inst": "PushExecutionFlow",
+          "Offset": 934,
+          "StatementIndex": 815
+        },
+        {
+          "Inst": "Context",
+          "Context": {
+            "Inst": "ObjectConst",
+            "Object": "/Script/Engine.Default__KismetArrayLibrary"
+          },
+          "SkipOffsetForNull": 37,
+          "RValuePropertyOuter": "#Pointer Error#",
+          "RValuePropertyName": "^^^^^",
+          "Expression": {
+            "Inst": "FinalFunction",
+            "Function": "Array_Get",
+            "Parameters": [
+              {
+                "Inst": "LocalVariable",
+                "Variable Outer": {
+                  "PinCategory": "Object",
+                  "PinSubCategory": "Object",
+                  "PinSubCategoryObject": "/Script/kards.BaseCardObject",
+                  "ContainerType": 1
+                },
+                "Variable Name": "CallFunc_FetchAllCardsWithEventTrigger_cardsWithThisTrigger"
+              },
+              {
+                "Inst": "LocalVariable",
+                "Variable Outer": {
+                  "PinCategory": "Int",
+                  "PinSubCategory": "Int"
+                },
+                "Variable Name": "Temp_int_Array_Index_Variable"
+              },
+              {
+                "Inst": "LocalVariable",
+                "Variable Outer": {
+                  "PinCategory": "Object",
+                  "PinSubCategory": "Object",
+                  "PinSubCategoryObject": "/Script/kards.BaseCardObject"
+                },
+                "Variable Name": "CallFunc_Array_Get_Item"
+              }
+            ]
+          },
+          "StatementIndex": 820
+        },
+        {
+          "Inst": "Context",
+          "Context": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Object",
+              "PinSubCategory": "Object",
+              "PinSubCategoryObject": "/Script/kards.BaseCardObject"
+            },
+            "Variable Name": "CallFunc_Array_Get_Item"
+          },
+          "SkipOffsetForNull": 32,
+          "RValuePropertyOuter": "#Pointer Error#",
+          "RValuePropertyName": "^^^^^",
+          "Expression": {
+            "Inst": "LocalVirtualFunction",
+            "FunctionName": "OnCounterMeasureTriggered",
+            "Parameters": [
+              {
+                "Inst": "LocalVariable",
+                "Variable Outer": {
+                  "PinCategory": "Object",
+                  "PinSubCategory": "Object",
+                  "PinSubCategoryObject": "/Script/kards.BaseCardObject"
+                },
+                "Variable Name": "TmpGotcha"
+              },
+              {
+                "Inst": "LocalVariable",
+                "Variable Outer": {
+                  "PinCategory": "Bool",
+                  "PinSubCategory": "Bool"
+                },
+                "Variable Name": "CallFunc_OnCounterMeasureTriggered_qqq"
+              }
+            ]
+          },
+          "StatementIndex": 879
+        },
+        {
+          "Inst": "PopExecutionFlow",
+          "StatementIndex": 933
+        },
+        {
+          "Inst": "Let",
+          "Variable": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Int",
+              "PinSubCategory": "Int"
+            },
+            "Variable Name": "CallFunc_Add_IntInt_ReturnValue"
+          },
+          "Expression": {
+            "Inst": "CallMath",
+            "Function": "Add_IntInt",
+            "ContextClass": "/Script/Engine.KismetMathLibrary",
+            "Parameters": [
+              {
+                "Inst": "LocalVariable",
+                "Variable Outer": {
+                  "PinCategory": "Int",
+                  "PinSubCategory": "Int"
+                },
+                "Variable Name": "Temp_int_Loop_Counter_Variable"
+              },
+              {
+                "Inst": "IntConst",
+                "Value": 1
+              }
+            ]
+          },
+          "StatementIndex": 934
+        },
+        {
+          "Inst": "Let",
+          "Variable": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Int",
+              "PinSubCategory": "Int"
+            },
+            "Variable Name": "Temp_int_Loop_Counter_Variable"
+          },
+          "Expression": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Int",
+              "PinSubCategory": "Int"
+            },
+            "Variable Name": "CallFunc_Add_IntInt_ReturnValue"
+          },
+          "StatementIndex": 976
+        },
+        {
+          "Inst": "Jump",
+          "Offset": 681,
+          "StatementIndex": 1003
+        },
+        {
+          "Inst": "JumpIfNot",
+          "Offset": 1463,
+          "Condition": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Bool",
+              "PinSubCategory": "Bool"
+            },
+            "Variable Name": "stopFurtherCardActions"
+          },
+          "StatementIndex": 1008
+        },
+        {
+          "Inst": "Context",
+          "Context": {
+            "Inst": "InstanceVariable",
+            "Variable Outer": {
+              "PinCategory": "Object",
+              "PinSubCategory": "Object",
+              "PinSubCategoryObject": "/Game/BP_GameState_Battle.BP_GameState_Battle_C"
+            },
+            "Variable Name": "GameStateRef"
+          },
+          "SkipOffsetForNull": 15,
+          "RValuePropertyOuter": "#Pointer Error#",
+          "RValuePropertyName": "^^^^^",
+          "Expression": {
+            "Inst": "LocalVirtualFunction",
+            "FunctionName": "SetStopFurtherActions",
+            "Parameters": [
+              {
+                "Inst": "True"
+              }
+            ]
+          },
+          "StatementIndex": 1022
+        },
+        {
+          "Inst": "LocalVirtualFunction",
+          "FunctionName": "GetCardFromID",
+          "Parameters": [
+            {
+              "Inst": "LocalVariable",
+              "Variable Outer": {
+                "PinCategory": "Int",
+                "PinSubCategory": "Int"
+              },
+              "Variable Name": "instigatorID"
+            },
+            {
+              "Inst": "LocalVariable",
+              "Variable Outer": {
+                "PinCategory": "Object",
+                "PinSubCategory": "Object",
+                "PinSubCategoryObject": "/Script/kards.BaseCardObject"
+              },
+              "Variable Name": "CallFunc_GetCardFromID_card_1"
+            }
+          ],
+          "StatementIndex": 1059
+        },
+        {
+          "Inst": "Let",
+          "Variable": {
+            "Inst": "Context",
+            "Context": {
+              "Inst": "LocalVariable",
+              "Variable Outer": {
+                "PinCategory": "Object",
+                "PinSubCategory": "Object",
+                "PinSubCategoryObject": "/Script/kards.BaseCardObject"
+              },
+              "Variable Name": "CallFunc_GetCardFromID_card_1"
+            },
+            "SkipOffsetForNull": 9,
+            "RValuePropertyOuter": "##NOT SERIALIZED##",
+            "RValuePropertyName": "enterPlayOnTurn",
+            "Expression": {
+              "Inst": "InstanceVariable",
+              "Variable Outer": "##NOT SERIALIZED##",
+              "Variable Name": "enterPlayOnTurn"
+            }
+          },
+          "Expression": {
+            "Inst": "IntConst",
+            "Value": 0
+          },
+          "StatementIndex": 1091
+        },
+        {
+          "Inst": "LocalVirtualFunction",
+          "FunctionName": "GetCardFromID",
+          "Parameters": [
+            {
+              "Inst": "LocalVariable",
+              "Variable Outer": {
+                "PinCategory": "Int",
+                "PinSubCategory": "Int"
+              },
+              "Variable Name": "instigatorID"
+            },
+            {
+              "Inst": "LocalVariable",
+              "Variable Outer": {
+                "PinCategory": "Object",
+                "PinSubCategory": "Object",
+                "PinSubCategoryObject": "/Script/kards.BaseCardObject"
+              },
+              "Variable Name": "CallFunc_GetCardFromID_card"
+            }
+          ],
+          "StatementIndex": 1136
+        },
+        {
+          "Inst": "Context",
+          "Context": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Object",
+              "PinSubCategory": "Object",
+              "PinSubCategoryObject": "/Script/kards.BaseCardObject"
+            },
+            "Variable Name": "CallFunc_GetCardFromID_card"
+          },
+          "SkipOffsetForNull": 19,
+          "RValuePropertyOuter": "#Pointer Error#",
+          "RValuePropertyName": "^^^^^",
+          "Expression": {
+            "Inst": "FinalFunction",
+            "Function": "IsOrder",
+            "Parameters": [
+              {
+                "Inst": "LocalVariable",
+                "Variable Outer": {
+                  "PinCategory": "Bool",
+                  "PinSubCategory": "Bool"
+                },
+                "Variable Name": "CallFunc_IsOrder_isIt"
+              }
+            ]
+          },
+          "StatementIndex": 1168
+        },
+        {
+          "Inst": "LetBool",
+          "Variable": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Bool",
+              "PinSubCategory": "Bool"
+            },
+            "Variable Name": "CallFunc_BooleanAND_ReturnValue"
+          },
+          "Expression": {
+            "Inst": "CallMath",
+            "Function": "BooleanAND",
+            "ContextClass": "/Script/Engine.KismetMathLibrary",
+            "Parameters": [
+              {
+                "Inst": "LocalVariable",
+                "Variable Outer": {
+                  "PinCategory": "Bool",
+                  "PinSubCategory": "Bool"
+                },
+                "Variable Name": "CallFunc_IsOrder_isIt"
+              },
+              {
+                "Inst": "LocalVariable",
+                "Variable Outer": {
+                  "PinCategory": "Bool",
+                  "PinSubCategory": "Bool"
+                },
+                "Variable Name": "skipDiscardingOrder"
+              }
+            ]
+          },
+          "StatementIndex": 1209
+        },
+        {
+          "Inst": "PopExecutionFlowIfNot",
+          "Condition": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Bool",
+              "PinSubCategory": "Bool"
+            },
+            "Variable Name": "CallFunc_BooleanAND_ReturnValue"
+          },
+          "StatementIndex": 1247
+        },
+        {
+          "Inst": "LocalVirtualFunction",
+          "FunctionName": "GetCardFromID",
+          "Parameters": [
+            {
+              "Inst": "LocalVariable",
+              "Variable Outer": {
+                "PinCategory": "Int",
+                "PinSubCategory": "Int"
+              },
+              "Variable Name": "instigatorID"
+            },
+            {
+              "Inst": "LocalVariable",
+              "Variable Outer": {
+                "PinCategory": "Object",
+                "PinSubCategory": "Object",
+                "PinSubCategoryObject": "/Script/kards.BaseCardObject"
+              },
+              "Variable Name": "CallFunc_GetCardFromID_card"
+            }
+          ],
+          "StatementIndex": 1257
+        },
+        {
+          "Inst": "Let",
+          "Variable": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Struct",
+              "PinSubCategory": "Struct",
+              "PinSubCategoryObject": "/Script/BlueprintJson.BlueprintJsonValue"
+            },
+            "Variable Name": "CallFunc_JsonMakeBool_ReturnValue"
+          },
+          "Expression": {
+            "Inst": "CallMath",
+            "Function": "JsonMakeBool",
+            "ContextClass": "/Script/BlueprintJson.BlueprintJsonLibrary",
+            "Parameters": [
+              {
+                "Inst": "LocalVariable",
+                "Variable Outer": {
+                  "PinCategory": "Bool",
+                  "PinSubCategory": "Bool"
+                },
+                "Variable Name": "skipDiscardingOrder"
+              }
+            ]
+          },
+          "StatementIndex": 1289
+        },
+        {
+          "Inst": "Let",
+          "Variable": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Struct",
+              "PinSubCategory": "Struct",
+              "PinSubCategoryObject": "/Script/BlueprintJson.BlueprintJsonObject",
+              "IsConst": true
+            },
+            "Variable Name": "CallFunc_JsonMakeField_ReturnValue"
+          },
+          "Expression": {
+            "Inst": "CallMath",
+            "Function": "JsonMakeField",
+            "ContextClass": "/Script/BlueprintJson.BlueprintJsonLibrary",
+            "Parameters": [
+              {
+                "Inst": "Context",
+                "Context": {
+                  "Inst": "LocalVariable",
+                  "Variable Outer": {
+                    "PinCategory": "Object",
+                    "PinSubCategory": "Object",
+                    "PinSubCategoryObject": "/Script/kards.BaseCardObject"
+                  },
+                  "Variable Name": "CallFunc_GetCardFromID_card"
+                },
+                "SkipOffsetForNull": 9,
+                "RValuePropertyOuter": "##NOT SERIALIZED##",
+                "RValuePropertyName": "customJson",
+                "Expression": {
+                  "Inst": "InstanceVariable",
+                  "Variable Outer": "##NOT SERIALIZED##",
+                  "Variable Name": "customJson"
+                }
+              },
+              {
+                "Inst": "StringConst",
+                "Value": "cancelOrderRemove"
+              },
+              {
+                "Inst": "LocalVariable",
+                "Variable Outer": {
+                  "PinCategory": "Struct",
+                  "PinSubCategory": "Struct",
+                  "PinSubCategoryObject": "/Script/BlueprintJson.BlueprintJsonValue"
+                },
+                "Variable Name": "CallFunc_JsonMakeBool_ReturnValue"
+              }
+            ]
+          },
+          "StatementIndex": 1326
+        },
+        {
+          "Inst": "Let",
+          "Variable": {
+            "Inst": "Context",
+            "Context": {
+              "Inst": "LocalVariable",
+              "Variable Outer": {
+                "PinCategory": "Object",
+                "PinSubCategory": "Object",
+                "PinSubCategoryObject": "/Script/kards.BaseCardObject"
+              },
+              "Variable Name": "CallFunc_GetCardFromID_card"
+            },
+            "SkipOffsetForNull": 9,
+            "RValuePropertyOuter": "##NOT SERIALIZED##",
+            "RValuePropertyName": "customJson",
+            "Expression": {
+              "Inst": "InstanceVariable",
+              "Variable Outer": "##NOT SERIALIZED##",
+              "Variable Name": "customJson"
+            }
+          },
+          "Expression": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Struct",
+              "PinSubCategory": "Struct",
+              "PinSubCategoryObject": "/Script/BlueprintJson.BlueprintJsonObject",
+              "IsConst": true
+            },
+            "Variable Name": "CallFunc_JsonMakeField_ReturnValue"
+          },
+          "StatementIndex": 1413
+        },
+        {
+          "Inst": "PopExecutionFlow",
+          "StatementIndex": 1462
+        },
+        {
+          "Inst": "Context",
+          "Context": {
+            "Inst": "InstanceVariable",
+            "Variable Outer": {
+              "PinCategory": "Object",
+              "PinSubCategory": "Object",
+              "PinSubCategoryObject": "/Game/BP_GameState_Battle.BP_GameState_Battle_C"
+            },
+            "Variable Name": "GameStateRef"
+          },
+          "SkipOffsetForNull": 15,
+          "RValuePropertyOuter": "#Pointer Error#",
+          "RValuePropertyName": "^^^^^",
+          "Expression": {
+            "Inst": "LocalVirtualFunction",
+            "FunctionName": "SetStopFurtherActions",
+            "Parameters": [
+              {
+                "Inst": "False"
+              }
+            ]
+          },
+          "StatementIndex": 1463
+        },
+        {
+          "Inst": "Jump",
+          "Offset": 1136,
+          "StatementIndex": 1500
+        },
+        {
+          "Inst": "Return",
+          "Expression": {
+            "Inst": "Nothing"
+          },
+          "StatementIndex": 1505
+        },
+        {
+          "Inst": "EndOfScript",
+          "StatementIndex": 1507
+        }
+      ],
+      "bytecode_raw_size": 0
+    },
+    "GetHandLocationBySide": {
+      "function_flags": "FUNC_Event, FUNC_Public, FUNC_HasOutParms, FUNC_BlueprintCallable, FUNC_BlueprintEvent, FUNC_BlueprintPure",
+      "expression_count": 7,
+      "bytecode": [
+        {
+          "Inst": "LetBool",
+          "Variable": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Bool",
+              "PinSubCategory": "Bool"
+            },
+            "Variable Name": "CallFunc_EqualEqual_ByteByte_ReturnValue"
+          },
+          "Expression": {
+            "Inst": "CallMath",
+            "Function": "EqualEqual_ByteByte",
+            "ContextClass": "/Script/Engine.KismetMathLibrary",
+            "Parameters": [
+              {
+                "Inst": "LocalVariable",
+                "Variable Outer": {
+                  "PinCategory": "Byte",
+                  "PinSubCategory": "Byte",
+                  "PinSubCategoryObject": "/Script/kards.ESideEnum"
+                },
+                "Variable Name": "side"
+              },
+              {
+                "Inst": "ByteConst",
+                "Value": 1
+              }
+            ]
+          },
+          "StatementIndex": 0
+        },
+        {
+          "Inst": "JumpIfNot",
+          "Offset": 70,
+          "Condition": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Bool",
+              "PinSubCategory": "Bool"
+            },
+            "Variable Name": "CallFunc_EqualEqual_ByteByte_ReturnValue"
+          },
+          "StatementIndex": 31
+        },
+        {
+          "Inst": "Let",
+          "Variable": {
+            "Inst": "LocalOutVariable",
+            "Variable Outer": {
+              "PinCategory": "Byte",
+              "PinSubCategory": "Byte",
+              "PinSubCategoryObject": "/Script/kards.ECardLocationEnum"
+            },
+            "Variable Name": "handLocation"
+          },
+          "Expression": {
+            "Inst": "ByteConst",
+            "Value": 3
+          },
+          "StatementIndex": 45
+        },
+        {
+          "Inst": "Jump",
+          "Offset": 90,
+          "StatementIndex": 65
+        },
+        {
+          "Inst": "Let",
+          "Variable": {
+            "Inst": "LocalOutVariable",
+            "Variable Outer": {
+              "PinCategory": "Byte",
+              "PinSubCategory": "Byte",
+              "PinSubCategoryObject": "/Script/kards.ECardLocationEnum"
+            },
+            "Variable Name": "handLocation"
+          },
+          "Expression": {
+            "Inst": "ByteConst",
+            "Value": 4
+          },
+          "StatementIndex": 70
+        },
+        {
+          "Inst": "Return",
+          "Expression": {
+            "Inst": "Nothing"
+          },
+          "StatementIndex": 90
+        },
+        {
+          "Inst": "EndOfScript",
+          "StatementIndex": 92
+        }
+      ],
+      "bytecode_raw_size": 0
+    },
+    "RearrangeLocation": {
+      "function_flags": "FUNC_Public, FUNC_HasDefaults, FUNC_BlueprintCallable, FUNC_BlueprintEvent",
+      "expression_count": 20,
+      "bytecode": [
+        {
+          "Inst": "PushExecutionFlow",
+          "Offset": 452,
+          "StatementIndex": 0
+        },
+        {
+          "Inst": "PushExecutionFlow",
+          "Offset": 92,
+          "StatementIndex": 5
+        },
+        {
+          "Inst": "Context",
+          "Context": {
+            "Inst": "InstanceVariable",
+            "Variable Outer": {
+              "PinCategory": "Object",
+              "PinSubCategory": "Object",
+              "PinSubCategoryObject": "/Game/BP_GameState_Battle.BP_GameState_Battle_C"
+            },
+            "Variable Name": "GameStateRef"
+          },
+          "SkipOffsetForNull": 32,
+          "RValuePropertyOuter": "#Pointer Error#",
+          "RValuePropertyName": "^^^^^",
+          "Expression": {
+            "Inst": "LocalVirtualFunction",
+            "FunctionName": "FetchCardsByLocationSorted",
+            "Parameters": [
+              {
+                "Inst": "LocalVariable",
+                "Variable Outer": {
+                  "PinCategory": "Byte",
+                  "PinSubCategory": "Byte",
+                  "PinSubCategoryObject": "/Script/kards.ECardLocationEnum"
+                },
+                "Variable Name": "location"
+              },
+              {
+                "Inst": "LocalVariable",
+                "Variable Outer": {
+                  "PinCategory": "Int",
+                  "PinSubCategory": "Int",
+                  "ContainerType": 1
+                },
+                "Variable Name": "CallFunc_FetchCardsByLocationSorted_cardIDs"
+              }
+            ]
+          },
+          "StatementIndex": 10
+        },
+        {
+          "Inst": "Let",
+          "Variable": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Int",
+              "PinSubCategory": "Int",
+              "ContainerType": 1
+            },
+            "Variable Name": "_cardIDs"
+          },
+          "Expression": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Int",
+              "PinSubCategory": "Int",
+              "ContainerType": 1
+            },
+            "Variable Name": "CallFunc_FetchCardsByLocationSorted_cardIDs"
+          },
+          "StatementIndex": 64
+        },
+        {
+          "Inst": "PopExecutionFlow",
+          "StatementIndex": 91
+        },
+        {
+          "Inst": "Let",
+          "Variable": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Int",
+              "PinSubCategory": "Int"
+            },
+            "Variable Name": "Temp_int_Loop_Counter_Variable"
+          },
+          "Expression": {
+            "Inst": "IntConst",
+            "Value": 0
+          },
+          "StatementIndex": 92
+        },
+        {
+          "Inst": "Let",
+          "Variable": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Int",
+              "PinSubCategory": "Int"
+            },
+            "Variable Name": "Temp_int_Array_Index_Variable"
+          },
+          "Expression": {
+            "Inst": "IntConst",
+            "Value": 0
+          },
+          "StatementIndex": 115
+        },
+        {
+          "Inst": "Let",
+          "Variable": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Int",
+              "PinSubCategory": "Int"
+            },
+            "Variable Name": "CallFunc_Array_Length_ReturnValue"
+          },
+          "Expression": {
+            "Inst": "Context",
+            "Context": {
+              "Inst": "ObjectConst",
+              "Object": "/Script/Engine.Default__KismetArrayLibrary"
+            },
+            "SkipOffsetForNull": 19,
+            "RValuePropertyOuter": {
+              "PinCategory": "Int",
+              "PinSubCategory": "Int"
+            },
+            "RValuePropertyName": "CallFunc_Array_Length_ReturnValue",
+            "Expression": {
+              "Inst": "FinalFunction",
+              "Function": "Array_Length",
+              "Parameters": [
+                {
+                  "Inst": "LocalVariable",
+                  "Variable Outer": {
+                    "PinCategory": "Int",
+                    "PinSubCategory": "Int",
+                    "ContainerType": 1
+                  },
+                  "Variable Name": "_cardIDs"
+                }
+              ]
+            }
+          },
+          "StatementIndex": 138
+        },
+        {
+          "Inst": "LetBool",
+          "Variable": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Bool",
+              "PinSubCategory": "Bool"
+            },
+            "Variable Name": "CallFunc_Less_IntInt_ReturnValue"
+          },
+          "Expression": {
+            "Inst": "CallMath",
+            "Function": "Less_IntInt",
+            "ContextClass": "/Script/Engine.KismetMathLibrary",
+            "Parameters": [
+              {
+                "Inst": "LocalVariable",
+                "Variable Outer": {
+                  "PinCategory": "Int",
+                  "PinSubCategory": "Int"
+                },
+                "Variable Name": "Temp_int_Loop_Counter_Variable"
+              },
+              {
+                "Inst": "LocalVariable",
+                "Variable Outer": {
+                  "PinCategory": "Int",
+                  "PinSubCategory": "Int"
+                },
+                "Variable Name": "CallFunc_Array_Length_ReturnValue"
+              }
+            ]
+          },
+          "StatementIndex": 197
+        },
+        {
+          "Inst": "PopExecutionFlowIfNot",
+          "Condition": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Bool",
+              "PinSubCategory": "Bool"
+            },
+            "Variable Name": "CallFunc_Less_IntInt_ReturnValue"
+          },
+          "StatementIndex": 235
+        },
+        {
+          "Inst": "Let",
+          "Variable": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Int",
+              "PinSubCategory": "Int"
+            },
+            "Variable Name": "Temp_int_Array_Index_Variable"
+          },
+          "Expression": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Int",
+              "PinSubCategory": "Int"
+            },
+            "Variable Name": "Temp_int_Loop_Counter_Variable"
+          },
+          "StatementIndex": 245
+        },
+        {
+          "Inst": "PushExecutionFlow",
+          "Offset": 378,
+          "StatementIndex": 272
+        },
+        {
+          "Inst": "Context",
+          "Context": {
+            "Inst": "ObjectConst",
+            "Object": "/Script/Engine.Default__KismetArrayLibrary"
+          },
+          "SkipOffsetForNull": 37,
+          "RValuePropertyOuter": "#Pointer Error#",
+          "RValuePropertyName": "^^^^^",
+          "Expression": {
+            "Inst": "FinalFunction",
+            "Function": "Array_Get",
+            "Parameters": [
+              {
+                "Inst": "LocalVariable",
+                "Variable Outer": {
+                  "PinCategory": "Int",
+                  "PinSubCategory": "Int",
+                  "ContainerType": 1
+                },
+                "Variable Name": "_cardIDs"
+              },
+              {
+                "Inst": "LocalVariable",
+                "Variable Outer": {
+                  "PinCategory": "Int",
+                  "PinSubCategory": "Int"
+                },
+                "Variable Name": "Temp_int_Array_Index_Variable"
+              },
+              {
+                "Inst": "LocalVariable",
+                "Variable Outer": {
+                  "PinCategory": "Int",
+                  "PinSubCategory": "Int"
+                },
+                "Variable Name": "CallFunc_Array_Get_Item"
+              }
+            ]
+          },
+          "StatementIndex": 277
+        },
+        {
+          "Inst": "LocalVirtualFunction",
+          "FunctionName": "SetCardLocationAndLocNumber",
+          "Parameters": [
+            {
+              "Inst": "LocalVariable",
+              "Variable Outer": {
+                "PinCategory": "Int",
+                "PinSubCategory": "Int"
+              },
+              "Variable Name": "CallFunc_Array_Get_Item"
+            },
+            {
+              "Inst": "LocalVariable",
+              "Variable Outer": {
+                "PinCategory": "Byte",
+                "PinSubCategory": "Byte",
+                "PinSubCategoryObject": "/Script/kards.ECardLocationEnum"
+              },
+              "Variable Name": "location"
+            },
+            {
+              "Inst": "LocalVariable",
+              "Variable Outer": {
+                "PinCategory": "Int",
+                "PinSubCategory": "Int"
+              },
+              "Variable Name": "Temp_int_Array_Index_Variable"
+            }
+          ],
+          "StatementIndex": 336
+        },
+        {
+          "Inst": "PopExecutionFlow",
+          "StatementIndex": 377
+        },
+        {
+          "Inst": "Let",
+          "Variable": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Int",
+              "PinSubCategory": "Int"
+            },
+            "Variable Name": "CallFunc_Add_IntInt_ReturnValue"
+          },
+          "Expression": {
+            "Inst": "CallMath",
+            "Function": "Add_IntInt",
+            "ContextClass": "/Script/Engine.KismetMathLibrary",
+            "Parameters": [
+              {
+                "Inst": "LocalVariable",
+                "Variable Outer": {
+                  "PinCategory": "Int",
+                  "PinSubCategory": "Int"
+                },
+                "Variable Name": "Temp_int_Loop_Counter_Variable"
+              },
+              {
+                "Inst": "IntConst",
+                "Value": 1
+              }
+            ]
+          },
+          "StatementIndex": 378
+        },
+        {
+          "Inst": "Let",
+          "Variable": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Int",
+              "PinSubCategory": "Int"
+            },
+            "Variable Name": "Temp_int_Loop_Counter_Variable"
+          },
+          "Expression": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Int",
+              "PinSubCategory": "Int"
+            },
+            "Variable Name": "CallFunc_Add_IntInt_ReturnValue"
+          },
+          "StatementIndex": 420
+        },
+        {
+          "Inst": "Jump",
+          "Offset": 138,
+          "StatementIndex": 447
+        },
+        {
+          "Inst": "Return",
+          "Expression": {
+            "Inst": "Nothing"
+          },
+          "StatementIndex": 452
+        },
+        {
+          "Inst": "EndOfScript",
+          "StatementIndex": 454
+        }
+      ],
+      "bytecode_raw_size": 0
+    },
+    "AddSubActionGotchaTriggered": {
+      "function_flags": "FUNC_Public, FUNC_HasDefaults, FUNC_BlueprintCallable, FUNC_BlueprintEvent",
+      "expression_count": 7,
+      "bytecode": [
+        {
+          "Inst": "LocalVirtualFunction",
+          "FunctionName": "ActionValueCardID",
+          "Parameters": [
+            {
+              "Inst": "LocalVariable",
+              "Variable Outer": {
+                "PinCategory": "Int",
+                "PinSubCategory": "Int"
+              },
+              "Variable Name": "cardID"
+            },
+            {
+              "Inst": "LocalVariable",
+              "Variable Outer": {
+                "PinCategory": "Struct",
+                "PinSubCategory": "Struct",
+                "PinSubCategoryObject": "/Script/kards.ActionValue2"
+              },
+              "Variable Name": "CallFunc_ActionValueCardID_actionValue"
+            }
+          ],
+          "StatementIndex": 0
+        },
+        {
+          "Inst": "LocalVirtualFunction",
+          "FunctionName": "ActionValueBool",
+          "Parameters": [
+            {
+              "Inst": "StringConst",
+              "Value": "StopCard"
+            },
+            {
+              "Inst": "LocalVariable",
+              "Variable Outer": {
+                "PinCategory": "Bool",
+                "PinSubCategory": "Bool"
+              },
+              "Variable Name": "StopCard"
+            },
+            {
+              "Inst": "LocalVariable",
+              "Variable Outer": {
+                "PinCategory": "Struct",
+                "PinSubCategory": "Struct",
+                "PinSubCategoryObject": "/Script/kards.ActionValue2"
+              },
+              "Variable Name": "CallFunc_ActionValueBool_actionValue"
+            }
+          ],
+          "StatementIndex": 32
+        },
+        {
+          "Inst": "LocalVirtualFunction",
+          "FunctionName": "ActionValueInt",
+          "Parameters": [
+            {
+              "Inst": "StringConst",
+              "Value": "instigatorID"
+            },
+            {
+              "Inst": "LocalVariable",
+              "Variable Outer": {
+                "PinCategory": "Int",
+                "PinSubCategory": "Int"
+              },
+              "Variable Name": "instigatorID"
+            },
+            {
+              "Inst": "LocalVariable",
+              "Variable Outer": {
+                "PinCategory": "Struct",
+                "PinSubCategory": "Struct",
+                "PinSubCategoryObject": "/Script/kards.ActionValue2"
+              },
+              "Variable Name": "CallFunc_ActionValueInt_actionValue"
+            }
+          ],
+          "StatementIndex": 74
+        },
+        {
+          "Inst": "SetArray",
+          "LeftSideExpression": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Struct",
+              "PinSubCategory": "Struct",
+              "PinSubCategoryObject": "/Script/kards.ActionValue2",
+              "ContainerType": 1,
+              "IsConst": true
+            },
+            "Variable Name": "K2Node_MakeArray_Array"
+          },
+          "Values": [
+            {
+              "Inst": "LocalVariable",
+              "Variable Outer": {
+                "PinCategory": "Struct",
+                "PinSubCategory": "Struct",
+                "PinSubCategoryObject": "/Script/kards.ActionValue2"
+              },
+              "Variable Name": "CallFunc_ActionValueCardID_actionValue"
+            },
+            {
+              "Inst": "LocalVariable",
+              "Variable Outer": {
+                "PinCategory": "Struct",
+                "PinSubCategory": "Struct",
+                "PinSubCategoryObject": "/Script/kards.ActionValue2"
+              },
+              "Variable Name": "CallFunc_ActionValueInt_actionValue"
+            },
+            {
+              "Inst": "LocalVariable",
+              "Variable Outer": {
+                "PinCategory": "Struct",
+                "PinSubCategory": "Struct",
+                "PinSubCategoryObject": "/Script/kards.ActionValue2"
+              },
+              "Variable Name": "CallFunc_ActionValueBool_actionValue"
+            }
+          ],
+          "StatementIndex": 120
+        },
+        {
+          "Inst": "LocalVirtualFunction",
+          "FunctionName": "CreateAction_AddSubAction",
+          "Parameters": [
+            {
+              "Inst": "StringConst",
+              "Value": "ZActionGotchaTriggered"
+            },
+            {
+              "Inst": "LocalVariable",
+              "Variable Outer": {
+                "PinCategory": "Struct",
+                "PinSubCategory": "Struct",
+                "PinSubCategoryObject": "/Script/kards.ActionValue2",
+                "ContainerType": 1,
+                "IsConst": true
+              },
+              "Variable Name": "K2Node_MakeArray_Array"
+            }
+          ],
+          "StatementIndex": 158
+        },
+        {
+          "Inst": "Return",
+          "Expression": {
+            "Inst": "Nothing"
+          },
+          "StatementIndex": 205
+        },
+        {
+          "Inst": "EndOfScript",
+          "StatementIndex": 207
+        }
+      ]
+    },
+    "ReceiveActionGotchaTriggered": {
+      "function_flags": "FUNC_Public, FUNC_HasOutParms, FUNC_HasDefaults, FUNC_BlueprintCallable, FUNC_BlueprintEvent",
+      "expression_count": 47,
+      "bytecode": [
+        {
+          "Inst": "PushExecutionFlow",
+          "Offset": 1355,
+          "StatementIndex": 0
+        },
+        {
+          "Inst": "LetBool",
+          "Variable": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Bool",
+              "PinSubCategory": "Bool"
+            },
+            "Variable Name": "_cancelOrderRemove"
+          },
+          "Expression": {
+            "Inst": "False"
+          },
+          "StatementIndex": 5
+        },
+        {
+          "Inst": "PushExecutionFlow",
+          "Offset": 525,
+          "StatementIndex": 16
+        },
+        {
+          "Inst": "Let",
+          "Variable": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Int",
+              "PinSubCategory": "Int"
+            },
+            "Variable Name": "Temp_int_Loop_Counter_Variable"
+          },
+          "Expression": {
+            "Inst": "IntConst",
+            "Value": 0
+          },
+          "StatementIndex": 21
+        },
+        {
+          "Inst": "Let",
+          "Variable": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Int",
+              "PinSubCategory": "Int"
+            },
+            "Variable Name": "Temp_int_Array_Index_Variable"
+          },
+          "Expression": {
+            "Inst": "IntConst",
+            "Value": 0
+          },
+          "StatementIndex": 44
+        },
+        {
+          "Inst": "Let",
+          "Variable": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Int",
+              "PinSubCategory": "Int"
+            },
+            "Variable Name": "CallFunc_Array_Length_ReturnValue"
+          },
+          "Expression": {
+            "Inst": "Context",
+            "Context": {
+              "Inst": "ObjectConst",
+              "Object": "/Script/Engine.Default__KismetArrayLibrary"
+            },
+            "SkipOffsetForNull": 19,
+            "RValuePropertyOuter": {
+              "PinCategory": "Int",
+              "PinSubCategory": "Int"
+            },
+            "RValuePropertyName": "CallFunc_Array_Length_ReturnValue",
+            "Expression": {
+              "Inst": "FinalFunction",
+              "Function": "Array_Length",
+              "Parameters": [
+                {
+                  "Inst": "LocalOutVariable",
+                  "Variable Outer": {
+                    "PinCategory": "Struct",
+                    "PinSubCategory": "Struct",
+                    "PinSubCategoryObject": "/Script/kards.ActionValue2",
+                    "ContainerType": 1,
+                    "IsReference": true
+                  },
+                  "Variable Name": "actionData"
+                }
+              ]
+            }
+          },
+          "StatementIndex": 67
+        },
+        {
+          "Inst": "LetBool",
+          "Variable": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Bool",
+              "PinSubCategory": "Bool"
+            },
+            "Variable Name": "CallFunc_Less_IntInt_ReturnValue"
+          },
+          "Expression": {
+            "Inst": "CallMath",
+            "Function": "Less_IntInt",
+            "ContextClass": "/Script/Engine.KismetMathLibrary",
+            "Parameters": [
+              {
+                "Inst": "LocalVariable",
+                "Variable Outer": {
+                  "PinCategory": "Int",
+                  "PinSubCategory": "Int"
+                },
+                "Variable Name": "Temp_int_Loop_Counter_Variable"
+              },
+              {
+                "Inst": "LocalVariable",
+                "Variable Outer": {
+                  "PinCategory": "Int",
+                  "PinSubCategory": "Int"
+                },
+                "Variable Name": "CallFunc_Array_Length_ReturnValue"
+              }
+            ]
+          },
+          "StatementIndex": 126
+        },
+        {
+          "Inst": "PopExecutionFlowIfNot",
+          "Condition": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Bool",
+              "PinSubCategory": "Bool"
+            },
+            "Variable Name": "CallFunc_Less_IntInt_ReturnValue"
+          },
+          "StatementIndex": 164
+        },
+        {
+          "Inst": "Let",
+          "Variable": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Int",
+              "PinSubCategory": "Int"
+            },
+            "Variable Name": "Temp_int_Array_Index_Variable"
+          },
+          "Expression": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Int",
+              "PinSubCategory": "Int"
+            },
+            "Variable Name": "Temp_int_Loop_Counter_Variable"
+          },
+          "StatementIndex": 174
+        },
+        {
+          "Inst": "PushExecutionFlow",
+          "Offset": 855,
+          "StatementIndex": 201
+        },
+        {
+          "Inst": "Context",
+          "Context": {
+            "Inst": "ObjectConst",
+            "Object": "/Script/Engine.Default__KismetArrayLibrary"
+          },
+          "SkipOffsetForNull": 37,
+          "RValuePropertyOuter": "#Pointer Error#",
+          "RValuePropertyName": "^^^^^",
+          "Expression": {
+            "Inst": "FinalFunction",
+            "Function": "Array_Get",
+            "Parameters": [
+              {
+                "Inst": "LocalOutVariable",
+                "Variable Outer": {
+                  "PinCategory": "Struct",
+                  "PinSubCategory": "Struct",
+                  "PinSubCategoryObject": "/Script/kards.ActionValue2",
+                  "ContainerType": 1,
+                  "IsReference": true
+                },
+                "Variable Name": "actionData"
+              },
+              {
+                "Inst": "LocalVariable",
+                "Variable Outer": {
+                  "PinCategory": "Int",
+                  "PinSubCategory": "Int"
+                },
+                "Variable Name": "Temp_int_Array_Index_Variable"
+              },
+              {
+                "Inst": "LocalVariable",
+                "Variable Outer": {
+                  "PinCategory": "Struct",
+                  "PinSubCategory": "Struct",
+                  "PinSubCategoryObject": "/Script/kards.ActionValue2"
+                },
+                "Variable Name": "CallFunc_Array_Get_Item"
+              }
+            ]
+          },
+          "StatementIndex": 206
+        },
+        {
+          "Inst": "LetBool",
+          "Variable": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Bool",
+              "PinSubCategory": "Bool"
+            },
+            "Variable Name": "K2Node_SwitchString_CmpSuccess"
+          },
+          "Expression": {
+            "Inst": "CallMath",
+            "Function": "NotEqual_StriStri",
+            "ContextClass": "/Script/Engine.KismetStringLibrary",
+            "Parameters": [
+              {
+                "Inst": "StructMemberContext",
+                "Property Outer": "##NOT SERIALIZED##",
+                "Property Name": "name",
+                "StructExpression": {
+                  "Inst": "LocalVariable",
+                  "Variable Outer": {
+                    "PinCategory": "Struct",
+                    "PinSubCategory": "Struct",
+                    "PinSubCategoryObject": "/Script/kards.ActionValue2"
+                  },
+                  "Variable Name": "CallFunc_Array_Get_Item"
+                }
+              },
+              {
+                "Inst": "StringConst",
+                "Value": "cardID"
+              }
+            ]
+          },
+          "StatementIndex": 265
+        },
+        {
+          "Inst": "JumpIfNot",
+          "Offset": 929,
+          "Condition": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Bool",
+              "PinSubCategory": "Bool"
+            },
+            "Variable Name": "K2Node_SwitchString_CmpSuccess"
+          },
+          "StatementIndex": 311
+        },
+        {
+          "Inst": "LetBool",
+          "Variable": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Bool",
+              "PinSubCategory": "Bool"
+            },
+            "Variable Name": "K2Node_SwitchString_CmpSuccess"
+          },
+          "Expression": {
+            "Inst": "CallMath",
+            "Function": "NotEqual_StriStri",
+            "ContextClass": "/Script/Engine.KismetStringLibrary",
+            "Parameters": [
+              {
+                "Inst": "StructMemberContext",
+                "Property Outer": "##NOT SERIALIZED##",
+                "Property Name": "name",
+                "StructExpression": {
+                  "Inst": "LocalVariable",
+                  "Variable Outer": {
+                    "PinCategory": "Struct",
+                    "PinSubCategory": "Struct",
+                    "PinSubCategoryObject": "/Script/kards.ActionValue2"
+                  },
+                  "Variable Name": "CallFunc_Array_Get_Item"
+                }
+              },
+              {
+                "Inst": "StringConst",
+                "Value": "instigatorID"
+              }
+            ]
+          },
+          "StatementIndex": 325
+        },
+        {
+          "Inst": "JumpIfNot",
+          "Offset": 1025,
+          "Condition": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Bool",
+              "PinSubCategory": "Bool"
+            },
+            "Variable Name": "K2Node_SwitchString_CmpSuccess"
+          },
+          "StatementIndex": 377
+        },
+        {
+          "Inst": "LetBool",
+          "Variable": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Bool",
+              "PinSubCategory": "Bool"
+            },
+            "Variable Name": "K2Node_SwitchString_CmpSuccess"
+          },
+          "Expression": {
+            "Inst": "CallMath",
+            "Function": "NotEqual_StriStri",
+            "ContextClass": "/Script/Engine.KismetStringLibrary",
+            "Parameters": [
+              {
+                "Inst": "StructMemberContext",
+                "Property Outer": "##NOT SERIALIZED##",
+                "Property Name": "name",
+                "StructExpression": {
+                  "Inst": "LocalVariable",
+                  "Variable Outer": {
+                    "PinCategory": "Struct",
+                    "PinSubCategory": "Struct",
+                    "PinSubCategoryObject": "/Script/kards.ActionValue2"
+                  },
+                  "Variable Name": "CallFunc_Array_Get_Item"
+                }
+              },
+              {
+                "Inst": "StringConst",
+                "Value": "StopCard"
+              }
+            ]
+          },
+          "StatementIndex": 391
+        },
+        {
+          "Inst": "JumpIfNot",
+          "Offset": 1121,
+          "Condition": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Bool",
+              "PinSubCategory": "Bool"
+            },
+            "Variable Name": "K2Node_SwitchString_CmpSuccess"
+          },
+          "StatementIndex": 439
+        },
+        {
+          "Inst": "LetBool",
+          "Variable": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Bool",
+              "PinSubCategory": "Bool"
+            },
+            "Variable Name": "K2Node_SwitchString_CmpSuccess"
+          },
+          "Expression": {
+            "Inst": "CallMath",
+            "Function": "NotEqual_StriStri",
+            "ContextClass": "/Script/Engine.KismetStringLibrary",
+            "Parameters": [
+              {
+                "Inst": "StructMemberContext",
+                "Property Outer": "##NOT SERIALIZED##",
+                "Property Name": "name",
+                "StructExpression": {
+                  "Inst": "LocalVariable",
+                  "Variable Outer": {
+                    "PinCategory": "Struct",
+                    "PinSubCategory": "Struct",
+                    "PinSubCategoryObject": "/Script/kards.ActionValue2"
+                  },
+                  "Variable Name": "CallFunc_Array_Get_Item"
+                }
+              },
+              {
+                "Inst": "StringConst",
+                "Value": "cancelOrderRemove"
+              }
+            ]
+          },
+          "StatementIndex": 453
+        },
+        {
+          "Inst": "JumpIfNot",
+          "Offset": 1238,
+          "Condition": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Bool",
+              "PinSubCategory": "Bool"
+            },
+            "Variable Name": "K2Node_SwitchString_CmpSuccess"
+          },
+          "StatementIndex": 510
+        },
+        {
+          "Inst": "PopExecutionFlow",
+          "StatementIndex": 524
+        },
+        {
+          "Inst": "JumpIfNot",
+          "Offset": 715,
+          "Condition": {
+            "Inst": "InstanceVariable",
+            "Variable Outer": {
+              "PinCategory": "Bool",
+              "PinSubCategory": "Bool"
+            },
+            "Variable Name": "ResolveSubActionsFromLocal"
+          },
+          "StatementIndex": 525
+        },
+        {
+          "Inst": "Context",
+          "Context": {
+            "Inst": "InstanceVariable",
+            "Variable Outer": {
+              "PinCategory": "Object",
+              "PinSubCategory": "Object",
+              "PinSubCategoryObject": "/Game/Blueprints/Logic/BP_Logic.BP_Logic_C"
+            },
+            "Variable Name": "logic"
+          },
+          "SkipOffsetForNull": 32,
+          "RValuePropertyOuter": "#Pointer Error#",
+          "RValuePropertyName": "^^^^^",
+          "Expression": {
+            "Inst": "LocalVirtualFunction",
+            "FunctionName": "GetCardFromID",
+            "Parameters": [
+              {
+                "Inst": "LocalVariable",
+                "Variable Outer": {
+                  "PinCategory": "Int",
+                  "PinSubCategory": "Int"
+                },
+                "Variable Name": "cardID"
+              },
+              {
+                "Inst": "LocalVariable",
+                "Variable Outer": {
+                  "PinCategory": "Object",
+                  "PinSubCategory": "Object",
+                  "PinSubCategoryObject": "/Script/kards.BaseCardObject"
+                },
+                "Variable Name": "CallFunc_GetCardFromID_card"
+              }
+            ]
+          },
+          "StatementIndex": 539
+        },
+        {
+          "Inst": "Context",
+          "Context": {
+            "Inst": "InstanceVariable",
+            "Variable Outer": {
+              "PinCategory": "Object",
+              "PinSubCategory": "Object",
+              "PinSubCategoryObject": "/Game/Blueprints/Cards/BP_CardFunctions.BP_CardFunctions_C"
+            },
+            "Variable Name": "cardFunctions"
+          },
+          "SkipOffsetForNull": 54,
+          "RValuePropertyOuter": "#Pointer Error#",
+          "RValuePropertyName": "^^^^^",
+          "Expression": {
+            "Inst": "LocalVirtualFunction",
+            "FunctionName": "GetHandLocationBySide",
+            "Parameters": [
+              {
+                "Inst": "Context",
+                "Context": {
+                  "Inst": "LocalVariable",
+                  "Variable Outer": {
+                    "PinCategory": "Object",
+                    "PinSubCategory": "Object",
+                    "PinSubCategoryObject": "/Script/kards.BaseCardObject"
+                  },
+                  "Variable Name": "CallFunc_GetCardFromID_card"
+                },
+                "SkipOffsetForNull": 9,
+                "RValuePropertyOuter": "##NOT SERIALIZED##",
+                "RValuePropertyName": "side",
+                "Expression": {
+                  "Inst": "InstanceVariable",
+                  "Variable Outer": "##NOT SERIALIZED##",
+                  "Variable Name": "side"
+                }
+              },
+              {
+                "Inst": "LocalVariable",
+                "Variable Outer": {
+                  "PinCategory": "Byte",
+                  "PinSubCategory": "Byte",
+                  "PinSubCategoryObject": "/Script/kards.ECardLocationEnum"
+                },
+                "Variable Name": "CallFunc_GetHandLocationBySide_handLocation"
+              }
+            ]
+          },
+          "StatementIndex": 593
+        },
+        {
+          "Inst": "Context",
+          "Context": {
+            "Inst": "InstanceVariable",
+            "Variable Outer": {
+              "PinCategory": "Object",
+              "PinSubCategory": "Object",
+              "PinSubCategoryObject": "/Game/Blueprints/Cards/BP_CardFunctions.BP_CardFunctions_C"
+            },
+            "Variable Name": "cardFunctions"
+          },
+          "SkipOffsetForNull": 23,
+          "RValuePropertyOuter": "#Pointer Error#",
+          "RValuePropertyName": "^^^^^",
+          "Expression": {
+            "Inst": "LocalVirtualFunction",
+            "FunctionName": "RearrangeLocation",
+            "Parameters": [
+              {
+                "Inst": "LocalVariable",
+                "Variable Outer": {
+                  "PinCategory": "Byte",
+                  "PinSubCategory": "Byte",
+                  "PinSubCategoryObject": "/Script/kards.ECardLocationEnum"
+                },
+                "Variable Name": "CallFunc_GetHandLocationBySide_handLocation"
+              }
+            ]
+          },
+          "StatementIndex": 669
+        },
+        {
+          "Inst": "PopExecutionFlow",
+          "StatementIndex": 714
+        },
+        {
+          "Inst": "Context",
+          "Context": {
+            "Inst": "InstanceVariable",
+            "Variable Outer": {
+              "PinCategory": "Object",
+              "PinSubCategory": "Object",
+              "PinSubCategoryObject": "/Game/Blueprints/Logic/BP_Logic.BP_Logic_C"
+            },
+            "Variable Name": "logic"
+          },
+          "SkipOffsetForNull": 32,
+          "RValuePropertyOuter": "#Pointer Error#",
+          "RValuePropertyName": "^^^^^",
+          "Expression": {
+            "Inst": "LocalVirtualFunction",
+            "FunctionName": "GetCardFromID",
+            "Parameters": [
+              {
+                "Inst": "LocalVariable",
+                "Variable Outer": {
+                  "PinCategory": "Int",
+                  "PinSubCategory": "Int"
+                },
+                "Variable Name": "cardID"
+              },
+              {
+                "Inst": "LocalVariable",
+                "Variable Outer": {
+                  "PinCategory": "Object",
+                  "PinSubCategory": "Object",
+                  "PinSubCategoryObject": "/Script/kards.BaseCardObject"
+                },
+                "Variable Name": "CallFunc_GetCardFromID_card"
+              }
+            ]
+          },
+          "StatementIndex": 715
+        },
+        {
+          "Inst": "Context",
+          "Context": {
+            "Inst": "InstanceVariable",
+            "Variable Outer": {
+              "PinCategory": "Object",
+              "PinSubCategory": "Object",
+              "PinSubCategoryObject": "/Game/Blueprints/Cards/BP_CardFunctions.BP_CardFunctions_C"
+            },
+            "Variable Name": "cardFunctions"
+          },
+          "SkipOffsetForNull": 59,
+          "RValuePropertyOuter": "#Pointer Error#",
+          "RValuePropertyName": "^^^^^",
+          "Expression": {
+            "Inst": "LocalVirtualFunction",
+            "FunctionName": "GotchaTriggered",
+            "Parameters": [
+              {
+                "Inst": "LocalVariable",
+                "Variable Outer": {
+                  "PinCategory": "Object",
+                  "PinSubCategory": "Object",
+                  "PinSubCategoryObject": "/Script/kards.BaseCardObject"
+                },
+                "Variable Name": "CallFunc_GetCardFromID_card"
+              },
+              {
+                "Inst": "LocalVariable",
+                "Variable Outer": {
+                  "PinCategory": "Int",
+                  "PinSubCategory": "Int"
+                },
+                "Variable Name": "instigatorID"
+              },
+              {
+                "Inst": "LocalVariable",
+                "Variable Outer": {
+                  "PinCategory": "Bool",
+                  "PinSubCategory": "Bool"
+                },
+                "Variable Name": "StopCard"
+              },
+              {
+                "Inst": "LocalVariable",
+                "Variable Outer": {
+                  "PinCategory": "Bool",
+                  "PinSubCategory": "Bool"
+                },
+                "Variable Name": "_cancelOrderRemove"
+              },
+              {
+                "Inst": "LocalVariable",
+                "Variable Outer": {
+                  "PinCategory": "Bool",
+                  "PinSubCategory": "Bool"
+                },
+                "Variable Name": "CallFunc_GotchaTriggered_qqq"
+              }
+            ]
+          },
+          "StatementIndex": 769
+        },
+        {
+          "Inst": "Jump",
+          "Offset": 539,
+          "StatementIndex": 850
+        },
+        {
+          "Inst": "Let",
+          "Variable": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Int",
+              "PinSubCategory": "Int"
+            },
+            "Variable Name": "CallFunc_Add_IntInt_ReturnValue"
+          },
+          "Expression": {
+            "Inst": "CallMath",
+            "Function": "Add_IntInt",
+            "ContextClass": "/Script/Engine.KismetMathLibrary",
+            "Parameters": [
+              {
+                "Inst": "LocalVariable",
+                "Variable Outer": {
+                  "PinCategory": "Int",
+                  "PinSubCategory": "Int"
+                },
+                "Variable Name": "Temp_int_Loop_Counter_Variable"
+              },
+              {
+                "Inst": "IntConst",
+                "Value": 1
+              }
+            ]
+          },
+          "StatementIndex": 855
+        },
+        {
+          "Inst": "Let",
+          "Variable": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Int",
+              "PinSubCategory": "Int"
+            },
+            "Variable Name": "Temp_int_Loop_Counter_Variable"
+          },
+          "Expression": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Int",
+              "PinSubCategory": "Int"
+            },
+            "Variable Name": "CallFunc_Add_IntInt_ReturnValue"
+          },
+          "StatementIndex": 897
+        },
+        {
+          "Inst": "Jump",
+          "Offset": 67,
+          "StatementIndex": 924
+        },
+        {
+          "Inst": "Context",
+          "Context": {
+            "Inst": "ObjectConst",
+            "Object": "/Script/Engine.Default__KismetArrayLibrary"
+          },
+          "SkipOffsetForNull": 37,
+          "RValuePropertyOuter": "#Pointer Error#",
+          "RValuePropertyName": "^^^^^",
+          "Expression": {
+            "Inst": "FinalFunction",
+            "Function": "Array_Get",
+            "Parameters": [
+              {
+                "Inst": "LocalOutVariable",
+                "Variable Outer": {
+                  "PinCategory": "Struct",
+                  "PinSubCategory": "Struct",
+                  "PinSubCategoryObject": "/Script/kards.ActionValue2",
+                  "ContainerType": 1,
+                  "IsReference": true
+                },
+                "Variable Name": "actionData"
+              },
+              {
+                "Inst": "LocalVariable",
+                "Variable Outer": {
+                  "PinCategory": "Int",
+                  "PinSubCategory": "Int"
+                },
+                "Variable Name": "Temp_int_Array_Index_Variable"
+              },
+              {
+                "Inst": "LocalVariable",
+                "Variable Outer": {
+                  "PinCategory": "Struct",
+                  "PinSubCategory": "Struct",
+                  "PinSubCategoryObject": "/Script/kards.ActionValue2"
+                },
+                "Variable Name": "CallFunc_Array_Get_Item"
+              }
+            ]
+          },
+          "StatementIndex": 929
+        },
+        {
+          "Inst": "Let",
+          "Variable": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Int",
+              "PinSubCategory": "Int"
+            },
+            "Variable Name": "cardID"
+          },
+          "Expression": {
+            "Inst": "StructMemberContext",
+            "Property Outer": "##NOT SERIALIZED##",
+            "Property Name": "value",
+            "StructExpression": {
+              "Inst": "LocalVariable",
+              "Variable Outer": {
+                "PinCategory": "Struct",
+                "PinSubCategory": "Struct",
+                "PinSubCategoryObject": "/Script/kards.ActionValue2"
+              },
+              "Variable Name": "CallFunc_Array_Get_Item"
+            }
+          },
+          "StatementIndex": 988
+        },
+        {
+          "Inst": "PopExecutionFlow",
+          "StatementIndex": 1024
+        },
+        {
+          "Inst": "Context",
+          "Context": {
+            "Inst": "ObjectConst",
+            "Object": "/Script/Engine.Default__KismetArrayLibrary"
+          },
+          "SkipOffsetForNull": 37,
+          "RValuePropertyOuter": "#Pointer Error#",
+          "RValuePropertyName": "^^^^^",
+          "Expression": {
+            "Inst": "FinalFunction",
+            "Function": "Array_Get",
+            "Parameters": [
+              {
+                "Inst": "LocalOutVariable",
+                "Variable Outer": {
+                  "PinCategory": "Struct",
+                  "PinSubCategory": "Struct",
+                  "PinSubCategoryObject": "/Script/kards.ActionValue2",
+                  "ContainerType": 1,
+                  "IsReference": true
+                },
+                "Variable Name": "actionData"
+              },
+              {
+                "Inst": "LocalVariable",
+                "Variable Outer": {
+                  "PinCategory": "Int",
+                  "PinSubCategory": "Int"
+                },
+                "Variable Name": "Temp_int_Array_Index_Variable"
+              },
+              {
+                "Inst": "LocalVariable",
+                "Variable Outer": {
+                  "PinCategory": "Struct",
+                  "PinSubCategory": "Struct",
+                  "PinSubCategoryObject": "/Script/kards.ActionValue2"
+                },
+                "Variable Name": "CallFunc_Array_Get_Item"
+              }
+            ]
+          },
+          "StatementIndex": 1025
+        },
+        {
+          "Inst": "Let",
+          "Variable": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Int",
+              "PinSubCategory": "Int"
+            },
+            "Variable Name": "instigatorID"
+          },
+          "Expression": {
+            "Inst": "StructMemberContext",
+            "Property Outer": "##NOT SERIALIZED##",
+            "Property Name": "value",
+            "StructExpression": {
+              "Inst": "LocalVariable",
+              "Variable Outer": {
+                "PinCategory": "Struct",
+                "PinSubCategory": "Struct",
+                "PinSubCategoryObject": "/Script/kards.ActionValue2"
+              },
+              "Variable Name": "CallFunc_Array_Get_Item"
+            }
+          },
+          "StatementIndex": 1084
+        },
+        {
+          "Inst": "PopExecutionFlow",
+          "StatementIndex": 1120
+        },
+        {
+          "Inst": "Context",
+          "Context": {
+            "Inst": "ObjectConst",
+            "Object": "/Script/Engine.Default__KismetArrayLibrary"
+          },
+          "SkipOffsetForNull": 37,
+          "RValuePropertyOuter": "#Pointer Error#",
+          "RValuePropertyName": "^^^^^",
+          "Expression": {
+            "Inst": "FinalFunction",
+            "Function": "Array_Get",
+            "Parameters": [
+              {
+                "Inst": "LocalOutVariable",
+                "Variable Outer": {
+                  "PinCategory": "Struct",
+                  "PinSubCategory": "Struct",
+                  "PinSubCategoryObject": "/Script/kards.ActionValue2",
+                  "ContainerType": 1,
+                  "IsReference": true
+                },
+                "Variable Name": "actionData"
+              },
+              {
+                "Inst": "LocalVariable",
+                "Variable Outer": {
+                  "PinCategory": "Int",
+                  "PinSubCategory": "Int"
+                },
+                "Variable Name": "Temp_int_Array_Index_Variable"
+              },
+              {
+                "Inst": "LocalVariable",
+                "Variable Outer": {
+                  "PinCategory": "Struct",
+                  "PinSubCategory": "Struct",
+                  "PinSubCategoryObject": "/Script/kards.ActionValue2"
+                },
+                "Variable Name": "CallFunc_Array_Get_Item"
+              }
+            ]
+          },
+          "StatementIndex": 1121
+        },
+        {
+          "Inst": "LetBool",
+          "Variable": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Bool",
+              "PinSubCategory": "Bool"
+            },
+            "Variable Name": "CallFunc_Conv_IntToBool_ReturnValue"
+          },
+          "Expression": {
+            "Inst": "CallMath",
+            "Function": "Conv_IntToBool",
+            "ContextClass": "/Script/Engine.KismetMathLibrary",
+            "Parameters": [
+              {
+                "Inst": "StructMemberContext",
+                "Property Outer": "##NOT SERIALIZED##",
+                "Property Name": "value",
+                "StructExpression": {
+                  "Inst": "LocalVariable",
+                  "Variable Outer": {
+                    "PinCategory": "Struct",
+                    "PinSubCategory": "Struct",
+                    "PinSubCategoryObject": "/Script/kards.ActionValue2"
+                  },
+                  "Variable Name": "CallFunc_Array_Get_Item"
+                }
+              }
+            ]
+          },
+          "StatementIndex": 1180
+        },
+        {
+          "Inst": "LetBool",
+          "Variable": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Bool",
+              "PinSubCategory": "Bool"
+            },
+            "Variable Name": "StopCard"
+          },
+          "Expression": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Bool",
+              "PinSubCategory": "Bool"
+            },
+            "Variable Name": "CallFunc_Conv_IntToBool_ReturnValue"
+          },
+          "StatementIndex": 1218
+        },
+        {
+          "Inst": "PopExecutionFlow",
+          "StatementIndex": 1237
+        },
+        {
+          "Inst": "Context",
+          "Context": {
+            "Inst": "ObjectConst",
+            "Object": "/Script/Engine.Default__KismetArrayLibrary"
+          },
+          "SkipOffsetForNull": 37,
+          "RValuePropertyOuter": "#Pointer Error#",
+          "RValuePropertyName": "^^^^^",
+          "Expression": {
+            "Inst": "FinalFunction",
+            "Function": "Array_Get",
+            "Parameters": [
+              {
+                "Inst": "LocalOutVariable",
+                "Variable Outer": {
+                  "PinCategory": "Struct",
+                  "PinSubCategory": "Struct",
+                  "PinSubCategoryObject": "/Script/kards.ActionValue2",
+                  "ContainerType": 1,
+                  "IsReference": true
+                },
+                "Variable Name": "actionData"
+              },
+              {
+                "Inst": "LocalVariable",
+                "Variable Outer": {
+                  "PinCategory": "Int",
+                  "PinSubCategory": "Int"
+                },
+                "Variable Name": "Temp_int_Array_Index_Variable"
+              },
+              {
+                "Inst": "LocalVariable",
+                "Variable Outer": {
+                  "PinCategory": "Struct",
+                  "PinSubCategory": "Struct",
+                  "PinSubCategoryObject": "/Script/kards.ActionValue2"
+                },
+                "Variable Name": "CallFunc_Array_Get_Item"
+              }
+            ]
+          },
+          "StatementIndex": 1238
+        },
+        {
+          "Inst": "LetBool",
+          "Variable": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Bool",
+              "PinSubCategory": "Bool"
+            },
+            "Variable Name": "CallFunc_Conv_IntToBool_ReturnValue"
+          },
+          "Expression": {
+            "Inst": "CallMath",
+            "Function": "Conv_IntToBool",
+            "ContextClass": "/Script/Engine.KismetMathLibrary",
+            "Parameters": [
+              {
+                "Inst": "StructMemberContext",
+                "Property Outer": "##NOT SERIALIZED##",
+                "Property Name": "value",
+                "StructExpression": {
+                  "Inst": "LocalVariable",
+                  "Variable Outer": {
+                    "PinCategory": "Struct",
+                    "PinSubCategory": "Struct",
+                    "PinSubCategoryObject": "/Script/kards.ActionValue2"
+                  },
+                  "Variable Name": "CallFunc_Array_Get_Item"
+                }
+              }
+            ]
+          },
+          "StatementIndex": 1297
+        },
+        {
+          "Inst": "LetBool",
+          "Variable": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Bool",
+              "PinSubCategory": "Bool"
+            },
+            "Variable Name": "_cancelOrderRemove"
+          },
+          "Expression": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Bool",
+              "PinSubCategory": "Bool"
+            },
+            "Variable Name": "CallFunc_Conv_IntToBool_ReturnValue"
+          },
+          "StatementIndex": 1335
+        },
+        {
+          "Inst": "PopExecutionFlow",
+          "StatementIndex": 1354
+        },
+        {
+          "Inst": "Return",
+          "Expression": {
+            "Inst": "Nothing"
+          },
+          "StatementIndex": 1355
+        },
+        {
+          "Inst": "EndOfScript",
+          "StatementIndex": 1357
+        }
+      ]
+    },
+    "StopFurtherActions": {
+      "function_flags": "FUNC_Public, FUNC_HasDefaults, FUNC_BlueprintCallable, FUNC_BlueprintEvent",
+      "expression_count": 46,
+      "bytecode": [
+        {
+          "Inst": "PushExecutionFlow",
+          "Offset": 1507,
+          "StatementIndex": 0
+        },
+        {
+          "Inst": "Let",
+          "Variable": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Int",
+              "PinSubCategory": "Int"
+            },
+            "Variable Name": "Temp_int_Loop_Counter_Variable"
+          },
+          "Expression": {
+            "Inst": "IntConst",
+            "Value": 0
+          },
+          "StatementIndex": 5
+        },
+        {
+          "Inst": "Let",
+          "Variable": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Int",
+              "PinSubCategory": "Int"
+            },
+            "Variable Name": "Temp_int_Array_Index_Variable"
+          },
+          "Expression": {
+            "Inst": "IntConst",
+            "Value": 0
+          },
+          "StatementIndex": 28
+        },
+        {
+          "Inst": "Let",
+          "Variable": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Int",
+              "PinSubCategory": "Int"
+            },
+            "Variable Name": "CallFunc_Array_Length_ReturnValue"
+          },
+          "Expression": {
+            "Inst": "Context",
+            "Context": {
+              "Inst": "ObjectConst",
+              "Object": "/Script/Engine.Default__KismetArrayLibrary"
+            },
+            "SkipOffsetForNull": 19,
+            "RValuePropertyOuter": {
+              "PinCategory": "Int",
+              "PinSubCategory": "Int"
+            },
+            "RValuePropertyName": "CallFunc_Array_Length_ReturnValue",
+            "Expression": {
+              "Inst": "FinalFunction",
+              "Function": "Array_Length",
+              "Parameters": [
+                {
+                  "Inst": "InstanceVariable",
+                  "Variable Outer": {
+                    "PinCategory": "Struct",
+                    "PinSubCategory": "Struct",
+                    "PinSubCategoryObject": "/Script/kards.SubAction",
+                    "ContainerType": 1
+                  },
+                  "Variable Name": "subActions"
+                }
+              ]
+            }
+          },
+          "StatementIndex": 51
+        },
+        {
+          "Inst": "LetBool",
+          "Variable": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Bool",
+              "PinSubCategory": "Bool"
+            },
+            "Variable Name": "CallFunc_Less_IntInt_ReturnValue"
+          },
+          "Expression": {
+            "Inst": "CallMath",
+            "Function": "Less_IntInt",
+            "ContextClass": "/Script/Engine.KismetMathLibrary",
+            "Parameters": [
+              {
+                "Inst": "LocalVariable",
+                "Variable Outer": {
+                  "PinCategory": "Int",
+                  "PinSubCategory": "Int"
+                },
+                "Variable Name": "Temp_int_Loop_Counter_Variable"
+              },
+              {
+                "Inst": "LocalVariable",
+                "Variable Outer": {
+                  "PinCategory": "Int",
+                  "PinSubCategory": "Int"
+                },
+                "Variable Name": "CallFunc_Array_Length_ReturnValue"
+              }
+            ]
+          },
+          "StatementIndex": 110
+        },
+        {
+          "Inst": "JumpIfNot",
+          "Offset": 783,
+          "Condition": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Bool",
+              "PinSubCategory": "Bool"
+            },
+            "Variable Name": "CallFunc_Less_IntInt_ReturnValue"
+          },
+          "StatementIndex": 148
+        },
+        {
+          "Inst": "Let",
+          "Variable": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Int",
+              "PinSubCategory": "Int"
+            },
+            "Variable Name": "Temp_int_Array_Index_Variable"
+          },
+          "Expression": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Int",
+              "PinSubCategory": "Int"
+            },
+            "Variable Name": "Temp_int_Loop_Counter_Variable"
+          },
+          "StatementIndex": 162
+        },
+        {
+          "Inst": "PushExecutionFlow",
+          "Offset": 811,
+          "StatementIndex": 189
+        },
+        {
+          "Inst": "Context",
+          "Context": {
+            "Inst": "ObjectConst",
+            "Object": "/Script/Engine.Default__KismetArrayLibrary"
+          },
+          "SkipOffsetForNull": 37,
+          "RValuePropertyOuter": "#Pointer Error#",
+          "RValuePropertyName": "^^^^^",
+          "Expression": {
+            "Inst": "FinalFunction",
+            "Function": "Array_Get",
+            "Parameters": [
+              {
+                "Inst": "InstanceVariable",
+                "Variable Outer": {
+                  "PinCategory": "Struct",
+                  "PinSubCategory": "Struct",
+                  "PinSubCategoryObject": "/Script/kards.SubAction",
+                  "ContainerType": 1
+                },
+                "Variable Name": "subActions"
+              },
+              {
+                "Inst": "LocalVariable",
+                "Variable Outer": {
+                  "PinCategory": "Int",
+                  "PinSubCategory": "Int"
+                },
+                "Variable Name": "Temp_int_Array_Index_Variable"
+              },
+              {
+                "Inst": "LocalVariable",
+                "Variable Outer": {
+                  "PinCategory": "Struct",
+                  "PinSubCategory": "Struct",
+                  "PinSubCategoryObject": "/Script/kards.SubAction"
+                },
+                "Variable Name": "CallFunc_Array_Get_Item"
+              }
+            ]
+          },
+          "StatementIndex": 194
+        },
+        {
+          "Inst": "LetBool",
+          "Variable": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Bool",
+              "PinSubCategory": "Bool"
+            },
+            "Variable Name": "CallFunc_EqualEqual_StrStr_ReturnValue"
+          },
+          "Expression": {
+            "Inst": "CallMath",
+            "Function": "EqualEqual_StrStr",
+            "ContextClass": "/Script/Engine.KismetStringLibrary",
+            "Parameters": [
+              {
+                "Inst": "StructMemberContext",
+                "Property Outer": "##NOT SERIALIZED##",
+                "Property Name": "name",
+                "StructExpression": {
+                  "Inst": "LocalVariable",
+                  "Variable Outer": {
+                    "PinCategory": "Struct",
+                    "PinSubCategory": "Struct",
+                    "PinSubCategoryObject": "/Script/kards.SubAction"
+                  },
+                  "Variable Name": "CallFunc_Array_Get_Item"
+                }
+              },
+              {
+                "Inst": "StringConst",
+                "Value": "ZActionPlayCardFromHand"
+              }
+            ]
+          },
+          "StatementIndex": 253
+        },
+        {
+          "Inst": "JumpIfNot",
+          "Offset": 885,
+          "Condition": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Bool",
+              "PinSubCategory": "Bool"
+            },
+            "Variable Name": "CallFunc_EqualEqual_StrStr_ReturnValue"
+          },
+          "StatementIndex": 316
+        },
+        {
+          "Inst": "Let",
+          "Variable": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Int",
+              "PinSubCategory": "Int"
+            },
+            "Variable Name": "Temp_int_Loop_Counter_Variable_1"
+          },
+          "Expression": {
+            "Inst": "IntConst",
+            "Value": 0
+          },
+          "StatementIndex": 330
+        },
+        {
+          "Inst": "Let",
+          "Variable": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Int",
+              "PinSubCategory": "Int"
+            },
+            "Variable Name": "Temp_int_Array_Index_Variable_1"
+          },
+          "Expression": {
+            "Inst": "IntConst",
+            "Value": 0
+          },
+          "StatementIndex": 353
+        },
+        {
+          "Inst": "Context",
+          "Context": {
+            "Inst": "ObjectConst",
+            "Object": "/Script/Engine.Default__KismetArrayLibrary"
+          },
+          "SkipOffsetForNull": 37,
+          "RValuePropertyOuter": "#Pointer Error#",
+          "RValuePropertyName": "^^^^^",
+          "Expression": {
+            "Inst": "FinalFunction",
+            "Function": "Array_Get",
+            "Parameters": [
+              {
+                "Inst": "InstanceVariable",
+                "Variable Outer": {
+                  "PinCategory": "Struct",
+                  "PinSubCategory": "Struct",
+                  "PinSubCategoryObject": "/Script/kards.SubAction",
+                  "ContainerType": 1
+                },
+                "Variable Name": "subActions"
+              },
+              {
+                "Inst": "LocalVariable",
+                "Variable Outer": {
+                  "PinCategory": "Int",
+                  "PinSubCategory": "Int"
+                },
+                "Variable Name": "Temp_int_Array_Index_Variable"
+              },
+              {
+                "Inst": "LocalVariable",
+                "Variable Outer": {
+                  "PinCategory": "Struct",
+                  "PinSubCategory": "Struct",
+                  "PinSubCategoryObject": "/Script/kards.SubAction"
+                },
+                "Variable Name": "CallFunc_Array_Get_Item"
+              }
+            ]
+          },
+          "StatementIndex": 376
+        },
+        {
+          "Inst": "Let",
+          "Variable": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Int",
+              "PinSubCategory": "Int"
+            },
+            "Variable Name": "CallFunc_Array_Length_ReturnValue_1"
+          },
+          "Expression": {
+            "Inst": "Context",
+            "Context": {
+              "Inst": "ObjectConst",
+              "Object": "/Script/Engine.Default__KismetArrayLibrary"
+            },
+            "SkipOffsetForNull": 28,
+            "RValuePropertyOuter": {
+              "PinCategory": "Int",
+              "PinSubCategory": "Int"
+            },
+            "RValuePropertyName": "CallFunc_Array_Length_ReturnValue_1",
+            "Expression": {
+              "Inst": "FinalFunction",
+              "Function": "Array_Length",
+              "Parameters": [
+                {
+                  "Inst": "StructMemberContext",
+                  "Property Outer": "##NOT SERIALIZED##",
+                  "Property Name": "values",
+                  "StructExpression": {
+                    "Inst": "LocalVariable",
+                    "Variable Outer": {
+                      "PinCategory": "Struct",
+                      "PinSubCategory": "Struct",
+                      "PinSubCategoryObject": "/Script/kards.SubAction"
+                    },
+                    "Variable Name": "CallFunc_Array_Get_Item"
+                  }
+                }
+              ]
+            }
+          },
+          "StatementIndex": 435
+        },
+        {
+          "Inst": "LetBool",
+          "Variable": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Bool",
+              "PinSubCategory": "Bool"
+            },
+            "Variable Name": "CallFunc_Less_IntInt_ReturnValue_1"
+          },
+          "Expression": {
+            "Inst": "CallMath",
+            "Function": "Less_IntInt",
+            "ContextClass": "/Script/Engine.KismetMathLibrary",
+            "Parameters": [
+              {
+                "Inst": "LocalVariable",
+                "Variable Outer": {
+                  "PinCategory": "Int",
+                  "PinSubCategory": "Int"
+                },
+                "Variable Name": "Temp_int_Loop_Counter_Variable_1"
+              },
+              {
+                "Inst": "LocalVariable",
+                "Variable Outer": {
+                  "PinCategory": "Int",
+                  "PinSubCategory": "Int"
+                },
+                "Variable Name": "CallFunc_Array_Length_ReturnValue_1"
+              }
+            ]
+          },
+          "StatementIndex": 503
+        },
+        {
+          "Inst": "JumpIfNot",
+          "Offset": 1103,
+          "Condition": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Bool",
+              "PinSubCategory": "Bool"
+            },
+            "Variable Name": "CallFunc_Less_IntInt_ReturnValue_1"
+          },
+          "StatementIndex": 541
+        },
+        {
+          "Inst": "Let",
+          "Variable": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Int",
+              "PinSubCategory": "Int"
+            },
+            "Variable Name": "Temp_int_Array_Index_Variable_1"
+          },
+          "Expression": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Int",
+              "PinSubCategory": "Int"
+            },
+            "Variable Name": "Temp_int_Loop_Counter_Variable_1"
+          },
+          "StatementIndex": 555
+        },
+        {
+          "Inst": "PushExecutionFlow",
+          "Offset": 1433,
+          "StatementIndex": 582
+        },
+        {
+          "Inst": "Context",
+          "Context": {
+            "Inst": "ObjectConst",
+            "Object": "/Script/Engine.Default__KismetArrayLibrary"
+          },
+          "SkipOffsetForNull": 37,
+          "RValuePropertyOuter": "#Pointer Error#",
+          "RValuePropertyName": "^^^^^",
+          "Expression": {
+            "Inst": "FinalFunction",
+            "Function": "Array_Get",
+            "Parameters": [
+              {
+                "Inst": "InstanceVariable",
+                "Variable Outer": {
+                  "PinCategory": "Struct",
+                  "PinSubCategory": "Struct",
+                  "PinSubCategoryObject": "/Script/kards.SubAction",
+                  "ContainerType": 1
+                },
+                "Variable Name": "subActions"
+              },
+              {
+                "Inst": "LocalVariable",
+                "Variable Outer": {
+                  "PinCategory": "Int",
+                  "PinSubCategory": "Int"
+                },
+                "Variable Name": "Temp_int_Array_Index_Variable"
+              },
+              {
+                "Inst": "LocalVariable",
+                "Variable Outer": {
+                  "PinCategory": "Struct",
+                  "PinSubCategory": "Struct",
+                  "PinSubCategoryObject": "/Script/kards.SubAction"
+                },
+                "Variable Name": "CallFunc_Array_Get_Item"
+              }
+            ]
+          },
+          "StatementIndex": 587
+        },
+        {
+          "Inst": "Context",
+          "Context": {
+            "Inst": "ObjectConst",
+            "Object": "/Script/Engine.Default__KismetArrayLibrary"
+          },
+          "SkipOffsetForNull": 46,
+          "RValuePropertyOuter": "#Pointer Error#",
+          "RValuePropertyName": "^^^^^",
+          "Expression": {
+            "Inst": "FinalFunction",
+            "Function": "Array_Get",
+            "Parameters": [
+              {
+                "Inst": "StructMemberContext",
+                "Property Outer": "##NOT SERIALIZED##",
+                "Property Name": "values",
+                "StructExpression": {
+                  "Inst": "LocalVariable",
+                  "Variable Outer": {
+                    "PinCategory": "Struct",
+                    "PinSubCategory": "Struct",
+                    "PinSubCategoryObject": "/Script/kards.SubAction"
+                  },
+                  "Variable Name": "CallFunc_Array_Get_Item"
+                }
+              },
+              {
+                "Inst": "LocalVariable",
+                "Variable Outer": {
+                  "PinCategory": "Int",
+                  "PinSubCategory": "Int"
+                },
+                "Variable Name": "Temp_int_Array_Index_Variable_1"
+              },
+              {
+                "Inst": "LocalVariable",
+                "Variable Outer": {
+                  "PinCategory": "Struct",
+                  "PinSubCategory": "Struct",
+                  "PinSubCategoryObject": "/Script/kards.ActionValue2"
+                },
+                "Variable Name": "CallFunc_Array_Get_Item_1"
+              }
+            ]
+          },
+          "StatementIndex": 646
+        },
+        {
+          "Inst": "Let",
+          "Variable": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Int",
+              "PinSubCategory": "Int"
+            },
+            "Variable Name": "CallFunc_Array_Add_ReturnValue_1"
+          },
+          "Expression": {
+            "Inst": "Context",
+            "Context": {
+              "Inst": "ObjectConst",
+              "Object": "/Script/Engine.Default__KismetArrayLibrary"
+            },
+            "SkipOffsetForNull": 28,
+            "RValuePropertyOuter": {
+              "PinCategory": "Int",
+              "PinSubCategory": "Int"
+            },
+            "RValuePropertyName": "CallFunc_Array_Add_ReturnValue_1",
+            "Expression": {
+              "Inst": "FinalFunction",
+              "Function": "Array_Add",
+              "Parameters": [
+                {
+                  "Inst": "LocalVariable",
+                  "Variable Outer": {
+                    "PinCategory": "Struct",
+                    "PinSubCategory": "Struct",
+                    "PinSubCategoryObject": "/Script/kards.ActionValue2",
+                    "ContainerType": 1
+                  },
+                  "Variable Name": "newPlayFromHandActionValues"
+                },
+                {
+                  "Inst": "LocalVariable",
+                  "Variable Outer": {
+                    "PinCategory": "Struct",
+                    "PinSubCategory": "Struct",
+                    "PinSubCategoryObject": "/Script/kards.ActionValue2"
+                  },
+                  "Variable Name": "CallFunc_Array_Get_Item_1"
+                }
+              ]
+            }
+          },
+          "StatementIndex": 714
+        },
+        {
+          "Inst": "PopExecutionFlow",
+          "StatementIndex": 782
+        },
+        {
+          "Inst": "Let",
+          "Variable": {
+            "Inst": "InstanceVariable",
+            "Variable Outer": {
+              "PinCategory": "Struct",
+              "PinSubCategory": "Struct",
+              "PinSubCategoryObject": "/Script/kards.SubAction",
+              "ContainerType": 1
+            },
+            "Variable Name": "subActions"
+          },
+          "Expression": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Struct",
+              "PinSubCategory": "Struct",
+              "PinSubCategoryObject": "/Script/kards.SubAction",
+              "ContainerType": 1
+            },
+            "Variable Name": "newSubActions"
+          },
+          "StatementIndex": 783
+        },
+        {
+          "Inst": "PopExecutionFlow",
+          "StatementIndex": 810
+        },
+        {
+          "Inst": "Let",
+          "Variable": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Int",
+              "PinSubCategory": "Int"
+            },
+            "Variable Name": "CallFunc_Add_IntInt_ReturnValue"
+          },
+          "Expression": {
+            "Inst": "CallMath",
+            "Function": "Add_IntInt",
+            "ContextClass": "/Script/Engine.KismetMathLibrary",
+            "Parameters": [
+              {
+                "Inst": "LocalVariable",
+                "Variable Outer": {
+                  "PinCategory": "Int",
+                  "PinSubCategory": "Int"
+                },
+                "Variable Name": "Temp_int_Loop_Counter_Variable"
+              },
+              {
+                "Inst": "IntConst",
+                "Value": 1
+              }
+            ]
+          },
+          "StatementIndex": 811
+        },
+        {
+          "Inst": "Let",
+          "Variable": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Int",
+              "PinSubCategory": "Int"
+            },
+            "Variable Name": "Temp_int_Loop_Counter_Variable"
+          },
+          "Expression": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Int",
+              "PinSubCategory": "Int"
+            },
+            "Variable Name": "CallFunc_Add_IntInt_ReturnValue"
+          },
+          "StatementIndex": 853
+        },
+        {
+          "Inst": "Jump",
+          "Offset": 51,
+          "StatementIndex": 880
+        },
+        {
+          "Inst": "Context",
+          "Context": {
+            "Inst": "ObjectConst",
+            "Object": "/Script/Engine.Default__KismetArrayLibrary"
+          },
+          "SkipOffsetForNull": 37,
+          "RValuePropertyOuter": "#Pointer Error#",
+          "RValuePropertyName": "^^^^^",
+          "Expression": {
+            "Inst": "FinalFunction",
+            "Function": "Array_Get",
+            "Parameters": [
+              {
+                "Inst": "InstanceVariable",
+                "Variable Outer": {
+                  "PinCategory": "Struct",
+                  "PinSubCategory": "Struct",
+                  "PinSubCategoryObject": "/Script/kards.SubAction",
+                  "ContainerType": 1
+                },
+                "Variable Name": "subActions"
+              },
+              {
+                "Inst": "LocalVariable",
+                "Variable Outer": {
+                  "PinCategory": "Int",
+                  "PinSubCategory": "Int"
+                },
+                "Variable Name": "Temp_int_Array_Index_Variable"
+              },
+              {
+                "Inst": "LocalVariable",
+                "Variable Outer": {
+                  "PinCategory": "Struct",
+                  "PinSubCategory": "Struct",
+                  "PinSubCategoryObject": "/Script/kards.SubAction"
+                },
+                "Variable Name": "CallFunc_Array_Get_Item"
+              }
+            ]
+          },
+          "StatementIndex": 885
+        },
+        {
+          "Inst": "Let",
+          "Variable": {
+            "Inst": "StructMemberContext",
+            "Property Outer": "##NOT SERIALIZED##",
+            "Property Name": "name",
+            "StructExpression": {
+              "Inst": "LocalVariable",
+              "Variable Outer": {
+                "PinCategory": "Struct",
+                "PinSubCategory": "Struct",
+                "PinSubCategoryObject": "/Script/kards.SubAction"
+              },
+              "Variable Name": "K2Node_MakeStruct_SubAction"
+            }
+          },
+          "Expression": {
+            "Inst": "StructMemberContext",
+            "Property Outer": "##NOT SERIALIZED##",
+            "Property Name": "name",
+            "StructExpression": {
+              "Inst": "LocalVariable",
+              "Variable Outer": {
+                "PinCategory": "Struct",
+                "PinSubCategory": "Struct",
+                "PinSubCategoryObject": "/Script/kards.SubAction"
+              },
+              "Variable Name": "CallFunc_Array_Get_Item"
+            }
+          },
+          "StatementIndex": 944
+        },
+        {
+          "Inst": "Let",
+          "Variable": {
+            "Inst": "StructMemberContext",
+            "Property Outer": "##NOT SERIALIZED##",
+            "Property Name": "values",
+            "StructExpression": {
+              "Inst": "LocalVariable",
+              "Variable Outer": {
+                "PinCategory": "Struct",
+                "PinSubCategory": "Struct",
+                "PinSubCategoryObject": "/Script/kards.SubAction"
+              },
+              "Variable Name": "K2Node_MakeStruct_SubAction"
+            }
+          },
+          "Expression": {
+            "Inst": "StructMemberContext",
+            "Property Outer": "##NOT SERIALIZED##",
+            "Property Name": "values",
+            "StructExpression": {
+              "Inst": "LocalVariable",
+              "Variable Outer": {
+                "PinCategory": "Struct",
+                "PinSubCategory": "Struct",
+                "PinSubCategoryObject": "/Script/kards.SubAction"
+              },
+              "Variable Name": "CallFunc_Array_Get_Item"
+            }
+          },
+          "StatementIndex": 989
+        },
+        {
+          "Inst": "Let",
+          "Variable": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Int",
+              "PinSubCategory": "Int"
+            },
+            "Variable Name": "CallFunc_Array_Add_ReturnValue_2"
+          },
+          "Expression": {
+            "Inst": "Context",
+            "Context": {
+              "Inst": "ObjectConst",
+              "Object": "/Script/Engine.Default__KismetArrayLibrary"
+            },
+            "SkipOffsetForNull": 28,
+            "RValuePropertyOuter": {
+              "PinCategory": "Int",
+              "PinSubCategory": "Int"
+            },
+            "RValuePropertyName": "CallFunc_Array_Add_ReturnValue_2",
+            "Expression": {
+              "Inst": "FinalFunction",
+              "Function": "Array_Add",
+              "Parameters": [
+                {
+                  "Inst": "LocalVariable",
+                  "Variable Outer": {
+                    "PinCategory": "Struct",
+                    "PinSubCategory": "Struct",
+                    "PinSubCategoryObject": "/Script/kards.SubAction",
+                    "ContainerType": 1
+                  },
+                  "Variable Name": "newSubActions"
+                },
+                {
+                  "Inst": "LocalVariable",
+                  "Variable Outer": {
+                    "PinCategory": "Struct",
+                    "PinSubCategory": "Struct",
+                    "PinSubCategoryObject": "/Script/kards.SubAction"
+                  },
+                  "Variable Name": "K2Node_MakeStruct_SubAction"
+                }
+              ]
+            }
+          },
+          "StatementIndex": 1034
+        },
+        {
+          "Inst": "PopExecutionFlow",
+          "StatementIndex": 1102
+        },
+        {
+          "Inst": "Let",
+          "Variable": {
+            "Inst": "StructMemberContext",
+            "Property Outer": "##NOT SERIALIZED##",
+            "Property Name": "name",
+            "StructExpression": {
+              "Inst": "LocalVariable",
+              "Variable Outer": {
+                "PinCategory": "Struct",
+                "PinSubCategory": "Struct",
+                "PinSubCategoryObject": "/Script/kards.ActionValue2"
+              },
+              "Variable Name": "K2Node_MakeStruct_ActionValue2"
+            }
+          },
+          "Expression": {
+            "Inst": "StringConst",
+            "Value": "actionCancelled"
+          },
+          "StatementIndex": 1103
+        },
+        {
+          "Inst": "Let",
+          "Variable": {
+            "Inst": "StructMemberContext",
+            "Property Outer": "##NOT SERIALIZED##",
+            "Property Name": "value",
+            "StructExpression": {
+              "Inst": "LocalVariable",
+              "Variable Outer": {
+                "PinCategory": "Struct",
+                "PinSubCategory": "Struct",
+                "PinSubCategoryObject": "/Script/kards.ActionValue2"
+              },
+              "Variable Name": "K2Node_MakeStruct_ActionValue2"
+            }
+          },
+          "Expression": {
+            "Inst": "IntConst",
+            "Value": 1
+          },
+          "StatementIndex": 1147
+        },
+        {
+          "Inst": "Let",
+          "Variable": {
+            "Inst": "StructMemberContext",
+            "Property Outer": "##NOT SERIALIZED##",
+            "Property Name": "text",
+            "StructExpression": {
+              "Inst": "LocalVariable",
+              "Variable Outer": {
+                "PinCategory": "Struct",
+                "PinSubCategory": "Struct",
+                "PinSubCategoryObject": "/Script/kards.ActionValue2"
+              },
+              "Variable Name": "K2Node_MakeStruct_ActionValue2"
+            }
+          },
+          "Expression": {
+            "Inst": "StringConst",
+            "Value": ""
+          },
+          "StatementIndex": 1179
+        },
+        {
+          "Inst": "Let",
+          "Variable": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Int",
+              "PinSubCategory": "Int"
+            },
+            "Variable Name": "CallFunc_Array_Add_ReturnValue_3"
+          },
+          "Expression": {
+            "Inst": "Context",
+            "Context": {
+              "Inst": "ObjectConst",
+              "Object": "/Script/Engine.Default__KismetArrayLibrary"
+            },
+            "SkipOffsetForNull": 28,
+            "RValuePropertyOuter": {
+              "PinCategory": "Int",
+              "PinSubCategory": "Int"
+            },
+            "RValuePropertyName": "CallFunc_Array_Add_ReturnValue_3",
+            "Expression": {
+              "Inst": "FinalFunction",
+              "Function": "Array_Add",
+              "Parameters": [
+                {
+                  "Inst": "LocalVariable",
+                  "Variable Outer": {
+                    "PinCategory": "Struct",
+                    "PinSubCategory": "Struct",
+                    "PinSubCategoryObject": "/Script/kards.ActionValue2",
+                    "ContainerType": 1
+                  },
+                  "Variable Name": "newPlayFromHandActionValues"
+                },
+                {
+                  "Inst": "LocalVariable",
+                  "Variable Outer": {
+                    "PinCategory": "Struct",
+                    "PinSubCategory": "Struct",
+                    "PinSubCategoryObject": "/Script/kards.ActionValue2"
+                  },
+                  "Variable Name": "K2Node_MakeStruct_ActionValue2"
+                }
+              ]
+            }
+          },
+          "StatementIndex": 1208
+        },
+        {
+          "Inst": "Let",
+          "Variable": {
+            "Inst": "StructMemberContext",
+            "Property Outer": "##NOT SERIALIZED##",
+            "Property Name": "name",
+            "StructExpression": {
+              "Inst": "LocalVariable",
+              "Variable Outer": {
+                "PinCategory": "Struct",
+                "PinSubCategory": "Struct",
+                "PinSubCategoryObject": "/Script/kards.SubAction"
+              },
+              "Variable Name": "K2Node_MakeStruct_SubAction_1"
+            }
+          },
+          "Expression": {
+            "Inst": "StringConst",
+            "Value": "ZActionPlayCardFromHand"
+          },
+          "StatementIndex": 1276
+        },
+        {
+          "Inst": "Let",
+          "Variable": {
+            "Inst": "StructMemberContext",
+            "Property Outer": "##NOT SERIALIZED##",
+            "Property Name": "values",
+            "StructExpression": {
+              "Inst": "LocalVariable",
+              "Variable Outer": {
+                "PinCategory": "Struct",
+                "PinSubCategory": "Struct",
+                "PinSubCategoryObject": "/Script/kards.SubAction"
+              },
+              "Variable Name": "K2Node_MakeStruct_SubAction_1"
+            }
+          },
+          "Expression": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Struct",
+              "PinSubCategory": "Struct",
+              "PinSubCategoryObject": "/Script/kards.ActionValue2",
+              "ContainerType": 1
+            },
+            "Variable Name": "newPlayFromHandActionValues"
+          },
+          "StatementIndex": 1328
+        },
+        {
+          "Inst": "Let",
+          "Variable": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Int",
+              "PinSubCategory": "Int"
+            },
+            "Variable Name": "CallFunc_Array_Add_ReturnValue"
+          },
+          "Expression": {
+            "Inst": "Context",
+            "Context": {
+              "Inst": "ObjectConst",
+              "Object": "/Script/Engine.Default__KismetArrayLibrary"
+            },
+            "SkipOffsetForNull": 28,
+            "RValuePropertyOuter": {
+              "PinCategory": "Int",
+              "PinSubCategory": "Int"
+            },
+            "RValuePropertyName": "CallFunc_Array_Add_ReturnValue",
+            "Expression": {
+              "Inst": "FinalFunction",
+              "Function": "Array_Add",
+              "Parameters": [
+                {
+                  "Inst": "LocalVariable",
+                  "Variable Outer": {
+                    "PinCategory": "Struct",
+                    "PinSubCategory": "Struct",
+                    "PinSubCategoryObject": "/Script/kards.SubAction",
+                    "ContainerType": 1
+                  },
+                  "Variable Name": "newSubActions"
+                },
+                {
+                  "Inst": "LocalVariable",
+                  "Variable Outer": {
+                    "PinCategory": "Struct",
+                    "PinSubCategory": "Struct",
+                    "PinSubCategoryObject": "/Script/kards.SubAction"
+                  },
+                  "Variable Name": "K2Node_MakeStruct_SubAction_1"
+                }
+              ]
+            }
+          },
+          "StatementIndex": 1364
+        },
+        {
+          "Inst": "PopExecutionFlow",
+          "StatementIndex": 1432
+        },
+        {
+          "Inst": "Let",
+          "Variable": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Int",
+              "PinSubCategory": "Int"
+            },
+            "Variable Name": "CallFunc_Add_IntInt_ReturnValue_1"
+          },
+          "Expression": {
+            "Inst": "CallMath",
+            "Function": "Add_IntInt",
+            "ContextClass": "/Script/Engine.KismetMathLibrary",
+            "Parameters": [
+              {
+                "Inst": "LocalVariable",
+                "Variable Outer": {
+                  "PinCategory": "Int",
+                  "PinSubCategory": "Int"
+                },
+                "Variable Name": "Temp_int_Loop_Counter_Variable_1"
+              },
+              {
+                "Inst": "IntConst",
+                "Value": 1
+              }
+            ]
+          },
+          "StatementIndex": 1433
+        },
+        {
+          "Inst": "Let",
+          "Variable": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Int",
+              "PinSubCategory": "Int"
+            },
+            "Variable Name": "Temp_int_Loop_Counter_Variable_1"
+          },
+          "Expression": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Int",
+              "PinSubCategory": "Int"
+            },
+            "Variable Name": "CallFunc_Add_IntInt_ReturnValue_1"
+          },
+          "StatementIndex": 1475
+        },
+        {
+          "Inst": "Jump",
+          "Offset": 376,
+          "StatementIndex": 1502
+        },
+        {
+          "Inst": "Return",
+          "Expression": {
+            "Inst": "Nothing"
+          },
+          "StatementIndex": 1507
+        },
+        {
+          "Inst": "EndOfScript",
+          "StatementIndex": 1509
+        }
+      ]
+    },
+    "HandleGotchaTriggered": {
+      "function_flags": "FUNC_Public, FUNC_BlueprintCallable, FUNC_BlueprintEvent",
+      "expression_count": 6,
+      "bytecode": [
+        {
+          "Inst": "LetValueOnPersistentFrame",
+          "Property Outer": {
+            "PinCategory": "Int",
+            "PinSubCategory": "Int"
+          },
+          "Property Name": "K2Node_Event_CardID_44",
+          "Expression": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Int",
+              "PinSubCategory": "Int"
+            },
+            "Variable Name": "CardID"
+          },
+          "StatementIndex": 0
+        },
+        {
+          "Inst": "LetValueOnPersistentFrame",
+          "Property Outer": {
+            "PinCategory": "Int",
+            "PinSubCategory": "Int"
+          },
+          "Property Name": "K2Node_Event_InstigatorID_33",
+          "Expression": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Int",
+              "PinSubCategory": "Int"
+            },
+            "Variable Name": "InstigatorID"
+          },
+          "StatementIndex": 18
+        },
+        {
+          "Inst": "LetValueOnPersistentFrame",
+          "Property Outer": {
+            "PinCategory": "Bool",
+            "PinSubCategory": "Bool"
+          },
+          "Property Name": "K2Node_Event_StopCard",
+          "Expression": {
+            "Inst": "LocalVariable",
+            "Variable Outer": {
+              "PinCategory": "Bool",
+              "PinSubCategory": "Bool"
+            },
+            "Variable Name": "StopCard"
+          },
+          "StatementIndex": 36
+        },
+        {
+          "Inst": "LocalFinalFunction",
+          "Function": "ExecuteUbergraph_BP_OnlineMatch",
+          "Parameters": [
+            {
+              "Inst": "IntConst",
+              "Value": 11368
+            }
+          ],
+          "StatementIndex": 54
+        },
+        {
+          "Inst": "Return",
+          "Expression": {
+            "Inst": "Nothing"
+          },
+          "StatementIndex": 69
+        },
+        {
+          "Inst": "EndOfScript",
+          "StatementIndex": 71
+        }
+      ]
+    },
+    "HandleStopFurtherActions": {
+      "function_flags": "FUNC_Public, FUNC_BlueprintCallable, FUNC_BlueprintEvent",
+      "expression_count": 3,
+      "bytecode": [
+        {
+          "Inst": "LocalFinalFunction",
+          "Function": "ExecuteUbergraph_BP_OnlineMatch",
+          "Parameters": [
+            {
+              "Inst": "IntConst",
+              "Value": 29804
+            }
+          ],
+          "StatementIndex": 0
+        },
+        {
+          "Inst": "Return",
+          "Expression": {
+            "Inst": "Nothing"
+          },
+          "StatementIndex": 15
+        },
+        {
+          "Inst": "EndOfScript",
+          "StatementIndex": 17
+        }
+      ]
+    }
+  },
+  "marker_statements": [
+    {
+      "file": "BP_Board.functions.json",
+      "function": "ExecuteUbergraph_BP_Board",
+      "statementIndex": 36523,
+      "pointer": "/ExecuteUbergraph_BP_Board/bytecode/1014",
+      "statement": {
+        "Inst": "LetBool",
+        "Variable": {
+          "Inst": "LocalVariable",
+          "Variable Outer": {
+            "PinCategory": "Bool",
+            "PinSubCategory": "Bool"
+          },
+          "Variable Name": "CallFunc_JsonHasField_ReturnValue"
+        },
+        "Expression": {
+          "Inst": "CallMath",
+          "Function": "JsonHasField",
+          "ContextClass": "/Script/BlueprintJson.BlueprintJsonLibrary",
+          "Parameters": [
+            {
+              "Inst": "Context",
+              "Context": {
+                "Inst": "LocalVariable",
+                "Variable Outer": {
+                  "PinCategory": "Object",
+                  "PinSubCategory": "Object",
+                  "PinSubCategoryObject": "/Script/kards.BaseCardObject"
+                },
+                "Variable Name": "CallFunc_GetCardFromID_card_9"
+              },
+              "SkipOffsetForNull": 9,
+              "RValuePropertyOuter": "##NOT SERIALIZED##",
+              "RValuePropertyName": "customJson",
+              "Expression": {
+                "Inst": "InstanceVariable",
+                "Variable Outer": "##NOT SERIALIZED##",
+                "Variable Name": "customJson"
+              }
+            },
+            {
+              "Inst": "StringConst",
+              "Value": "cancelOrderRemove"
+            }
+          ]
+        },
+        "StatementIndex": 36523
+      },
+      "calls": [
+        "JsonHasField"
+      ]
+    },
+    {
+      "file": "BP_Board.functions.json",
+      "function": "ExecuteUbergraph_BP_Board",
+      "statementIndex": 36838,
+      "pointer": "/ExecuteUbergraph_BP_Board/bytecode/1020",
+      "statement": {
+        "Inst": "LetBool",
+        "Variable": {
+          "Inst": "LocalVariable",
+          "Variable Outer": {
+            "PinCategory": "Bool",
+            "PinSubCategory": "Bool"
+          },
+          "Variable Name": "CallFunc_JsonHasField_ReturnValue"
+        },
+        "Expression": {
+          "Inst": "CallMath",
+          "Function": "JsonHasField",
+          "ContextClass": "/Script/BlueprintJson.BlueprintJsonLibrary",
+          "Parameters": [
+            {
+              "Inst": "Context",
+              "Context": {
+                "Inst": "LocalVariable",
+                "Variable Outer": {
+                  "PinCategory": "Object",
+                  "PinSubCategory": "Object",
+                  "PinSubCategoryObject": "/Script/kards.BaseCardObject"
+                },
+                "Variable Name": "CallFunc_GetCardFromID_card_9"
+              },
+              "SkipOffsetForNull": 9,
+              "RValuePropertyOuter": "##NOT SERIALIZED##",
+              "RValuePropertyName": "customJson",
+              "Expression": {
+                "Inst": "InstanceVariable",
+                "Variable Outer": "##NOT SERIALIZED##",
+                "Variable Name": "customJson"
+              }
+            },
+            {
+              "Inst": "StringConst",
+              "Value": "cancelOrderRemove"
+            }
+          ]
+        },
+        "StatementIndex": 36838
+      },
+      "calls": [
+        "JsonHasField"
+      ]
+    },
+    {
+      "file": "BP_Board.functions.json",
+      "function": "ExecuteUbergraph_BP_Board",
+      "statementIndex": 37124,
+      "pointer": "/ExecuteUbergraph_BP_Board/bytecode/1027",
+      "statement": {
+        "Inst": "LetBool",
+        "Variable": {
+          "Inst": "LocalVariable",
+          "Variable Outer": {
+            "PinCategory": "Bool",
+            "PinSubCategory": "Bool"
+          },
+          "Variable Name": "CallFunc_JsonHasField_ReturnValue"
+        },
+        "Expression": {
+          "Inst": "CallMath",
+          "Function": "JsonHasField",
+          "ContextClass": "/Script/BlueprintJson.BlueprintJsonLibrary",
+          "Parameters": [
+            {
+              "Inst": "Context",
+              "Context": {
+                "Inst": "LocalVariable",
+                "Variable Outer": {
+                  "PinCategory": "Object",
+                  "PinSubCategory": "Object",
+                  "PinSubCategoryObject": "/Script/kards.BaseCardObject"
+                },
+                "Variable Name": "CallFunc_GetCardFromID_card_9"
+              },
+              "SkipOffsetForNull": 9,
+              "RValuePropertyOuter": "##NOT SERIALIZED##",
+              "RValuePropertyName": "customJson",
+              "Expression": {
+                "Inst": "InstanceVariable",
+                "Variable Outer": "##NOT SERIALIZED##",
+                "Variable Name": "customJson"
+              }
+            },
+            {
+              "Inst": "StringConst",
+              "Value": "cancelOrderRemove"
+            }
+          ]
+        },
+        "StatementIndex": 37124
+      },
+      "calls": [
+        "JsonHasField"
+      ]
+    },
+    {
+      "file": "BP_OnlineMatch.functions.json",
+      "function": "ReceiveActionGotchaTriggered",
+      "statementIndex": 453,
+      "pointer": "/ReceiveActionGotchaTriggered/bytecode/17",
+      "statement": {
+        "Inst": "LetBool",
+        "Variable": {
+          "Inst": "LocalVariable",
+          "Variable Outer": {
+            "PinCategory": "Bool",
+            "PinSubCategory": "Bool"
+          },
+          "Variable Name": "K2Node_SwitchString_CmpSuccess"
+        },
+        "Expression": {
+          "Inst": "CallMath",
+          "Function": "NotEqual_StriStri",
+          "ContextClass": "/Script/Engine.KismetStringLibrary",
+          "Parameters": [
+            {
+              "Inst": "StructMemberContext",
+              "Property Outer": "##NOT SERIALIZED##",
+              "Property Name": "name",
+              "StructExpression": {
+                "Inst": "LocalVariable",
+                "Variable Outer": {
+                  "PinCategory": "Struct",
+                  "PinSubCategory": "Struct",
+                  "PinSubCategoryObject": "/Script/kards.ActionValue2"
+                },
+                "Variable Name": "CallFunc_Array_Get_Item"
+              }
+            },
+            {
+              "Inst": "StringConst",
+              "Value": "cancelOrderRemove"
+            }
+          ]
+        },
+        "StatementIndex": 453
+      },
+      "calls": [
+        "NotEqual_StriStri"
+      ]
+    },
+    {
+      "file": "BP_CardFunctions.functions.json",
+      "function": "GotchaTriggered",
+      "statementIndex": 1326,
+      "pointer": "/GotchaTriggered/bytecode/43",
+      "statement": {
+        "Inst": "Let",
+        "Variable": {
+          "Inst": "LocalVariable",
+          "Variable Outer": {
+            "PinCategory": "Struct",
+            "PinSubCategory": "Struct",
+            "PinSubCategoryObject": "/Script/BlueprintJson.BlueprintJsonObject",
+            "IsConst": true
+          },
+          "Variable Name": "CallFunc_JsonMakeField_ReturnValue"
+        },
+        "Expression": {
+          "Inst": "CallMath",
+          "Function": "JsonMakeField",
+          "ContextClass": "/Script/BlueprintJson.BlueprintJsonLibrary",
+          "Parameters": [
+            {
+              "Inst": "Context",
+              "Context": {
+                "Inst": "LocalVariable",
+                "Variable Outer": {
+                  "PinCategory": "Object",
+                  "PinSubCategory": "Object",
+                  "PinSubCategoryObject": "/Script/kards.BaseCardObject"
+                },
+                "Variable Name": "CallFunc_GetCardFromID_card"
+              },
+              "SkipOffsetForNull": 9,
+              "RValuePropertyOuter": "##NOT SERIALIZED##",
+              "RValuePropertyName": "customJson",
+              "Expression": {
+                "Inst": "InstanceVariable",
+                "Variable Outer": "##NOT SERIALIZED##",
+                "Variable Name": "customJson"
+              }
+            },
+            {
+              "Inst": "StringConst",
+              "Value": "cancelOrderRemove"
+            },
+            {
+              "Inst": "LocalVariable",
+              "Variable Outer": {
+                "PinCategory": "Struct",
+                "PinSubCategory": "Struct",
+                "PinSubCategoryObject": "/Script/BlueprintJson.BlueprintJsonValue"
+              },
+              "Variable Name": "CallFunc_JsonMakeBool_ReturnValue"
+            }
+          ]
+        },
+        "StatementIndex": 1326
+      },
+      "calls": [
+        "JsonMakeField"
+      ]
+    }
+  ],
+  "fix": [
+    "Emit exact cardID/instigatorID/StopCard payload before T21 observers.",
+    "Queue LOCAL receipt; resolve current card side and rearrange hand once, without rerunning GotchaTriggered."
+  ],
+  "validation": {
+    "before_fix": "2/2 targeted cases failed: missing notification; missing deferred refresh",
+    "after_fix": "2/2 cases passed: 8 flag/side cases + 2 real ULTRA roots + 6 deferred-receiver cases",
+    "full_suite": {
+      "BotSim": 1033,
+      "actions_dataset": 49,
+      "action_model": 31
+    }
+  },
+  "remaining": [
+    "NotifyStopFurtherActions -> StopFurtherActions mutates accumulated ZActionPlayCardFromHand payloads by adding actionCancelled=1; current simulator omits this serialization rewrite. Separate action-batch boundary audit required.",
+    "Remote receipt reconstruction, full receiver dispatch, nested action/cancellation batching and whole-card certification remain open.",
+    "cancelOrderRemove cannot justify keeping a played order in hand: inspected writes only set customJson, and the marker readers shown here pass it to preview actors. UI closure is outside headless rule certification."
+  ],
+  "source_fingerprints": {
+    "src/KLink.Bot/Effects/CardApi.cs": "152e10394a2b9f38bd81128f8ab3192eaae19fd3d74ae1cd9276c19acda904c4",
+    "src/KLink.Bot/Engine/MatchEngine.cs": "995d38b560581ff48b84e003520b10ba8ff6f11fc484b327077072393c3cba62",
+    "tools/BotSim/SelfTest.CountermeasureReceipts.cs": "3ab227e228ff602b20c96b14fa13da7ee8f6c30210fdd4d9e37317cc81e729d2"
+  },
+  "validation_logs": {
+    "BotSim": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\countermeasure-receipts-full-20261030.log",
+      "sha256": "65ffeca56888af84b90e4c686c1d94f6066e28c808a8d5dbe910a31b5ff9c1b2",
+      "required_result": "全部 1033 项通过"
+    },
+    "actions_dataset": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\countermeasure-actions-20261030.log",
+      "sha256": "3a5b384bdeba03c14f933b3d9a4d7f8cb377b4fd1fff975f98c2a68c2534cbad",
+      "required_result": "Action dataset: 49 checks passed"
+    },
+    "action_model": {
+      "path": "D:\\Codex Workshop\\kards-install-review\\countermeasure-model-20261030.log",
+      "sha256": "f4f5707f27410b7c3a6b92bd47562fef6af5356c380b7a152dee77587b293767",
+      "required_result": "Action model: 31 checks passed"
+    }
+  },
+  "verifier": {
+    "path": "D:\\Codex Workshop\\kards-install-review\\audit-countermeasure-receipts-20261030.py",
+    "sha256": "108f06441799b65453a8b45168d2e2ccfb8a86efbf93d10db098465c3f324b99"
+  }
+}

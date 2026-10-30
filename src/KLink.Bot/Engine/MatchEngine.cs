@@ -1155,7 +1155,7 @@ public sealed class MatchEngine
         Api.ExecuteOtherCardDrawnEvents(card, side, startOfTurnDraw);
     }
 
-    private enum LocalReceiptKind { GotchaPlay, FrontlineLimiter, EndTurn, DestroyHistory, AttackHistory }
+    private enum LocalReceiptKind { GotchaPlay, GotchaTrigger, FrontlineLimiter, EndTurn, DestroyHistory, AttackHistory }
     private sealed record LocalRuleReceipt(LocalReceiptKind Kind, int CardId = 0, bool Flag = false,
         Side EndingSide = Side.NotAvailable, int[]? HistoryLookupIds = null);
     private readonly Queue<LocalRuleReceipt> _pendingLocalRuleReceipts = new();
@@ -1166,7 +1166,7 @@ public sealed class MatchEngine
 
     /// <summary>
     /// Apply the currently modeled rule-bearing local receipts in production order.
-    /// The modeled receipts include destruction history, Gotcha play,
+    /// The modeled receipts include destruction history, Gotcha play/trigger,
     /// frontline-limiter and end-turn activation cleanup, not the full dispatcher. Normal actions call
     /// this after autoplay and before deferred selection replies; standalone API
     /// callers must explicitly finish their local receipt batch.
@@ -1175,6 +1175,15 @@ public sealed class MatchEngine
     {
         while (_pendingLocalRuleReceipts.TryDequeue(out var receipt))
         {
+            if (receipt.Kind == LocalReceiptKind.GotchaTrigger)
+            {
+                // BP_OnlineMatch.ReceiveActionGotchaTriggered i=525..684:
+                // local resolution skips the trigger body, then looks up the
+                // current card side and rearranges that hand without a type gate.
+                var triggered = Api.GetCardFromID(receipt.CardId);
+                Api.RearrangeLocation(Api.GetHandLocationBySide(triggered?.Owner ?? Side.NotAvailable));
+                continue;
+            }
             if (receipt.Kind == LocalReceiptKind.EndTurn)
             {
                 // ReceiveActionEndTurn i=854/914/1028 has no location, type or
@@ -1239,6 +1248,18 @@ public sealed class MatchEngine
             ActionValue2.Bool("remove", remove),
         });
         _pendingLocalRuleReceipts.Enqueue(new(LocalReceiptKind.FrontlineLimiter, limiterId, remove, Side.NotAvailable));
+    }
+
+    internal void NotifyGotchaTriggered(int cardId, int instigatorId, bool stopCard)
+    {
+        // AddSubActionGotchaTriggered i=0..158: exactly these three fields;
+        // skipDiscardingOrder is not serialized by this constructor.
+        FireSubAction("ZActionGotchaTriggered", new[] {
+            ActionValue2.Int("cardID", cardId),
+            ActionValue2.Int("instigatorID", instigatorId),
+            ActionValue2.Bool("StopCard", stopCard),
+        });
+        _pendingLocalRuleReceipts.Enqueue(new(LocalReceiptKind.GotchaTrigger, cardId));
     }
 
     private void NotifyPlayFromHand(CardInstance card, int instigatorId,
