@@ -20,6 +20,11 @@ internal static partial class SelfTest
 
     private static readonly List<Case> Cases = new()
     {
+        new("隔离候选探测：三态分类与正式状态不变", ProbeClassifiesAndPreservesReference),
+        new("隔离候选探测：逆序与污染丢弃", ProbeOrderAndDiscardIsolation),
+        new("隔离候选探测：前缀拒绝和分叉为未知", ProbeRejectsRebuildMismatch),
+        new("隔离候选探测：故障待选与嵌套策略为未知", ProbeFaultAndChoiceAreUnknown),
+        new("隔离候选探测：工作上限和正式污染整批失效", ProbeLimitsAndReferenceContamination),
         new("动作教师标签：双引擎整局与唯一候选", OracleLabelsComplete),
         new("动作教师标签：缺失重复拒绝及状态分叉", OracleLabelsRejectDivergence),
         new("动作教师标签：三类缓冲上限", OracleLabelsBufferLimits),

@@ -1,0 +1,94 @@
+{
+  "version": 1,
+  "date": "2026-10-30",
+  "baseCommit": "b10476d0bd6b6beb89a5fb18aeee80eb7305e787",
+  "scope": "Experimental isolated simulator root-executability diagnostics; no new game-rule/card certification, legal mask, training admission, or strength claim.",
+  "contract": "simulator-executability/experimental-v1;fresh-engine-per-candidate;choice=first-index/v1;not-legal-mask",
+  "sourceSha256": {
+    "src/KLink.Bot/Training/IsolatedActionProbe.cs": "9a9f431085bc613bb5a185b4b0cd910173b902f4e5c14b8140d0f7a462ea0c3c",
+    "tools/BotSim/ActionProbeSmoke.cs": "39d44c4460e3ef3c0a7af2fa121e68007ea8fad740a1f093a630613b2e7b3e56",
+    "tools/BotSim/SelfTest.IsolatedActionProbe.cs": "61f630c32e24dcfd27c1ea7d27093bf887d1d896a188883382962088c24b7b78",
+    "tools/BotSim/Program.cs": "d7c55b52ad1bfaf9855e9ca5cd61d75f4e25b68af88b12d11f5ac3e867a0a9a1",
+    "tools/BotSim/SelfTest.cs": "00b80d31abd2b901f152d821a79caacdc06258c89cb4f7ccc26f1f15fc7b9639"
+  },
+  "inputsSha256": {
+    "cards.json": "835ec5d6f8aa267e2324e0eb3bb78a38280994e064485b2a31a95cc296939451",
+    "card-ir.json": "526812fa8dc0934f1d6ecd3794053871fa6b701c2b5df3fd1edb3c38513ba2e9",
+    "card-ir-native-defaults.json": "3319fb2d114a76f38356a8c726caa4dd56fe13f9283e50cc0f0d56a95986455b",
+    "card-effects.json": "fc335d228779a2859627ee706d85949149ca595d0cfdfbc4971541831e5a8df0",
+    "event-contracts.json": "e4806dd48efbfc799a27c14b3660ad76ee03cd3f13e3e4320b213c5928efb112",
+    "live-actions.json": "db413a4644afe75806e66c47e200d93c5d93e91ca03e23fca38465b7dcb4dab3",
+    "deck_code_ids.json": "505c712f7e8c8908fc56fe33e4a93ad613eb517db35e10c5e2e0e933d8a233af"
+  },
+  "buildSha256": {
+    "tools/BotSim/bin/Debug/net10.0/BotSim.dll": "c47eb88068d709b6fd129632b27a7cc1bcb6c76bd078c072182adb1043cba866",
+    "tools/BotSim/bin/Debug/net10.0/KLink.Bot.dll": "71cc879393c75f33e7fe296d57429ad67ab29f4f0979cefaa96c6e97c2a704d6",
+    "tools/NNTrain/bin/Debug/net10.0/NNTrain.dll": "513ce6082e75a673adaa51fcd30542578d10d5d75fd71b04598e05e8d880233a",
+    "tools/NNTrain/bin/Debug/net10.0/KLink.Bot.dll": "71cc879393c75f33e7fe296d57429ad67ab29f4f0979cefaa96c6e97c2a704d6"
+  },
+  "validation": {
+    "targetedProbeChecks": 5,
+    "botSimChecks": 1012,
+    "actionDatasetChecks": 49,
+    "actionModelChecks": 31,
+    "auditMatrixChecks": 16,
+    "allPassed": true
+  },
+  "smoke": {
+    "scope": "Experimental simulator executability only; not legality, not training admission, not strength.",
+    "contract": "simulator-executability/experimental-v1;fresh-engine-per-candidate;choice=first-index/v1;not-legal-mask",
+    "seed": 1,
+    "leftDeck": "英日",
+    "rightDeck": "日澳快攻",
+    "steps": 12,
+    "vectors": "empty map for execution-only diagnostic",
+    "enginesCreated": 1086,
+    "prefixRootsApplied": 7444,
+    "elapsedSeconds": 3.9299616,
+    "counts": {
+      "Accepted": 130,
+      "Rejected": 397,
+      "Unknown": 16
+    },
+    "reasons": {
+      "simulator_returned_true": 130,
+      "simulator_returned_false": 397,
+      "choice_policy_dependent": 12,
+      "unimplemented_call": 4
+    },
+    "batchErrors": {}
+  },
+  "reverseExactlyEqualPrefixes": 12,
+  "counting": "Candidate status counts cover forward only. Engine, prefix-root and elapsed counts cover forward plus reverse. Timing is one bounded diagnostic run, not production throughput.",
+  "deepseek": {
+    "jobId": "20261030-193341-executability-safeguards-14cbde29",
+    "sourceCopiesMatched": 4,
+    "sourceExcerptsChecked": 60,
+    "exactExcerptFailures": 0,
+    "acceptance": "Primary checked every quoted line and all copied/current file SHA256 values; independently reviewed critical diagnostic, choice and prefix paths. This is mechanical software evidence, not full semantic endorsement of worker prose."
+  },
+  "limits": [
+    "New MatchEngine per candidate; shared static IR/defaults and CardDefinition objects remain in the same process.",
+    "Snapshot, trace, RNG/clock and request comparisons do not prove all VM/private-state equivalence.",
+    "Accepted/Rejected means current simulator root boolean only; does not prove target honored, legal target completeness or authoritative game legality.",
+    "Nested choices, VM/unsupported/missing-call faults, unresolved choices, exceptions and prefix discrepancies remain Unknown.",
+    "Reference historical callback faults are not recoverable from MatchEngine alone.",
+    "Work caps bound candidates and replay roots; no independent process or wall-clock timeout.",
+    "Smoke uses empty card vectors, 2 decks, seed 1 and 12 prefixes; no general performance or hidden-information certification."
+  ],
+  "failureProof": "Five diagnostic contract regressions and injected faults; not an authoritative rule-defect fail-before/fix-after claim. Initial rejected-case fixture required one preceding play; fixture correction was not a production bug fix.",
+  "matrix": "Rebuilt at batch end; retained existing stale/partial evidence and did not reset reviewed-source fingerprints. Aggregate SelfTest source changes can add a stale reason without proving a rule regression.",
+  "next": "Make Unknown diagnostics actionable with candidate command and missing-call provenance, then verify target execution semantics before any legal-mask or policy integration.",
+  "artifactsSha256": {
+    "D:\\Codex Workshop\\kards-install-review\\executability-smoke-12.json": "610e0885c4bf27b2ff0237254de2e6040997f54d4e2affcc141e396903f77cb3",
+    "D:\\Codex Workshop\\kards-install-review\\executability-smoke.log": "3846c0992b52805da39e3d40b2405ccba038e70968642d392443391f8d201a2a",
+    "D:\\Codex Workshop\\kards-install-review\\executability-targeted.log": "f8fb6cf5094d7c5614cfab5fd083ec30ce2538992e14c73a2fcb774ac387de65",
+    "D:\\Codex Workshop\\kards-install-review\\executability-botsim.log": "477ab782b1d9ab82bd57bdfeecba6284babef72378caeecd6826d73793d0c10f",
+    "D:\\Codex Workshop\\kards-install-review\\executability-dataset.log": "3a5b384bdeba03c14f933b3d9a4d7f8cb377b4fd1fff975f98c2a68c2534cbad",
+    "D:\\Codex Workshop\\kards-install-review\\executability-model.log": "f4f5707f27410b7c3a6b92bd47562fef6af5356c380b7a152dee77587b293767",
+    "D:\\Codex Workshop\\kards-install-review\\executability-matrix-build.log": "59b81eaa74135fc7181dd767f46fac82f2816d09dbc508b39edd78f2135884ea",
+    "D:\\Codex Workshop\\kards-install-review\\executability-matrix-test.log": "dfb3b3c61e70021702e319ce24341dc689653c5bb1a731fc4c417f6b85ed44f0",
+    "D:\\Codex Workshop\\kards-install-review\\executability-probe-packet\\checklist.json": "7e03e85071d3267ae57349a049d03a61da9ef146f63a1599cf7ac3ea1b1453ba",
+    "D:\\Codex Workshop\\kards-install-review\\executability-probe-packet\\answer.md": "a546fab8f455c22c66dc4129e830c356abd6432a9c05d2b2396298bbc5616335"
+  }
+}
