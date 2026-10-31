@@ -3599,6 +3599,10 @@ public sealed partial class CardApi
         // This is a direct field write, with no discard events or renumbering.
         if (wasFull && !HasInstanceGameplayTag(card, "autoplay")) card.Location = CardLocation.Discard;
 
+        // CreateCard i=2451/2493 gates on the requested flag, not the live
+        // field or location. Notify even if T35 cleared it or the hand was full.
+        if (cardSeen == true) NotifyCardsSeen(new[] { card.CardId }, enemyTurn: false, showAnimation: false);
+
         ExecuteOnSpawnedInHandEvents(card, side);
         // i=2592..2721 re-reads both hand location and autoplay after own/T57.
         if (IsLocatedInHand(card) && HasInstanceGameplayTag(card, "autoplay")) State.AddAutoPlayCards(card.CardId);

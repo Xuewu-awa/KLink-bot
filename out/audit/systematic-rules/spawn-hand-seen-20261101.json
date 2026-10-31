@@ -1,0 +1,62 @@
+{
+  "rule": "RULE-552",
+  "scope": "Ordinary SpawnCardInHand CardsSeen notification only; valid Left/Right sides; campaign path excluded",
+  "authority_sources": {
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.functions.json": "b007f0f5689d266cdccee220f164db12582d3893c76a087228dd3ac55836f297",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Logic\\U_CardFunctionsNotifier.functions.json": "e4acd16b57b7a1da30780ecbf598c4d177b7e2d57a27dbb04c269bba9f6e1c94",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Logic\\BP_OnlineMatch.functions.json": "630b523c5a575d1aa956aba41eea8c22a19bf20b6546ffa0a03ad122d73ffe98"
+  },
+  "raw_functions": "out/audit/systematic-rules/spawn-hand-seen-20261101-functions.json",
+  "raw_functions_sha256": "9fe6728222d1ac08e3e2d91b6c00898bb1327f43f93d403519749a8a0f947d35",
+  "authority_chain": [
+    "CreateCard i400 assigns requested cardSeen before T35. i2399 performs saved-fullness direct location write; i2441/2446 push continuation targets2060/2550.",
+    "i2451 tests the original cardSeen parameter; i2461 builds [true], i2473 builds [_cardID], i2493 calls NotifyCardsSeen(ids, values, false, false); i2549 resumes2550, own/T57 starts2560.",
+    "Notifier i0 forwards Cards/Seen/ShowAnimation/EnemyTurn; HandleCardsSeen i72 enters ubergraph12016; that entry forwards the four event parameters to AddSubActionCardsSeen.",
+    "Builder i0/41/84/131 constructs cardIDs/enemyTurn/showAnimation/seenValues; i175 orders cardIDs, seenValues, showAnimation, enemyTurn; i222 emits ZActionCardsSeen.",
+    "Existing NotifyCardsSeen emits only the receipt, without changing live CardSeen or filtering by location."
+  ],
+  "defect": "Generated hand cards assigned the seen flag but omitted ZActionCardsSeen. Live callbacks may clear the flag without cancelling the requested notification.",
+  "fix": "If requested cardSeen == true, emit existing four-field notification after saved-fullness discard and before own/T57; retain post-T35 live flag.",
+  "regression": {
+    "before_exit_code": 1,
+    "before_failure": "Left/full=False/autoplay=False/seen=True/own=0/T35=0/events=2/receipts=0",
+    "new_scenarios": 216,
+    "dimensions": [
+      "both sides",
+      "full/nonfull hand",
+      "autoplay off/on",
+      "requested null/false/true",
+      "own-creation field unchanged/false/true",
+      "T35 field unchanged/false/true"
+    ],
+    "assertions": [
+      "no early notification in own creation or T35",
+      "request parameter rather than mutated flag gates receipt",
+      "exact four fields/order and draw before seen",
+      "own/T57 see receipt after final discard; live flag retained"
+    ],
+    "targeted_tests": 10,
+    "full_tests": 1052,
+    "after_exit_code": 0,
+    "logs": {
+      "out/audit/systematic-rules/spawn-hand-seen-before-20261101.txt": "fd994fe7661bba8139fb444bce9808a1afb5ace8c7b97e013932ef78ec1b6749",
+      "out/audit/systematic-rules/spawn-hand-seen-targeted-20261101.txt": "136362a4dfa44f30dabd18d55b20b21709f3ceb7663a9cf2064c6eca415f93f4",
+      "out/audit/systematic-rules/spawn-hand-seen-full-20261101.txt": "f6c3d2ed33024fcccb00982a8a8633080bbb374b3ead9df3dc34150abcd16fab"
+    }
+  },
+  "deepseek": {
+    "skill": "C:/Users/AWQ/.codex/skills/deepseek-worker/SKILL.md",
+    "job": "20261101-014535-spawn-seen-b20bc548",
+    "status": "completed",
+    "result_sha256": "3da170533ea4689a379b10fcd0bf627fa07c70ad7c7a6405b59cd450a31937d2",
+    "verification": "Seven worker input functions matched originals structurally. Primary independently checked CreateCard gate/constants/control flow, notifier forwarding, handler entry and original ubergraph12016, plus builder keys/order. Nonvisual schema is a next-step lead, not integrated certification.",
+    "role": "Mechanical extraction; primary retains interpretation, integration, tests and publishing."
+  },
+  "validation_environment": "All 122 tracked src and tools/BotSim files in clean snapshot matched HEAD except two scoped files, plus new regression. Matching Release Data/native-default guard retained; unrelated dirty files excluded.",
+  "remaining": [
+    "NotifyCreateNonVisualCard allocation receipt remains open; builder has six base fields and optional salvageFaction, not dismissed as UI-only.",
+    "Deck-draw complete schema, salvage/other allocation entry points, remote receipt consumption and complete CreateCard closure remain separate.",
+    "No per-card certification, parsed-pak/installed-EXE version equivalence, native array wire-format roundtrip or complete PvP restoration claim."
+  ],
+  "client_exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305"
+}

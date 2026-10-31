@@ -1,6 +1,6 @@
 {
   "date": "2026-11-01",
-  "batch": "spawn-hand-draw-receipt",
+  "batch": "spawn-hand-seen-receipt",
   "counts": {
     "cards": 2019,
     "cards_with_own_ir": 1709,
@@ -12,8 +12,8 @@
     "program_containers": 2626,
     "dependency_edges": 18567,
     "dependency_symbols": 440,
-    "secondary_reports": 445,
-    "explicit_partial_units": 35,
+    "secondary_reports": 447,
+    "explicit_partial_units": 36,
     "partial_units_matching_bound_inputs": 1,
     "planning_work_domains": 14,
     "planning_acceptance_criteria": 42,
@@ -25,17 +25,17 @@
   "matrix_tests": 16,
   "production_changes": true,
   "csharp_tests": {
-    "targeted": 9,
-    "full": 1051,
-    "new_scenarios": 576,
+    "targeted": 10,
+    "full": 1052,
+    "new_scenarios": 216,
     "before_regression_exit_code": 1,
     "after_exit_code": 0
   },
   "worker": {
-    "job_id": "20261101-012955-spawn-receipt-56e11c4c",
+    "job_id": "20261101-014535-spawn-seen-b20bc548",
     "status": "completed",
-    "independently_checked": "Worker input originals, call constants/parameters, nine factory keys, wrapper flags and ubergraph path."
+    "independently_checked": "Seven function inputs matched originals; primary checked CreateCard gate/constants/order, notifier, handler entry, original ubergraph12016 and builder fields."
   },
-  "input_scope": "HEAD plus ordinary spawn receipt production fix, registration, new test and three existing callback test receipt selectors. No stale fingerprints refreshed; version equivalence not established.",
-  "generation_git_head": "3b1ee0e706ad8df39c58387ee4aaa097f680eab2"
+  "input_scope": "HEAD plus ordinary spawn seen receipt fix, registration and new regression; tracked snapshot src/BotSim verified. Old fingerprints preserved; no version equivalence claim.",
+  "generation_git_head": "8c923bb2c7d33a21e8e0067fbe0512caf958c612"
 }
