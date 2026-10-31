@@ -416,6 +416,7 @@ internal static partial class SelfTest
         new("手牌容量：按物理位置统计，排除实时autoplay标签", NativeHandCapacityAutoplay),
         new("手牌生成满手：创建前快照与T35后标签分别取值", NativeSpawnHandFullness),
         new("手牌生成初始槽位：物理手牌计数排除实时autoplay，创建前取值", NativeSpawnHandInitialSlot),
+        new("手牌生成通知：抽牌载荷、T35后数量及满手丢弃前通知", NativeSpawnHandReceipt),
         new("手牌生成自动打出：自身与T57结束后检查实时位置和标签", NativeSpawnHandAutoplayEvents),
         new("手牌生成：显式来源金卡和打捞字段在创建回调前初始化", NativeSpawnHandInitialFields),
         new("手牌生成：非正来源不创建，不回退上下文且保留旧输出", NativeSpawnHandSourceGuard),
@@ -25767,7 +25768,7 @@ internal static partial class SelfTest
                 engine.ChooseSpawnCard = (_, cards) => { replies++; offered.AddRange(cards.Select(x => x.CardId)); return null; };
                 engine.Api.InvokeByName("selectCardToDraw", original, new object?[] { 30, true, false, null },
                     new EffectContext { Engine = engine, State = state, Self = original, Controller = side }, out _);
-                var draws = state.ActionLog.SelectMany(x => x.SubActions).Where(x => x.Name == "ZActionDrawCardFromDeck").ToArray();
+                var draws = state.ActionLog.SelectMany(x => x.SubActions).Where(IsDeckDrawReceipt).ToArray();
                 bool singleton = expectedOffers.Length == 1;
                 if (!visits.SequenceEqual(expectedVisits) || replies != (singleton ? 0 : 1)
                     || !singleton && !offered.SequenceEqual(expectedOffers) || draws.Length != (singleton ? 1 : 0)
@@ -25790,7 +25791,7 @@ internal static partial class SelfTest
                     new EffectContext { Engine = engine, State = state, Self = source, Controller = side }, out _);
                 string gap = removeReceiver ? "<selectCardToDraw:missing-filter-receiver>" : "<selectCardToDraw:post-filter-index-object-output>";
                 if (state.UnimplementedCalls.GetValueOrDefault(gap) != 1 || replies != 0
-                    || state.ActionLog.SelectMany(x => x.SubActions).Any(x => x.Name == "ZActionDrawCardFromDeck"))
+                    || state.ActionLog.SelectMany(x => x.SubActions).Any(IsDeckDrawReceipt))
                     return "不可表示的展示回调缺口应明确记账，不能伪造空候选完成";
             }
             return null;
@@ -25885,7 +25886,7 @@ internal static partial class SelfTest
                 var result = engine.Api.DrawChosenCardToHand(source, state.ById(60));
                 string gap = mode == 0 ? "<ExecuteScryingEffectBySide:post-filter-index-default-ID>" : "<ExecuteScryingEffectBySide:independent-ID-array-required>";
                 if (!changed || result is not null || state.UnimplementedCalls.GetValueOrDefault(gap) != 1
-                    || state.ActionLog.SelectMany(x => x.SubActions).Any(x => x.Name is "ZActionNewDeck" or "ZActionDrawCardFromDeck"))
+                    || state.ActionLog.SelectMany(x => x.SubActions).Any(x => x.Name == "ZActionNewDeck" || IsDeckDrawReceipt(x)))
                     return $"不可表示的原生牌库状态未明确记账：{side}/mode={mode}";
             }
             return null;
@@ -26228,7 +26229,7 @@ internal static partial class SelfTest
                 else engine.DrawCard(deckSide, instigatorId: 30, opponentDraw: route == 1);
                 int expected = quantity + (mutation == 4 ? 1 : mutation is 1 or 3 ? -1 : 0);
                 bool full = expected >= 9;
-                var action = state.ActionLog.SelectMany(x => x.SubActions).SingleOrDefault(x => x.Name == "ZActionDrawCardFromDeck");
+                var action = state.ActionLog.SelectMany(x => x.SubActions).SingleOrDefault(IsDeckDrawReceipt);
                 if (!correct || callbacks != 1 || drawn.Location != (full ? CardLocation.Discard : recipient.HandOf())
                     || drawn.LocationNumber != (full ? 17 : expected)
                     || !Equals(action?.Values.FirstOrDefault(x => x.Name == "PreQtyInHand")?.Value, expected)

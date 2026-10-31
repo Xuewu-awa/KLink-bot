@@ -1,0 +1,8 @@
+卡牌数据: 2019 张，卡组码映射: 2499 条
+蓝图 IR: 1709 张卡可解释
+手写效果脚本: 0 张，触发脚本: 0 条
+
+  ❌ 手牌生成通知：抽牌载荷、T35后数量及满手丢弃前通知
+       生成通知错误：Left/0/autoplay=False/mutation=0/text=0/skip=False/opposite=False/correct=False/markers=1/receipts=0/actual=/expected=ActionValue2 { Name = instigatorID, Value = 30, Text =  },ActionValue2 { Name = side, Value = -1, Text = left },ActionValue2 { Name = cardID, Value = 1001, Text =  },ActionValue2 { Name = cardType, Value = -1, Text = card_unit_51e_regiment },ActionValue2 { Name = spawnInHand, Value = 1, Text =  },ActionValue2 { Name = skipDrawAnimation, Value = 0, Text =  },ActionValue2 { Name = PreQtyInHand, Value = 0, Text =  },ActionValue2 { Name = handIsFull, Value = 0, Text =  },ActionValue2 { Name = drawDelay, Value = -1, Text = 0.4 }
+
+1/1 项失败

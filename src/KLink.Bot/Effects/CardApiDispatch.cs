@@ -5193,7 +5193,9 @@ public sealed partial class CardApi
         // CardSeen is assigned after own OnCreate and before T35 (RULE-112).
         // Full-hand snapshot and autoplay gates are adapted; complete notifications remain open.
         return SpawnCardInHand(side, cardName, isGold: c.State.ById(spawnerId)?.IsGold ?? false,
-            isSalvaged: salvage != 0, salvageFaction: faction, cardSeen: TruthyArg(a, 3));
+            isSalvaged: salvage != 0, salvageFaction: faction, cardSeen: TruthyArg(a, 3),
+            instigatorId: spawnerId, newCardText: StrArgOrNull(a, 6),
+            skipDrawAnimation: TruthyArg(a, 4), fromOppositeSide: TruthyArg(a, 5));
     }
 
     /// <summary>

@@ -8103,6 +8103,35 @@
         "Salvage and other NextLocationNumber callers were not changed or certified.",
         "No claim of complete card certification, current-version pak equivalence or runtime callback reachability for synthetic sparse/owner-mismatch states."
       ]
+    },
+    {
+      "id": "RULE-551/SpawnCardInHand/draw-receipt",
+      "symbol": "SpawnCardInHand",
+      "modes": [
+        null
+      ],
+      "status": "partial",
+      "validated_scope": "普通生成手牌抽牌通知：来源/文本/标志传递，T35后物理计数，九基础字段及可选字段顺序；满手弃置前通知、生成事件前可见。576合成场景，非完整CreateCard或逐卡认证。",
+      "report": "out/audit/systematic-rules/spawn-hand-receipt-20261101.json",
+      "report_sha256": "bce07538aede21e8d7578deb0fd41b852b758f298609c73961885887f0927153",
+      "client_exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+      "source_bindings": {
+        "src/KLink.Bot/Effects/CardApi.cs": "a7b4eb668252d20a2cc8b4343f2bc2080cd5b8e715be9c044b3a06d16d1fc61c",
+        "src/KLink.Bot/Effects/CardApiDispatch.cs": "b9f8fa7019ab5fbb1fa44117f697b419f7b7fb91de5e936910e68ef7d6eb9e12",
+        "tools/BotSim/SelfTest.cs": "218004becb98005f5abc387821787901fc64da944db77e42c2937be62988c341",
+        "tools/BotSim/SelfTest.SpawnHandReceipt.cs": "7390345409fe787e31a5e6c6ad2dcd1b7707add37644cc32a0f82eef18ff8c5e"
+      },
+      "evidence_bindings": {
+        "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.functions.json": "b007f0f5689d266cdccee220f164db12582d3893c76a087228dd3ac55836f297",
+        "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Logic\\U_CardFunctionsNotifier.functions.json": "e4acd16b57b7a1da30780ecbf598c4d177b7e2d57a27dbb04c269bba9f6e1c94",
+        "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Logic\\BP_OnlineMatch.functions.json": "630b523c5a575d1aa956aba41eea8c22a19bf20b6546ffa0a03ad122d73ffe98"
+      },
+      "limitations": [
+        "NotifyCreateNonVisualCard allocation receipt and NotifyCardsSeen remain open; not classified as UI-only.",
+        "Deck-draw receipt schema (currently six base fields), salvage paths, remote receipt consumption and full CreateCard closure remain separate.",
+        "Double-to-string adapter uses 0.4 for authoritative DoubleConst0.4; no new native formatting disassembly or wire roundtrip certification.",
+        "No per-card certification, current parsed-pak/installed-EXE version equivalence or complete PvP restoration claim."
+      ]
     }
   ],
   "scope_reviews": {},
@@ -8146,7 +8175,7 @@
       "id": "RULE-SPAWN-BOUNDARY",
       "title": "生成边界",
       "status": "open",
-      "scope": "相邻缺来源/无效控制方/默认位置；共享满位置/overrideCardID及完整分配通知。 RULE-550已修复普通手牌生成默认初始槽位的物理计数/autoplay边界；完整创建通知及其他分配入口继续开放。",
+      "scope": "相邻缺来源/无效控制方/默认位置；共享满位置/overrideCardID及完整分配通知。 RULE-550已修复普通手牌生成默认初始槽位的物理计数/autoplay边界；完整创建通知及其他分配入口继续开放。 RULE-551：普通生成手牌抽牌通知及显式来源/文本/标志已局部修复；非可视创建、公开、远端接收及完整创建边界仍开放。",
       "source": "primary reviewed matrix bootstrap; not exhaustive defect inventory"
     },
     {

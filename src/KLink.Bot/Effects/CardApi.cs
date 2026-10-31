@@ -3566,7 +3566,9 @@ public sealed partial class CardApi
 
     /// <summary>生成手牌并适配满手/生成事件/自动打出入队；完整CreateCard通知仍待审计（RULE-114）。</summary>
     public CardInstance SpawnCardInHand(Side side, string cardName, bool isGold = false,
-        bool isSalvaged = false, string? salvageFaction = null, bool? cardSeen = null)
+        bool isSalvaged = false, string? salvageFaction = null, bool? cardSeen = null,
+        int instigatorId = 0, string? newCardText = null, bool skipDrawAnimation = false,
+        bool fromOppositeSide = false)
     {
         // CreateCard i=885/917 saves GetNextCardLocationNumber's physical-location
         // count (excluding live autoplay), before capacity/creation callbacks.
@@ -3574,14 +3576,28 @@ public sealed partial class CardApi
         bool wasFull = initialSlot >= GameState.HandCapacity;
         var card = State.Create(cardName, side, side.HandOf(), initialSlot,
             isGold: isGold, isSalvaged: isSalvaged, salvageFaction: salvageFaction, cardSeenBeforeModifiers: cardSeen);
+        // CreateCard i=2130/2767/2809/2880 queries again after T35, before
+        // the saved-fullness discard. Autoplay and moved cards are excluded.
+        int quantity = CountCardsForHandCapacity(side.HandOf());
+        var receipt = new List<ActionValue2>
+        {
+            ActionValue2.Int("instigatorID", instigatorId),
+            ActionValue2.Str("side", side.ToWire()),
+            ActionValue2.Int("cardID", card.CardId),
+            ActionValue2.Str("cardType", cardName),
+            ActionValue2.Bool("spawnInHand", true),
+            ActionValue2.Bool("skipDrawAnimation", skipDrawAnimation),
+            ActionValue2.Int("PreQtyInHand", quantity - 1),
+            ActionValue2.Bool("handIsFull", quantity > GameState.HandCapacity),
+            ActionValue2.Str("drawDelay", "0.4"),
+        };
+        // The ordinary wrapper supplies zero salvage-card ID and fatigue.
+        if (!string.IsNullOrEmpty(newCardText)) receipt.Add(ActionValue2.Str("newCardText", newCardText));
+        if (fromOppositeSide) receipt.Add(ActionValue2.Bool("oppSide", true));
+        _engine.FireSubAction("ZActionDrawCardFromDeck", receipt);
         // i=2212..2399 uses the post-T35 tag but the saved pre-creation fullness.
         // This is a direct field write, with no discard events or renumbering.
         if (wasFull && !HasInstanceGameplayTag(card, "autoplay")) card.Location = CardLocation.Discard;
-        _engine.FireSubAction("ZActionSpawnCard", new[]
-        {
-            ActionValue2.Int("cardID", card.CardId),
-            ActionValue2.Int("location", (int)side.HandOf()),
-        });
 
         ExecuteOnSpawnedInHandEvents(card, side);
         // i=2592..2721 re-reads both hand location and autoplay after own/T57.

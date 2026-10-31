@@ -1,6 +1,6 @@
 {
   "date": "2026-11-01",
-  "batch": "spawn-hand-initial-slot",
+  "batch": "spawn-hand-draw-receipt",
   "counts": {
     "cards": 2019,
     "cards_with_own_ir": 1709,
@@ -12,8 +12,8 @@
     "program_containers": 2626,
     "dependency_edges": 18567,
     "dependency_symbols": 440,
-    "secondary_reports": 443,
-    "explicit_partial_units": 34,
+    "secondary_reports": 445,
+    "explicit_partial_units": 35,
     "partial_units_matching_bound_inputs": 1,
     "planning_work_domains": 14,
     "planning_acceptance_criteria": 42,
@@ -25,17 +25,17 @@
   "matrix_tests": 16,
   "production_changes": true,
   "csharp_tests": {
-    "targeted": 8,
-    "full": 1050,
-    "new_scenarios": 144,
+    "targeted": 9,
+    "full": 1051,
+    "new_scenarios": 576,
     "before_regression_exit_code": 1,
     "after_exit_code": 0
   },
   "worker": {
-    "job_id": "20261101-012013-hand-slot-2cbe89d7",
+    "job_id": "20261101-012955-spawn-receipt-56e11c4c",
     "status": "completed",
-    "independently_checked": "Switch constants/targets, CreateCard selection and callback indices, old test reference; primary verified raw quantity and creation flow."
+    "independently_checked": "Worker input originals, call constants/parameters, nine factory keys, wrapper flags and ubergraph path."
   },
-  "input_scope": "HEAD plus scoped slot fix, registration and new regression; unrelated working edits excluded. No stale fingerprints refreshed. Current EXE hash does not establish parsed asset version equivalence.",
-  "generation_git_head": "b170303862704fc7391bf1f0350aac7613a2e212"
+  "input_scope": "HEAD plus ordinary spawn receipt production fix, registration, new test and three existing callback test receipt selectors. No stale fingerprints refreshed; version equivalence not established.",
+  "generation_git_head": "3b1ee0e706ad8df39c58387ee4aaa097f680eab2"
 }

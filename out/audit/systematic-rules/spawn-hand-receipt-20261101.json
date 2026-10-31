@@ -1,0 +1,66 @@
+{
+  "rule": "RULE-551",
+  "scope": "Ordinary SpawnCardInHand draw receipt and wrapper parameter forwarding only; valid Left/Right sides; campaign path excluded",
+  "authority_sources": {
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.functions.json": "b007f0f5689d266cdccee220f164db12582d3893c76a087228dd3ac55836f297",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Logic\\U_CardFunctionsNotifier.functions.json": "e4acd16b57b7a1da30780ecbf598c4d177b7e2d57a27dbb04c269bba9f6e1c94",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Logic\\BP_OnlineMatch.functions.json": "630b523c5a575d1aa956aba41eea8c22a19bf20b6546ffa0a03ad122d73ffe98"
+  },
+  "raw_functions": "out/audit/systematic-rules/spawn-hand-receipt-20261101-functions.json",
+  "raw_functions_sha256": "368c2186f40fd59706917a19a7831920073347e0138997567ef0798cb58e0545",
+  "authority_chain": [
+    "SDK SpawnCardInHandBySide declares positions 4 SkipDrawAnimation, 5 fromOppositeSide, 6 newCardText; BP wrapper i333 forwards flags/text/source ID into CreateCard.",
+    "CreateCard i295 creates object, i1036 executes T35; hand branch i2130 queries physical hand excluding live autoplay, i2767 subtracts one, i2809 compares quantity >9, i2880 calls NotifyDrawCardFromDeck.",
+    "Notifier forwards thirteen parameters; HandleDrawCardFromDeck enters ubergraph13441, which calls AddSubActionDrawCardFromDeck.",
+    "Builder i475 fixes nine base fields; i704/862/989/1143 gate text/salvage/oppSide/fatigue; i1276 emits ZActionDrawCardFromDeck. Ordinary wrapper has salvage-card ID0 and fatigue0.",
+    "CreateCard resumes i2212 after notify: saved-fullness/current autoplay -> direct discard i2399; own/T57 starts i2560."
+  ],
+  "defect": "Ordinary generation emitted ZActionSpawnCard with two fields after full-hand discard; explicit source, text and notification flags were dropped.",
+  "fix": "Emit draw receipt before saved-fullness discard and own/T57; requery post-T35 physical quantity; forward source/text/flags and preserve optional field order.",
+  "regression": {
+    "before_exit_code": 1,
+    "before_failure": "Left/0/autoplay=False/mutation=0/text=0/skip=False/opposite=False; no draw receipt",
+    "new_scenarios": 576,
+    "dimensions": [
+      "both sides",
+      "0/8/9 physical hand cards with opposite ownership",
+      "live autoplay off/on",
+      "T35 unchanged/add/remove/move generated to deck",
+      "empty/whitespace/nonempty text",
+      "skip animation off/on",
+      "opposite side flag off/on"
+    ],
+    "assertions": [
+      "exact nine base fields/types/order plus optional text/oppSide",
+      "no receipt before T35 completes",
+      "receipt present before own spawn event; saved-fullness discard completed by event",
+      "post-T35 count rather than saved capacity; autoplay can produce PreQtyInHand=-1",
+      "no legacy ZActionSpawnCard"
+    ],
+    "compatibility": "Three existing callback tests now filter deck receipts by spawnInHand, since synthetic generation and deck draws share the authoritative action name; original state assertions retained.",
+    "targeted_tests": 9,
+    "full_tests": 1051,
+    "after_exit_code": 0,
+    "logs": {
+      "out/audit/systematic-rules/spawn-hand-receipt-before-20261101.txt": "49ea601c43c28731fc5f8754ddefab14cb2db7b9c5808531158874f128f15837",
+      "out/audit/systematic-rules/spawn-hand-receipt-full-20261101.txt": "8b1aa28fd806d212d290c8a24170e574ffdd54cac5f7ac7b7f570551606a3cd4",
+      "out/audit/systematic-rules/spawn-hand-receipt-targeted-20261101.txt": "260c7ec82c7746a229949bb3a6e4fcebed9404bb7d813655c659cc2147a81709"
+    }
+  },
+  "deepseek": {
+    "skill": "C:/Users/AWQ/.codex/skills/deepseek-worker/SKILL.md",
+    "job": "20261101-012955-spawn-receipt-56e11c4c",
+    "status": "completed",
+    "result_sha256": "8f0e52b33ecfd809644aa794c25a2e54d7acdf1e1facacc1b8245da2d1f299bc",
+    "verification": "All seven worker function inputs match originals; 13 call parameters/constants, wrapper flag names, nine factory keys and draw action/ubergraph entry verified independently; callback order reviewed in CreateCard control flow.",
+    "role": "Mechanical enumeration only; primary verified authority, interpreted control flow, implemented, tested and published."
+  },
+  "validation_environment": "Tracked src and tools/BotSim compared to HEAD plus four scoped files in clean publish snapshot; unrelated dirty files excluded; matching Release Data/native-default guard retained.",
+  "remaining": [
+    "NotifyCreateNonVisualCard allocation receipt and NotifyCardsSeen remain open; not classified as UI-only.",
+    "Deck-draw receipt schema (currently six base fields), salvage paths, remote receipt consumption and full CreateCard closure remain separate.",
+    "Double-to-string adapter uses 0.4 for authoritative DoubleConst0.4; no new native formatting disassembly or wire roundtrip certification.",
+    "No per-card certification, current parsed-pak/installed-EXE version equivalence or complete PvP restoration claim."
+  ],
+  "client_exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305"
+}
