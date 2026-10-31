@@ -8,9 +8,10 @@
     "D:\\Codex Workshop\\kards-install-review\\repeat-cancel-packet\\result.json": "1db7a4cdf4bf3912e6c358666650c8e68a21cae6aeacf13078c7a2b7813ef857"
   },
   "source_fingerprints": {
-    "src/KLink.Bot/Engine/MatchEngine.cs": "448b8c8980c4b69fe73b99259f22674f2114eb3870980a918df21addc01a31fe",
-    "tools/BotSim/SelfTest.cs": "1a5b0f6d0b2710a4aa991c45883c9143dc0c00f70e990de41e82923dd6ea35a0",
-    "tools/BotSim/SelfTest.CountermeasureReceipts.cs": "fe3ac32c48317fe58ef5f7a1d63a22ecbaf26630fd37ce4ce96edad422ea718b"
+    "src/KLink.Bot/Engine/MatchEngine.cs": "d57f46e30474e6ad6a7743c1ccde8eb502580007ec3946d88c1fcab4e61fb9b0",
+    "tools/BotSim/SelfTest.cs": "dc9283a3a386f10350868a43499cef11f1c3f28fc89a4d4c4f76c334dcf4fb32",
+    "tools/BotSim/SelfTest.CountermeasureReceipts.cs": "fe3ac32c48317fe58ef5f7a1d63a22ecbaf26630fd37ce4ce96edad422ea718b",
+    "tools/BotSim/SelfTest.NestedActionBoundaries.cs": "cc37a95f7d36aaa79def13beab962b5e433e0e4d4c6bc7413ea31f2e32208d09"
   },
   "worker_validation": {
     "job": "20261031-000330-repeat-cancel-fcab0a76",
@@ -2573,6 +2574,72 @@
   ],
   "remaining": [
     "Other root entry stop boundaries, reentrant root action lifecycle, natural multi-cancellation reachability, complete passive markers and remote reconstruction remain open.",
-    "No current PlayerMoves raw equivalence claim; five OnlineMatch functions match newer saved parsed source exactly. Root-log final placement retained; complete root/subaction serialization remains open."
-  ]
+    "No current PlayerMoves raw equivalence claim; five OnlineMatch functions match newer saved parsed source exactly. Root-log final placement retained; complete root/subaction serialization remains open.",
+    "嵌套 Blueprint 回调是否构成新的协议根、完整重入生命周期、完整根/子动作序列化与远端重建仍开放；本轮仅锁定当前单窗口可观察契约。"
+  ],
+  "current_validation": {
+    "build": {
+      "command": "dotnet build tools/BotSim/BotSim.csproj -c Release --nologo",
+      "status": "passed",
+      "warnings": 0,
+      "errors": 0
+    },
+    "nested_targeted": {
+      "path": "out/audit/systematic-rules/nested-action-boundary-targeted-20261031.log",
+      "sha256": "8be152691b2cb71ee8dc2659cdac55f62cc14efaf4fe8fd83eedcdd2f5190a17",
+      "expected": "全部 1 项通过"
+    },
+    "root_targeted": {
+      "path": "out/audit/systematic-rules/root-stop-boundary-targeted-20261031.log",
+      "sha256": "a81fecba3b3c4240e2f7bfdfd08f3cdf3e367a12dc7e919d992bbc1a713a2853",
+      "expected": "全部 3 项通过"
+    },
+    "endturn_targeted": {
+      "path": "out/audit/systematic-rules/endturn-boundary-targeted-20261031.log",
+      "sha256": "0d62208361934c5cabad25775f7c83e387d2b4aef56982a9f4c300d4741aa52c",
+      "expected": "全部 1 项通过"
+    },
+    "selection_targeted": {
+      "path": "out/audit/systematic-rules/selection-reply-boundary-targeted-20261031.log",
+      "sha256": "cbc44aea4c24f76d0ac40faa55c69f02ad9472d45412684d56e2610c7a1fbbce",
+      "expected": "全部 1 项通过"
+    },
+    "autoplay_targeted": {
+      "path": "out/audit/systematic-rules/autoplay-boundary-targeted-20261031.log",
+      "sha256": "5c194802dfb1aa0af3780e44663a4be825e65b74508caf9c8ad53199246caef3",
+      "expected": "全部 1 项通过"
+    },
+    "full_bot_sim": {
+      "path": "out/audit/systematic-rules/selftest-full-20261031.log",
+      "sha256": "5dfda1aded843179ba58f9568783a06378f47bfed64188095a7d5c1a6b476f1e",
+      "expected": "全部 1041 项通过"
+    },
+    "action_dataset": {
+      "path": "out/audit/systematic-rules/actions-selftest-20261031.log",
+      "sha256": "3a5b384bdeba03c14f933b3d9a4d7f8cb377b4fd1fff975f98c2a68c2534cbad",
+      "expected": "Action dataset: 49 checks passed"
+    },
+    "action_model": {
+      "path": "out/audit/systematic-rules/action-model-selftest-20261031.log",
+      "sha256": "f4f5707f27410b7c3a6b92bd47562fef6af5356c380b7a152dee77587b293767",
+      "expected": "Action model: 31 checks passed"
+    },
+    "dispatch_gap": {
+      "path": "out/audit/systematic-rules/dispatch-gap-20261031.log",
+      "sha256": "285901940c4380c6e6edd7cc601119dcea67c1cb2cbccb24b41092a709b5ba4f",
+      "expected": "45 kinds / 1013 call sites / 16DB07EFB256B189"
+    }
+  },
+  "nested_action_boundary_regression": {
+    "test": "嵌套动作窗口：根动作、预置子动作、队列清空与回合切换",
+    "status": "passed",
+    "checks": [
+      "预置根动作的子动作在后续取消窗口中保持不变",
+      "当前根动作收到 actionCancelled=1",
+      "根动作之间的半开边界不改写前一窗口",
+      "回合结束不改写历史动作",
+      "自动出牌队列逐卡建立根动作并在耗尽后清空"
+    ],
+    "scope": "可观察动作日志和队列状态；不宣称嵌套 Blueprint 回调必然建立新的协议根，也不认证自然多重反制可达性"
+  }
 }

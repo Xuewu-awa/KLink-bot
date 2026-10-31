@@ -1,0 +1,57 @@
+卡牌数据: 2019 张，卡组码映射: 2499 条
+蓝图 IR: 1709 张卡可解释
+手写效果脚本: 0 张，触发脚本: 0 条
+
+=== 派发表静态缺口（IR 会调用、派发表没有、locals 也兜不住）===
+  种类：45    真缺口调用点：1013
+  指纹：16DB07EFB256B189
+
+  public const int BaselineCount = 45;
+  public const string BaselineFingerprint = "16DB07EFB256B189";
+
+  ---- 全部静态缺口（含 UI、战役，尚未按对战可达性筛选）----
+      247  HasCampaignUpgrade
+      211  CampaignSetText
+       79  CampaignAddKreditCost
+       75  GiveStarForCampaign
+       59  CampaignAddAttack
+       59  CampaignAddDefense
+       57  math:Format
+       30  ShowTutorialMessage
+       23  CampaignAddBlitz
+       19  CampaignAddOpCost
+       18  WhichStrategy
+       16  AppendText
+       16  CampaignAddAmbush
+       15  EndMatch
+       14  CampaignAddGuard
+       14  IncrementObjectiveCounter
+       10  CampaignAddSmokescreen
+        8  SetObjectiveCounter
+        7  CampaignAddFury
+        5  CampaignSetOpCost
+        5  IsUsingStrategy
+        2  CampaignAddMobilize
+        2  math:PrintString
+        1  CampaignIncreaseHeavyArmor
+        1  CampaignRemoveMobilize
+        1  CampaignRemoveSmokescreen
+        1  Get Start Of Turn Spawn Cards
+        1  doOnAfterOtherCardLeaveBoardOrOwner
+        1  doOnCardDrawn
+        1  doOnCardEnterPlay
+        1  doOnCardPlayedFromHand
+        1  doOnCardSpawnInHand
+        1  doOnEndOfTurn
+        1  doOnOtherCardAbilitiesChanged
+        1  doOnOtherCardDestroyed
+        1  doOnOtherCardKreditCostChanged
+        1  doOnOtherCardReset
+        1  doOnSpawnCardSelected
+        1  doOnStartOfGame
+        1  doOnStartOfTurn
+        1  initVariables
+        1  math:GetDisplayName
+        1  math:GetOrSpawnActor
+        1  onAfterOtherCardAttacks
+        1  onOtherCardDealDamageAddDamage

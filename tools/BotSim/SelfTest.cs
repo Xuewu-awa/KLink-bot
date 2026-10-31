@@ -27,6 +27,7 @@ internal static partial class SelfTest
         new("回合结束动作：效果前清除旧停止标志", EndTurnStopBoundary),
         new("选择回复动作：清除旧停止标志且保留新停止标志", SelectionReplyStopBoundary),
         new("反制取消批次：真实ULTRA与历史隔离", CountermeasureCancellationBatch),
+        new("嵌套动作窗口：根动作、预置子动作、队列清空与回合切换", NestedActionBoundaryWindows),
         new("反制触发回执：通知顺序、取消标记及真实ULTRA", CountermeasureTriggerNotice),
         new("反制触发回执：延迟刷新读取当前阵营且只执行一次", CountermeasureLocalReceiptRefresh),
         new("指令手牌移动：通知顺序与弃牌编号", OrderHandMovement),
