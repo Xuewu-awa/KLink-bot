@@ -41,6 +41,13 @@ internal static class AdmissionSelfTest
             report.Rows=0;Save();Reject("empty clean set");report.Rows=1;
             report.Games[0].Reasons=["vm_fault"];Save();Reject("inconsistent admission");report.Games[0].Reasons=[];Save();
             var game=report.Games[0];
+            game.MissingCallSites=[new(new("math:Format","self","asset","export",10,-1000000,10,70,"src",new string('a',64)),2)];
+            game.MissingCallSitesOmitted=3;game.MissingCallSiteCaptureFailures=4;Save();
+            var roundtrip=JsonSerializer.Deserialize<QualityReport>(File.ReadAllText(path+".quality.json"),TrainingAdmission.Json)!;
+            Assert(roundtrip.Games[0].MissingCallSites.SequenceEqual(game.MissingCallSites)
+                && roundtrip.Games[0].MissingCallSitesOmitted==3 && roundtrip.Games[0].MissingCallSiteCaptureFailures==4,
+                "optional missing-call provenance roundtrip");
+            TrainingAdmission.VerifyDataset(path);checks++; // optional diagnostics cannot change admission
             // The data hash binds the binary, not the separately editable health
             // manifest. Recheck execution health instead of trusting Accepted.
             game.VmFaults=1;Save();Reject("accepted VM fault manifest");game.VmFaults=0;

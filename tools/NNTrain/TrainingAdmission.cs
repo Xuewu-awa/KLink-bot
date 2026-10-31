@@ -91,6 +91,10 @@ internal sealed class QualityGame
     public int[] SampleActors {get;set;}=[];
     public Dictionary<string,int> UnsupportedOps {get;set;}=new();
     public Dictionary<string,int> Calls {get;set;}=new();
+    // Optional runtime-IR provenance; never used to exempt execution-health gaps.
+    public KLink.Bot.Effects.Blueprint.KismetMissingCallCount[] MissingCallSites {get;set;}=[];
+    public long MissingCallSitesOmitted {get;set;}
+    public long MissingCallSiteCaptureFailures {get;set;}
 }
 
 internal sealed class QualityReport

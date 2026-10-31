@@ -1,6 +1,6 @@
 {
   "date": "2026-11-01",
-  "batch": "display-diagnostics-admission",
+  "batch": "missing-call-provenance",
   "counts": {
     "cards": 2019,
     "cards_with_own_ir": 1709,
@@ -12,7 +12,7 @@
     "program_containers": 2626,
     "dependency_edges": 18567,
     "dependency_symbols": 440,
-    "secondary_reports": 433,
+    "secondary_reports": 434,
     "explicit_partial_units": 33,
     "partial_units_matching_bound_inputs": 0,
     "planning_work_domains": 14,
@@ -23,9 +23,11 @@
     "total_work_remaining_percent": null
   },
   "matrix_tests": 16,
-  "admission_checks": 42,
+  "admission_checks": 44,
   "action_dataset_checks": 49,
-  "botsim_full_selftest": 1042,
-  "input_scope": "Publication index snapshot with current checkout EOL and available external/ignored evidence. Unrelated working tree changes excluded. No stale binding refreshed.",
-  "generation_git_head": "e6bc75adf10592c87fe5c8de9fe4ad4502b50a14"
+  "botsim_focused_selftest": 5,
+  "botsim_full_selftest": 1047,
+  "value_dump_smoke_games": 5,
+  "input_scope": "Publication index snapshot with current checkout EOL and available external/ignored evidence. Unrelated working tree changes excluded. No stale evidence fingerprint refreshed.",
+  "generation_git_head": "facd856688dc21fc8e6e9d1e8811384f58d1c585"
 }

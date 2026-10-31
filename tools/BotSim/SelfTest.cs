@@ -20,6 +20,11 @@ internal static partial class SelfTest
 
     private static readonly List<Case> Cases = new()
     {
+        new("调用来源：指令与嵌套表达式及聚合", MissingCallSitePaths),
+        new("调用来源：局部重入与真实资产身份", MissingCallSiteReentry),
+        new("调用来源：诊断开关与失败不改变执行", MissingCallSiteIsolation),
+        new("调用来源：容量限制与程序指纹", MissingCallSiteLimits),
+        new("调用来源：真实75团显示链与执行隔离", MissingCallSiteRealDisplay),
         new("根动作停止标志：普通出牌与反制", PlayRootStopBoundary),
         new("根动作停止标志：移动回调", MoveRootStopBoundary),
         new("根动作停止标志：攻击T30早于T31", AttackRootStopBoundary),

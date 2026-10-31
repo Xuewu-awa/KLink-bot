@@ -15,7 +15,7 @@ namespace KLink.Bot.Effects.Blueprint;
 /// - <c>call</c> 步骤交给 <see cref="CardApi.InvokeByName"/> 派发到原语
 /// - 未识别的指令计入统计，不中断（保证一张卡失败不影响整局）
 /// </summary>
-public sealed class KismetVm
+public sealed partial class KismetVm
 {
     /// <summary>
     /// 单次执行的步数**下限/基线** —— 防止字节码异常导致死循环。
@@ -209,7 +209,7 @@ public sealed class KismetVm
             return null;
         }
 
-        var frame = new Frame(ctx);
+        var frame = new Frame(ctx) { Program = program };
         int steps = 0;
         ProgramsExecuted++;
 
@@ -251,6 +251,7 @@ public sealed class KismetVm
             while (pc >= 0 && pc < program.Steps.Count && steps++ < maxSteps)
             {
                 var step = program.Steps[pc];
+                frame.CurrentStep = step;
                 StepsExecuted++;
 
                 // ⚠️ 必须 `if (StepTrace is not null)` 包起来，不能写 `StepTrace?.Add($"…")` ——
@@ -650,6 +651,7 @@ public sealed class KismetVm
         {
             UnimplementedCalls[fn] = UnimplementedCalls.GetValueOrDefault(fn) + 1;
             _api.NotifyUnimplemented(fn);
+            CaptureMissingCall(fn, frame, ctx);
             StepTrace?.Add($"      [!] {fn} 未实现");
             return;
         }
@@ -907,6 +909,7 @@ public sealed class KismetVm
             {
                 UnimplementedCalls[c] = UnimplementedCalls.GetValueOrDefault(c) + 1;
                 _api.NotifyUnimplemented(c);
+                CaptureMissingCall(c, frame, ctx, expr);
             }
 
             return r;
@@ -914,7 +917,7 @@ public sealed class KismetVm
 
         if (expr.Math is { } m)
         {
-            return EvalMath(m, expr.Args, frame, ctx);
+            return EvalMath(m, expr.Args, frame, ctx, expr);
         }
 
         if (expr.Array.Count > 0)
@@ -1104,7 +1107,8 @@ public sealed class KismetVm
         "GetStaticCard",
     };
 
-    private object? EvalMath(string? fn, IReadOnlyList<KismetExpr> argExprs, Frame frame, EffectContext ctx)
+    private object? EvalMath(string? fn, IReadOnlyList<KismetExpr> argExprs, Frame frame, EffectContext ctx,
+                             KismetExpr? origin = null)
     {
         var a = argExprs.Count > 0 ? Eval(argExprs[0], frame, ctx) : null;
         var b = argExprs.Count > 1 && fn != "__SwitchValue" ? Eval(argExprs[1], frame, ctx) : null;
@@ -1311,6 +1315,7 @@ public sealed class KismetVm
             default:
                 UnimplementedCalls[$"math:{fn}"] = UnimplementedCalls.GetValueOrDefault($"math:{fn}") + 1;
                 _api.NotifyUnimplemented($"math:{fn}");
+                CaptureMissingCall($"math:{fn}", frame, ctx, origin);
                 return null;
         }
     }
@@ -1518,6 +1523,9 @@ public sealed class KismetVm
     /// </summary>
     private sealed class Frame
     {
+        public required KismetProgram Program { get; init; }
+        public KismetStep? CurrentStep { get; set; }
+        public string? DiagnosticProgramSha256 { get; set; }
         private readonly Dictionary<string, object?> _locals = new(StringComparer.Ordinal);
         private readonly EffectContext _ctx;
 

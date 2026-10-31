@@ -170,7 +170,10 @@ public sealed partial class KismetLibrary
 
             if (!perCard.TryGetValue(programName, out var program))
             {
-                program = BuildEntryProgram(card, entry);
+                program = BuildEntryProgram(card, entry) with
+                {
+                    AssetName = card.Name, FunctionName = programName, SourceEntry = entry,
+                };
                 perCard[programName] = program;
             }
 
@@ -227,6 +230,7 @@ public sealed partial class KismetLibrary
                 {
                     InputNames = card.LocalInputs.GetValueOrDefault(functionName),
                     OutputNames = card.LocalOutputs.GetValueOrDefault(functionName),
+                    AssetName = card.Name, FunctionName = functionName, SourceEntry = steps[0].Index,
                 };
                 perCard[functionName] = program;
             }
@@ -641,6 +645,11 @@ public sealed record KismetCard(string Name, IReadOnlyDictionary<string, int> En
 
 public sealed record KismetProgram(IReadOnlyList<KismetStep> Steps, int Entry)
 {
+    /// <summary>Resolved IR asset/export identity, independent of the executing card variant.
+    /// Null for unattributed manually constructed programs; never infer this from self.</summary>
+    public string? AssetName { get; init; }
+    public string? FunctionName { get; init; }
+    public int? SourceEntry { get; init; }
     /// <summary>Formal input parameter order from the current FunctionExport; null for legacy IR.</summary>
     public IReadOnlyList<string>? InputNames { get; init; }
     /// <summary>Formal output order; generated caller slots may carry numeric suffixes.</summary>

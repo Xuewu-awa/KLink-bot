@@ -213,7 +213,10 @@ internal static class Program
                 SampleKinds=reasons.Length==0 ? snapshots.Select(s=>(int)s.Kind).ToArray() : [],
                 SampleActors=reasons.Length==0 ? snapshots.Select(s=>(int)s.Actor).ToArray() : [],
                 UnsupportedOps=engine.Api.Vm.UnsupportedOps.ToDictionary(p=>p.Key,p=>p.Value),
-                Calls=engine.UnimplementedCalls.ToDictionary(p=>p.Key,p=>p.Value) };
+                Calls=engine.UnimplementedCalls.ToDictionary(p=>p.Key,p=>p.Value),
+                MissingCallSites=engine.Api.Vm.MissingCallSites.Select(p=>new KLink.Bot.Effects.Blueprint.KismetMissingCallCount(p.Key,p.Value)).ToArray(),
+                MissingCallSitesOmitted=engine.Api.Vm.MissingCallSitesOmitted,
+                MissingCallSiteCaptureFailures=engine.Api.Vm.MissingCallSiteCaptureFailures };
             quality.Games.Add(episode);
             if (!episode.Accepted) { quality.RejectedGames++; continue; }
             quality.AcceptedGames++;

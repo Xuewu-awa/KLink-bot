@@ -1,0 +1,61 @@
+{
+  "rule_id": "TRAINING-MISSING-CALL-PROVENANCE-20261101",
+  "date": "2026-11-01",
+  "baseline_commit": "facd856688dc21fc8e6e9d1e8811384f58d1c585",
+  "status": "scoped diagnostic implementation; classification remains open",
+  "scope": "Unhandled VM call, expression-call and math fallback only. Value-dataset quality manifest export; no admission exemption or whole-card certification.",
+  "implementation": [
+    "Resolved asset/export and original entry recorded on library-built programs; executing self is separate from source asset, including variant fallback.",
+    "Per-frame program and instruction ownership survives local reentry. Expression paths reflect IR node identity; aliased nodes explicitly join all matching paths.",
+    "Runtime program JSON/v1 SHA-256 includes synthetic dispatch and provenance metadata, computed at first missing call in each frame. It is not a pak/IR-file digest or authorization credential; runtime program bodies are assumed immutable during a frame.",
+    "Repeated sites aggregate; cap 4096 sites per VM. New sites beyond cap increment omitted count; serialization/path capture errors increment failure count without changing existing VM/engine health counters.",
+    "Value QualityGame exports site/count arrays plus omitted/failure counts. New fields are optional for old manifests and ignored by training admission."
+  ],
+  "regressions": [
+    "Top-level and expression call/math, aliased paths, repeated execution aggregation and byte offsets",
+    "Nested local function returns restore outer ownership; variant fallback and actual event entry metadata",
+    "Capture on/off equality of state/RNG and missing counts; cyclic unused AST serialization failure does not fault VM",
+    "Distinct program content/identity hashes and capacity overflow retain original health counters",
+    "Actual loaded 75th rifle regiment SpawnCopy: GetDisplayName i0/bo0/src and PrintString i90/bo122/$; state/RNG identical with capture disabled",
+    "Quality manifest provenance JSON roundtrip and unchanged accepted execution-health boundary"
+  ],
+  "validation": {
+    "focused_botsim": 5,
+    "botsim_full_selftest": 1047,
+    "admission_selftest": 44,
+    "action_dataset_selftest": 49,
+    "matrix_tests": 16,
+    "value_dump_smoke": {
+      "games": 5,
+      "accepted": 5,
+      "rejected": 0,
+      "sites": 0,
+      "seed": 1
+    },
+    "context": "Publication index snapshot with existing checkout EOL; unrelated pre-existing working tree edits excluded.",
+    "warning": "Existing NNTrain CS8632 warning at Program.cs:481. Initial concurrent builds contended on shared output (CS2012); serial rebuild passed."
+  },
+  "worker": {
+    "job_id": "20261101-001006-call-provenance-b8f69cd5",
+    "status": "completed",
+    "accepted_output": "Mechanical inventory independently spot-checked against supplied original files; three main unhandled sites and per-invocation frame verified. Not rule authority."
+  },
+  "source_bindings": {
+    "src/KLink.Bot/Effects/Blueprint/KismetIr.cs": "71e90c36a8c54b36d99d0c014b637c55cd5f1dab4369c17880b84aa2c02fefc0",
+    "src/KLink.Bot/Effects/Blueprint/KismetVm.cs": "0c7e9cf2ad2046a7d988bb21324134f0d53e163e887c7c089c92999e144a8b20",
+    "src/KLink.Bot/Effects/Blueprint/KismetMissingCallSites.cs": "a768257cc2cc9216d67d24c6af8bbb6d8f201138c3b2321e32e8cb309b06cf51",
+    "tools/BotSim/SelfTest.MissingCallSites.cs": "f9798047da23c8cc5c500066ecc62f04a13a89d1bac89c5e5c4168c4b0f59e81",
+    "tools/BotSim/SelfTest.cs": "8bd8861767539f3efd8ad55cacf40bad609cf6e8226173ceb5fc7e6c8c45f00b",
+    "tools/NNTrain/TrainingAdmission.cs": "71fbe905d72279d03c16a707d03fde393ce41a415d3497a5111ed02d622469d7",
+    "tools/NNTrain/Program.cs": "88f6f20974124de2f83814576198c3d2c1436dd76956297cd2a9aff9c7745cd0",
+    "tools/NNTrain/AdmissionSelfTest.cs": "1f234c31be86882a920886836991d98d55d9a8e32cb2817c2ab93e33ccf43b31"
+  },
+  "limitations": [
+    "No global exemption for Format/GetDisplayName/PrintString. Existing null results are unchanged.",
+    "Provenance covers three VM fallback branches, not unsupported instructions, special enumerator diagnostics or CardApi-internal NotifyUnimplemented. Counts remain authoritative for health.",
+    "Action dataset teacher/replay/discarded-planning provenance export is pending; existing aggregate rejection remains active.",
+    "Source tracing alone does not prove a call is display-only. Evidence-bound call-site classification and authoritative current-PvP denominator remain open.",
+    "A failed or truncated diagnostic collection is incomplete; it must not be interpreted as no missing calls. No authenticity signature; editable manifests can erase declared diagnostics.",
+    "Native-empty-event byte hashes remain sensitive to checkout EOL. No historical evidence binding was refreshed."
+  ]
+}
