@@ -420,6 +420,8 @@ internal static partial class SelfTest
         new("手牌生成公开通知：显式参数门、满手弃置后及自身T57事件前", NativeSpawnHandSeenReceipt),
         new("手牌生成对象通知：自身创建后T35前、实时字段快照与可选打捞阵营", NativeSpawnHandNonVisualReceipt),
         new("战场生成对象通知：自身创建后老兵及T35前、实时字段及底层分配隔离", NativeSpawnBoardNonVisualReceipt),
+        new("打捞创建：施动者阵营与公开赋值", NativeSalvageFaction),
+        new("打捞创建：逐卡类型3及打捞事件、批通知与手牌事件顺序", NativeSalvagePipeline),
         new("手牌生成自动打出：自身与T57结束后检查实时位置和标签", NativeSpawnHandAutoplayEvents),
         new("手牌生成：显式来源金卡和打捞字段在创建回调前初始化", NativeSpawnHandInitialFields),
         new("手牌生成：非正来源不创建，不回退上下文且保留旧输出", NativeSpawnHandSourceGuard),
@@ -736,7 +738,7 @@ internal static partial class SelfTest
         new("两条建卡入口：创建回调及修正前可见模板临时费用", CreationCallbacksSeeKreditPair),
         new("打捞当前阵营：两入口在创建回调前使用传入阵营", db => SalvagedCreationFaction(db, false)),
         new("打捞当前阵营：回调改写与静态模板及打捞元数据分离", db => SalvagedCreationFaction(db, true)),
-        new("收缴复制：来源当前阵营传入新对象并保留到成员及快照", SalvageCopiesCurrentFaction),
+        new("收缴复制：发起者当前阵营传入新对象并保留到成员及快照", SalvageCopiesCurrentFaction),
         new("打捞创建数值：两入口在创建回调前具有1/1和对应最大值", db => SalvagedCreationStats(db, false)),
         new("打捞创建数值：保留自身回调改写且不重置费用或行动额度", db => SalvagedCreationStats(db, true)),
         new("建卡进场回合：两入口在自身回调和修正阶段前初始化为0", db => CreationTurnPhase(db, false)),
@@ -2293,9 +2295,9 @@ internal static partial class SelfTest
         }
 
         if (!copy.IsGold || !copy.IsSalvaged || copy.SalvagedCardId != original.CardId ||
-            copy.SalvageFaction != original.Definition.Faction)
+            copy.SalvageFaction != instigator.Definition.Faction)
         {
-            return "打捞副本未保留金卡、isSalvaged、来源 cardID 或原卡阵营";
+            return "打捞副本未保留金卡、isSalvaged、来源 cardID 或施动者阵营";
         }
 
         for (int i = 0; i < GameState.HandCapacity - 1; i++)
@@ -9482,10 +9484,10 @@ internal static partial class SelfTest
             var (engine, state) = EmptyBoard(db);
             var source = state.CreateWithId(PlainUnit, side.Opposite(), 60, CardLocation.Discard, 0);
             var instigator = state.CreateWithId(PlainUnit, side, 61, CardLocation.Discard, 0);
-            WriteCurrentFaction(engine, state, source, faction);
+            WriteCurrentFaction(engine, state, instigator, faction);
             var ids = engine.Api.SalvageMultipleUnits(new[] { source.CardId }, instigator.CardId);
             if (ids.Count != 1 || state.ById(ids[0]) is not { } copy || ReadCurrentFaction(engine, state, copy) != faction)
-                return $"salvage must copy source current faction {faction}/{side}";
+                return $"salvage must copy instigator current faction {faction}/{side}";
             if (!copy.IsSalvaged || copy.SalvagedCardId != source.CardId || copy.Owner != side || copy.Definition != source.Definition)
                 return "salvage identity/source/ownership or static definition changed";
             cases++;

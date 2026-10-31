@@ -8225,6 +8225,41 @@
         "Existing enum mapping reused; native friendly formatting, invalid/noncanonical faction inputs and pak/current-client version equivalence not newly certified.",
         "2496 synthetic boundary cases do not establish actual-game reachability, single-card equivalence or complete PvP restoration."
       ]
+    },
+    {
+      "id": "RULE-555/SalvageMultipleUnits/creation-chain",
+      "symbol": "SalvageMultipleUnits",
+      "modes": [
+        null
+      ],
+      "status": "partial",
+      "validated_scope": "打捞动作处理创建链：发起者当前阵营、公开赋值、独立通知、逐张T35类型3与T56、批通知后手牌事件；724合成场景。异常ID与重入等继续开放。",
+      "report": "out/audit/systematic-rules/salvage-creation-20261101.json",
+      "report_sha256": "d00adee5f77a1a4f454c12d9bc8d27d4ce893fb9eb751e29c39b8301b073636d",
+      "client_exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+      "source_bindings": {
+        "src/KLink.Bot/Effects/CardApi.cs": "8008eaef80bdbd395fb45bc16486cf503ae9d2e4e1d36ea97ee6e850b47965db",
+        "src/KLink.Bot/Engine/GameState.cs": "4de9bc66ae9e38684d129778cc7e220ba43e25205c7b9920b5e1b0aa2a31f143",
+        "src/KLink.Bot/Effects/CardApiDispatch.cs": "b9f8fa7019ab5fbb1fa44117f697b419f7b7fb91de5e936910e68ef7d6eb9e12",
+        "src/KLink.Bot/Effects/Blueprint/LiveRuleTables.cs": "7025627d5468560844447b823a6a39df6d187f51f2fa7a187f9c3eb6c3b492ea",
+        "src/KLink.Bot/Cards/CardDatabase.cs": "2bbeccb2d52480c0b7385a452997dfe4a482474e70f2decea229c3a4a1d3c6e4",
+        "src/KLink.Bot/Effects/Blueprint/KismetIr.cs": "6e710fc92c40a8882277ffdc724afded26014ae5fb650083e95c513dea861e57",
+        "tools/BotSim/SelfTest.cs": "4e614e51d91585cda034334f5d4633c9824caffadc67a32458900e22772f9e78",
+        "tools/BotSim/SelfTest.SalvageCreation.cs": "0432e74948a6aa5eeda2f6311afef5ac859ebf98eda2f2173a0ab8b97caf2ce3"
+      },
+      "evidence_bindings": {
+        "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.functions.json": "b007f0f5689d266cdccee220f164db12582d3893c76a087228dd3ac55836f297",
+        "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Logic\\U_CardFunctionsNotifier.functions.json": "e4acd16b57b7a1da30780ecbf598c4d177b7e2d57a27dbb04c269bba9f6e1c94",
+        "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Logic\\BP_OnlineMatch.functions.json": "630b523c5a575d1aa956aba41eea8c22a19bf20b6546ffa0a03ad122d73ffe98",
+        "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\ue4ss\\CXXHeaderDump\\BP_CardFunctions.hpp": "1caffda9a9ed12069b5dba073cd1db9e0bf1d128f61d3f083f51e9897ed6801d"
+      },
+      "limitations": [
+        "Action-processing salvage creation path only. Remote/non-action processing, complete single-card logic and full shared CreateCard closure remain open.",
+        "Initial missing-instigator and missing-original guards remain simulator choices; missing allocated ID skips nonvisual notification. These invalid/null branches are not newly certified.",
+        "Returned-ID replacement, receiver snapshot mutation, reentrant salvage and default hand slot selection are not newly certified. T35 relookup and retained recipient invocation follow the inspected bytecode but need dedicated mutation regressions.",
+        "Existing enum mapping reused. Invalid/noncanonical faction formatting and pak/current-client version equivalence are not newly certified.",
+        "724 synthetic scenarios check shared phase boundaries, not game reachability, complete card certification or overall PvP completion."
+      ]
     }
   ],
   "scope_reviews": {},
@@ -8268,7 +8303,7 @@
       "id": "RULE-SPAWN-BOUNDARY",
       "title": "生成边界",
       "status": "open",
-      "scope": "相邻缺来源/无效控制方/默认位置；共享满位置/overrideCardID及完整分配通知。 RULE-550已修复普通手牌生成默认初始槽位的物理计数/autoplay边界；完整创建通知及其他分配入口继续开放。 RULE-551：普通生成手牌抽牌通知及显式来源/文本/标志已局部修复；非可视创建、公开、远端接收及完整创建边界仍开放。 RULE-552：普通生成手牌公开通知的请求参数门和事件前顺序已局部修复；非可视对象创建及远端接收仍开放。 RULE-553：普通生成手牌非可视对象创建通知已局部修复；其他分配入口、动作门及远端消费仍开放。 RULE-554：普通战场分配通知已局部修复；打捞虽跳过共享动作处理但在1987独立通知、2337使用创建类型3，须单独核对，不得标记为无需通知。",
+      "scope": "相邻缺来源/无效控制方/默认位置；共享满位置/overrideCardID及完整分配通知。 RULE-550已修复普通手牌生成默认初始槽位的物理计数/autoplay边界；完整创建通知及其他分配入口继续开放。 RULE-551：普通生成手牌抽牌通知及显式来源/文本/标志已局部修复；非可视创建、公开、远端接收及完整创建边界仍开放。 RULE-552：普通生成手牌公开通知的请求参数门和事件前顺序已局部修复；非可视对象创建及远端接收仍开放。 RULE-553：普通生成手牌非可视对象创建通知已局部修复；其他分配入口、动作门及远端消费仍开放。 RULE-554：普通战场分配通知已局部修复；打捞虽跳过共享动作处理但在1987独立通知、2337使用创建类型3，须单独核对，不得标记为无需通知。 RULE-555：打捞动作处理链已局部修复发起者当前阵营、公开赋值、独立通知、逐张T35类型3及T56，以及批通知后手牌事件；缺失对象、ID替换、接收者突变、重入、默认槽位及远端分支仍开放。",
       "source": "primary reviewed matrix bootstrap; not exhaustive defect inventory"
     },
     {

@@ -1,0 +1,68 @@
+{
+  "rule": "RULE-555",
+  "scope": "SalvageMultipleUnits action-processing creation chain",
+  "authority_sources": {
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.functions.json": "b007f0f5689d266cdccee220f164db12582d3893c76a087228dd3ac55836f297",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Logic\\U_CardFunctionsNotifier.functions.json": "e4acd16b57b7a1da30780ecbf598c4d177b7e2d57a27dbb04c269bba9f6e1c94",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Logic\\BP_OnlineMatch.functions.json": "630b523c5a575d1aa956aba41eea8c22a19bf20b6546ffa0a03ad122d73ffe98",
+    "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\ue4ss\\CXXHeaderDump\\BP_CardFunctions.hpp": "1caffda9a9ed12069b5dba073cd1db9e0bf1d128f61d3f083f51e9897ed6801d"
+  },
+  "client_exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "raw_functions": "out/audit/systematic-rules/salvage-creation-20261101-functions.json",
+  "raw_functions_sha256": "8002b31ea0da4b7f09bc070cd314fbd70de1271f1a6ff300e4ba54304ec657c3",
+  "authority_chain": [
+    "SalvageMultipleUnits38/70 retains initial side. Per copy1646 resolves instigator and1698 reads its current faction, not the original card faction.",
+    "CreateCard1792 has17 parameters: index8 cardSeen=true, index13 skipAction=true, index14 MakeVeteran=false. Own creation executes and requested seen value is assigned before shared action processing is skipped.",
+    "1955 resolves returned ID,1987 independently notifies nonvisual creation.2032 queries T35 once per copy;2246 resolves subject for each retained receiver;2337 invokes method3.",
+    "2459 appends generated ID.2527 queries T56;2796 calls OnOtherCardSalvaged(originalID,newID,instigatorID) before the next copy.",
+    "After the loop,720/725 push794 then1145:730 batch salvage notification,793 pops to1145,1488 CardsSeen notification,1544 pops to794;1038 hand hooks run after both notices, including empty batch notices.",
+    "NotifySalvageMultipleUnits -> Online HandleSalvageMultipleUnits -> ubergraph12586 -> AddSubActionSalvageMultipleUnits. Field order is cardsToSalvage,instigatorID,createdCardIDs. Integer arrays serialize with semicolons and empty string for no IDs."
+  ],
+  "defect": "Old salvage used original faction, shared method0 creation modifiers, omitted explicit nonvisual/batch/seen notifications and assigned seen value, and deferred T56 until after hand hooks.",
+  "fix": "Use current instigator faction per allocation and retained initial side; skip shared modifiers; assign seen after own creation; explicitly notify, execute T35(method3), append ID and invoke T56 per copy. Emit batch then seen notices before all own hand/T57 hooks.",
+  "regression": {
+    "new_scenarios": 724,
+    "faction_scenarios": 676,
+    "pipeline_scenarios": 48,
+    "dimensions": [
+      "faction:2 sides x13 original factions x13 instigator factions x2 gold flags",
+      "pipeline:2 sides x4 requested counts x3 available slots x2 mutation flags"
+    ],
+    "before_exit_code": 1,
+    "before_tests_failed": 2,
+    "targeted_tests": 4,
+    "full_tests": 1056,
+    "after_exit_code": 0,
+    "logs": {
+      "out/audit/systematic-rules/salvage-creation-before-20261101.txt": "b1b5d8c918346b7ced1efb51985d1054abfbc488fcb1945430c6d434b0b687bd",
+      "out/audit/systematic-rules/salvage-creation-targeted-20261101.txt": "c82a9cfc880882059faa2a4f5ae2823613f560f2a7a60b2fac5e6c18bb6d3402",
+      "out/audit/systematic-rules/salvage-creation-full-20261101.txt": "e7a59faf24802379cb8a444587417a0ce08ded9f3eef8abe7517cd4369396506"
+    },
+    "assertions": [
+      "Own callback sees salvage metadata; later seen assignment overwrites its false value.",
+      "Each copy sees instigator current faction, including changes by previous T35.",
+      "Nonvisual snapshot before T35(method3), then T56 before next copy; own hand/T57 after batch and seen receipts.",
+      "Full hand and empty request still emit two batch notices; exact ordered receipt fields and ID arrays.",
+      "CardsSeen notification does not overwrite later T35 mutation of CardSeen."
+    ],
+    "test_isolation": "Initial full run exposed synthetic local-program cache contamination plus stale source-faction assertion. New probe saves, clears and restores its four cached fixture programs in finally; existing expectations updated only for SalvageMultipleUnits. Production cache unchanged. Final full1056 passed.",
+    "before_log_scope": "Pre-fix run of same two semantic probes before cache-isolation hardening; two existing filtered regressions passed."
+  },
+  "deepseek": {
+    "skill": "C:/Users/AWQ/.codex/skills/deepseek-worker/SKILL.md",
+    "job": "20261101-023232-salvage-e5b52e9a",
+    "status": "completed",
+    "result_sha256": "1d6f4ee9d5728e861160050c6c1945b008d5bea2cdf7fa74e44c919e699415d8",
+    "verification": "Primary structurally verified31 flow instructions and11 original evidence statements; all23 raw authority functions and2 Online ubergraph slices matched source. Worker inventory is not accepted as execution order.",
+    "boundary_deviation": "Worker reports two helper scripts created outside packet in user Temp; cleanup was denied. They are not required by result or integrated/published. No permission changes or cleanup escalation performed.",
+    "role": "Bounded mechanical extraction; primary control-flow interpretation, integration, verification and publishing."
+  },
+  "validation_environment": "Clean snapshot: 125 tracked src/BotSim files match HEAD except scoped sources, plus new regression. Release Data/native-default guards retained.",
+  "remaining": [
+    "Action-processing salvage creation path only. Remote/non-action processing, complete single-card logic and full shared CreateCard closure remain open.",
+    "Initial missing-instigator and missing-original guards remain simulator choices; missing allocated ID skips nonvisual notification. These invalid/null branches are not newly certified.",
+    "Returned-ID replacement, receiver snapshot mutation, reentrant salvage and default hand slot selection are not newly certified. T35 relookup and retained recipient invocation follow the inspected bytecode but need dedicated mutation regressions.",
+    "Existing enum mapping reused. Invalid/noncanonical faction formatting and pak/current-client version equivalence are not newly certified.",
+    "724 synthetic scenarios check shared phase boundaries, not game reachability, complete card certification or overall PvP completion."
+  ]
+}

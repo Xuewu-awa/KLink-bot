@@ -1,0 +1,12 @@
+卡牌数据: 2019 张，卡组码映射: 2499 条
+蓝图 IR: 1709 张卡可解释
+手写效果脚本: 0 张，触发脚本: 0 条
+
+  ❌ 打捞创建：施动者阵营与公开赋值
+       salvage faction/seen Left/original=NotAvailable/instigator=NotAvailable/gold=False: own=1, correct=True
+  ❌ 打捞创建：逐卡类型3及打捞事件、批通知与手牌事件顺序
+       salvage pipeline Left/requested=0/available=0/mutate=False: correct=True, copies=0, markers=0, notices=0, events=
+  ✅ 打捞创建数值：两入口在创建回调前具有1/1和对应最大值
+  ✅ 打捞创建数值：保留自身回调改写且不重置费用或行动额度
+
+2/4 项失败

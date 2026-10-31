@@ -3631,61 +3631,87 @@ public sealed partial class CardApi
     }
 
     /// <summary>
-    /// `SalvageMultipleUnits(cardsToSalvage, instigatorID, out createdCardIDs)`。
-    ///
-    /// 蓝图先收集可创建的副本，再统一执行手牌生成事件，最后广播 Salvaged 事件。
-    /// 这与普通 SpawnCardInHand 的视觉生成路径分开，避免重复产生 SpawnCard 子动作。
+    /// Action-processing SalvageMultipleUnits: each allocation has its own
+    /// notification, T35(method3) and T56; batch/seen notices precede hand hooks.
     /// </summary>
     public IReadOnlyList<int> SalvageMultipleUnits(IReadOnlyList<int> cardIds, int instigatorId)
     {
         var instigator = State.ById(instigatorId);
-        if (instigator is null)
-        {
-            return Array.Empty<int>();
-        }
-
+        if (instigator is null) return Array.Empty<int>();
+        // i=38/70 retains the initial side; i=1646 re-reads the faction per copy.
         Side side = instigator.Owner;
         CardLocation hand = side.HandOf();
-        var created = new List<(int OriginalId, CardInstance Copy)>();
-
+        var originals = new List<int>();
+        var createdIds = new List<int>();
         foreach (int cardId in cardIds)
         {
             var original = State.ById(cardId);
-            if (original is null || State.Cards(side, hand).Count >= GameState.HandCapacity)
-            {
-                continue;
-            }
-
+            if (original is null || IsLocationFull(hand)) continue;
+            originals.Add(cardId);
+            var currentInstigator = State.ById(instigatorId);
+            int faction = currentInstigator?.FactionId ?? 0;
+            string? salvageFaction = currentInstigator is not null
+                && faction == Cards.CardDatabase.FactionIdOf(currentInstigator.Definition.Faction)
+                ? currentInstigator.Definition.Faction
+                : faction.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            // i=1792 uses skipAction=true: own creation still runs, then requested
+            // cardSeen=true is assigned, but the shared method0 T35 is skipped.
             var copy = State.Create(original.Name, side, hand,
                 State.NextLocationNumber(side, hand), original.IsGold,
-                isSalvaged: true,
-                salvageFaction: original.FactionId == Cards.CardDatabase.FactionIdOf(original.Definition.Faction)
-                    ? original.Definition.Faction
-                    : original.FactionId.ToString(System.Globalization.CultureInfo.InvariantCulture),
-                salvagedCardId: original.CardId);
-            created.Add((original.CardId, copy));
+                isSalvaged: true, salvageFaction: salvageFaction, salvagedCardId: cardId,
+                skipCreationModifiers: true, cardSeenBeforeModifiers: true);
+            int createdId = copy.CardId;
+            // i=1955/1987 resolves the returned ID for the independent notifier.
+            if (State.ById(createdId) is { } notified) NotifyCreateNonVisualCard(notified);
+            ExecuteSalvageCreationModifiers(createdId);
+            createdIds.Add(createdId); // i=2459, before this copy's T56 query.
+            const string trigger = "OnOtherCardSalvaged";
+            var recipients = CaptureRegisteredTriggerSnapshot(trigger);
+            var library = Blueprint.KismetLibrary.Default;
+            if (library is null) continue;
+            var args = new object?[] { cardId, createdId, instigatorId };
+            var named = new Dictionary<string, object?> {
+                ["cardSalvagedID"] = cardId, ["newCardSalvagedID"] = createdId, ["instigatorID"] = instigatorId
+            };
+            // i=2527/2796 retains the queried objects without subject exclusion
+            // or a second suppression/registration gate. Finish before next copy.
+            foreach (var observer in recipients)
+            {
+                if (library.FindProgram(observer.Name, trigger) is null) continue;
+                TriggerTrace?.Add($"{trigger} → {observer.Name}#{observer.CardId}（eventCardID={createdId}）");
+                RunTriggerProgram(library, observer, observer.Name, trigger, State.ById(createdId),
+                    eventArgs: args, namedArgs: named);
+            }
         }
+        // i=720/725 pushes 794 then1145: batch notice730, seen notice1488,
+        // then the saved794 hand-hook loop. Notices also exist for empty arrays.
+        string JoinIds(IEnumerable<int> ids) => string.Join(";", ids.Select(id => id.ToString(System.Globalization.CultureInfo.InvariantCulture)));
+        _engine.FireSubAction("ZActionSalvageMultipleUnits", new[] {
+            ActionValue2.Str("cardsToSalvage", JoinIds(originals)),
+            ActionValue2.Int("instigatorID", instigatorId),
+            ActionValue2.Str("createdCardIDs", JoinIds(createdIds)),
+        });
+        NotifyCardsSeen(createdIds, enemyTurn: false, showAnimation: false);
+        foreach (int id in createdIds)
+            if (State.ById(id) is { } card) ExecuteOnSpawnedInHandEvents(card, side);
+        return createdIds;
+    }
 
-        // The Blueprint batches ExecuteOnSpawnedInHandEvents after all copies exist.
-        foreach (var (_, copy) in created)
+    private void ExecuteSalvageCreationModifiers(int createdId)
+    {
+        const string trigger = "OnOtherCardCreatedAlterCard";
+        var recipients = CaptureRegisteredTriggerSnapshot(trigger); // i=2032, per copy.
+        var library = Blueprint.KismetLibrary.Default;
+        if (library is null) return;
+        foreach (var observer in recipients)
         {
-            ExecuteOnSpawnedInHandEvents(copy, side);
+            if (library.FindProgram(observer.Name, trigger) is null) continue;
+            var created = State.ById(createdId); // i=2246 re-resolves for each receiver.
+            TriggerTrace?.Add($"{trigger} → {observer.Name}#{observer.CardId}（eventCardID={createdId}）");
+            RunTriggerProgram(library, observer, observer.Name, trigger, created,
+                eventArgs: new object?[] { created, 3 },
+                namedArgs: new Dictionary<string, object?> { ["cardPlayed"] = created, ["method"] = 3 });
         }
-
-        foreach (var (originalId, copy) in created)
-        {
-            FireTrigger("OnOtherCardSalvaged", copy, side,
-                eventArgs: new object?[] { originalId, copy.CardId, instigatorId },
-                eventSubject: copy,
-                namedArgs: new Dictionary<string, object?>(StringComparer.Ordinal)
-                {
-                    ["cardSalvagedID"] = originalId,
-                    ["newCardSalvagedID"] = copy.CardId,
-                    ["instigatorID"] = instigatorId,
-                });
-        }
-
-        return created.Select(x => x.Copy.CardId).ToArray();
     }
 
     private void ExecuteOnSpawnedInHandEvents(CardInstance card, Side side)
