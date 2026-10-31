@@ -5007,6 +5007,14 @@ public sealed partial class CardApi
             return null;
         }
 
+        // 蓝图 `SpawnCardToBoard` 的两道前置门排在 `CreateCard` **之前** ⇒ 门不过就
+        // 连卡都不创建（不消耗卡号、不派发 OnCreateCard）。见
+        // `CardApi.CanSpawnOnBattlefield` 的注释（含 `replay-854099` 的 6/5 实证）。
+        if (!CanSpawnOnBattlefield(side, TruthyArg(a, 1), out _))
+        {
+            return null;
+        }
+
         var card = SpawnOnBattlefield(side, cardName,
             frontline: TruthyArg(a, 1),
             locationNumber: IntArg(a, 6, -1),
@@ -5140,6 +5148,13 @@ public sealed partial class CardApi
             .Where(card => !card.IsHq)
             .ToList();
         var originalNumbers = existing.ToDictionary(card => card, card => card.LocationNumber);
+
+        // 同 `DoSpawnOnBattlefield`：`SpawnCardToBoard` 的两道前置门排在 `CreateCard`
+        // 之前 ⇒ 门不过时蓝图把 `spawnedCardID` 写成 0 并返回。
+        if (!CanSpawnOnBattlefield(spawner.Owner, frontline, out _))
+        {
+            return 0;
+        }
 
         var spawned = SpawnOnBattlefield(spawner.Owner, cardName,
             frontline,
@@ -5336,6 +5351,12 @@ public sealed partial class CardApi
 
         // `gold`：spawner 是金卡时生成的也是金卡（函数体 L_007B）。
         bool gold = AsCardOrId(c, a.ElementAtOrDefault(2))?.IsGold ?? false;
+
+        // 同 `DoSpawnOnBattlefield`：`SpawnCardToBoard` 的两道前置门排在 `CreateCard` 之前。
+        if (!CanSpawnOnBattlefield(side, true, out _))
+        {
+            return null;
+        }
 
         var card = SpawnOnBattlefield(side, cardName,
             frontline: true,

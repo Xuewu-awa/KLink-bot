@@ -78,9 +78,27 @@ def summarize_function(fn):
 
 def innate_abilities(cdo):
     result = {}
-    for key, value in cdo.get("receivedAbilitiesFromCards", []):
-        name = key["Value"]
-        members = value["Value"]
-        givers = next(p["Value"] for p in members if p["Name"] == "CardsGivingAbility")
-        result[name] = [int(giver["Value"]) for giver in givers]
+    raw = cdo.get("receivedAbilitiesFromCards", [])
+    # ⚠️ `dump-batch` 的**单文件形态**里，这个 map 属性有时整块是占位符
+    #（实测 `["UAssetAPI.PropertyTypes.Objects.MapPropertyData"]`）⇒ 旧实现
+    # `for key, value in raw` 直接 `ValueError: not enough values to unpack`。
+    # 占位符的含义是"这次解析不出来"，跳过即可 —— 上层会保留旧表里已经解析好的值。
+    if not isinstance(raw, list):
+        return result
+    for item in raw:
+        if not (isinstance(item, (list, tuple)) and len(item) == 2):
+            continue
+        key, value = item
+        if not (isinstance(key, dict) and isinstance(value, dict)):
+            continue
+        name = key.get("Value")
+        members = value.get("Value")
+        if name is None or not isinstance(members, list):
+            continue
+        givers = next((p.get("Value") for p in members
+                       if isinstance(p, dict) and p.get("Name") == "CardsGivingAbility"), None)
+        if not isinstance(givers, list):
+            continue
+        result[name] = [int(g["Value"]) for g in givers
+                        if isinstance(g, dict) and "Value" in g]
     return result

@@ -63,6 +63,20 @@ internal static class ServerDeckProbe
         Console.WriteLine($"1) 卡组码解析：牌 {names.Count} 张，HQ = {hqName}，未知码 {unknown.Count} 个" +
                           (unknown.Count > 0 ? $"（{string.Join(",", unknown)}）" : ""));
 
+        // ★ 复现开关：`KLINK_PROBE_GOTCHA=1` 时把第一张手牌换成 0 费反制卡。
+        //
+        // 为什么需要它（2026-10-31 线上实测）：`bot-20261031.log` 里两局都是
+        // 「同一张 `card_event_unexpected_resistance`（type=gotcha，0 费）连续选中 60 次、
+        //  kredit/手牌/枚举数逐字不变、撞上限强收」—— 对局永远停在回合 2。
+        // 但这条默认合成卡组里**没有 gotcha**，所以普通 `--server-deck` 永远复现不出来。
+        // 留这个开关（而不是改默认卡组），是因为改了默认卡组会让这条探针的
+        // "服务端形状" 基线失去可比性。
+        if (Environment.GetEnvironmentVariable("KLINK_PROBE_GOTCHA") == "1" && names.Count > 0)
+        {
+            names[0] = "card_event_unexpected_resistance";
+            Console.WriteLine("   [probe] KLINK_PROBE_GOTCHA=1 ⇒ 第一张手牌换成 card_event_unexpected_resistance（0 费 gotcha）");
+        }
+
         // ---- 2) 卡名在内核卡库里找不找得到（**这一步最容易断**）----
         var notFound = names.Where(n => db.Find(n) is null).Distinct().ToList();
         Console.WriteLine($"2) 内核卡库解析：{names.Count - names.Count(n => db.Find(n) is null)}/{names.Count} 张命中" +

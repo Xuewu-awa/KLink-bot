@@ -213,6 +213,16 @@ public sealed class ReplayRunner
         public required IReadOnlyList<StepResult> Steps { get; init; }
         public required int TotalActions { get; init; }
 
+        /// <summary>
+        /// 动作流末尾的**服务端 journal 终结记录**条数（`action_type` 为空的那条）。
+        ///
+        /// 它不是动作、不改棋盘，所以不进 <see cref="Steps"/>、也不算进
+        /// <see cref="TotalActions"/>。单列出来是为了让审计能把它显式打出来 ——
+        /// 静默丢掉一条记录和"忘了一条记录"在日志里长得一模一样。
+        /// 实测：16 局语料 16/16 都有且都恰好在末尾。
+        /// </summary>
+        public int JournalTerminators { get; init; }
+
         /// <summary>快照 cardID → 卡名 与动作自带卡组码不一致的次数（应为 0）。</summary>
         public required int IdentityConflicts { get; init; }
 
@@ -454,6 +464,7 @@ public sealed class ReplayRunner
         // ---- 2) 逐步重放 ----
         var steps = new List<StepResult>();
         int identityConflicts = 0, unknownCodes = 0;
+        int journalTerminators = 0;
         bool turnStarted = false;
 
         // ⚠️ **bot 那一侧每个回合在动作流里有两条 `XActionEndOfTurn`** ——
@@ -669,6 +680,29 @@ public sealed class ReplayRunner
 
         foreach (var a in replay.Actions)
         {
+            // ★ 服务端 journal 的**终结记录**不是一条动作，不能进 `Steps`。
+            //
+            // 实测（16 局语料 16/16、`out/_fidelity/_work/wal/` 27 份里 21 份
+            // completed 文档 21/21）：每条 `ActionEndMatch` 之后紧跟一条
+            // `{"action_type": "", "player_id": null, "action": "end-match",
+            //   "value": {...winner...}}`。它没有类型、没有行动方、不改棋盘。
+            //
+            // 以前它走下面 `side == Side.NotAvailable` 那一支，被记成
+            // `无法确定行动方` 的**未应用动作** ⇒ 判据 ⑤「未应用的动作」在
+            // **11/15 局**里被恒定 +1，而 ⑤ 是四条判据里排第一的可靠性指标。
+            // 判据里混进一条永远失败的记录，等于给每局都扣一分。
+            //
+            // 归属：它是**服务端写入器**追加的，不是客户端发的 —— 证据是
+            // 「有 `ActionEndMatch` 的 21/21 份有它，没有 `ActionEndMatch` 的
+            // 4 份 completed 文档都没有它」；`action_count`/`next_action_id`
+            // 都把它算进去了，所以内核必须**读**它（`TotalActions` 除外）。
+            if (string.IsNullOrEmpty(a.ActionType))
+            {
+                journalTerminators++;
+                onStepped?.Invoke(a, state);
+                continue;
+            }
+
             int turn = a.TurnNumber;
             Side side = replay.SideOf(a.PlayerId);
 
@@ -1304,7 +1338,8 @@ public sealed class ReplayRunner
             Turns = replay.Turns,
             WinnerSide = replay.WinnerSide,
             Steps = steps,
-            TotalActions = replay.Actions.Count,
+            TotalActions = replay.Actions.Count(x => !string.IsNullOrEmpty(x.ActionType)),
+            JournalTerminators = journalTerminators,
             IdentityConflicts = identityConflicts,
             IdentityEvents = IdentityEvents.ToList(),
             TargetGateEvents = TargetGateEvents.ToList(),

@@ -238,6 +238,28 @@ public sealed class BotTurnService
         var handTargets = new List<MatchEngine.HandTargetRecord>();   // 手牌目标答复（HT）
         int guard = 0;
 
+        // ★★ 无进展守卫（2026-10-31 加，起因是一次真对局）。
+        //
+        // 实测症状（`rel/data/fyserver/bot-log/bot-20261031.log`，两局都中）：
+        // 同一个决策块连续 60 次选中同一张 `card_event_unexpected_resistance#52`，
+        // `kredit 0/1 / 手牌 5 / 枚举 2` 四个数字**逐字不变**，
+        // 最后撞到 `MaxActionsPerTurn = 60` 才被强制收尾（`produced=61`），
+        // 对局永远停在回合 2。
+        //
+        // 根因（内核侧，未修，见 `out/_fidelity/07-fidelity-round-20261024.md` §11）：
+        // 这张卡是 `type = "gotcha"`（0 费反制卡）。`MatchEngine.PlayCardActionCore`
+        // 的 Gotcha 分支 `return true`，但**既不给 `gotchaActivated` 装填、也不扣费、
+        // 也不让卡离开手牌** ⇒ 局面一点没变 ⇒ 下一轮枚举出同样的候选 ⇒ NN 选同一张。
+        //
+        // 为什么判据是「动作签名 + 局面指纹」而不是只看动作签名：
+        //   真的可以重复的有效动作（Fury 打两次、三张同名牌各打一次）**会改局面** ⇒
+        //   指纹不同 ⇒ 不会被误杀。只有「重放同一条动作且局面逐字相同」才是死循环的定义。
+        //
+        // 为什么不用 `AtomicAction.Fingerprint`：它把 `ActionLog.Count` 与
+        // `CardsPlayedThisTurn.Count` 也算进去（那是给 `Replayer` 做重放一致性用的），
+        // 而这两个计数**每打一张牌就涨** ⇒ 纯记账增长会把"什么都没发生"掩盖掉。
+        var seenNoProgress = new HashSet<string>(StringComparer.Ordinal);
+
         while (!state.IsFinished && state.ActiveSide == _botSide && guard++ < MaxActionsPerTurn)
         {
             AtomicAction? next = ChooseOne(engine, chosen, log);
@@ -253,9 +275,17 @@ public sealed class BotTurnService
                 break;
             }
 
+            string actionSignature = next.DescribeName(state);
             if (!next.Apply(engine))
             {
-                log.Add($"⚠ 选中的动作被内核拒绝：{next.DescribeName(state)} —— 提前收尾");
+                log.Add($"⚠ 选中的动作被内核拒绝：{actionSignature} —— 提前收尾");
+                break;
+            }
+
+            if (!seenNoProgress.Add(actionSignature + "\u0001" + ProgressSignature(engine)))
+            {
+                log.Add($"⚠ 无进展守卫：动作「{actionSignature}」在**同一局面**上被重复选中" +
+                        "（局面指纹逐字未变，再选下去只会空转到 60 次上限）—— 提前收尾");
                 break;
             }
 
@@ -476,6 +506,31 @@ public sealed class BotTurnService
 
     private static bool HasHq(GameState state, Side side)
         => state.Cards(side).Any(c => c.IsHq);
+
+    /// <summary>
+    /// 局面**进展**指纹 —— 只含"玩家看得见、且应该变化"的量，用来判「这一步到底有没有推进」。
+    ///
+    /// 与 <see cref="AtomicAction.Fingerprint"/> 的区别（这是两者都必须存在的理由）：
+    /// 那个是**重放一致性**指纹，多算了 `ActionLog.Count` 与 `CardsPlayedThisTurn.Count`；
+    /// 而这两个计数**每打一张牌就涨**，于是「打了一张什么都没发生的牌」也会让指纹变，
+    /// 正好把死循环掩盖掉 —— 实测 `card_event_unexpected_resistance` 连打 60 次，
+    /// 棋盘/手牌/kredit 全都没动，只有这两个计数在涨。
+    ///
+    /// 组成：完整局面快照（回合/行动方/kredit/前线归属/每张卡的攻防位置关键字…）
+    ///      + 随机流位置（最能反映"效果是否真的跑了"）
+    ///      + 双方 HQ 防御（快照里未必带当前值）。
+    /// **故意不含**：动作流水账条数、本回合出牌计数、疲劳计数。
+    /// </summary>
+    private static string ProgressSignature(MatchEngine e)
+    {
+        var st = e.State;
+        var sb = new System.Text.StringBuilder(st.SnapshotJson().Length + 64);
+        sb.Append(st.SnapshotJson());
+        sb.Append("|rng=").Append(st.Random.State);
+        sb.Append("|hq=").Append(HqDefenseOrDefault(st, Side.Left))
+          .Append(',').Append(HqDefenseOrDefault(st, Side.Right));
+        return sb.ToString();
+    }
 
     private static int HqDefenseOrDefault(GameState? state, Side side)
         => state is not null && HasHq(state, side) ? state.HqDefense(side) : 20;

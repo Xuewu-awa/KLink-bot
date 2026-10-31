@@ -174,10 +174,21 @@ def main():
                 entry[field] = value
 
         if cdo.get("chooseOneCards"):
-            entry["chooseOneOptionCount"] = len(cdo["chooseOneCards"])
+            # ⚠️ `chooseOneCards` 在 `dump-batch` 的输出里经常是**解析失败的占位符**
+            #（实测 51 张卡是 `["UAssetAPI.PropertyTypes.Objects.ArrayPropertyData"]*49`，
+            # 1.60 与 1.61 两次 dump 都一样 —— 是 jmap 解不了这个 struct 数组，不是版本差异）。
+            # 旧实现直接 `option.get(...)` ⇒ 在 1.61 数据上崩在
+            # `AttributeError: 'str' object has no attribute 'get'`。
+            # 这里只对 dict 取字段；占位符一律按 False（与"字段不存在"同义），并把
+            # "这张卡的选择项解析不出来"如实记进条目，别静默当成"没有目标选择"。
+            options = cdo["chooseOneCards"]
+            parsed = [o for o in options if isinstance(o, dict)]
+            entry["chooseOneOptionCount"] = len(options)
             entry["chooseOneSelectTargets"] = [
-                str(option.get("selectTargetOnPlayedFromHand", False)).lower() in ("true", "1")
-                for option in cdo["chooseOneCards"]]
+                str(o.get("selectTargetOnPlayedFromHand", False)).lower() in ("true", "1")
+                for o in parsed]
+            if len(parsed) != len(options):
+                entry["chooseOneUnresolved"] = len(options) - len(parsed)
         if str(cdo.get("selectTargetOnPlayedFromHand", False)).lower() in ("true", "1"):
             entry["selectTargetOnPlayedFromHand"] = True
         entry["innateAbilities"] = innate_abilities(cdo)

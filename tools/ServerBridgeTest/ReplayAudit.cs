@@ -67,7 +67,9 @@ internal static class ReplayAudit
 
         var replay = ReplayData.Load(snapPath, actsPath);
         Console.WriteLine($"=== 回放审计 {Path.GetFileName(replayBase)} ===");
-        Console.WriteLine($"  卡 {replay.Cards.Count} 张，动作 {replay.Actions.Count} 条，" +
+        Console.WriteLine($"  卡 {replay.Cards.Count} 张，动作 {replay.Actions.Count} 条" +
+                          $"（含 journal 终结记录 {replay.Actions.Count(a => string.IsNullOrEmpty(a.ActionType))} 条，" +
+                          $"后者不计入应用率），" +
                           $"左={replay.LeftPlayerId} 右={replay.RightPlayerId}");
         Console.WriteLine();
 
@@ -359,7 +361,33 @@ internal static class ReplayAudit
         Console.WriteLine("=== ⑤b ★ 首个「人类动作」失败点（根因通常在这里）===");
         if (firstHumanFail is null)
         {
-            Console.WriteLine("    ✅ **没有可归因的人类动作失败** ⇒ 这一局我们的重建与客户端完全对齐");
+            // ★★ 「⑤b = 0」**不等于**「这一局完全对齐」。
+            //
+            // ⑤b 只问「有没有一条人类动作被内核拒绝」。而 ④a 的**持续** HQ 差异、
+            // ⑤c 的未校正身份冲突、⑥a 的 RNG 游标失同步是**三个独立的漂移信号**，
+            // 它们完全可以在 ⑤b = 0 的同时非 0 —— 实测 `replay-508065` 就是
+            // ⑤b = 0 而 ④a 持续差异 43 条（`out/_fidelity/logs-disk/508065-dumplog.txt:835`）。
+            //
+            // 旧文案在这里直接印「✅ …完全对齐」，于是任何读 `✅` 的门禁都会漏掉
+            // 全部 HQ 漂移（`audit-4metrics.ps1` 就是这么读的）。判据不能自相矛盾。
+            int persistentHq = humanHqBad.Count - transientHumanHq.Count;
+            int uncorrectedIdentity = report.IdentityEvents.Count(e => !e.Corrected);
+            var residual = new List<string>();
+            if (persistentHq > 0) residual.Add($"④a 持续 HQ 差异 {persistentHq} 条");
+            if (uncorrectedIdentity > 0) residual.Add($"⑤c 未校正身份冲突 {uncorrectedIdentity} 条");
+
+            if (residual.Count == 0)
+            {
+                Console.WriteLine("    ✅ **没有可归因的人类动作失败**，且 ④a/⑤c 也为 0" +
+                                  " ⇒ 这一局我们的重建与客户端完全对齐");
+            }
+            else
+            {
+                Console.WriteLine("    ⚠️ 没有可归因的人类动作失败，**但仍有漂移信号**：" +
+                                  string.Join("；", residual));
+                Console.WriteLine("    ⇒ 这不等于「完全对齐」。⑤b 只覆盖「动作被拒」，" +
+                                  "上面这些是状态量对不上。");
+            }
         }
         else
         {

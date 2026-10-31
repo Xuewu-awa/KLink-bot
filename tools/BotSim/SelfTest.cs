@@ -62,6 +62,7 @@ internal static class SelfTest
         new("独立增益目标数组：登记顺序、重置重挂、同ID新对象和读取副本", IndependentBuffTargetArray),
         new("转换刷新：旧卡移除与新卡插入分别刷新，弃牌编号保持", ConvertGuardedRefreshTiming),
         new("生成刷新：Alpine回调保留旧缓存，移动回调看到新缓存", SpawnGuardedRefreshTiming),
+        new("生成落点门：半场/前线满员与前线被对手占着时拒绝，有空位时放行", SpawnLocationGates),
         new("批量伤害致死刷新：物理重排/掩护先于回调，弃牌编号保持", BatchDamageGuardedRefresh),
         new("换主离场回调：目标占用变化保留插槽，提前改主不截断后续", OwnershipLeaveMutation),
         new("换主专用通知：7字段顺序、位置/阵营文本与标志编码", OwnershipNotificationPayload),
@@ -1306,6 +1307,76 @@ internal static class SelfTest
         state.SetHqDefense(Side.Left, MatchEngine.InitialHqDefense);
         state.SetHqDefense(Side.Right, MatchEngine.InitialHqDefense);
         return (engine, state);
+    }
+
+    /// <summary>
+    /// 效果生成单位的落点门（蓝图 `SpawnCardToBoard`）。
+    ///
+    /// 出处 `ref/kards-sim/KardsSim/Generated/BP_CardFunctions.g.cs` → `SpawnCardToBoard`：
+    /// <code>
+    /// L_0099  FetchCardsByLocation(location, …, out isLocationFull, …)
+    /// L_0437  （前线分支）GetFrontlineOwnerSide() == opposite(side) ⇒ L_0531 中止
+    /// L_011D  Not_PreBool(isLocationFull) || overrideCardID > 0  ⇒ 否则 L_02DE 跳过创建
+    /// </code>
+    /// 两道门都排在 `CreateCard`（L_0672）**之前** ⇒ 门不过时连卡都不创建。
+    ///
+    /// 为什么必须有反向断言（③④）：只断言"该拒绝的都拒绝了"的话，一个**恒拒绝**的
+    /// 实现也能全过 —— 而那会让所有生成卡的卡组彻底失效，是比漏判更严重的错。
+    /// 真实缺口出处：`replay-854099` `--board-trace` 的 `#75/#76` 半场 6/5。
+    /// </summary>
+    private static string? SpawnLocationGates(CardDatabase db)
+    {
+        const string unit = "card_unit_1st_infantry_regiment_us";
+
+        // ① 半场满（5/5，含 HQ 自己那格）⇒ 拒绝
+        {
+            var (engine, state) = EmptyBoard(db);
+            for (int i = 0; i < GameState.HalfBoardCapacity - 1; i++)
+                state.CreateWithId(unit, Side.Left, 100 + i, CardLocation.BoardHqLeft, i + 1);
+            if (state.Cards(Side.Left, CardLocation.BoardHqLeft).Count() != GameState.HalfBoardCapacity)
+                return "① 前置不成立：半场没填满";
+            if (engine.Api.CanSpawnOnBattlefield(Side.Left, frontline: false, out _))
+                return "① 半场 5/5 时生成门必须拒绝（否则会出现 6/5，见 replay-854099 #75/#76）";
+        }
+
+        // ② 半场有空位 ⇒ 必须放行（防恒拒）
+        {
+            var (engine, state) = EmptyBoard(db);
+            for (int i = 0; i < GameState.HalfBoardCapacity - 2; i++)
+                state.CreateWithId(unit, Side.Left, 100 + i, CardLocation.BoardHqLeft, i + 1);
+            if (!engine.Api.CanSpawnOnBattlefield(Side.Left, frontline: false, out _))
+                return "② 半场有空位时生成门必须放行";
+        }
+
+        // ③ 前线被对手占着 ⇒ 拒绝
+        {
+            var (engine, state) = EmptyBoard(db);
+            state.FrontlineOwner = Side.Right;
+            if (engine.Api.CanSpawnOnBattlefield(Side.Left, frontline: true, out _))
+                return "③ 前线归属是对手时生成门必须拒绝（蓝图 L_0531「frontline owned by the other side」）";
+            if (!engine.Api.CanSpawnOnBattlefield(Side.Right, frontline: true, out _))
+                return "③ 反向：前线归属是自己时必须放行";
+        }
+
+        // ④ 前线无归属（空）⇒ 必须放行
+        {
+            var (engine, state) = EmptyBoard(db);
+            state.FrontlineOwner = Side.NotAvailable;
+            if (!engine.Api.CanSpawnOnBattlefield(Side.Left, frontline: true, out _))
+                return "④ 空前线时生成门必须放行";
+        }
+
+        // ⑤ 前线满（FrontlineCapacity）⇒ 拒绝
+        {
+            var (engine, state) = EmptyBoard(db);
+            state.FrontlineOwner = Side.Left;
+            for (int i = 0; i < state.FrontlineCapacity; i++)
+                state.CreateWithId(unit, Side.Left, 200 + i, CardLocation.BoardFrontline, i);
+            if (engine.Api.CanSpawnOnBattlefield(Side.Left, frontline: true, out _))
+                return "⑤ 前线满员时生成门必须拒绝";
+        }
+
+        return null;
     }
 
     private static string? UnitOwnershipTransfer(CardDatabase db)
@@ -25768,7 +25839,17 @@ internal static class SelfTest
 
     private static string? LiveNativeDefaults(CardDatabase db)
     {
-        if (db.All.Count(c => c.Cipher != 0) != 25 || db.All.Count(c => c.InnateAbilities.Count != 0) != 13
+        // 四个「由 CDO 直接决定」的字段各自的非零卡数 —— 冻结基线，用来抓
+        // 「卡表重生成时某个默认字段被静默清零」这类事故（正是单文件 dump 形态的病灶）。
+        //
+        // ★ 2026-10-31 从 pak 1.61 重抽后的实测变化：
+        //     cipher != 0        25 → **26**   （`card_event_cruiser_scouts` 新增 `cipher: 3`，
+        //                                        1.61 把「情报 3」从文本挪进了数据字段）
+        //     innate != 0        13 → 13
+        //     suppression != 0   12 → 12
+        //     targetTax != 0      3 → 3
+        //   只动了 cipher 这一项 —— 这本身就是「其余三项没被这次重抽碰到」的正面证据。
+        if (db.All.Count(c => c.Cipher != 0) != 26 || db.All.Count(c => c.InnateAbilities.Count != 0) != 13
             || db.All.Count(c => c.SuppressionExceptionTriggers.Count != 0) != 12
             || db.All.Count(c => c.TargetTax != 0) != 3)
             return "非零 CDO 默认字段的卡牌数量与完整 pak/只读运行时证据不符";

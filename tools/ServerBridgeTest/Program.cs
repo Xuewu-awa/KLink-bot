@@ -38,17 +38,24 @@ internal static class Program
 
         // `--audit-replay <路径前缀>`：逐条动作审计（找"移动死亡单位"的根因）
         //
-        // 可加两个**归因实验**开关（见 `ReplayRunner.IdentityCorrection`）：
+        // 两个归因开关**默认开启**（与作者快照树 `klink bot/README.md` §5.3 的公开接口一致）：
         //   `--no-identity-fix`        关掉身份校正 ⇒ 得到「修复前」的基线
+        //   `--no-dup-start-kredit`    关掉重复回合标记的槽位增长
         //   `--identity-only <卡名>`   只对某一张卡校正 ⇒ 把一次改动的因果钉死
+        //
+        // ⚠️ 为什么必须默认开：`out/audit/audit-all-replays.ps1` 显式传这两个开关，而
+        //    `out/audit/audit-4metrics.ps1` 一个都不传。在这两个开关是 opt-in 的时候，
+        //    两个脚本会给出**两套都"正确"的数字**（实测同一份 16 局语料：
+        //    不传 = 1056/1118、可归因人类失败 37；全传 = 1077/1118、19），
+        //    于是任何 A/B 都可能拿错基线。默认开 + 显式 `--no-` 才是单一口径。
         if (opts.TryGetValue("audit-replay", out string? auditBase))
         {
             return ReplayAudit.Run(FindRepoRoot(), auditBase, 0,
-                identityCorrection: opts.ContainsKey("identity-fix"),
+                identityCorrection: !opts.ContainsKey("no-identity-fix"),
                 identityOnly: opts.GetValueOrDefault("identity-only"),
                 rngTrace: opts.ContainsKey("rng-trace"),
                 dumpLog: opts.ContainsKey("dump-log"),
-                dupStartKredit: opts.ContainsKey("dup-start-kredit"),
+                dupStartKredit: !opts.ContainsKey("no-dup-start-kredit"),
             boardTrace: opts.ContainsKey("board-trace"));
         }
 

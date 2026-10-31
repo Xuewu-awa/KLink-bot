@@ -8,13 +8,22 @@
 #   4. 可归因人类失败总数                 ← 只在无随机效果参与时可靠
 # 这个脚本把四条一起打出来，省得每次人工从长文本里抠。
 #
-# ⚠️ ④ 的「全部」那一栏会因 bot 侧旧动作引用旧号段而变差，那是**预期副作用**，
+# ⚠️ ④ 的「全部」那一栏会因 bot 侧旧动作引用旧号号段而变差，那是**预期副作用**，
 #    所以这里只取【人类 left】那一栏。④a 另分出同回合收敛的采样假象，
 #    以及持续到 EndOfTurn 的差异；后者仍可能由 bot 侧旧动作或身份差异污染。
+#
+# ★ 2026-10-24 起它是**硬闸门**：相对冻结基线退化时 `exit 1`。
+#   冻结基线：应用 1077/1106、可归因人类失败 15、④ 人类 HQ 差 86
+#   （默认口径 = `--identity-fix` / `--dup-start-kredit` **默认开启**）。
+#   要放宽基线就显式传 `-BaselineApplied/-BaselineHumanFailures/-BaselineHqDiff`，
+#   让这个动作留在命令历史里，而不是悄悄改脚本。
 [CmdletBinding()]
 param(
     [string]$Dir = 'out\_server-replays',
-    [string]$Proj = 'tools\ServerBridgeTest'
+    [string]$Proj = 'tools\ServerBridgeTest',
+    [int]$BaselineApplied,
+    [int]$BaselineHumanFailures,
+    [int]$BaselineHqDiff
 )
 
 $ErrorActionPreference = 'Stop'
@@ -68,8 +77,18 @@ try {
         }
 
         # ⑤b 首个人类失败点
+        #
+        # ⚠️ 三种情形，不能混成两种（2026-10-24 起）：
+        #   `✅ **没有可归因的人类动作失败**，且 ④a/⑤c 也为 0`  ⇒ 真的完全对齐
+        #   `⚠️ 没有可归因的人类动作失败，**但仍有漂移信号**`    ⇒ 动作没被拒，但状态量对不上
+        #   （都没有）⇒ 有首漂开
+        # 旧脚本只认第一种；把「⑤b=0 但 ④a 持续差异 43 条」也报成「完全对齐」，
+        # 于是任何读这张表的门禁都漏掉全部 HQ 漂移。
         $firstHuman = '—'
         if ($text -match '✅ \*\*没有可归因的人类动作失败\*\*') { $firstHuman = '无（完全对齐）' }
+        elseif ($text -match '⚠️ 没有可归因的人类动作失败，\*\*但仍有漂移信号\*\*：([^\r\n]*)') {
+            $firstHuman = "无失败/有残留：$($Matches[1])"
+        }
         elseif ($text -match '=== ⑤b [^\r\n]*===\r?\n\s*#(\d+) t(\d+) (\S+)：([^\r\n]*)') {
             $firstHuman = "#$($Matches[1]) t$($Matches[2]) $($Matches[3])"
         }
@@ -106,7 +125,35 @@ try {
     Write-Host ("合计：应用 {0}/{1}（{2:N1}%）；可归因人类失败 {3} 条；④ 人类 HQ 差 {4} 条" -f `
         $sumA, $sumT, (100.0 * $sumA / [Math]::Max(1, $sumT)), $sumL, $sumH) -ForegroundColor Cyan
     Write-Host "判据可靠性：⑤b 首漂开 > ⑥ 未实现种 > ④ 人类HQ差 > 可归因人类失败总数" -ForegroundColor DarkGray
+
+    # ---- 硬闸门（2026-10-24 起）----
+    #
+    # 为什么要有：这个仓库**没有 CI**，而 `origin/main` 上已有 326 个提交动过每局必经的
+    # 公共路径、**一局语料都没跑**。没有闸门，「改一条规则 → 跑语料 → 看有没有退」
+    # 这条链就不存在，所有「N/N 通过」都只是自测覆盖，不是保真度信号。
+    #
+    # 冻结基线（2026-10-24，默认口径 = `--identity-fix --dup-start-kredit` 默认开）：
+    #   应用 1077/1106、可归因人类失败 15、④ 人类 HQ 差 86
+    # 只允许**不退化**：应用数不得下降、失败数不得上升、④ 不得上升。
+    # 要更新基线，就显式传新值 —— 让「放宽基线」这个动作留在命令历史里。
+    $baseApplied = if ($PSBoundParameters.ContainsKey('BaselineApplied')) { $BaselineApplied } else { 1077 }
+    $baseFail = if ($PSBoundParameters.ContainsKey('BaselineHumanFailures')) { $BaselineHumanFailures } else { 15 }
+    $baseHq = if ($PSBoundParameters.ContainsKey('BaselineHqDiff')) { $BaselineHqDiff } else { 86 }
+    $regressions = @()
+    if ($sumA -lt $baseApplied) { $regressions += "应用 $sumA < 基线 $baseApplied" }
+    if ($sumL -gt $baseFail) { $regressions += "可归因人类失败 $sumL > 基线 $baseFail" }
+    if ($sumH -gt $baseHq) { $regressions += "④ 人类 HQ 差 $sumH > 基线 $baseHq" }
+    if ($regressions.Count -gt 0) {
+        Write-Host ""
+        Write-Host ("❌ 相对冻结基线退化：" + ($regressions -join '；')) -ForegroundColor Red
+        Write-Host "   （基线：应用 $baseApplied、失败 $baseFail、④ $baseHq。确认是净改善后再显式更新基线参数。）" -ForegroundColor Red
+        $script:GateFailed = $true
+    }
+    else {
+        Write-Host ("✅ 未相对冻结基线退化（应用 ≥{0}、失败 ≤{1}、④ ≤{2}）" -f $baseApplied, $baseFail, $baseHq) -ForegroundColor Green
+    }
 }
 finally {
     Pop-Location
 }
+if ($script:GateFailed) { exit 1 }

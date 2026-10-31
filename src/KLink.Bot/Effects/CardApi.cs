@@ -3319,6 +3319,66 @@ public sealed partial class CardApi
         }
     }
 
+    /// <summary>
+    /// 效果生成单位的**前置门**（蓝图 `SpawnCardToBoard` 在 `CreateCard` 之前的两道判据）。
+    ///
+    /// 为什么单独抽出来：这两道门在蓝图里排在 `CreateCard` **之前**（`BP_CardFunctions.g.cs`
+    /// → `SpawnCardToBoard`，本文件对应物 `SpawnOnBattlefield`）：
+    /// <code>
+    /// L_0099  FetchCardsByLocation(location, out qty, out isLocationFull, …)
+    /// L_00F0  location != 7 ?  → 非前线直接进公共判据
+    /// L_0437  （前线分支）GetFrontlineOwnerSide()
+    /// L_04BB  NotEqual(ownerSide, Switch(side, {0:0, 1:2, 2:1}))   ; 映射到 opposite(side)
+    /// L_051E  JumpIfNot L_0531                                     ; == opposite(side) ⇒ 到 L_0531
+    /// L_0531  DirectClientLogger("Trying to move a unit to frontline but frontline owned by the other side")
+    /// L_05A0  cardSpawnedID = 0                                    ; ★ 中止，连卡都不创建
+    /// L_011D  （公共判据）Not_PreBool(isLocationFull) || overrideCardID > 0
+    /// L_0182  JumpIfNot L_02DE                                     ; 满且无 override ⇒ 跳过创建
+    /// </code>
+    ///
+    /// ⚠️ **中止意味着「连 `CreateCard` 都不调」** —— 不是"先造出来再丢掉"。
+    /// 两者的差别是可观测的：造了再丢会**消耗一个卡号**、并派发 `OnCreateCard` /
+    /// `OnCardSpawnedInHand` 一类事件，而客户端这两件事都没发生 ⇒ 之后整条
+    /// 卡号序列与 RNG 游标一起错位。
+    ///
+    /// 实测缺口（2026-10-24，`replay-854099` `--board-trace`）：
+    /// `#75 t17 XActionStartOfTurn` 之后左半场显示 **6/5**（`card_unit_calliope#17001@5`）
+    /// —— 半场容量是 5（含 HQ，`GameState.HalfBoardCapacity`），一个真客户端
+    /// 永远不会出现 6/5。随后 `#79/#83 t17 PC` 被判「半场已满」而客户端打得出，
+    /// `#80/#90/#104/#111` 的移动/攻击又因为单位"在手牌里"被拒 ⇒ 单局 16 条人类失败。
+    ///
+    /// 批量路径（`DoSpawnMultipleOnBattlefield`）**早就有**这两道门
+    /// （`CardApiDispatch.cs` 的 `IsLocationFull` + `FrontlineOwner == side.Opposite()`），
+    /// 单张路径一直没有 —— 这就是两条路径口径不一致的地方。
+    /// </summary>
+    public bool CanSpawnOnBattlefield(Side side, bool frontline, out string reason)
+    {
+        reason = "";
+        CardLocation where = frontline ? CardLocation.BoardFrontline : side.HqOf();
+
+        if (frontline
+            && State.FrontlineOwner != Side.NotAvailable
+            && State.FrontlineOwner == side.Opposite())
+        {
+            reason = $"前线被对面占着（前线归属={State.FrontlineOwner}，生成方={side}）";
+            State.BenignTraces["<spawn-blocked-frontline-owned>"] =
+                State.BenignTraces.GetValueOrDefault("<spawn-blocked-frontline-owned>") + 1;
+            return false;
+        }
+
+        int capacity = frontline ? State.FrontlineCapacity : GameState.HalfBoardCapacity;
+        int count = State.Cards(side, where).Count();
+        if (count >= capacity)
+        {
+            reason = $"落点已满（{(frontline ? "前线" : "半场")} {count}/{capacity}）";
+            State.BenignTraces["<spawn-blocked-location-full>"] =
+                State.BenignTraces.GetValueOrDefault("<spawn-blocked-location-full>") + 1;
+            return false;
+        }
+
+        return true;
+    }
+
     /// <summary>把一张卡生成到战场（对应 `SpawnCardOnBattlefield`）。</summary>
     /// <param name="frontline">
     /// 落在**前线**（true）还是**半场**（false）—— 就是蓝图签名的第 2 个参数 `bool Frontline`
@@ -3328,6 +3388,12 @@ public sealed partial class CardApi
     /// <param name="locationNumber">
     /// 指定槽位；`-1`（IR 里 193/234 个调用点）表示"追加到队尾"。
     /// </param>
+    /// <remarks>
+    /// ⚠️ 本方法**不做**蓝图 `SpawnCardToBoard` 的两道前置门 —— 调用方必须先调
+    /// <see cref="CanSpawnOnBattlefield"/>（蓝图把门排在 `CreateCard` 之前，
+    /// 所以门不通过时连卡都不能创建）。保留这个分工是为了让"要不要生成"这件事
+    /// 在调用点显式可见，而不是被藏在生成函数里。
+    /// </remarks>
     public CardInstance SpawnOnBattlefield(Side side, string cardName,
                                            bool frontline = true,
                                            int locationNumber = -1,
