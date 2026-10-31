@@ -1,6 +1,6 @@
 {
   "date": "2026-11-01",
-  "batch": "spawn-hand-seen-receipt",
+  "batch": "spawn-hand-nonvisual-receipt",
   "counts": {
     "cards": 2019,
     "cards_with_own_ir": 1709,
@@ -12,8 +12,8 @@
     "program_containers": 2626,
     "dependency_edges": 18567,
     "dependency_symbols": 440,
-    "secondary_reports": 447,
-    "explicit_partial_units": 36,
+    "secondary_reports": 449,
+    "explicit_partial_units": 37,
     "partial_units_matching_bound_inputs": 1,
     "planning_work_domains": 14,
     "planning_acceptance_criteria": 42,
@@ -25,17 +25,17 @@
   "matrix_tests": 16,
   "production_changes": true,
   "csharp_tests": {
-    "targeted": 10,
-    "full": 1052,
-    "new_scenarios": 216,
+    "targeted": 11,
+    "full": 1053,
+    "new_scenarios": 1248,
     "before_regression_exit_code": 1,
     "after_exit_code": 0
   },
   "worker": {
-    "job_id": "20261101-014535-spawn-seen-b20bc548",
+    "job_id": "20261101-015752-nonvisual-0833cb41",
     "status": "completed",
-    "independently_checked": "Seven function inputs matched originals; primary checked CreateCard gate/constants/order, notifier, handler entry, original ubergraph12016 and builder fields."
+    "independently_checked": "All12 input functions matched originals; primary checked original ubergraph12562 and receipt ordering/gates. Rejected inconsistent worker missing-body claim."
   },
-  "input_scope": "HEAD plus ordinary spawn seen receipt fix, registration and new regression; tracked snapshot src/BotSim verified. Old fingerprints preserved; no version equivalence claim.",
-  "generation_git_head": "8c923bb2c7d33a21e8e0067fbe0512caf958c612"
+  "input_scope": "HEAD plus scoped ordinary nonvisual hand-allocation receipt and regression. Clean snapshot sources checked; LF-normalized source fingerprints; old bindings preserved.",
+  "generation_git_head": "52795e14a8013691d9e074c0a4b91a74f451d54c"
 }

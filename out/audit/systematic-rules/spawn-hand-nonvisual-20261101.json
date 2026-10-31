@@ -1,0 +1,57 @@
+{
+  "rule": "RULE-553",
+  "scope": "Ordinary SpawnCardInHand nonvisual allocation receipt",
+  "authority_sources": {
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.functions.json": "b007f0f5689d266cdccee220f164db12582d3893c76a087228dd3ac55836f297",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Logic\\U_CardFunctionsNotifier.functions.json": "e4acd16b57b7a1da30780ecbf598c4d177b7e2d57a27dbb04c269bba9f6e1c94",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Logic\\BP_OnlineMatch.functions.json": "630b523c5a575d1aa956aba41eea8c22a19bf20b6546ffa0a03ad122d73ffe98"
+  },
+  "client_exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "raw_functions": "out/audit/systematic-rules/spawn-hand-nonvisual-20261101-functions.json",
+  "raw_functions_sha256": "29f4c770d14757a5b4109a244520b9d6ab4b86ee5f38515c0b515e0d4b640bfc",
+  "authority_chain": [
+    "CreateCardObject2610 own OnCreateCard precedes return; CreateCard295/381 captures object,400 assigns requested cardSeen,945 notifies before veteran990 and T35 at1036.",
+    "CreateCard441/464 IsActionProcess,478 skipAction gates notification. Simulator ordinary action path only; no broad gate certification.",
+    "Notifier0 forwards to HandleCreateNonVisualCard; handler18 enters ubergraph12562;12562 calls builder and12585 pops.",
+    "Builder509 orders cardID, location, locationNumber, side, card_type, gold.601/654 gates optional salvageFaction on enum !=0;840 appends and668 emits ZActionCreateNonVisualCard.",
+    "Factories encode integer/bool in value with empty text, strings with value=-1. Location/side/faction use enum friendly-name conversion."
+  ],
+  "defect": "Ordinary generated hand allocation omitted ZActionCreateNonVisualCard.",
+  "fix": "Emit live post-own-callback fields after requested seen assignment and before creation modifiers; optional salvage faction independent of isSalvaged.",
+  "regression": {
+    "new_scenarios": 1248,
+    "dimensions": [
+      "2 sides",
+      "2 gold",
+      "13 factions",
+      "2 seen",
+      "3 own callback mutation modes",
+      "2 T35 mutation modes",
+      "2 fullness states"
+    ],
+    "before_exit_code": 1,
+    "targeted_tests": 11,
+    "full_tests": 1053,
+    "after_exit_code": 0,
+    "logs": {
+      "out/audit/systematic-rules/spawn-hand-nonvisual-before-20261101.txt": "6dd473f7701d3bce455e3e9168df41076eb84f78007c3cda60aaaf4d8211cbc7",
+      "out/audit/systematic-rules/spawn-hand-nonvisual-targeted-20261101.txt": "eac6908d2eec5c6f3108de3514b331b8e30788a2a105b192661d81926625771a",
+      "out/audit/systematic-rules/spawn-hand-nonvisual-full-20261101.txt": "605c5a27bd5cf5c33fd6b8c77b13a007e35f8e8d669ea64e817389b0d1925f35"
+    },
+    "control": "Direct GameState.Create does not gain ordinary receipt; later T35 mutations do not rewrite emitted payload."
+  },
+  "deepseek": {
+    "job": "20261101-015752-nonvisual-0833cb41",
+    "status": "completed",
+    "result_sha256": "b9745d8d56f3bd41d65b31ac22818b7d8ec7822800ba9f43f69214f51efdc342",
+    "verification": "All12 packet functions structurally matched originals. Primary checked notifier/handler and original ubergraph slice, builder ordering/gates and factories.",
+    "correction": "Reject worker unknown claiming NotifyCreateNonVisualCard body absent: present in packet and in its own notifyChain. Primary interprets Let assignment convention; worker caveat is not evidence of missing direction.",
+    "role": "Mechanical extraction only; primary interpretation/integration/publishing."
+  },
+  "validation_environment": "Clean snapshot: 123 tracked src/BotSim files verified against HEAD except scoped CardApi/SelfTest, plus new regression. Matching Release Data guard retained.",
+  "remaining": [
+    "Only ordinary SpawnCardInHand path. Other allocation callers, salvage integration, action-process/skip branches and remote consumption remain open.",
+    "Existing enum mapping reused. Native friendly formatting, invalid or noncanonical faction inputs and parsed-pak/current-client version equivalence are not newly certified.",
+    "Synthetic callback mutations verify boundary behavior, not actual-game reachability. No complete CreateCard, per-card or full PvP certification."
+  ]
+}

@@ -1,0 +1,8 @@
+卡牌数据: 2019 张，卡组码映射: 2499 条
+蓝图 IR: 1709 张卡可解释
+手写效果脚本: 0 张，触发脚本: 0 条
+
+  ❌ 手牌生成对象通知：自身创建后T35前、实时字段快照与可选打捞阵营
+       非可视生成通知错误：Left/gold=False/faction=0/seen=False/own=0/T35=False/full=False/correct=False/receipts=0
+
+1/1 项失败

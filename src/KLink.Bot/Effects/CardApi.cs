@@ -3575,7 +3575,8 @@ public sealed partial class CardApi
         int initialSlot = CountCardsForHandCapacity(side.HandOf());
         bool wasFull = initialSlot >= GameState.HandCapacity;
         var card = State.Create(cardName, side, side.HandOf(), initialSlot,
-            isGold: isGold, isSalvaged: isSalvaged, salvageFaction: salvageFaction, cardSeenBeforeModifiers: cardSeen);
+            isGold: isGold, isSalvaged: isSalvaged, salvageFaction: salvageFaction, cardSeenBeforeModifiers: cardSeen,
+            beforeCreationModifiers: NotifyCreateNonVisualCard);
         // CreateCard i=2130/2767/2809/2880 queries again after T35, before
         // the saved-fullness discard. Autoplay and moved cards are excluded.
         int quantity = CountCardsForHandCapacity(side.HandOf());
@@ -3607,6 +3608,26 @@ public sealed partial class CardApi
         // i=2592..2721 re-reads both hand location and autoplay after own/T57.
         if (IsLocatedInHand(card) && HasInstanceGameplayTag(card, "autoplay")) State.AddAutoPlayCards(card.CardId);
         return card;
+    }
+
+    private void NotifyCreateNonVisualCard(CardInstance card)
+    {
+        // Ordinary CreateCard i=945 follows own OnCreate/cardSeen assignment,
+        // before veteran/T35. The builder reads the live object, not the request.
+        Blueprint.LiveRuleTables.TryGetEnumName("/Script/kards.ECardLocationEnum", (int)card.Location, out string location);
+        Blueprint.LiveRuleTables.TryGetEnumName("/Script/kards.ESideEnum", (int)card.Owner, out string side);
+        var values = new List<ActionValue2>
+        {
+            ActionValue2.Int("cardID", card.CardId), ActionValue2.Str("location", location),
+            ActionValue2.Int("locationNumber", card.LocationNumber), ActionValue2.Str("side", side),
+            ActionValue2.Str("card_type", card.Name), ActionValue2.Bool("gold", card.IsGold)
+        };
+        // AddSubActionCreateNonVisualCard i=601/654 gates on salvageFaction != 0,
+        // independently of isSalvaged. Managed cards store this enum as name/ID.
+        int faction = int.TryParse(card.SalvageFaction, out int id) ? id : KLink.Bot.Cards.CardDatabase.FactionIdOf(card.SalvageFaction);
+        if (faction != 0 && Blueprint.LiveRuleTables.TryGetEnumName("/Script/KardsCore.EFactionEnum", faction, out string factionName))
+            values.Add(ActionValue2.Str("salvageFaction", factionName));
+        _engine.FireSubAction("ZActionCreateNonVisualCard", values);
     }
 
     /// <summary>

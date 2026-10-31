@@ -8161,6 +8161,37 @@
         "Deck-draw complete schema, salvage/other allocation entry points, remote receipt consumption and complete CreateCard closure remain separate.",
         "No per-card certification, parsed-pak/installed-EXE version equivalence, native array wire-format roundtrip or complete PvP restoration claim."
       ]
+    },
+    {
+      "id": "RULE-553/SpawnCardInHand/nonvisual-receipt",
+      "symbol": "SpawnCardInHand",
+      "modes": [
+        null
+      ],
+      "status": "partial",
+      "validated_scope": "普通生成手牌对象通知：自身创建后/T35前实时字段，六字段顺序及可选阵营；1248合成场景。非完整创建或逐卡认证。",
+      "report": "out/audit/systematic-rules/spawn-hand-nonvisual-20261101.json",
+      "report_sha256": "a248ce300ce416409bc1af6c07cce4a73b0c2fee6cfa224d8cb0e49ae2922b0a",
+      "client_exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+      "source_bindings": {
+        "src/KLink.Bot/Effects/CardApi.cs": "53cf7a7fa0ca9ee1a1cb9ee3b3528fcee23fb60646740cb6a2d62bbca1a7be1d",
+        "src/KLink.Bot/Engine/GameState.cs": "4de9bc66ae9e38684d129778cc7e220ba43e25205c7b9920b5e1b0aa2a31f143",
+        "src/KLink.Bot/Effects/CardApiDispatch.cs": "b9f8fa7019ab5fbb1fa44117f697b419f7b7fb91de5e936910e68ef7d6eb9e12",
+        "src/KLink.Bot/Effects/Blueprint/LiveRuleTables.cs": "7025627d5468560844447b823a6a39df6d187f51f2fa7a187f9c3eb6c3b492ea",
+        "src/KLink.Bot/Cards/CardDatabase.cs": "2bbeccb2d52480c0b7385a452997dfe4a482474e70f2decea229c3a4a1d3c6e4",
+        "tools/BotSim/SelfTest.cs": "2ee267bccdd7538caba5ef8c81063572d538921ad28f0e09e094675718ed0c0d",
+        "tools/BotSim/SelfTest.SpawnHandNonVisualReceipt.cs": "130a4664e1672066f56f5634db6bf5c89aba79c8f8f4f0d9ca4695e44aa2367b"
+      },
+      "evidence_bindings": {
+        "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.functions.json": "b007f0f5689d266cdccee220f164db12582d3893c76a087228dd3ac55836f297",
+        "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Logic\\U_CardFunctionsNotifier.functions.json": "e4acd16b57b7a1da30780ecbf598c4d177b7e2d57a27dbb04c269bba9f6e1c94",
+        "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Logic\\BP_OnlineMatch.functions.json": "630b523c5a575d1aa956aba41eea8c22a19bf20b6546ffa0a03ad122d73ffe98"
+      },
+      "limitations": [
+        "Only ordinary SpawnCardInHand path. Other allocation callers, salvage integration, action-process/skip branches and remote consumption remain open.",
+        "Existing enum mapping reused. Native friendly formatting, invalid or noncanonical faction inputs and parsed-pak/current-client version equivalence are not newly certified.",
+        "Synthetic callback mutations verify boundary behavior, not actual-game reachability. No complete CreateCard, per-card or full PvP certification."
+      ]
     }
   ],
   "scope_reviews": {},
@@ -8204,7 +8235,7 @@
       "id": "RULE-SPAWN-BOUNDARY",
       "title": "生成边界",
       "status": "open",
-      "scope": "相邻缺来源/无效控制方/默认位置；共享满位置/overrideCardID及完整分配通知。 RULE-550已修复普通手牌生成默认初始槽位的物理计数/autoplay边界；完整创建通知及其他分配入口继续开放。 RULE-551：普通生成手牌抽牌通知及显式来源/文本/标志已局部修复；非可视创建、公开、远端接收及完整创建边界仍开放。 RULE-552：普通生成手牌公开通知的请求参数门和事件前顺序已局部修复；非可视对象创建及远端接收仍开放。",
+      "scope": "相邻缺来源/无效控制方/默认位置；共享满位置/overrideCardID及完整分配通知。 RULE-550已修复普通手牌生成默认初始槽位的物理计数/autoplay边界；完整创建通知及其他分配入口继续开放。 RULE-551：普通生成手牌抽牌通知及显式来源/文本/标志已局部修复；非可视创建、公开、远端接收及完整创建边界仍开放。 RULE-552：普通生成手牌公开通知的请求参数门和事件前顺序已局部修复；非可视对象创建及远端接收仍开放。 RULE-553：普通生成手牌非可视对象创建通知已局部修复；其他分配入口、动作门及远端消费仍开放。",
       "source": "primary reviewed matrix bootstrap; not exhaustive defect inventory"
     },
     {
