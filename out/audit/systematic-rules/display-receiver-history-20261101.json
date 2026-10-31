@@ -1,0 +1,10 @@
+{
+  "capture_utc": "2026-10-24T14:27:58.199608+00:00",
+  "source": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule389-online-receiver-links-20261024.json",
+  "source_sha256": "65bba2a85e8e79ed8153b21f7585e24ef1af13835fb73624c624fd93dee67325",
+  "capture_script_sha256": "16d7d86063d09b33f16c9bfbff2c0bb721f3855514858cf5130bb2d6c0a586b2",
+  "worker_job": "20261101-005527-receiver-boundary-268e5b3d",
+  "independently_checked": "5 class/header/index/item/CDO checks; 9 property offsets; all stored pointer words; 7 cross-object reference equalities",
+  "actual_invocation_proven": false,
+  "current_version_proven": false
+}

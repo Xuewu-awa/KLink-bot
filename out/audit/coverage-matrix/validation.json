@@ -1,6 +1,6 @@
 {
   "date": "2026-11-01",
-  "batch": "display-consumer-boundaries",
+  "batch": "display-runtime-bindings",
   "counts": {
     "cards": 2019,
     "cards_with_own_ir": 1709,
@@ -12,7 +12,7 @@
     "program_containers": 2626,
     "dependency_edges": 18567,
     "dependency_symbols": 440,
-    "secondary_reports": 437,
+    "secondary_reports": 440,
     "explicit_partial_units": 33,
     "partial_units_matching_bound_inputs": 0,
     "planning_work_domains": 14,
@@ -26,12 +26,14 @@
   "consumer_boundary_tests": 12,
   "report_regeneration": "Byte-identical from staged publication snapshot",
   "production_changes": false,
-  "csharp_tests": "Not rerun: this batch changes audit tools and evidence only.",
+  "csharp_tests": "Audit exporter compiled and executed against clean publication source snapshot; 11 programs and 2 actual VM call sites. No full production selftest rerun: production sources unchanged.",
   "worker": {
-    "job_id": "20261101-004725-display-boundary-a784d824",
+    "job_id": "20261101-005527-receiver-boundary-268e5b3d",
     "status": "completed",
-    "independently_checked": "Four function identities; 17 exact call statement/inst/name/path tuples; 45 writes and zero delegate instructions. Main agent separately checked ubergraph entry12721."
+    "independently_checked": "Historical 5 object headers/class/index/item/CDO checks, 9 offsets, pointer-byte decodes and cross-object reference links. No actual client interface invocation proven."
   },
   "input_scope": "Staged exact registry scope and new tools/reports only; unrelated working edits excluded. No stale fingerprints refreshed.",
-  "generation_git_head": "efffc2ee618a3f2ac0870151571de9f2e68c4ada"
+  "generation_git_head": "a9235d61adee415b7876f43b120d6b80e135c6b3",
+  "runtime_binding_tests": 14,
+  "display_site_tests": 10
 }

@@ -1,0 +1,108 @@
+{
+  "schema": "display-runtime-binding-audit/v1",
+  "export_sha256": "abb88e56ba50afbddea3b4362d5c4fcf5786723b7e5a72dc892c4e3928c946eb",
+  "ir_sha256": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b",
+  "library_assembly_sha256": "c2f26291dfe15a40a4a065704e517e071e44c22d0c0bd955e471cae324c54ba6",
+  "source_bindings": {
+    "tools/classify-display-call-sites.py": "eb219f67fd19e954a791743d355514bd66041bff2288903e89e4f5333045a3c4",
+    "tools/test-display-call-sites.py": "3e48f585b03ff50e73dd42465478c5af8fe169a3a098264d9a1296e1c1c96ad9",
+    "klink bot/tools/audit-four-display-flows.py": "f6044537ad1291d963bb9a7be6e28b8414d485a6e6264ca0568a74f2a3b47481",
+    "src/KLink.Bot/Effects/Blueprint/KismetIr.cs": "71e90c36a8c54b36d99d0c014b637c55cd5f1dab4369c17880b84aa2c02fefc0",
+    "src/KLink.Bot/Effects/Blueprint/KismetVm.cs": "0c7e9cf2ad2046a7d988bb21324134f0d53e163e887c7c089c92999e144a8b20",
+    "src/KLink.Bot/Effects/Blueprint/KismetMissingCallSites.cs": "a768257cc2cc9216d67d24c6af8bbb6d8f201138c3b2321e32e8cb309b06cf51",
+    "src/KLink.Bot/Effects/CardApi.cs": "9897f26bd0e94138f390ad2aaae9367414034fa831fe8d8fdc175de9f53855ac",
+    "src/KLink.Bot/Effects/CardApiDispatch.cs": "8f055397bfdbd45d4d2fdebded5e0482d5fa3d96862478b94fcdf0926191cf67",
+    "tools/DisplayProgramAudit/Program.cs": "5c29627a336b5fbcdac4566a57f70d20c295bd28088bd01ac631d6274c5c09f2",
+    "tools/DisplayProgramAudit/DisplayProgramAudit.csproj": "ea94227ade0f4f89fb101bf268b3058bbed75a43b70e1a4651148f1b700f996a",
+    "tools/bind-display-runtime-programs.py": "81001b85d0141f3d4e3fef1aa7094ca4ff1885f54cf862e913f3198ff615dde5",
+    "tools/test-display-runtime-bindings.py": "1d37c7c2f03209225a97ecc3685e769338b12483a6c989fc67a328791f10e039",
+    "src/KLink.Bot/Effects/Blueprint/KismetNativeDefaults.cs": "07f82fce7697c8654b123a1583c46470cbebdf27c94acc7a9716de4124f3009d"
+  },
+  "summary": {
+    "reviewed_source_sites": 5,
+    "rebuilt_programs": 11,
+    "program_site_bindings": 5,
+    "observed_vm_sites": 2,
+    "admission_exempt_sites": 0
+  },
+  "bindings": [
+    {
+      "asset": "card_event_seize_the_initiative",
+      "function": "OnPlayedFromHand",
+      "container": "steps",
+      "source_entry": 15,
+      "program_entry": -1000000,
+      "instruction": 684,
+      "byte_offset": 684,
+      "expression_path": "src",
+      "missing_key": "math:Format",
+      "runtime_program_sha256": "bc0daba7238f6cded094df23b5de6ca24b34e01839708368c5c54b93ad7ca669",
+      "hash_schema": "kismet-program-json/v1",
+      "admission_exempt": false
+    },
+    {
+      "asset": "card_event_carrier_battle",
+      "function": "OnPlayedFromHand",
+      "container": "steps",
+      "source_entry": 15,
+      "program_entry": -1000000,
+      "instruction": 680,
+      "byte_offset": 680,
+      "expression_path": "src",
+      "missing_key": "math:Format",
+      "runtime_program_sha256": "c72a1b2af9f1f1e135094fecd5a021107da8973ebefb2fb77271844b0d0d21be",
+      "hash_schema": "kismet-program-json/v1",
+      "admission_exempt": false
+    },
+    {
+      "asset": "card_unit_115th_separate_btn",
+      "function": "OnEndOfTurn",
+      "container": "steps",
+      "source_entry": 1761,
+      "program_entry": -1000000,
+      "instruction": 2725,
+      "byte_offset": 2725,
+      "expression_path": "src",
+      "missing_key": "math:Format",
+      "runtime_program_sha256": "6d728049a619da4dbd4ef9204624796cef7b0fbb9156493e02cddd1b29757e3a",
+      "hash_schema": "kismet-program-json/v1",
+      "admission_exempt": false
+    },
+    {
+      "asset": "card_unit_75th_rifle_regiment",
+      "function": "SpawnCopy",
+      "container": "SpawnCopy",
+      "source_entry": 0,
+      "program_entry": 0,
+      "instruction": 0,
+      "byte_offset": 0,
+      "expression_path": "src",
+      "missing_key": "math:GetDisplayName",
+      "runtime_program_sha256": "1daca20ca2dcc7e0132f18fad9bec41059892acbe34b0414d14dd8019cf103b1",
+      "hash_schema": "kismet-program-json/v1",
+      "admission_exempt": false
+    },
+    {
+      "asset": "card_unit_75th_rifle_regiment",
+      "function": "SpawnCopy",
+      "container": "SpawnCopy",
+      "source_entry": 0,
+      "program_entry": 0,
+      "instruction": 90,
+      "byte_offset": 122,
+      "expression_path": "$",
+      "missing_key": "math:PrintString",
+      "runtime_program_sha256": "1daca20ca2dcc7e0132f18fad9bec41059892acbe34b0414d14dd8019cf103b1",
+      "hash_schema": "kismet-program-json/v1",
+      "admission_exempt": false
+    }
+  ],
+  "limitations": [
+    "C# loader prunes event bodies and adds synthetic dispatch; exact event bindings do not prove client reachability or execution of the Format sites.",
+    "Only the two SpawnCopy sites were observed in a disposable simulator; this is not a client-memory invocation trace.",
+    "Hash verifies exported bytes and exact sites, not trusted export generation, native equivalence or whole-card correctness.",
+    "Assembly identity and source fingerprints record this build scope; rerun the C# exporter after any loader/VM/source change.",
+    "No admission exemption is installed, even when every binding matches.",
+    "Historical receiver links establish references only; interface invocation, subclass dispatch, scheduling and version equivalence remain open."
+  ]
+}
