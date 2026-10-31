@@ -1,0 +1,683 @@
+{
+  "schema_version": 1,
+  "report_kind": "dynamic_text_headless_boundary",
+  "authority": {
+    "ir": "D:\\Codex Workshop\\KLink-bot\\klink bot\\docs\\card-ir.json",
+    "sdk_root": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\ue4ss\\CXXHeaderDump",
+    "replays_used": false,
+    "interpretation": "IR and SDK are evidence; this report does not certify complete native or inherited Blueprint equivalence."
+  },
+  "inputs": {
+    "ir_sha256": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b",
+    "sdk": {
+      "BP_CardFunctions.hpp": {
+        "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\ue4ss\\CXXHeaderDump\\BP_CardFunctions.hpp",
+        "sha256": "1caffda9a9ed12069b5dba073cd1db9e0bf1d128f61d3f083f51e9897ed6801d",
+        "present": true
+      },
+      "BP_OnlineMatch.hpp": {
+        "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\ue4ss\\CXXHeaderDump\\BP_OnlineMatch.hpp",
+        "sha256": "05bad928b7c03d99d5c769edd437948a032bcb1b3032247df85f8640607aefee",
+        "present": true
+      },
+      "U_CardFunctionsNotifier.hpp": {
+        "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\ue4ss\\CXXHeaderDump\\U_CardFunctionsNotifier.hpp",
+        "sha256": "6baccae157278c851305bbbc36228a7ec40272f7f13662d7b56d13be901ef3eb",
+        "present": true
+      },
+      "BP_VisualController.hpp": {
+        "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\ue4ss\\CXXHeaderDump\\BP_VisualController.hpp",
+        "sha256": "0d420dfe6bb45e45e259006937a58051683a8f1ab9a67f343b86d89c788058b2",
+        "present": true
+      },
+      "kards.hpp": {
+        "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\ue4ss\\CXXHeaderDump\\kards.hpp",
+        "sha256": "f8039a5583a5db8be8c73470418b5b94f6cc1e856d402ffd75403c0fa8a2ac78",
+        "present": true
+      }
+    }
+  },
+  "ir_counts": {
+    "cards": 1709,
+    "SpawnCardInHandBySide": 232,
+    "AddNumberToText": 32,
+    "UpdateCardText": 0,
+    "AppendNumberToCardText": 0,
+    "math:Format": 57,
+    "math:PrintString": 2
+  },
+  "spawn_argument_invariants": {
+    "new_card_text_literal_empty_count": 230,
+    "new_card_text_dynamic_or_unresolved_count": 2,
+    "new_card_text_all_empty_string": false,
+    "skip_draw_animation_all_false": true,
+    "from_opposite_side_all_false": true,
+    "dynamic_or_unresolved_new_card_text_rows": [
+      {
+        "card": "card_event_seize_the_initiative",
+        "program": null,
+        "entry_or_local": null,
+        "path": [
+          "steps",
+          24
+        ],
+        "source": {
+          "var": "CallFunc_Conv_TextToString_ReturnValue",
+          "scope": "local"
+        },
+        "classification": "variable-derived; exact formatted string is not preserved by the IR"
+      },
+      {
+        "card": "card_event_carrier_battle",
+        "program": null,
+        "entry_or_local": null,
+        "path": [
+          "steps",
+          24
+        ],
+        "source": {
+          "var": "CallFunc_Conv_TextToString_ReturnValue",
+          "scope": "local"
+        },
+        "classification": "variable-derived; exact formatted string is not preserved by the IR"
+      }
+    ],
+    "non_empty_new_card_text_rows": [
+      {
+        "card": "card_event_seize_the_initiative",
+        "program": null,
+        "entry_or_local": null,
+        "path": [
+          "steps",
+          24
+        ],
+        "step": {
+          "op": "call",
+          "fn": "SpawnCardInHandBySide",
+          "args": [
+            {
+              "var": "CallFunc_GetOppositeSide_oppositeSide",
+              "scope": "local"
+            },
+            {
+              "name": "card_event_seize_the_initiative"
+            },
+            {
+              "var": "cardID",
+              "scope": "instance"
+            },
+            {
+              "bool": true
+            },
+            {
+              "bool": false
+            },
+            {
+              "bool": false
+            },
+            {
+              "var": "CallFunc_Conv_TextToString_ReturnValue",
+              "scope": "local"
+            },
+            {
+              "var": "Temp_text_Variable",
+              "scope": "local"
+            },
+            {
+              "int": 0
+            },
+            {
+              "var": "CallFunc_SpawnCardinHandbySide_spawnedCardID",
+              "scope": "local"
+            }
+          ],
+          "outs": [],
+          "recv": {
+            "var": "cardFunction",
+            "scope": "instance"
+          },
+          "i": 801,
+          "bo": 801
+        },
+        "args": {
+          "side": {
+            "var": "CallFunc_GetOppositeSide_oppositeSide",
+            "scope": "local"
+          },
+          "card_name": {
+            "name": "card_event_seize_the_initiative"
+          },
+          "spawner_id": {
+            "var": "cardID",
+            "scope": "instance"
+          },
+          "card_seen": {
+            "bool": true
+          },
+          "skip_draw_animation": {
+            "bool": false
+          },
+          "from_opposite_side": {
+            "bool": false
+          },
+          "new_card_text": {
+            "var": "CallFunc_Conv_TextToString_ReturnValue",
+            "scope": "local"
+          },
+          "campaign_name": {
+            "var": "Temp_text_Variable",
+            "scope": "local"
+          },
+          "salvage_faction": {
+            "int": 0
+          }
+        }
+      },
+      {
+        "card": "card_event_carrier_battle",
+        "program": null,
+        "entry_or_local": null,
+        "path": [
+          "steps",
+          24
+        ],
+        "step": {
+          "op": "call",
+          "fn": "SpawnCardInHandBySide",
+          "args": [
+            {
+              "var": "CallFunc_GetOppositeSide_oppositeSide",
+              "scope": "local"
+            },
+            {
+              "name": "card_event_carrier_battle"
+            },
+            {
+              "var": "cardID",
+              "scope": "instance"
+            },
+            {
+              "bool": true
+            },
+            {
+              "bool": false
+            },
+            {
+              "bool": false
+            },
+            {
+              "var": "CallFunc_Conv_TextToString_ReturnValue",
+              "scope": "local"
+            },
+            {
+              "var": "Temp_text_Variable",
+              "scope": "local"
+            },
+            {
+              "int": 0
+            },
+            {
+              "var": "CallFunc_SpawnCardinHandbySide_spawnedCardID",
+              "scope": "local"
+            }
+          ],
+          "outs": [],
+          "recv": {
+            "var": "cardFunction",
+            "scope": "instance"
+          },
+          "i": 791,
+          "bo": 791
+        },
+        "args": {
+          "side": {
+            "var": "CallFunc_GetOppositeSide_oppositeSide",
+            "scope": "local"
+          },
+          "card_name": {
+            "name": "card_event_carrier_battle"
+          },
+          "spawner_id": {
+            "var": "cardID",
+            "scope": "instance"
+          },
+          "card_seen": {
+            "bool": true
+          },
+          "skip_draw_animation": {
+            "bool": false
+          },
+          "from_opposite_side": {
+            "bool": false
+          },
+          "new_card_text": {
+            "var": "CallFunc_Conv_TextToString_ReturnValue",
+            "scope": "local"
+          },
+          "campaign_name": {
+            "var": "Temp_text_Variable",
+            "scope": "local"
+          },
+          "salvage_faction": {
+            "int": 0
+          }
+        }
+      }
+    ],
+    "non_default_skip_draw_rows": [],
+    "non_default_from_opposite_side_rows": []
+  },
+  "print_string_occurrences": [
+    {
+      "card": "card_location_german_scen5",
+      "program": null,
+      "entry_or_local": null,
+      "path": [
+        "steps",
+        77
+      ],
+      "instruction": 3203,
+      "classification": "diagnostic/logging-only candidate; no gameplay output slot"
+    },
+    {
+      "card": "card_unit_75th_rifle_regiment",
+      "program": "locals",
+      "entry_or_local": "SpawnCopy",
+      "path": [
+        "locals",
+        "SpawnCopy",
+        2
+      ],
+      "instruction": 90,
+      "classification": "diagnostic/logging-only candidate; no gameplay output slot"
+    }
+  ],
+  "dynamic_display_calls": [
+    {
+      "card": "card_unit_the_silent_seventh",
+      "program": null,
+      "entry_or_local": null,
+      "path": [
+        "steps",
+        36
+      ],
+      "instruction": 1161,
+      "function": "AddNumberToText"
+    },
+    {
+      "card": "card_unit_panzer_iii_j_late",
+      "program": null,
+      "entry_or_local": null,
+      "path": [
+        "steps",
+        21
+      ],
+      "instruction": 845,
+      "function": "AddNumberToText"
+    },
+    {
+      "card": "card_event_claim_objective",
+      "program": null,
+      "entry_or_local": null,
+      "path": [
+        "steps",
+        28
+      ],
+      "instruction": 833,
+      "function": "AddNumberToText"
+    },
+    {
+      "card": "card_unit_182_landwehr",
+      "program": null,
+      "entry_or_local": null,
+      "path": [
+        "steps",
+        19
+      ],
+      "instruction": 544,
+      "function": "AddNumberToText"
+    },
+    {
+      "card": "card_unit_panther_a_zimm",
+      "program": null,
+      "entry_or_local": null,
+      "path": [
+        "steps",
+        9
+      ],
+      "instruction": 531,
+      "function": "AddNumberToText"
+    },
+    {
+      "card": "card_unit_144th_infantry_regiment",
+      "program": null,
+      "entry_or_local": null,
+      "path": [
+        "steps",
+        3
+      ],
+      "instruction": 180,
+      "function": "AddNumberToText"
+    },
+    {
+      "card": "card_unit_144th_infantry_regiment",
+      "program": null,
+      "entry_or_local": null,
+      "path": [
+        "steps",
+        27
+      ],
+      "instruction": 1053,
+      "function": "AddNumberToText"
+    },
+    {
+      "card": "card_event_duty_bound",
+      "program": null,
+      "entry_or_local": null,
+      "path": [
+        "steps",
+        8
+      ],
+      "instruction": 415,
+      "function": "AddNumberToText"
+    },
+    {
+      "card": "card_event_duty_bound",
+      "program": null,
+      "entry_or_local": null,
+      "path": [
+        "steps",
+        16
+      ],
+      "instruction": 788,
+      "function": "AddNumberToText"
+    },
+    {
+      "card": "card_event_diplomatic_attache",
+      "program": null,
+      "entry_or_local": null,
+      "path": [
+        "steps",
+        20
+      ],
+      "instruction": 1031,
+      "function": "AddNumberToText"
+    },
+    {
+      "card": "card_event_diplomatic_attache",
+      "program": null,
+      "entry_or_local": null,
+      "path": [
+        "steps",
+        30
+      ],
+      "instruction": 1507,
+      "function": "AddNumberToText"
+    },
+    {
+      "card": "card_event_one_roof",
+      "program": null,
+      "entry_or_local": null,
+      "path": [
+        "steps",
+        11
+      ],
+      "instruction": 504,
+      "function": "AddNumberToText"
+    },
+    {
+      "card": "card_event_one_roof",
+      "program": null,
+      "entry_or_local": null,
+      "path": [
+        "steps",
+        25
+      ],
+      "instruction": 1034,
+      "function": "AddNumberToText"
+    },
+    {
+      "card": "card_event_shinyo_motorboats",
+      "program": null,
+      "entry_or_local": null,
+      "path": [
+        "steps",
+        5
+      ],
+      "instruction": 188,
+      "function": "AddNumberToText"
+    },
+    {
+      "card": "card_event_uprising",
+      "program": null,
+      "entry_or_local": null,
+      "path": [
+        "steps",
+        22
+      ],
+      "instruction": 727,
+      "function": "AddNumberToText"
+    },
+    {
+      "card": "card_event_uprising",
+      "program": null,
+      "entry_or_local": null,
+      "path": [
+        "steps",
+        58
+      ],
+      "instruction": 1816,
+      "function": "AddNumberToText"
+    },
+    {
+      "card": "card_unit_iron_division",
+      "program": null,
+      "entry_or_local": null,
+      "path": [
+        "steps",
+        15
+      ],
+      "instruction": 609,
+      "function": "AddNumberToText"
+    },
+    {
+      "card": "card_event_reserves",
+      "program": null,
+      "entry_or_local": null,
+      "path": [
+        "steps",
+        32
+      ],
+      "instruction": 1273,
+      "function": "AddNumberToText"
+    },
+    {
+      "card": "card_event_reserves",
+      "program": null,
+      "entry_or_local": null,
+      "path": [
+        "steps",
+        40
+      ],
+      "instruction": 1642,
+      "function": "AddNumberToText"
+    },
+    {
+      "card": "card_unit_190th_guard_rifles",
+      "program": null,
+      "entry_or_local": null,
+      "path": [
+        "steps",
+        22
+      ],
+      "instruction": 788,
+      "function": "AddNumberToText"
+    },
+    {
+      "card": "card_unit_115th_separate_btn",
+      "program": null,
+      "entry_or_local": null,
+      "path": [
+        "steps",
+        1
+      ],
+      "instruction": 40,
+      "function": "AddNumberToText"
+    },
+    {
+      "card": "card_unit_115th_separate_btn",
+      "program": null,
+      "entry_or_local": null,
+      "path": [
+        "steps",
+        72
+      ],
+      "instruction": 2810,
+      "function": "AddNumberToText"
+    },
+    {
+      "card": "card_unit_38th_guards_rifles",
+      "program": null,
+      "entry_or_local": null,
+      "path": [
+        "steps",
+        1
+      ],
+      "instruction": 40,
+      "function": "AddNumberToText"
+    },
+    {
+      "card": "card_unit_38th_guards_rifles",
+      "program": null,
+      "entry_or_local": null,
+      "path": [
+        "steps",
+        22
+      ],
+      "instruction": 799,
+      "function": "AddNumberToText"
+    },
+    {
+      "card": "card_unit_392nd_rifles",
+      "program": "locals",
+      "entry_or_local": "OnCardDealDamage",
+      "path": [
+        "locals",
+        "OnCardDealDamage",
+        17
+      ],
+      "instruction": 578,
+      "function": "AddNumberToText"
+    },
+    {
+      "card": "card_unit_cyclone_division",
+      "program": null,
+      "entry_or_local": null,
+      "path": [
+        "steps",
+        22
+      ],
+      "instruction": 745,
+      "function": "AddNumberToText"
+    },
+    {
+      "card": "card_unit_133rd_ironman",
+      "program": null,
+      "entry_or_local": null,
+      "path": [
+        "steps",
+        5
+      ],
+      "instruction": 204,
+      "function": "AddNumberToText"
+    },
+    {
+      "card": "card_unit_133rd_ironman",
+      "program": null,
+      "entry_or_local": null,
+      "path": [
+        "steps",
+        31
+      ],
+      "instruction": 1298,
+      "function": "AddNumberToText"
+    },
+    {
+      "card": "card_unit_103rd_cavalry_recon",
+      "program": null,
+      "entry_or_local": null,
+      "path": [
+        "steps",
+        25
+      ],
+      "instruction": 688,
+      "function": "AddNumberToText"
+    },
+    {
+      "card": "card_unit_103rd_cavalry_recon",
+      "program": null,
+      "entry_or_local": null,
+      "path": [
+        "steps",
+        43
+      ],
+      "instruction": 1255,
+      "function": "AddNumberToText"
+    },
+    {
+      "card": "card_unit_tropic_lightning",
+      "program": null,
+      "entry_or_local": null,
+      "path": [
+        "steps",
+        19
+      ],
+      "instruction": 713,
+      "function": "AddNumberToText"
+    },
+    {
+      "card": "card_unit_tropic_lightning",
+      "program": null,
+      "entry_or_local": null,
+      "path": [
+        "steps",
+        62
+      ],
+      "instruction": 1947,
+      "function": "AddNumberToText"
+    }
+  ],
+  "sdk_chain": {
+    "BP_CardFunctions": [
+      "AddNumberToText",
+      "SpawnCardInHandBySide"
+    ],
+    "BP_OnlineMatch": [
+      "ReceiveSubActionAppendNumberToCardText",
+      "AddSubActionAppendNumberToCardText",
+      "ReceiveSubActionUpdateCardText",
+      "AddSubActionUpdateCardText",
+      "SetNewCardText"
+    ],
+    "U_CardFunctionsNotifier": [
+      "NotifyAppendNumberToCardText"
+    ],
+    "BP_VisualController": [
+      "CreateActionAppendNumberToCardText",
+      "ExecuteSubActionAddNumberToText",
+      "CreateVisualActionUpdateCardText",
+      "Execute Sub Action Update Card Text"
+    ],
+    "FCardData": "static Text field is present; no separate dynamic rule-state field was identified in the SDK dump."
+  },
+  "conclusion": {
+    "pvp_rule_state": "No evidence in the current authoritative PvP IR that dynamic text is read as a rule-state input. The two PvP generated-card calls pass variable-derived formatted text, but their rule effects explicitly apply the numeric changes through ChangeKreditCost/DamageCard and persist level; the text is not consumed by a later predicate. The 115th Separate BTN computes its numeric state through ChangeAttack/ChangeDefense; Format/AddNumberToText is display-side only.",
+    "headless_implementation": "Keep AddNumberToText, UpdateCardText, and AppendNumberToCardText as no-op display adapters in headless mode. Do not add a gameplay text state from these calls.",
+    "spawn_parameters": "230 indexed SpawnCardInHandBySide calls use literal empty newCardText; two PvP generated-card calls pass variable-derived formatted text. SkipDrawAnimation and fromOppositeSide are false at all 232 indexed calls. DoSpawnInHand still does not model visual/campaign text payloads; because the two dynamic-text cards apply and persist their numeric rule changes separately and no IR predicate reads the text, this remains a display/adapter completeness item rather than a demonstrated PvP rule mismatch.",
+    "print_string": "The two PrintString occurrences are in card_location_german_scen5 and card_unit_75th_rifle_regiment.locals.SpawnCopy and have no rule output; leave unmapped for headless PvP."
+  },
+  "unresolved": [
+    "Complete native /Script/kards behavior and inherited Blueprint dispatch are not proven by this report.",
+    "A future IR revision that supplies non-empty newCardText or consumes dynamic text in a predicate must reopen DoSpawnInHand and the display boundary."
+  ]
+}
