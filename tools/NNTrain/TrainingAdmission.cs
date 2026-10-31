@@ -45,7 +45,10 @@ internal static class TrainingAdmission
             || report.Games.Any(g=>g.Accepted ? g.Reasons.Length!=0 || g.WrittenSamples<=0 : g.WrittenSamples!=0)
             || report.Games.Select(g=>g.Game).Distinct().Count()!=report.Games.Count)
             throw new InvalidDataException("质量清单无可用样本或统计不一致");
-        if(report.Games.Any(g=>g.Accepted && (g.ChoiceFaults!=0 || g.DriverFaults!=0 || g.PendingChoices!=0))
+        // Accepted is a producer claim. The binary hash does not bind this
+        // manifest, so independently reapply the execution-health boundary.
+        if(report.Games.Any(g=>g.Accepted && (g.VmFaults!=0 || g.ChoiceFaults!=0 || g.DriverFaults!=0 || g.PendingChoices!=0
+                || g.UnsupportedOps.Any(p=>p.Value>0) || g.Calls.Any(p=>p.Value>0 && !IsInformational(p.Key))))
             || report.GateVersion==2 && (report.Dim!=KLink.Bot.NN.StateEncoder.Dim
                 || report.SamplingMode is not ("turn-end/v1" or "policy-and-choice-before/v1")
                 || report.ChoicePolicy!="first-index/v1" || report.ObservationPerspective!="left"

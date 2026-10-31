@@ -1,0 +1,73 @@
+{
+  "rule_id": "TRAINING-DISPLAY-DIAGNOSTICS-20261101",
+  "date": "2026-11-01",
+  "status": "scoped verifier fix; unscoped display calls remain blocking",
+  "scope": "Execution-health consistency in local training/probing; no game-rule or whole-card certification.",
+  "baseline_commit": "e6bc75adf10592c87fe5c8de9fe4ad4502b50a14",
+  "diagnostic_keys": [
+    "math:Format",
+    "math:GetDisplayName",
+    "math:PrintString"
+  ],
+  "findings": [
+    "Unimplemented math calls increment VM and engine missing-call diagnostics; the default math evaluator returns null.",
+    "Probe reference health failure aborts with reference_unimplemented_call. Candidate prefix/root failure remains Unknown with unimplemented_call, not Rejected.",
+    "Value dump rejects a game with any positive noninformational missing-call count.",
+    "Action dump checks teacher, replay and discarded planning diagnostics; failed admission writes no labels. Its verifier already rechecks accepted execution health.",
+    "Value verifier previously trusted Accepted for VM faults, unsupported operations and missing calls. Binary SHA-256 does not bind the external JSON health manifest.",
+    "Value verifier now independently rejects accepted games with VM faults, positive unsupported operations or positive noninformational missing calls, for gate versions 1 and 2.",
+    "Known informational markers and zero counters remain accepted. No global display-call exemption was added."
+  ],
+  "validation": {
+    "red": "New accepted VM-fault manifest regression failed before the fix: InvalidOperationException: accepted VM fault manifest",
+    "admission_selftest": 42,
+    "action_dataset_selftest": 49,
+    "botsim_full_selftest": 1042,
+    "matrix_tests": 16,
+    "builds": [
+      "NNTrain Release --no-restore passed",
+      "BotSim Release --no-restore passed"
+    ],
+    "warning": "Recompiling NNTrain emitted existing CS8632 at Program.cs:478; subsequent incremental builds had no warnings.",
+    "context": "Tests ran in the working tree, including preserved pre-existing probe/test edits. The matrix is generated from the publication index snapshot, excluding unrelated local changes.",
+    "publication_snapshot": {
+      "admission_selftest": 42,
+      "botsim_full_selftest": 1042,
+      "context": "Exact staged content with existing checkout line endings; unrelated local source/test edits excluded.",
+      "action_dataset_selftest": 49
+    },
+    "snapshot_setup_failure": "Initial LF-only index export rejected IR/card native-empty-event byte fingerprint and failed 480/1042 tests; restoring existing checkout EOL without changing normalized content loaded IR and passed all 1042.",
+    "matrix_freshness": "33 registered partial units remain stale under current fingerprints; zero bound-input matches. No old evidence hashes refreshed."
+  },
+  "worker": {
+    "job_id": "20261031-235549-display-admission-fe5620df",
+    "status": "timed_out",
+    "accepted_output": false,
+    "note": "No result delivered within 180 seconds; conclusions independently checked by primary agent."
+  },
+  "source_bindings": {
+    "tools/NNTrain/TrainingAdmission.cs": "63813a2bd4d9dcdfa4a2868bd8fcdd5d8e725c8c54bf0fcdf9576240becf8f89",
+    "tools/NNTrain/AdmissionSelfTest.cs": "578a13499e8eded1db9c3f5414478871c14fb9196eb80b82ebc5b324a90194c4",
+    "tools/NNTrain/ActionDatasetTool.cs": "77679fad72d606988ec9d970b0daf8f7f1d290ed876622d720a33884b9414103",
+    "tools/NNTrain/Program.cs": "dccc78fafb1892002fb8a5f152b8a85a3dfdbaf091cc42cc51c63aa3654f6cca",
+    "src/KLink.Bot/Training/IsolatedActionProbe.cs": "89720f1080857728e96024a8d66a9495dd7282ab9b7098366612c3515fa6e838",
+    "src/KLink.Bot/Training/OracleActionEpisodeRunner.cs": "43b8db368e5e90d7095a20b86791c1a3ec3ecdc65876d1d1a46be58582bf260b",
+    "src/KLink.Bot/Effects/Blueprint/KismetVm.cs": "f831c4f23b4ca4db1db08df6b6f75a0d43e9a0dd96b6a8e1d63a3ceff1e2b150"
+  },
+  "baseline_bindings": {
+    "tools/NNTrain/TrainingAdmission.cs": "c5bb147de02d06480cf9689ea385f1e91fed975177a999311dd9f1f418f62428",
+    "tools/NNTrain/AdmissionSelfTest.cs": "433c5ccbf5b84c832715ef5dccee15b20efeec283de8ed6c218b88d6165c9475",
+    "tools/NNTrain/ActionDatasetTool.cs": "ae2da1d5164eab37c51835f981c631afda1ddd3a670b824848fa6433c1276409",
+    "tools/NNTrain/Program.cs": "dccc78fafb1892002fb8a5f152b8a85a3dfdbaf091cc42cc51c63aa3654f6cca",
+    "src/KLink.Bot/Training/IsolatedActionProbe.cs": "1e25455424536cf08ccf38c2c4ec8b30c5d13be5b70548d16bb199fa423b02f5",
+    "src/KLink.Bot/Training/OracleActionEpisodeRunner.cs": "a305be6ed2e0e3f1cbc191971e6a067a99c00175e2344557aedbc4ff343510a7",
+    "src/KLink.Bot/Effects/Blueprint/KismetVm.cs": "f831c4f23b4ca4db1db08df6b6f75a0d43e9a0dd96b6a8e1d63a3ceff1e2b150"
+  },
+  "limitations": [
+    "Function-name-only counters cannot distinguish the four previously reviewed display flows from unreviewed sites. Call-site provenance and evidence-bound classification remain open.",
+    "Existing null text values and other Format/GetDisplayName/PrintString call sites are not repaired or certified by this batch.",
+    "Manifest verification checks declared diagnostics; it is not an authenticity signature and cannot detect erased diagnostics.",
+    "Runtime client evidence is not required for this local verifier consistency defect. Replays are not used as game-rule authority.",
+    "Existing native-empty-event data binding is byte-sensitive to checkout EOL; cross-platform checkout portability is not repaired in this batch."
+  ]
+}

@@ -11,14 +11,14 @@
 | 已明确登记为PvP范围 | 0 |
 | 已明确登记为非PvP | 0 |
 | PvP范围尚未登记闭合 | 2019 |
-| 函数身份 | 5585 |
+| 函数身份 | 5590 |
 | 显示提示/委托签名排除项 | 61 |
 | IR程序容器 | 2626 |
-| 聚合静态依赖关联 | 18571 |
+| 聚合静态依赖关联 | 18567 |
 | 依赖符号 | 440 |
-| 已索引JSON审计记录 | 429 |
+| 已索引JSON审计记录 | 433 |
 | 已人工关联局部证据单元 | 33 |
-| 局部证据绑定输入一致 | 1 |
+| 局部证据绑定输入一致 | 0 |
 | 规划工作域（不作完成率分母） | 14 |
 | 明确验收条件 | 42 |
 | 当前权威PvP分母已建立 | 否 |
@@ -49,23 +49,23 @@ TSV中的null表示缺失/未知值；复杂字段为JSON单元格，完整类�
 | 符号 | 引用卡资产 | 程序容器 | 局部证据单元 |
 |---|---:|---:|---|
 | Array_Get | 715 | 759 | 尚未人工关联 |
-| IsLocatedOnBoard | 480 | 524 | 尚未人工关联 |
-| IsUnit | 465 | 496 | 尚未人工关联 |
+| IsLocatedOnBoard | 479 | 523 | 尚未人工关联 |
+| IsUnit | 464 | 495 | 尚未人工关联 |
 | GetOppositeSide | 459 | 482 | 尚未人工关联 |
-| GetTargetedCard | 429 | 429 | 尚未人工关联 |
+| GetTargetedCard | 430 | 430 | 尚未人工关联 |
 | ChangeAttack | 355 | 369 | RULE-525/ChangeAttack/ordinary, RULE-526/ChangeAttack/absolute, RULE-527/ChangeAttack/remove, RULE-528/ChangeAttack/custom-and-default |
 | ChangeDefense | 325 | 330 | 尚未人工关联 |
 | DamageCard | 262 | 265 | RULE-530/DamageCard/effect-entry, RULE-531/DamageCard/apply-bounded-defense, RULE-532/DamageCard/retained-lethal-removal, RULE-533/DamageCard/hq-id-winner-branch |
 | GetCardsOnBoardBySide | 246 | 247 | 尚未人工关联 |
 | GetCardFromID | 228 | 231 | 尚未人工关联 |
 | PersistCustomFields | 217 | 230 | 尚未人工关联 |
-| DrawCardsFromDeckBySide | 215 | 217 | 尚未人工关联 |
+| DrawCardsFromDeckBySide | 214 | 216 | 尚未人工关联 |
 | GetLocationCardBySide | 210 | 216 | RULE-534/GetLocationCardBySide/explicit-hq-slots |
 | IsSideActive | 209 | 210 | 尚未人工关联 |
 | GetRandomCard | 156 | 156 | 尚未人工关联 |
-| IsSameSideUnit | 148 | 149 | 尚未人工关联 |
+| IsSameSideUnit | 149 | 150 | 尚未人工关联 |
 | SpawnCardOnBattlefield | 138 | 138 | 尚未人工关联 |
-| SpawnCardInHandBySide | 134 | 136 | 尚未人工关联 |
+| SpawnCardInHandBySide | 135 | 137 | 尚未人工关联 |
 | JSON_Clear | 127 | 132 | 尚未人工关联 |
 | Array_Clear | 126 | 127 | 尚未人工关联 |
 | GetPlayFromHandDamage | 119 | 119 | 尚未人工关联 |

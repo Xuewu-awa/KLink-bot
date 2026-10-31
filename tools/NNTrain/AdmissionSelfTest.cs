@@ -41,6 +41,20 @@ internal static class AdmissionSelfTest
             report.Rows=0;Save();Reject("empty clean set");report.Rows=1;
             report.Games[0].Reasons=["vm_fault"];Save();Reject("inconsistent admission");report.Games[0].Reasons=[];Save();
             var game=report.Games[0];
+            // The data hash binds the binary, not the separately editable health
+            // manifest. Recheck execution health instead of trusting Accepted.
+            game.VmFaults=1;Save();Reject("accepted VM fault manifest");game.VmFaults=0;
+            game.UnsupportedOps["<pop-unresolved>"]=1;Save();Reject("accepted unsupported operation manifest");game.UnsupportedOps.Clear();
+            foreach(string call in new[]{"UnknownRule","math:Format","math:GetDisplayName","math:PrintString"})
+            {
+                Assert(Check(calls:new Dictionary<string,int>{{call,1}}).Contains("unimplemented:"+call),
+                    "unscoped call remains blocking: "+call);
+                game.Calls[call]=1;Save();Reject("accepted missing call manifest: "+call);game.Calls.Clear();
+            }
+            game.Calls["<local-ran:helper>"]=1;game.Calls["<frontline-blocked-full>"]=1;
+            game.Calls["math:Format"]=0;game.UnsupportedOps["<pop-unresolved>"]=0;
+            Save();TrainingAdmission.VerifyDataset(path);checks++;
+            game.Calls.Clear();game.UnsupportedOps.Clear();
             game.ChoiceFaults=1;Save();Reject("accepted choice fault manifest");game.ChoiceFaults=0;
             game.DriverFaults=1;Save();Reject("accepted driver fault manifest");game.DriverFaults=0;
             game.PendingChoices=1;Save();Reject("accepted pending manifest");game.PendingChoices=0;
@@ -48,6 +62,9 @@ internal static class AdmissionSelfTest
             game.SampleActors=[0];Save();Reject("invalid sample actor");game.SampleActors=[1];
             report.SamplingMode="unknown";Save();Reject("unknown sampling contract");report.SamplingMode="turn-end/v1";
             report.GateVersion=1;game.SampleKinds=[];game.SampleActors=[];Save();TrainingAdmission.VerifyDataset(path);checks++;
+            game.VmFaults=1;Save();Reject("legacy accepted VM fault manifest");game.VmFaults=0;
+            game.UnsupportedOps["<pop-unresolved>"]=1;Save();Reject("legacy accepted unsupported manifest");game.UnsupportedOps.Clear();
+            game.Calls["math:Format"]=1;Save();Reject("legacy accepted missing call manifest");game.Calls.Clear();
             report.GateVersion=2;report.SamplingMode="policy-and-choice-before/v1";game.SampleKinds=[1];game.SampleActors=[1];game.MainDecisions=1;
             Save();TrainingAdmission.VerifyDataset(path);checks++;
             using(var stream=File.Open(path,FileMode.Open,FileAccess.Write)){stream.Position=12;stream.WriteByte(0xff);}Reject("data tampering");
