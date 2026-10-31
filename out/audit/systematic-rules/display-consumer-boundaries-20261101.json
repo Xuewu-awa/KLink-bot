@@ -1,0 +1,647 @@
+{
+  "forwarding": [
+    {
+      "source_variable": "newCardText",
+      "statement": 333,
+      "function": "CreateCard",
+      "argument": 7,
+      "path": "$.Parameters[7]",
+      "contexts": []
+    },
+    {
+      "source_variable": "newCardText",
+      "statement": 2880,
+      "function": "NotifyDrawCardFromDeck",
+      "argument": 9,
+      "path": "$.Expression.Parameters[9]",
+      "contexts": [
+        {
+          "Inst": "InstanceVariable",
+          "Variable Outer": {
+            "PinCategory": "Object",
+            "PinSubCategory": "Object",
+            "PinSubCategoryObject": "/Game/Blueprints/Logic/U_CardFunctionsNotifier.U_CardFunctionsNotifier_C"
+          },
+          "Variable Name": "CardFunctionsNotifier"
+        }
+      ]
+    },
+    {
+      "source_variable": "newCardText",
+      "statement": 154,
+      "function": "ActionValueString",
+      "argument": 1,
+      "path": "$.Parameters[1]",
+      "contexts": []
+    }
+  ],
+  "callback_entry": 12721,
+  "callback_window": [
+    {
+      "Inst": "LocalVirtualFunction",
+      "FunctionName": "AddSubActionAppendNumberToCardText",
+      "Parameters": [
+        {
+          "Inst": "LocalVariable",
+          "Variable Name": "K2Node_Event_CardID_22"
+        },
+        {
+          "Inst": "LocalVariable",
+          "Variable Name": "K2Node_Event_NewCardText_1"
+        },
+        {
+          "Inst": "LocalVariable",
+          "Variable Name": "K2Node_Event_InstigatorID_18"
+        },
+        {
+          "Inst": "LocalVariable",
+          "Variable Name": "K2Node_Event_Color"
+        }
+      ],
+      "StatementIndex": 12721
+    },
+    {
+      "Inst": "PopExecutionFlow",
+      "StatementIndex": 12771
+    }
+  ],
+  "functions": [
+    {
+      "owner": "BP_CardFunctions_C",
+      "name": "AddNumberToText",
+      "bytes": 1633,
+      "script_sha256": "160667c2681784ddc857233e5572ad10cb7a16451e8c57620db7a87e3ec9606b",
+      "decoded_sha256": "3bbd81d93dd1752b6b171d8b2548e56bdf1de2e11d1e4e0d0f98c006f63ae109"
+    },
+    {
+      "owner": "U_CardFunctionsNotifier_C",
+      "name": "NotifyAppendNumberToCardText",
+      "bytes": 76,
+      "script_sha256": "cdd0ca94520181dbf7b580533a172892d03370c2ace422145b7659e8fb4747b6",
+      "decoded_sha256": "15d1802627787472eccc6d65c395705bd484739dc5e802fd2e1edb2c07001db2"
+    },
+    {
+      "owner": "BP_OnlineMatch_C",
+      "name": "HandleAppendNumberToCardText",
+      "bytes": 90,
+      "script_sha256": "9583a1e52497be60c6a289ead3b88fa6ae9601d93422cf0a37493c891437b51b",
+      "decoded_sha256": "8dcaaca6622556d01d8ffd0ea66de1879c5026d3c26cda6cbf13937e12939d60"
+    },
+    {
+      "owner": "BP_OnlineMatch_C",
+      "name": "ExecuteUbergraph_BP_OnlineMatch",
+      "bytes": 29897,
+      "script_sha256": "5ff8360712d92e1a9a7cb8fdb0c5b01c3a51d4ea33bda5822d4c1695dc7b95e2",
+      "decoded_sha256": "a938da2900a04dfa40e3a7185e997d6f2a807637582b2a00c24fbbc2ccc6227c"
+    },
+    {
+      "owner": "BP_OnlineMatch_C",
+      "name": "AddSubActionAppendNumberToCardText",
+      "bytes": 298,
+      "script_sha256": "16c2295926297761e889d15474e472a99383bf00ddd320794f07ba3266c9fc13",
+      "decoded_sha256": "3a7e6109481ff479fd563952d048351bca152fb45a957055eb5fd5948edc0a41"
+    },
+    {
+      "owner": "BP_OnlineMatch_C",
+      "name": "CreateAction_AddSubAction",
+      "bytes": 847,
+      "script_sha256": "34aa4e48217be45291e71c9343c996b52c32291cf5f9840fc4131c90d0e2b359",
+      "decoded_sha256": "2f83f78b1ca47408ecf8c2657ed8738c35ba49dfbf1a0736d735c9d9b4c2afdc"
+    }
+  ],
+  "add_number_calls": [
+    {
+      "statement": 503,
+      "path": "$.Expression",
+      "instruction": "CallMath",
+      "function": "Format",
+      "parameters": [
+        {
+          "Inst": "TextConst",
+          "TextLiteralType": "InvariantText",
+          "Value": "<red>{1}</>"
+        },
+        {
+          "Inst": "LocalVariable",
+          "Variable Name": "K2Node_MakeArray_Array"
+        }
+      ],
+      "contexts": []
+    },
+    {
+      "statement": 575,
+      "path": "$.Expression",
+      "instruction": "CallMath",
+      "function": "TextIsEmpty",
+      "parameters": [
+        {
+          "Inst": "LocalOutVariable",
+          "Variable Name": "numberText"
+        }
+      ],
+      "contexts": []
+    },
+    {
+      "statement": 604,
+      "path": "$.Expression",
+      "instruction": "CallMath",
+      "function": "Format",
+      "parameters": [
+        {
+          "Inst": "TextConst",
+          "TextLiteralType": "InvariantText",
+          "Value": "<green>{1}</>"
+        },
+        {
+          "Inst": "LocalVariable",
+          "Variable Name": "K2Node_MakeArray_Array_1"
+        }
+      ],
+      "contexts": []
+    },
+    {
+      "statement": 966,
+      "path": "$",
+      "instruction": "LocalVirtualFunction",
+      "function": "GetCardFromID",
+      "parameters": [
+        {
+          "Inst": "LocalVariable",
+          "Variable Name": "CardID"
+        },
+        {
+          "Inst": "LocalVariable",
+          "Variable Name": "CallFunc_GetCardFromID_card"
+        }
+      ],
+      "contexts": []
+    },
+    {
+      "statement": 998,
+      "path": "$",
+      "instruction": "CallMath",
+      "function": "GetStaticText",
+      "parameters": [
+        {
+          "Inst": "Context",
+          "Context": {
+            "Inst": "LocalVariable",
+            "Variable Name": "CallFunc_GetCardFromID_card"
+          },
+          "SkipOffsetForNull": 9,
+          "RValuePropertyName": "Name",
+          "Expression": {
+            "Inst": "InstanceVariable",
+            "Variable Name": "Name"
+          }
+        },
+        {
+          "Inst": "LocalVariable",
+          "Variable Name": "CallFunc_GetStaticText_text"
+        }
+      ],
+      "contexts": []
+    },
+    {
+      "statement": 1305,
+      "path": "$.Expression",
+      "instruction": "CallMath",
+      "function": "Format",
+      "parameters": [
+        {
+          "Inst": "TextConst",
+          "TextLiteralType": "LocalizedText",
+          "SourceString": "{1} ({2})",
+          "LocalizationKey": "FBD8D13943279EB8DD972D88B96697FA",
+          "LocalizationNamespace": ""
+        },
+        {
+          "Inst": "LocalVariable",
+          "Variable Name": "K2Node_MakeArray_Array_2"
+        }
+      ],
+      "contexts": []
+    },
+    {
+      "statement": 1484,
+      "path": "$",
+      "instruction": "LocalVirtualFunction",
+      "function": "IsActionProcess",
+      "parameters": [
+        {
+          "Inst": "LocalVariable",
+          "Variable Name": "CallFunc_IsActionProcess_ActionProcess"
+        }
+      ],
+      "contexts": []
+    },
+    {
+      "statement": 1521,
+      "path": "$.Expression",
+      "instruction": "CallMath",
+      "function": "Conv_TextToString",
+      "parameters": [
+        {
+          "Inst": "LocalOutVariable",
+          "Variable Name": "numberText"
+        }
+      ],
+      "contexts": []
+    },
+    {
+      "statement": 1558,
+      "path": "$.Expression",
+      "instruction": "LocalVirtualFunction",
+      "function": "NotifyAppendNumberToCardText",
+      "parameters": [
+        {
+          "Inst": "LocalVariable",
+          "Variable Name": "CardID"
+        },
+        {
+          "Inst": "LocalVariable",
+          "Variable Name": "CallFunc_Conv_TextToString_ReturnValue"
+        },
+        {
+          "Inst": "LocalVariable",
+          "Variable Name": "CardID"
+        },
+        {
+          "Inst": "LocalVariable",
+          "Variable Name": "Color"
+        }
+      ],
+      "contexts": [
+        {
+          "Inst": "InstanceVariable",
+          "Variable Name": "CardFunctionsNotifier"
+        }
+      ]
+    }
+  ],
+  "notifier_calls": [
+    {
+      "statement": 0,
+      "path": "$.Expression",
+      "instruction": "LocalVirtualFunction",
+      "function": "HandleAppendNumberToCardText",
+      "parameters": [
+        {
+          "Inst": "LocalVariable",
+          "Variable Name": "CardID"
+        },
+        {
+          "Inst": "LocalVariable",
+          "Variable Name": "newCardText"
+        },
+        {
+          "Inst": "LocalVariable",
+          "Variable Name": "instigatorID"
+        },
+        {
+          "Inst": "LocalVariable",
+          "Variable Name": "Color"
+        }
+      ],
+      "contexts": [
+        {
+          "Inst": "InterfaceContext",
+          "InterfaceValue": {
+            "Inst": "InstanceVariable",
+            "Variable Name": "OnlineMatchReceiver"
+          }
+        }
+      ]
+    }
+  ],
+  "handler_calls": [
+    {
+      "statement": 72,
+      "path": "$",
+      "instruction": "LocalFinalFunction",
+      "function": "ExecuteUbergraph_BP_OnlineMatch",
+      "parameters": [
+        {
+          "Inst": "IntConst",
+          "Value": 12721
+        }
+      ],
+      "contexts": []
+    }
+  ],
+  "builder_calls": [
+    {
+      "statement": 0,
+      "path": "$",
+      "instruction": "LocalVirtualFunction",
+      "function": "ActionValueCardID",
+      "parameters": [
+        {
+          "Inst": "LocalVariable",
+          "Variable Name": "CardID"
+        },
+        {
+          "Inst": "LocalVariable",
+          "Variable Name": "CallFunc_ActionValueCardID_actionValue"
+        }
+      ],
+      "contexts": []
+    },
+    {
+      "statement": 32,
+      "path": "$.Expression",
+      "instruction": "CallMath",
+      "function": "Conv_ByteToInt",
+      "parameters": [
+        {
+          "Inst": "LocalVariable",
+          "Variable Name": "Color"
+        }
+      ],
+      "contexts": []
+    },
+    {
+      "statement": 69,
+      "path": "$",
+      "instruction": "LocalVirtualFunction",
+      "function": "ActionValueInt",
+      "parameters": [
+        {
+          "Inst": "StringConst",
+          "Value": "instigatorID"
+        },
+        {
+          "Inst": "LocalVariable",
+          "Variable Name": "instigatorID"
+        },
+        {
+          "Inst": "LocalVariable",
+          "Variable Name": "CallFunc_ActionValueInt_actionValue"
+        }
+      ],
+      "contexts": []
+    },
+    {
+      "statement": 115,
+      "path": "$",
+      "instruction": "LocalVirtualFunction",
+      "function": "ActionValueInt",
+      "parameters": [
+        {
+          "Inst": "StringConst",
+          "Value": "color"
+        },
+        {
+          "Inst": "LocalVariable",
+          "Variable Name": "CallFunc_Conv_ByteToInt_ReturnValue"
+        },
+        {
+          "Inst": "LocalVariable",
+          "Variable Name": "CallFunc_ActionValueInt_actionValue_1"
+        }
+      ],
+      "contexts": []
+    },
+    {
+      "statement": 154,
+      "path": "$",
+      "instruction": "LocalVirtualFunction",
+      "function": "ActionValueString",
+      "parameters": [
+        {
+          "Inst": "StringConst",
+          "Value": "number"
+        },
+        {
+          "Inst": "LocalVariable",
+          "Variable Name": "newCardText"
+        },
+        {
+          "Inst": "LocalVariable",
+          "Variable Name": "CallFunc_ActionValueString_actionValue"
+        }
+      ],
+      "contexts": []
+    },
+    {
+      "statement": 241,
+      "path": "$",
+      "instruction": "LocalVirtualFunction",
+      "function": "CreateAction_AddSubAction",
+      "parameters": [
+        {
+          "Inst": "StringConst",
+          "Value": "ZActionAppendNumberToCardText"
+        },
+        {
+          "Inst": "LocalVariable",
+          "Variable Name": "K2Node_MakeArray_Array"
+        }
+      ],
+      "contexts": []
+    }
+  ],
+  "queue_calls": [
+    {
+      "statement": 0,
+      "path": "$.Expression",
+      "instruction": "CallMath",
+      "function": "GetMatchController",
+      "parameters": [
+        {
+          "Inst": "Self"
+        }
+      ],
+      "contexts": []
+    },
+    {
+      "statement": 21,
+      "path": "$.Expression",
+      "instruction": "FinalFunction",
+      "function": "IsReconnectMatch",
+      "parameters": [
+        {
+          "Inst": "LocalVariable",
+          "Variable Name": "CallFunc_IsReconnectMatch_isReconnecting"
+        },
+        {
+          "Inst": "LocalVariable",
+          "Variable Name": "CallFunc_IsReconnectMatch_clientMulliganDone"
+        },
+        {
+          "Inst": "LocalVariable",
+          "Variable Name": "CallFunc_IsReconnectMatch_otherMulliganDone"
+        }
+      ],
+      "contexts": [
+        {
+          "Inst": "LocalVariable",
+          "Variable Name": "CallFunc_GetMatchController_ReturnValue"
+        }
+      ]
+    },
+    {
+      "statement": 94,
+      "path": "$",
+      "instruction": "LocalVirtualFunction",
+      "function": "ExecuteXActionsWithLocalSubActions",
+      "parameters": [
+        {
+          "Inst": "LocalVariable",
+          "Variable Name": "CallFunc_ExecuteXActionsWithLocalSubActions_withLocalSubActions"
+        }
+      ],
+      "contexts": []
+    },
+    {
+      "statement": 203,
+      "path": "$.Expression.Expression",
+      "instruction": "FinalFunction",
+      "function": "Array_Add",
+      "parameters": [
+        {
+          "Inst": "InstanceVariable",
+          "Variable Name": "subActions"
+        },
+        {
+          "Inst": "LocalVariable",
+          "Variable Name": "K2Node_MakeStruct_SubAction"
+        }
+      ],
+      "contexts": [
+        {
+          "Inst": "ObjectConst",
+          "Object": "Default__KismetArrayLibrary"
+        }
+      ]
+    },
+    {
+      "statement": 276,
+      "path": "$.Expression",
+      "instruction": "CallMath",
+      "function": "Len",
+      "parameters": [
+        {
+          "Inst": "InstanceVariable",
+          "Variable Name": "currentActionName"
+        }
+      ],
+      "contexts": []
+    },
+    {
+      "statement": 313,
+      "path": "$.Expression",
+      "instruction": "CallMath",
+      "function": "Greater_IntInt",
+      "parameters": [
+        {
+          "Inst": "LocalVariable",
+          "Variable Name": "CallFunc_Len_ReturnValue"
+        },
+        {
+          "Inst": "IntConst",
+          "Value": 0
+        }
+      ],
+      "contexts": []
+    },
+    {
+      "statement": 366,
+      "path": "$.Expression",
+      "instruction": "CallMath",
+      "function": "Conv_StringToText",
+      "parameters": [
+        {
+          "Inst": "LocalVariable",
+          "Variable Name": "ActionName"
+        }
+      ],
+      "contexts": []
+    },
+    {
+      "statement": 660,
+      "path": "$.Expression",
+      "instruction": "CallMath",
+      "function": "Format",
+      "parameters": [
+        {
+          "Inst": "TextConst",
+          "TextLiteralType": "InvariantText",
+          "Value": "AddSubAction {actionName} called but no action has been set."
+        },
+        {
+          "Inst": "LocalVariable",
+          "Variable Name": "K2Node_MakeArray_Array"
+        }
+      ],
+      "contexts": []
+    },
+    {
+      "statement": 761,
+      "path": "$.Expression",
+      "instruction": "CallMath",
+      "function": "Conv_TextToString",
+      "parameters": [
+        {
+          "Inst": "LocalVariable",
+          "Variable Name": "CallFunc_Format_ReturnValue"
+        }
+      ],
+      "contexts": []
+    },
+    {
+      "statement": 798,
+      "path": "$.Expression",
+      "instruction": "LocalVirtualFunction",
+      "function": "ErrorWithStackTrace",
+      "parameters": [
+        {
+          "Inst": "LocalVariable",
+          "Variable Name": "CallFunc_Conv_TextToString_ReturnValue"
+        },
+        {
+          "Inst": "Self"
+        }
+      ],
+      "contexts": [
+        {
+          "Inst": "ObjectConst",
+          "Object": "Default__UtilityFunctions_C"
+        }
+      ]
+    }
+  ],
+  "native_declaration": {
+    "owner": "CardFunctionsStub",
+    "name": "AddNumberToText",
+    "script_bytes": 0,
+    "implementation_resolved": false
+  },
+  "admission_exempt": false,
+  "global_noninterference_proven": false,
+  "open_boundaries": [
+    "Actual dynamic CardFunctions/OnlineMatchReceiver class and dispatch binding",
+    "Native text helpers and PrintString implementation; SDK declarations alone are insufficient",
+    "Other notification recipients, downstream scheduling, reentrancy and full state consumers",
+    "Historical decoded AST provenance/version; script hash does not authenticate decoding",
+    "Runtime kismet-program-json/v1 hash + asset/export/entry/instruction/expression-path binding"
+  ],
+  "schema": "display-consumer-boundaries/v1",
+  "authority": "historical pak parse and memory extraction",
+  "captured_exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "current_client_equivalence_claimed": false,
+  "tool_bindings": {
+    "audit-display-consumer-boundaries.py": "04639ed0f5f482f2aec5579a6fac4e3a5dbad005e6de4d5467f641b93d0c1ef1",
+    "test-display-consumer-boundaries.py": "3e4a75a27e23495dc753b6ca2924d450804e5ddf7a76deb0b78909ae61c660da"
+  },
+  "sources": [
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.functions.json",
+      "sha256": "b007f0f5689d266cdccee220f164db12582d3893c76a087228dd3ac55836f297"
+    },
+    {
+      "path": "D:\\Codex Workshop\\kards-install-review\\runtime-snapshots\\registry-enum-20261018-170111\\rule500-text-chain-20261028.json",
+      "sha256": "be1d6af23d257bed600fed5cf8088395dc49f28df90dc5bcdbb9ea3a3b792359"
+    }
+  ]
+}

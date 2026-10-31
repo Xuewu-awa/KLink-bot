@@ -1,6 +1,6 @@
 {
   "date": "2026-11-01",
-  "batch": "display-call-site-classification",
+  "batch": "display-consumer-boundaries",
   "counts": {
     "cards": 2019,
     "cards_with_own_ir": 1709,
@@ -12,7 +12,7 @@
     "program_containers": 2626,
     "dependency_edges": 18567,
     "dependency_symbols": 440,
-    "secondary_reports": 436,
+    "secondary_reports": 437,
     "explicit_partial_units": 33,
     "partial_units_matching_bound_inputs": 0,
     "planning_work_domains": 14,
@@ -23,15 +23,15 @@
     "total_work_remaining_percent": null
   },
   "matrix_tests": 16,
-  "display_site_classification_tests": 10,
-  "report_regeneration": "byte-identical from publication snapshot",
+  "consumer_boundary_tests": 12,
+  "report_regeneration": "Byte-identical from staged publication snapshot",
   "production_changes": false,
-  "csharp_tests": "Not rerun in this batch; production sources match HEAD 455630d. Previous batch full selftest1049/admission44/action53 are historical, not new validation.",
+  "csharp_tests": "Not rerun: this batch changes audit tools and evidence only.",
   "worker": {
-    "job_id": "20261101-003800-display-site-flows-02439c66",
+    "job_id": "20261101-004725-display-boundary-a784d824",
     "status": "completed",
-    "independently_checked": "Sources/conversions/sinks4/4 and direct void log1/1 match. Primary additionally taints unused AddNumberToText output; worker event aliases are not export identities."
+    "independently_checked": "Four function identities; 17 exact call statement/inst/name/path tuples; 45 writes and zero delegate instructions. Main agent separately checked ubergraph entry12721."
   },
-  "input_scope": "Previous publication snapshot updated with exact new indexed inputs; every production source compared against HEAD ignoring checkout EOL only. Unrelated working edits excluded. No stale evidence fingerprint refreshed.",
-  "generation_git_head": "455630dabfe62d3f5d67aabd59e4e9112611af45"
+  "input_scope": "Staged exact registry scope and new tools/reports only; unrelated working edits excluded. No stale fingerprints refreshed.",
+  "generation_git_head": "efffc2ee618a3f2ac0870151571de9f2e68c4ada"
 }

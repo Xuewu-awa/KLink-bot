@@ -8147,8 +8147,8 @@
       "id": "RULE-TRAINING-DISPLAY-DIAGNOSTICS",
       "title": "显示调用来源与训练准入",
       "status": "partial",
-      "scope": "已核查三类显示缺口计数会阻止动作探测和训练准入；修复价值数据校验器漏检 accepted 对局执行健康计数，v1/v2 回归通过。已为VM未实现call/math补充运行时卡牌、实际解析资产/函数、原始入口、指令/字节偏移、表达式路径和运行时程序SHA-256，并导出价值数据质量清单；五组回归覆盖重入、回退、聚合、容量、失败隔离和真实75团显示链。来源不是豁免凭证；动作数据teacher/replay/planning来源已分阶段导出，丢弃规划按工作次数聚合且保留遗漏/失败；当前IR三类显示命名调用已逐点索引60处，重新核对4条局部结果链和1处无返回值日志，共5处有局部用途证据，55处未审查；均不豁免准入。原语内部缺口来源、原生消费者边界和运行时程序哈希绑定分类仍开放，不认证整卡。",
-      "source": "out/audit/systematic-rules/display-call-site-classification-20261101.json; out/audit/systematic-rules/action-call-provenance-20261101.json; out/audit/systematic-rules/missing-call-provenance-20261101.json; out/audit/systematic-rules/display-diagnostics-admission-20261101.json"
+      "scope": "已核查三类显示缺口计数会阻止动作探测和训练准入；修复价值数据校验器漏检 accepted 对局执行健康计数，v1/v2 回归通过。已为VM未实现call/math补充运行时卡牌、实际解析资产/函数、原始入口、指令/字节偏移、表达式路径和运行时程序SHA-256，并导出价值数据质量清单；五组回归覆盖重入、回退、聚合、容量、失败隔离和真实75团显示链。来源不是豁免凭证；动作数据teacher/replay/planning来源已分阶段导出，丢弃规划按工作次数聚合且保留遗漏/失败；当前IR三类显示命名调用已逐点索引60处，重新核对4条局部结果链和1处无返回值日志，共5处有局部用途证据，55处未审查；均不豁免准入。已补核生成文字经CreateCard转发到抽牌通知，以及AddNumberToText通知器接口、持久帧、ubergraph入口12721到子动作构建的局部契约，12项边界回归通过；真实接口/继承分派、原生文本实现、下游调度/重入、原语内部缺口来源和运行时程序哈希绑定仍开放，不豁免准入，不认证整卡。",
+      "source": "out/audit/systematic-rules/display-consumer-boundaries-20261101.json; out/audit/systematic-rules/display-call-site-classification-20261101.json; out/audit/systematic-rules/action-call-provenance-20261101.json; out/audit/systematic-rules/missing-call-provenance-20261101.json; out/audit/systematic-rules/display-diagnostics-admission-20261101.json"
     }
   ]
 }
