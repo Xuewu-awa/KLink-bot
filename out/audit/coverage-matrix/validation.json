@@ -1,6 +1,6 @@
 {
   "date": "2026-11-01",
-  "batch": "missing-call-provenance",
+  "batch": "action-call-provenance",
   "counts": {
     "cards": 2019,
     "cards_with_own_ir": 1709,
@@ -12,7 +12,7 @@
     "program_containers": 2626,
     "dependency_edges": 18567,
     "dependency_symbols": 440,
-    "secondary_reports": 434,
+    "secondary_reports": 435,
     "explicit_partial_units": 33,
     "partial_units_matching_bound_inputs": 0,
     "planning_work_domains": 14,
@@ -24,10 +24,12 @@
   },
   "matrix_tests": 16,
   "admission_checks": 44,
-  "action_dataset_checks": 49,
-  "botsim_focused_selftest": 5,
-  "botsim_full_selftest": 1047,
-  "value_dump_smoke_games": 5,
+  "action_dataset_checks": 53,
+  "botsim_focused_selftest": 2,
+  "botsim_full_selftest": 1049,
   "input_scope": "Publication index snapshot with current checkout EOL and available external/ignored evidence. Unrelated working tree changes excluded. No stale evidence fingerprint refreshed.",
-  "generation_git_head": "facd856688dc21fc8e6e9d1e8811384f58d1c585"
+  "generation_git_head": "ce5fe61f724cbaa824fc94e56d925a05dcea397e",
+  "action_dump_smoke_games": 1,
+  "action_dump_smoke_rows": 107,
+  "action_verify_smoke_rows": 107
 }

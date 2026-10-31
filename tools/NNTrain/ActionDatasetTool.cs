@@ -14,6 +14,9 @@ internal sealed record ActionDatasetHeader(int Version,string Kind,string Observ
     string Perspective,string Teacher,string Candidates,ulong Seed,int RequestedGames,Dictionary<string,string> InputsSha256);
 internal sealed record ActionDatasetRow(int Game,int Step,Side Actor,int Turn,float[] Observation,
     MainActionOption[] Candidates,int ChosenIndex,string[] CoverageGaps);
+// Optional diagnostics only: phase is ownership, not a rule/display classification.
+internal sealed record ActionCallProvenance(string Phase,IReadOnlyList<OracleMissingCallCount> Sites,
+    long SitesOmitted,long CaptureFailures);
 internal sealed class ActionGameQuality
 {
     public int Game {get;set;}
@@ -36,6 +39,7 @@ internal sealed class ActionGameQuality
     public long VmFaults {get;set;}
     public Dictionary<string,int> Unsupported {get;set;}=[];
     public Dictionary<string,int> Calls {get;set;}=[];
+    public ActionCallProvenance[] MissingCallProvenance {get;set;}=[];
     public string[] Reasons {get;set;}=[];
     public string SnapshotDifference {get;set;}
 }
@@ -52,6 +56,15 @@ internal sealed class ActionDatasetQuality
 internal static class ActionDatasetTool
 {
     internal static readonly JsonSerializerOptions Json=new(){PropertyNamingPolicy=JsonNamingPolicy.CamelCase};
+    internal static ActionCallProvenance[] CaptureCallProvenance(OracleActionEpisodeResult result)
+    {
+        ActionCallProvenance Capture(string phase,MatchEngine engine)=>new(phase,
+            engine.Api.Vm.MissingCallSites.Select(p=>new OracleMissingCallCount(p.Key,p.Value)).ToArray(),
+            engine.Api.Vm.MissingCallSitesOmitted,engine.Api.Vm.MissingCallSiteCaptureFailures);
+        return [Capture("teacher",result.Teacher),Capture("replay",result.Replay),
+            new("planning",result.PlanningMissingCallSites.ToArray(),result.PlanningMissingCallSitesOmitted,
+                result.PlanningMissingCallSiteCaptureFailures)];
+    }
     internal static string[] AdmissionReasons(OracleActionEpisodeResult result,bool irLoaded)
     {
         var reasons=new List<string>(result.Errors);
@@ -115,6 +128,7 @@ internal static class ActionDatasetTool
                     VmFaults=engines.Sum(e=>(long)e.Api.Vm.FaultedPrograms)+result.PlanningVmFaults,
                     Unsupported=WithPlanning(Merge(e=>e.Api.Vm.UnsupportedOps),result.PlanningUnsupported),
                     Calls=WithPlanning(Merge(e=>e.UnimplementedCalls),result.PlanningCalls),Reasons=reasons,
+                    MissingCallProvenance=CaptureCallProvenance(result),
                     SnapshotDifference=result.SnapshotDifference};
                 quality.Games.Add(game);
                 if(!game.Accepted){quality.RejectedGames++;continue;}

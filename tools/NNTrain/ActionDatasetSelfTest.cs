@@ -3,6 +3,8 @@ using System.Text;
 using System.Text.Json;
 using KLink.Bot.Cards;
 using KLink.Bot.Engine;
+using KLink.Bot.Effects;
+using KLink.Bot.Effects.Blueprint;
 using KLink.Bot.NN;
 using KLink.Bot.Training;
 
@@ -114,6 +116,30 @@ internal static class ActionDatasetSelfTest
             Save(Quality(),good with {Candidates=[play with {Command=play.Command with {ChooseOne=0}}]});Reject("branch features disagree");
             Assert(ActionDatasetTool.AdmissionReasons(episode with {PlanningCalls=new Dictionary<string,int>{{"<unknown-probe-call>",1}}},true)
                 .Contains("unimplemented:<unknown-probe-call>"),"discarded probe diagnostics still block admission");
+            // Identical runtime sites must retain teacher/replay/planning ownership.
+            var program=new KismetProgram(new[] {
+                new KismetStep(0,"math","Format",[],[],null,null,-1,null,null),
+                new KismetStep(1,"return",null,[],[],null,null,-1,null,null)},0)
+                {AssetName="provenance_probe",FunctionName="shared",SourceEntry=0};
+            foreach(var engine in new[] {episode.Teacher,episode.Replay})
+                engine.Api.Vm.RunLocalProgram(program,new EffectContext {Engine=engine,State=engine.State,Controller=Side.Left},null,"result");
+            var site=episode.Teacher.Api.Vm.MissingCallSites.Keys.Single();
+            var diagnosticEpisode=episode with {PlanningMissingCallSites=[new(site,3_000_000_000L)],
+                PlanningMissingCallSitesOmitted=7,PlanningMissingCallSiteCaptureFailures=2};
+            var provenance=ActionDatasetTool.CaptureCallProvenance(diagnosticEpisode);
+            Assert(provenance.Select(p=>p.Phase).SequenceEqual(new[] {"teacher","replay","planning"})
+                && provenance[0].Sites.Single().Count==1 && provenance[1].Sites.Single().Count==1
+                && provenance[2].Sites.Single().Count==3_000_000_000L && provenance[2].SitesOmitted==7
+                && provenance[2].CaptureFailures==2,"phase ownership and long planning work counts");
+            q=Quality();q.Games[1].MissingCallProvenance=provenance;Save(q,good);
+            var restored=ActionDatasetTool.Verify(path).Games[1].MissingCallProvenance;
+            Assert(JsonSerializer.Serialize(restored,ActionDatasetTool.Json)==JsonSerializer.Serialize(provenance,ActionDatasetTool.Json),
+                "rejected episode provenance survives quality manifest roundtrip");
+            Assert(ActionDatasetTool.AdmissionReasons(diagnosticEpisode,true).Contains("unimplemented:math:Format"),
+                "provenance cannot exempt retained engine missing call");
+            using var noLeak=new StringWriter();
+            Assert(ActionDatasetTool.WriteAdmittedLabels(noLeak,0,diagnosticEpisode,true)==0 && noLeak.ToString()=="",
+                "diagnosed rejected episode still writes no action rows");
             Save(Quality(),good);using(var file=new FileStream(path,FileMode.Append))file.WriteByte(42);Reject("data hash tampering");
         }
         finally{File.Delete(path);File.Delete(path+".quality.json");Directory.Delete(dir);}

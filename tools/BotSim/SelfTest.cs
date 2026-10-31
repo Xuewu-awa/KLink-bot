@@ -25,6 +25,8 @@ internal static partial class SelfTest
         new("调用来源：诊断开关与失败不改变执行", MissingCallSiteIsolation),
         new("调用来源：容量限制与程序指纹", MissingCallSiteLimits),
         new("调用来源：真实75团显示链与执行隔离", MissingCallSiteRealDisplay),
+        new("动作调用来源：丢弃规划聚合与异常退出", ActionProvenancePlanning),
+        new("动作调用来源：跨规划容量与遗漏计数", ActionProvenancePlanningLimit),
         new("根动作停止标志：普通出牌与反制", PlayRootStopBoundary),
         new("根动作停止标志：移动回调", MoveRootStopBoundary),
         new("根动作停止标志：攻击T30早于T31", AttackRootStopBoundary),

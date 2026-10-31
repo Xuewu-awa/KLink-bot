@@ -1,0 +1,84 @@
+{
+  "rule_id": "TRAINING-ACTION-CALL-PROVENANCE-20261101",
+  "date": "2026-11-01",
+  "baseline_commit": "ce5fe61f724cbaa824fc94e56d925a05dcea397e",
+  "status": "scoped diagnostic export complete; semantic call-site classification remains open",
+  "scope": "Export three VM fallback branches by teacher/replay/disposable-planning phase. No gameplay, gate, teacher contract or dataset version4 changes.",
+  "implementation": [
+    "Teacher and replay export separate site/count arrays from retained engines; identical sites are not merged across phases.",
+    "Disposable planning engines aggregate sources in the existing finally before disposal, including exceptions in beforeProbe and afterProbe.",
+    "Planning counts represent diagnostic work including rebuilt prefixes, not live match events. Cross-planner counts use Int64.",
+    "Each VM and the episode planning union retain at most 4096 sites. Omitted counts measure call occurrences: per-VM omission plus union-cap omission. Capture failures remain explicit.",
+    "Optional quality-manifest diagnostics preserve old manifest compatibility. Existing health counts and admission checks remain active."
+  ],
+  "regressions": [
+    "Two planning runs aggregate the same site twice without leaking it into teacher/replay or changing labels and retained state.",
+    "Both beforeProbe and afterProbe exceptional exits retain missing sites and existing health counts.",
+    "An unused cyclic AST makes diagnostic serialization fail: planning reports failures without changing VM faults or old missing counts.",
+    "Two disjoint planners with 4098 calls each retain4096 and omit4100 occurrences; total8196 equals original calls.",
+    "Manifest export preserves teacher/replay counts1/1 and planning count3000000000 plus omissions7 and failures2; rejected episode roundtrip succeeds.",
+    "Provenance does not exempt Format and cannot leak rejected action rows."
+  ],
+  "validation": {
+    "focused_botsim": 2,
+    "botsim_full_selftest": 1049,
+    "admission_selftest": 44,
+    "action_dataset_selftest": 53,
+    "action_dump_smoke": {
+      "games": 1,
+      "accepted": 1,
+      "rejected": 0,
+      "seed": 1,
+      "rows": 107,
+      "verified_rows": 107,
+      "phases": [
+        {
+          "phase": "teacher",
+          "sites": [],
+          "sitesOmitted": 0,
+          "captureFailures": 0
+        },
+        {
+          "phase": "replay",
+          "sites": [],
+          "sitesOmitted": 0,
+          "captureFailures": 0
+        },
+        {
+          "phase": "planning",
+          "sites": [],
+          "sitesOmitted": 0,
+          "captureFailures": 0
+        }
+      ]
+    },
+    "context": "Publication index snapshot with checkout EOL; unrelated pre-existing dirty changes excluded.",
+    "warning": "Existing NNTrain CS8632 warning at Program.cs:481; no errors. Matrix validation is recorded in coverage-matrix/validation.json."
+  },
+  "worker": {
+    "job_id": "20261101-002551-action-provenance-16576a02",
+    "status": "completed",
+    "inventory_counts": {
+      "collection_paths": 109,
+      "export_fields": 46,
+      "existing_test_seams": 20,
+      "potential_omissions": 30
+    },
+    "accepted_output": "Mechanical references to beforeProbe/afterProbe, existing finally health merge and manifest write independently checked against copied source. No game-rule authority or defect-count inference.",
+    "correction": "Worker finally_protected=false labels for Start/prefix/callbacks are not accepted as protection judgments: direct inspection confirms they execute inside try with the collection finally."
+  },
+  "source_bindings": {
+    "src/KLink.Bot/Training/OracleActionEpisodeRunner.cs": "768606047bf36fbad434e8fb5e657b963a6648ac0ae7ce7fdacea82258113761",
+    "tools/NNTrain/ActionDatasetTool.cs": "467b37d6dcd93378cef667c1dc369276388b043594b0f7318643c4fcf374e168",
+    "tools/NNTrain/ActionDatasetSelfTest.cs": "ce14edde259da54151c2c25cfb1e7d28ba7e3fd7275a6dd007399d4772800407",
+    "tools/BotSim/SelfTest.ActionProvenance.cs": "49c3de1d62e8412feb0d6bc46c072898cd8d91c551f0e76a1a501cf2c9d5ec68",
+    "tools/BotSim/SelfTest.cs": "73ce02d1a5f96d2a46687b23bfe06e98da59671f5b243d4e45aa5762eb3bd4cb"
+  },
+  "limitations": [
+    "Only existing call/expression-call/math fallback provenance is exported; CardApi-internal NotifyUnimplemented, special enumerators and unsupported instructions are outside this collection scope.",
+    "No global exemption for Format/GetDisplayName/PrintString. Evidence-bound display versus rules classification remains open.",
+    "Planning aggregation has no per-probe timeline. Capture failures or truncation cannot be interpreted as absence of missing logic.",
+    "Diagnostics are not authenticity signatures or whole-card certification. Current-PvP denominator remains unresolved.",
+    "No historical stale evidence bindings refreshed; native-empty-event byte hashes remain sensitive to checkout EOL."
+  ]
+}

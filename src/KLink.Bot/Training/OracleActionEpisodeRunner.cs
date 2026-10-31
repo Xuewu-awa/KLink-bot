@@ -2,11 +2,13 @@ using System.Text.Json;
 using KLink.Bot.Bots;
 using KLink.Bot.Cards;
 using KLink.Bot.Engine;
+using KLink.Bot.Effects.Blueprint;
 using KLink.Bot.NN;
 
 namespace KLink.Bot.Training;
 
 public sealed record OracleActionLabel(int Step, MainActionRequest Request, int ChosenIndex);
+public sealed record OracleMissingCallCount(KismetMissingCallSite Site, long Count);
 public sealed record OracleActionEpisodeResult(MatchEngine Teacher, MatchEngine Replay,
     IReadOnlyList<OracleActionLabel> Labels, IReadOnlyList<string> Errors, long ChoiceFaults,
     long MainFaults, long MainRejections, long AppliedActions, int ComparedSteps)
@@ -19,6 +21,10 @@ public sealed record OracleActionEpisodeResult(MatchEngine Teacher, MatchEngine 
     public int PlanningPendingChoices {get;init;}
     public IReadOnlyDictionary<string,int> PlanningUnsupported {get;init;}=new Dictionary<string,int>();
     public IReadOnlyDictionary<string,int> PlanningCalls {get;init;}=new Dictionary<string,int>();
+    // Rebuilt prefixes repeat calls: these are diagnostic work counts, not live match events.
+    public IReadOnlyList<OracleMissingCallCount> PlanningMissingCallSites {get;init;}=Array.Empty<OracleMissingCallCount>();
+    public long PlanningMissingCallSitesOmitted {get;init;}
+    public long PlanningMissingCallSiteCaptureFailures {get;init;}
 }
 
 public enum OracleChooseOnePolicy { Native, Last }
@@ -69,6 +75,8 @@ public static class OracleActionEpisodeRunner
         int compared=0,options=0,planningDecisions=0,planningPending=0;
         long prefixRoots=0,planningVmFaults=0,planningChoiceFaults=0;
         var planningUnsupported=new Dictionary<string,int>();var planningCalls=new Dictionary<string,int>();
+        var planningSites=new Dictionary<KismetMissingCallSite,long>();
+        long planningSitesOmitted=0,planningCaptureFailures=0;
         string? snapshotDifference=null;
         bool SameRequest(MainActionRequest a,MainActionRequest b)=>a.Actor==b.Actor && a.Turn==b.Turn
             && a.Observation.SequenceEqual(b.Observation) && a.CoverageGaps.SequenceEqual(b.CoverageGaps)
@@ -156,6 +164,16 @@ public static class OracleActionEpisodeRunner
                             void Merge(Dictionary<string,int> into,IReadOnlyDictionary<string,int> from)
                             {foreach(var pair in from)into[pair.Key]=into.GetValueOrDefault(pair.Key)+pair.Value;}
                             Merge(planningUnsupported,probe.Api.Vm.UnsupportedOps);Merge(planningCalls,probe.UnimplementedCalls);
+                            // Collect before discarding this planner, including exceptional exits.
+                            // Bound the episode union as well as each VM's individual collection.
+                            foreach(var pair in probe.Api.Vm.MissingCallSites)
+                            {
+                                if(planningSites.TryGetValue(pair.Key,out long count))planningSites[pair.Key]=count+pair.Value;
+                                else if(planningSites.Count<KismetVm.MaxMissingCallSites)planningSites.Add(pair.Key,pair.Value);
+                                else planningSitesOmitted+=pair.Value;
+                            }
+                            planningSitesOmitted+=probe.Api.Vm.MissingCallSitesOmitted;
+                            planningCaptureFailures+=probe.Api.Vm.MissingCallSiteCaptureFailures;
                         }
                     }
                     if(planningVmFaults+planningChoiceFaults!=0 || planningPending!=0 || planningUnsupported.Any(p=>p.Value>0))
@@ -209,6 +227,8 @@ public static class OracleActionEpisodeRunner
             main.RejectedActions+teacherView.RejectedActions,main.AppliedActions,compared)
             {SnapshotDifference=snapshotDifference,PlanningPrefixRoots=prefixRoots,PlanningDecisions=planningDecisions,
              PlanningVmFaults=planningVmFaults,PlanningChoiceFaults=planningChoiceFaults,PlanningPendingChoices=planningPending,
-             PlanningUnsupported=planningUnsupported,PlanningCalls=planningCalls};
+             PlanningUnsupported=planningUnsupported,PlanningCalls=planningCalls,
+             PlanningMissingCallSites=planningSites.Select(p=>new OracleMissingCallCount(p.Key,p.Value)).ToArray(),
+             PlanningMissingCallSitesOmitted=planningSitesOmitted,PlanningMissingCallSiteCaptureFailures=planningCaptureFailures};
     }
 }
