@@ -222,6 +222,82 @@ public sealed partial class CardApi
         // equivalence to UE TSet subscription order remains to be verified.
         return State.AllCards;
     }
+
+    /// <summary>
+    /// Executes the card side of <c>BP_CardFunctions::ExecuteStartOfTurnEvents</c>.
+    ///
+    /// The native function materializes one <c>FetchAllCardsWithEventTrigger(64)</c>
+    /// array and walks that same array three times: <c>startofturn0</c>, then
+    /// <c>startofturn1</c>, then cards with neither marker.  It calls only each
+    /// card's own <c>OnStartOfTurn(card, turnNumber)</c>; there is no
+    /// <c>OnOtherStartOfTurn</c> broadcast.  Keep the array stable while effects
+    /// run so cards created by a callback join a later trigger query, not this
+    /// already materialized batch.
+    /// </summary>
+    public void ExecuteStartOfTurnEvents(int turnNumber)
+    {
+        var library = Blueprint.KismetLibrary.Default;
+        if (library is null)
+        {
+            return;
+        }
+
+        // FetchAllCardsWithEventTrigger reads the battle state's registered
+        // card map and then resolves its values from AllCardsInBattle.  The
+        // headless state keeps that insertion order in AllCardsInBattleOrder;
+        // do not replace it with the CardId-sorted AllCards enumeration.
+        var recipients = State.AllCardsInBattleOrder
+            .Where(card => card.Definition.IsRegisteredFor("OnStartOfTurn")
+                && !SuppressedSkipsTrigger(card, "OnStartOfTurn")
+                && library.FindProgram(card.Name, "OnStartOfTurn") is not null)
+            .ToArray();
+
+        static bool IsMarker(CardInstance card, string marker)
+            => CustomNameHasAttribute(card, "customName1", marker);
+
+        foreach (var card in recipients)
+        {
+            if (!IsMarker(card, "startofturn0"))
+            {
+                continue;
+            }
+
+            RunStartOfTurnCard(library, card, turnNumber);
+        }
+
+        foreach (var card in recipients)
+        {
+            if (!IsMarker(card, "startofturn1"))
+            {
+                continue;
+            }
+
+            RunStartOfTurnCard(library, card, turnNumber);
+        }
+
+        foreach (var card in recipients)
+        {
+            if (IsMarker(card, "startofturn0") || IsMarker(card, "startofturn1"))
+            {
+                continue;
+            }
+
+            RunStartOfTurnCard(library, card, turnNumber);
+        }
+    }
+
+    private void RunStartOfTurnCard(Blueprint.KismetLibrary library,
+                                    CardInstance card,
+                                    int turnNumber)
+    {
+        // Native checks UObject validity, not current location/registration.
+        // Keep invoking the captured object even if an earlier callback moved
+        // or removed it from the live state collection.
+        TriggerTrace?.Add($"OnStartOfTurn → {card.Name}#{card.CardId}（eventCard=null#，turn={turnNumber}）");
+        RunTriggerProgram(library, card, card.Name, "OnStartOfTurn", trigger: null,
+                          eventArgs: new object?[] { turnNumber });
+    }
+
     /// <summary>Definition-based registration and query-time suppression filter; no location gate.</summary>
     public IReadOnlyList<CardInstance> CaptureRegisteredTriggerSnapshot(string programName)
         => CaptureTriggerSnapshot().Where(card => card.Definition.IsRegisteredFor(programName)

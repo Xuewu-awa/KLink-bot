@@ -480,6 +480,7 @@ internal static partial class SelfTest
         // 语义是「**接收者那张卡自己的**总防御 / 总攻击」。旧实现把接收者丢了、
         // 返回 `State.Board(side).Sum(...)`（而且还排除 HQ）。
         new("红牛：回合开始攻击力翻倍（读的是**自己**的攻击力，不是己方场面之和）", RedBullDoublesOwnAttack),
+        new("回合开始事件：startofturn0 → startofturn1 → 普通卡，共享快照并传递 turnNumber", StartOfTurnDispatchOrdering),
         new("爱国热忱：翻倍的是**目标那张卡**的攻防（不是己方场面之和）", PatrioticZealDoublesTarget),
 
         // ---- Develop 族：GetChooseSpawnCards + 生成（2026-09-27）----
@@ -4212,6 +4213,48 @@ internal static partial class SelfTest
         {
             return $"{other} 不该被改动：{otherAtk} → {otherCard.Attack}"
                  + Dump(state, ("未实现", Unimpl(state)));
+        }
+
+        return null;
+    }
+
+    private static string? StartOfTurnDispatchOrdering(CardDatabase db)
+    {
+        const string normalName = "card_unit_red_bull";
+        const string start1Name = "card_event_supply_shortage";
+        const string start0Name = "card_unit_japan_ki_100_goshiken";
+        if (db.Find(normalName) is null || db.Find(start1Name) is null || db.Find(start0Name) is null)
+        {
+            return $"卡库里缺 {normalName} / {start1Name} / {start0Name}";
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        state.CreateWithId(normalName, Side.Left, 2, CardLocation.BoardFrontline, 0);
+        state.CreateWithId(start1Name, Side.Left, 3, CardLocation.Discard, 0);
+        state.CreateWithId(start0Name, Side.Left, 4, CardLocation.BoardFrontline, 1);
+
+        var trace = new List<string>();
+        engine.Api.TriggerTrace = trace;
+        engine.Api.ExecuteStartOfTurnEvents(37);
+
+        var calls = trace.Where(x => x.StartsWith("OnStartOfTurn → ", StringComparison.Ordinal)).ToArray();
+        var expected = new[] { start0Name, start1Name, normalName };
+        if (calls.Length != expected.Length)
+        {
+            return $"应有 {expected.Length} 个 OnStartOfTurn 调用，实际 {calls.Length}：{string.Join(" | ", calls)}";
+        }
+
+        for (int i = 0; i < expected.Length; i++)
+        {
+            if (!calls[i].Contains($"→ {expected[i]}#", StringComparison.Ordinal))
+            {
+                return $"回合开始顺序错误：期望 {string.Join(" → ", expected)}，实际 {string.Join(" | ", calls)}";
+            }
+        }
+
+        if (calls.Any(x => !x.Contains("turn=37", StringComparison.Ordinal)))
+        {
+            return $"OnStartOfTurn 未收到显式 turnNumber=37：{string.Join(" | ", calls)}";
         }
 
         return null;

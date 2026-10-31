@@ -826,7 +826,7 @@ public sealed class MatchEngine
             }
         }
 
-        Api.FireTrigger("OnStartOfTurn", null, side, "OnOtherStartOfTurn");
+        Api.ExecuteStartOfTurnEvents(State.Turn);
     }
 
     public void EndTurn(Side side)
