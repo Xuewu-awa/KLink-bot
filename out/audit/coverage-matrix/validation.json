@@ -1,6 +1,6 @@
 {
   "date": "2026-11-01",
-  "batch": "display-campaign-direct-boundaries",
+  "batch": "spawn-hand-initial-slot",
   "counts": {
     "cards": 2019,
     "cards_with_own_ir": 1709,
@@ -12,9 +12,9 @@
     "program_containers": 2626,
     "dependency_edges": 18567,
     "dependency_symbols": 440,
-    "secondary_reports": 441,
-    "explicit_partial_units": 33,
-    "partial_units_matching_bound_inputs": 0,
+    "secondary_reports": 443,
+    "explicit_partial_units": 34,
+    "partial_units_matching_bound_inputs": 1,
     "planning_work_domains": 14,
     "planning_acceptance_criteria": 42,
     "authoritative_current_pvp_denominator_available": false,
@@ -23,18 +23,19 @@
     "total_work_remaining_percent": null
   },
   "matrix_tests": 16,
-  "campaign_group_tests": 10,
-  "display_site_tests": 10,
-  "report_regeneration": "Byte-identical from staged publication snapshot",
-  "production_changes": false,
-  "csharp_tests": "Not rerun: audit tools and evidence only; production files excluded.",
-  "worker": {
-    "job_id": "20261101-010622-display-groups-918d16a6",
-    "artifact_sha256": "14938c505671aed7aad9f58a8dea8bd94a255ea0b41dc28ece2d4ca40a34208d",
-    "independently_checked": "All 55 identities, complete source statements and exact named-local reference instruction/path sets matched packet. Derived entrypoint interval region assignments not used as reachability evidence.",
-    "status": "timed_out",
-    "delivery_note": "Worker timed out after writing the artifact; artifact hash remained unchanged and all accepted fields were independently verified. No completion claim for worker run."
+  "production_changes": true,
+  "csharp_tests": {
+    "targeted": 8,
+    "full": 1050,
+    "new_scenarios": 144,
+    "before_regression_exit_code": 1,
+    "after_exit_code": 0
   },
-  "input_scope": "Only exact registry record, new audit tools/reports and regenerated matrix; unrelated edits preserved. No stale fingerprints refreshed.",
-  "generation_git_head": "82288b04dbfdfc91716132c2b44648e8455fee43"
+  "worker": {
+    "job_id": "20261101-012013-hand-slot-2cbe89d7",
+    "status": "completed",
+    "independently_checked": "Switch constants/targets, CreateCard selection and callback indices, old test reference; primary verified raw quantity and creation flow."
+  },
+  "input_scope": "HEAD plus scoped slot fix, registration and new regression; unrelated working edits excluded. No stale fingerprints refreshed. Current EXE hash does not establish parsed asset version equivalence.",
+  "generation_git_head": "b170303862704fc7391bf1f0350aac7613a2e212"
 }

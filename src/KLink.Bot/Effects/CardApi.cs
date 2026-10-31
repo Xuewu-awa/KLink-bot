@@ -3568,9 +3568,11 @@ public sealed partial class CardApi
     public CardInstance SpawnCardInHand(Side side, string cardName, bool isGold = false,
         bool isSalvaged = false, string? salvageFaction = null, bool? cardSeen = null)
     {
-        // CreateCard i=244/276 saves capacity before own creation and T35.
-        bool wasFull = CountCardsForHandCapacity(side.HandOf()) >= GameState.HandCapacity;
-        var card = State.Create(cardName, side, side.HandOf(), State.NextLocationNumber(side, side.HandOf()),
+        // CreateCard i=885/917 saves GetNextCardLocationNumber's physical-location
+        // count (excluding live autoplay), before capacity/creation callbacks.
+        int initialSlot = CountCardsForHandCapacity(side.HandOf());
+        bool wasFull = initialSlot >= GameState.HandCapacity;
+        var card = State.Create(cardName, side, side.HandOf(), initialSlot,
             isGold: isGold, isSalvaged: isSalvaged, salvageFaction: salvageFaction, cardSeenBeforeModifiers: cardSeen);
         // i=2212..2399 uses the post-T35 tag but the saved pre-creation fullness.
         // This is a direct field write, with no discard events or renumbering.

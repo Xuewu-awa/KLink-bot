@@ -1,0 +1,64 @@
+{
+  "rule": "RULE-550",
+  "scope": "Ordinary SpawnCardInHand initial slot only; valid Left/Right hands, default override -1",
+  "client_exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "authority_sources": {
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.functions.json": "b007f0f5689d266cdccee220f164db12582d3893c76a087228dd3ac55836f297",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\BP_GameState_Battle.functions.json": "5aad2809691680431b3d65abdac55d4da29c53083c06c1f259349a3bb12337a8"
+  },
+  "raw_functions": "out/audit/systematic-rules/spawn-hand-initial-slot-20261101-functions.json",
+  "raw_functions_sha256": "65ffdb87d804c8b4f6aefc50526b8344674e54176895394ca0124de5ad0f2c60",
+  "authority_chain": [
+    "SpawnCardinHandbySide i333 passes overrideLocationNumber=-1 to CreateCard.",
+    "CreateCard i809/843/885/917 chooses default GetNextCardLocationNumber before i244/276 capacity snapshot, i295 object creation, own creation/T35.",
+    "GetNextCardLocationNumber locations3/4 -> i483 FetchCardsByLocation, i551 quantity assignment; max slot and ownership are not inputs.",
+    "CardFunctions.FetchCardsByLocation i46 delegates to GameStateRef; i136 returns quantity.",
+    "BP_GameState_Battle.FetchCardsByLocation i801 matches physical location; hands3/4 check live autoplay i1067/1135, excluding matching tags. i2009/2032/2091 adds accepted objects. i1150/1209 counts array, i1421 returns TmpQty; MaxQty9 affects fullness, not a quantity clamp."
+  ],
+  "defect": "State.NextLocationNumber filters owner and uses max(LocationNumber)+1. Sparse slots, mismatched owner or autoplay cards can change the generated initial slot.",
+  "fix": "Save physical hand count excluding live autoplay as initialSlot before creation; reuse it for precreation fullness. Preserve callback slot writes and saved-fullness discard behavior.",
+  "regression": {
+    "before": {
+      "exit_code": 1,
+      "failure": "Left/count=3/owner=False/tag=0/mutation=0, expected=3"
+    },
+    "after": {
+      "targeted_tests": 8,
+      "full_tests": 1050,
+      "new_scenarios": 144,
+      "dimensions": [
+        "both sides",
+        "0/3/9 existing cards",
+        "same/opposite owner",
+        "plain/custom autoplay/inherited autoplay/removed inherited autoplay",
+        "no slot mutation/own callback writes42/modifier callback writes-7"
+      ],
+      "assertions": [
+        "initial slot observed by own creation and T35 hooks",
+        "precreation snapshot survives occupancy changes",
+        "callback slot writes survive",
+        "full hand direct discard retains slot",
+        "zero RNG draws"
+      ]
+    },
+    "logs": {
+      "out/audit/systematic-rules/spawn-hand-initial-slot-before-20261101.txt": "f14ee3d5263d878ad6de06698eb47ffa07599571b7ad2151e4d2d79c1e766e36",
+      "out/audit/systematic-rules/spawn-hand-initial-slot-full-20261101.txt": "1b4e52cb9261862ef1a6d4cabbe1379da4da8bf3199fabbf022ddc84267fbc28",
+      "out/audit/systematic-rules/spawn-hand-initial-slot-targeted-20261101.txt": "8b5f154ed69387876b521dd454d3cd6b4e560e5b488afb772aea2eb164252458"
+    }
+  },
+  "deepseek": {
+    "skill": "C:/Users/AWQ/.codex/skills/deepseek-worker/SKILL.md",
+    "job": "20261101-012013-hand-slot-2cbe89d7",
+    "status": "completed",
+    "task": "Mechanical switch/statement/test-reference enumeration only",
+    "verification": "Primary checked all 10 compare constants and jump targets, default assignment/quantity flow, creation order, all worker CreateCard indices and sole test LocationNumber occurrence against raw inputs; semantic decision remains primary.",
+    "result_sha256": "3a3c37adb7b4e69aad2b9cb18971149be9429b2158ad5a8ed0ff9f125e3837af"
+  },
+  "validation_environment": "HEAD source snapshot plus only CardApi slot fix and new test/registration; all tracked src and tools/BotSim files checked against intended HEAD+patch. Existing matching Release Data retained; native-default guard enabled.",
+  "remaining": [
+    "Full CreateCard allocation/notification chain and NotifyCreateNonVisualCard remain open.",
+    "Salvage and other NextLocationNumber callers were not changed or certified.",
+    "No claim of complete card certification, current-version pak equivalence or runtime callback reachability for synthetic sparse/owner-mismatch states."
+  ]
+}

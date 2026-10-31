@@ -8076,6 +8076,33 @@
         "D:\\Codex Workshop\\kards-install-review\\root-stop-fail-20261031.log": "875f6de0d034aea918d342b76333530ac79e74d41ee2cdb250905f1516447f7f",
         "D:\\Codex Workshop\\kards-install-review\\root-stop-targeted-20261031.log": "a81fecba3b3c4240e2f7bfdfd08f3cdf3e367a12dc7e919d992bbc1a713a2853"
       }
+    },
+    {
+      "id": "RULE-550/SpawnCardInHand/initial-slot",
+      "symbol": "SpawnCardInHand",
+      "modes": [
+        null
+      ],
+      "status": "partial",
+      "validated_scope": "普通手牌生成默认初始槽位按物理手牌计数、排除实时autoplay，在创建回调前保存；双侧144场景，保留回调槽位改写和创建前满手结果。非完整CreateCard认证。",
+      "report": "out/audit/systematic-rules/spawn-hand-initial-slot-20261101.json",
+      "report_sha256": "7b1a7fa619949ab8379c5c5ba547a40edaf71e14c44daafb26cc1b33fb5acd7a",
+      "client_exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+      "source_bindings": {
+        "src/KLink.Bot/Effects/CardApi.cs": "a541b95ec5c5b5a82c03595d8fcafdc43e0a34758f38de250e9e9a5dfa26f5ca",
+        "src/KLink.Bot/Effects/CardApiDispatch.cs": "38051e40a443257a69f2d86bc038c709f90c5c205290dd7106accae755f72826",
+        "tools/BotSim/SelfTest.cs": "a2a4243842052b07820be855c779a39a4e6b39138f9b161423df15d3633e68ac",
+        "tools/BotSim/SelfTest.SpawnHandSlot.cs": "dde5afe03ac370facbffc070506d7ce04f77c6e3b22624b2159d80831d38b2a8"
+      },
+      "evidence_bindings": {
+        "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.functions.json": "b007f0f5689d266cdccee220f164db12582d3893c76a087228dd3ac55836f297",
+        "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\BP_GameState_Battle.functions.json": "5aad2809691680431b3d65abdac55d4da29c53083c06c1f259349a3bb12337a8"
+      },
+      "limitations": [
+        "Full CreateCard allocation/notification chain and NotifyCreateNonVisualCard remain open.",
+        "Salvage and other NextLocationNumber callers were not changed or certified.",
+        "No claim of complete card certification, current-version pak equivalence or runtime callback reachability for synthetic sparse/owner-mismatch states."
+      ]
     }
   ],
   "scope_reviews": {},
@@ -8119,7 +8146,7 @@
       "id": "RULE-SPAWN-BOUNDARY",
       "title": "生成边界",
       "status": "open",
-      "scope": "相邻缺来源/无效控制方/默认位置；共享满位置/overrideCardID及完整分配通知。",
+      "scope": "相邻缺来源/无效控制方/默认位置；共享满位置/overrideCardID及完整分配通知。 RULE-550已修复普通手牌生成默认初始槽位的物理计数/autoplay边界；完整创建通知及其他分配入口继续开放。",
       "source": "primary reviewed matrix bootstrap; not exhaustive defect inventory"
     },
     {

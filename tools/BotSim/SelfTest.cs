@@ -415,6 +415,7 @@ internal static partial class SelfTest
         new("手牌生成事件：自身无抑制位置门，T57后查快照并重查抑制", NativeSpawnHandEventSnapshot),
         new("手牌容量：按物理位置统计，排除实时autoplay标签", NativeHandCapacityAutoplay),
         new("手牌生成满手：创建前快照与T35后标签分别取值", NativeSpawnHandFullness),
+        new("手牌生成初始槽位：物理手牌计数排除实时autoplay，创建前取值", NativeSpawnHandInitialSlot),
         new("手牌生成自动打出：自身与T57结束后检查实时位置和标签", NativeSpawnHandAutoplayEvents),
         new("手牌生成：显式来源金卡和打捞字段在创建回调前初始化", NativeSpawnHandInitialFields),
         new("手牌生成：非正来源不创建，不回退上下文且保留旧输出", NativeSpawnHandSourceGuard),
