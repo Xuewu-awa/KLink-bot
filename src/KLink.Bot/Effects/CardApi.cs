@@ -3772,7 +3772,13 @@ public sealed partial class CardApi
             isSalvaged: salvage != 0,
             salvageFaction: salvage == 0 ? null : salvage.ToString(System.Globalization.CultureInfo.InvariantCulture),
             cardSeenBeforeModifiers: false,
-            beforeCreationModifiers: makeVeteran ? MakeVeteran : null);
+            beforeCreationModifiers: card =>
+            {
+                // SpawnCardToBoard i=1650 passes skipAction=false. CreateCard
+                // i=945 notifies after own creation, before veteran1004/T35.
+                NotifyCreateNonVisualCard(card);
+                if (makeVeteran) MakeVeteran(card);
+            });
         int spawnedId = created.CardId;
 
         // RULE-522: only explicit placement reaches InjectCardIntoLocation.

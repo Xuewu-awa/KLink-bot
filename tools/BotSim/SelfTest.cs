@@ -419,6 +419,7 @@ internal static partial class SelfTest
         new("手牌生成通知：抽牌载荷、T35后数量及满手丢弃前通知", NativeSpawnHandReceipt),
         new("手牌生成公开通知：显式参数门、满手弃置后及自身T57事件前", NativeSpawnHandSeenReceipt),
         new("手牌生成对象通知：自身创建后T35前、实时字段快照与可选打捞阵营", NativeSpawnHandNonVisualReceipt),
+        new("战场生成对象通知：自身创建后老兵及T35前、实时字段及底层分配隔离", NativeSpawnBoardNonVisualReceipt),
         new("手牌生成自动打出：自身与T57结束后检查实时位置和标签", NativeSpawnHandAutoplayEvents),
         new("手牌生成：显式来源金卡和打捞字段在创建回调前初始化", NativeSpawnHandInitialFields),
         new("手牌生成：非正来源不创建，不回退上下文且保留旧输出", NativeSpawnHandSourceGuard),

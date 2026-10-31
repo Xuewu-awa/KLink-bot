@@ -1,0 +1,8 @@
+卡牌数据: 2019 张，卡组码映射: 2499 条
+蓝图 IR: 1709 张卡可解释
+手写效果脚本: 0 张，触发脚本: 0 条
+
+  ❌ 战场生成对象通知：自身创建后老兵及T35前、实时字段及底层分配隔离
+       board allocation receipt Left/False/slot=-1/gold=False/faction=0/veteran=False/own=0/T35=False: correct=False, receipts=0
+
+1/1 项失败

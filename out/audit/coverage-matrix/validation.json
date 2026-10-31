@@ -1,6 +1,6 @@
 {
   "date": "2026-11-01",
-  "batch": "spawn-hand-nonvisual-receipt",
+  "batch": "spawn-board-nonvisual-receipt",
   "counts": {
     "cards": 2019,
     "cards_with_own_ir": 1709,
@@ -12,8 +12,8 @@
     "program_containers": 2626,
     "dependency_edges": 18567,
     "dependency_symbols": 440,
-    "secondary_reports": 449,
-    "explicit_partial_units": 37,
+    "secondary_reports": 451,
+    "explicit_partial_units": 38,
     "partial_units_matching_bound_inputs": 1,
     "planning_work_domains": 14,
     "planning_acceptance_criteria": 42,
@@ -25,17 +25,17 @@
   "matrix_tests": 16,
   "production_changes": true,
   "csharp_tests": {
-    "targeted": 11,
-    "full": 1053,
-    "new_scenarios": 1248,
+    "targeted": 2,
+    "full": 1054,
+    "new_scenarios": 2496,
     "before_regression_exit_code": 1,
     "after_exit_code": 0
   },
   "worker": {
-    "job_id": "20261101-015752-nonvisual-0833cb41",
+    "job_id": "20261101-021130-allocation-f59d1678",
     "status": "completed",
-    "independently_checked": "All12 input functions matched originals; primary checked original ubergraph12562 and receipt ordering/gates. Rejected inconsistent worker missing-body claim."
+    "independently_checked": "Three packet functions and34 positional operands checked; all14 raw functions/ubergraph match originals. SDK maps skipAction and veteran positions; primary checked flow boundaries."
   },
-  "input_scope": "HEAD plus scoped ordinary nonvisual hand-allocation receipt and regression. Clean snapshot sources checked; LF-normalized source fingerprints; old bindings preserved.",
-  "generation_git_head": "52795e14a8013691d9e074c0a4b91a74f451d54c"
+  "input_scope": "HEAD plus ordinary board nonvisual receipt composition and regression. Clean snapshot verified; source fingerprints LF-normalized; previous evidence bindings preserved.",
+  "generation_git_head": "61a56358137135f175aa6c09e19999358495ce52"
 }

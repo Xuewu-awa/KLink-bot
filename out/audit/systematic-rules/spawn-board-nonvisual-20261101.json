@@ -1,0 +1,66 @@
+{
+  "rule": "RULE-554",
+  "scope": "Ordinary SpawnCardAtLocation nonvisual allocation notification before requested veteran/T35",
+  "authority_sources": {
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\BP_CardFunctions.functions.json": "b007f0f5689d266cdccee220f164db12582d3893c76a087228dd3ac55836f297",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Logic\\U_CardFunctionsNotifier.functions.json": "e4acd16b57b7a1da30780ecbf598c4d177b7e2d57a27dbb04c269bba9f6e1c94",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Logic\\BP_OnlineMatch.functions.json": "630b523c5a575d1aa956aba41eea8c22a19bf20b6546ffa0a03ad122d73ffe98",
+    "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\ue4ss\\CXXHeaderDump\\BP_CardFunctions.hpp": "1caffda9a9ed12069b5dba073cd1db9e0bf1d128f61d3f083f51e9897ed6801d"
+  },
+  "client_exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "raw_functions": "out/audit/systematic-rules/spawn-board-nonvisual-20261101-functions.json",
+  "raw_functions_sha256": "2a2d1916a5ebc660cb1ec716bbbefd7326488c0b79282f3d6d90da59a18f4d06",
+  "authority_chain": [
+    "SDK CreateCard signature maps serialized index13 to skipAction,14 to MakeVeteran. SpawnCardToBoard1650 passes false and requested makeVeteran; cardSeen index8 is false.",
+    "CreateCardObject2610 own callback returns; CreateCard400 assigns cardSeen,441/464/478 select action/skip path,945 notifies,990/1004 optionally promotes veteran,1036 T35 query and1309 creation-type0 event.",
+    "Notifier/Online handler/ubergraph12562 and six-field builder with optional faction are retained from raw RULE553 evidence; primary rechecked structural originals. Notification uses live post-own-callback fields before later mutation/injection.",
+    "SalvageMultipleUnits1792 instead passes skipAction=true;1955 resolves returned ID;1987 explicitly notifies;2032 queries35 and2337 invokes creation-type3. This is a separate path, not justification to suppress salvage notification."
+  ],
+  "defect": "Board allocation previously called veteran/T35 without emitting ZActionCreateNonVisualCard.",
+  "fix": "Compose pre-modifier callback: NotifyCreateNonVisualCard then optional MakeVeteran. Keep low-level GameState.Create and salvage untouched.",
+  "regression": {
+    "new_scenarios": 2496,
+    "dimensions": [
+      "2 sides",
+      "2 board locations",
+      "2 requested slots",
+      "2 gold",
+      "13 factions",
+      "2 veteran flags",
+      "3 own mutation modes",
+      "2 T35 mutation modes"
+    ],
+    "before_exit_code": 1,
+    "targeted_tests": 2,
+    "full_tests": 1054,
+    "after_exit_code": 0,
+    "assertions": [
+      "receipt absent in own callback",
+      "live six/seven-field snapshot exactly once before T35",
+      "receipt before successful veteran upgrade and final spawn",
+      "later mutation or explicit injection does not rewrite emitted snapshot",
+      "direct low-level allocation does not emit receipt"
+    ],
+    "logs": {
+      "out/audit/systematic-rules/spawn-board-nonvisual-before-20261101.txt": "aec8c4f0275ce023a662af13da384fd3879ba69b3b294e79b875ce6573575e3c",
+      "out/audit/systematic-rules/spawn-board-nonvisual-targeted-20261101.txt": "e7f022c10a29073536e8655bea5c07305537aec3d430f14086e88770cb89b613",
+      "out/audit/systematic-rules/spawn-board-nonvisual-full-20261101.txt": "4eab6f3b7c00454c9866bfc7b63090d6f363754d35070166332185697a1c0151"
+    }
+  },
+  "deepseek": {
+    "skill": "C:/Users/AWQ/.codex/skills/deepseek-worker/SKILL.md",
+    "job": "20261101-021130-allocation-f59d1678",
+    "status": "completed",
+    "result_sha256": "29c1e0c3719318ea0bdc69756d939193aeda3a9b6b26737437b73c46a8e78d5e",
+    "verification": "Three packet functions structurally matched original. Primary independently checked both 17-parameter calls including34 positional operand shapes against worker, SDK signature, shared notification gate and order, and salvage explicit notification.",
+    "rejected_interpretation": "Worker lists subsequent calls by StatementIndex only; its ordered_chain is not accepted as full runtime flow. T35 means trigger35 query. SDK resolves positional signature beyond packet limitations. Primary-created helper scripts in packet are expected, not worker changes.",
+    "role": "Mechanical extraction; primary interpretation, integration, verification and publishing."
+  },
+  "validation_environment": "Clean snapshot 124 tracked src/BotSim files matched HEAD except scoped files; new regression added. Matching Release Data/native-default guard retained.",
+  "remaining": [
+    "SalvageMultipleUnits skips CreateCard action processing but explicitly notifies at1987 before its T35 callback loop with creation type3. Existing salvage allocation needs a separate evidence-backed batch; no negative no-notification claim.",
+    "Only ordinary board action allocation notification integrated. Override-ID/capacity/remote consumption, other allocation callers and complete CreateCard closure remain open.",
+    "Existing enum mapping reused; native friendly formatting, invalid/noncanonical faction inputs and pak/current-client version equivalence not newly certified.",
+    "2496 synthetic boundary cases do not establish actual-game reachability, single-card equivalence or complete PvP restoration."
+  ]
+}
