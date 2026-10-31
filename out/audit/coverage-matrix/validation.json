@@ -1,6 +1,6 @@
 {
   "date": "2026-11-01",
-  "batch": "action-call-provenance",
+  "batch": "display-call-site-classification",
   "counts": {
     "cards": 2019,
     "cards_with_own_ir": 1709,
@@ -12,7 +12,7 @@
     "program_containers": 2626,
     "dependency_edges": 18567,
     "dependency_symbols": 440,
-    "secondary_reports": 435,
+    "secondary_reports": 436,
     "explicit_partial_units": 33,
     "partial_units_matching_bound_inputs": 0,
     "planning_work_domains": 14,
@@ -23,13 +23,15 @@
     "total_work_remaining_percent": null
   },
   "matrix_tests": 16,
-  "admission_checks": 44,
-  "action_dataset_checks": 53,
-  "botsim_focused_selftest": 2,
-  "botsim_full_selftest": 1049,
-  "input_scope": "Publication index snapshot with current checkout EOL and available external/ignored evidence. Unrelated working tree changes excluded. No stale evidence fingerprint refreshed.",
-  "generation_git_head": "ce5fe61f724cbaa824fc94e56d925a05dcea397e",
-  "action_dump_smoke_games": 1,
-  "action_dump_smoke_rows": 107,
-  "action_verify_smoke_rows": 107
+  "display_site_classification_tests": 10,
+  "report_regeneration": "byte-identical from publication snapshot",
+  "production_changes": false,
+  "csharp_tests": "Not rerun in this batch; production sources match HEAD 455630d. Previous batch full selftest1049/admission44/action53 are historical, not new validation.",
+  "worker": {
+    "job_id": "20261101-003800-display-site-flows-02439c66",
+    "status": "completed",
+    "independently_checked": "Sources/conversions/sinks4/4 and direct void log1/1 match. Primary additionally taints unused AddNumberToText output; worker event aliases are not export identities."
+  },
+  "input_scope": "Previous publication snapshot updated with exact new indexed inputs; every production source compared against HEAD ignoring checkout EOL only. Unrelated working edits excluded. No stale evidence fingerprint refreshed.",
+  "generation_git_head": "455630dabfe62d3f5d67aabd59e4e9112611af45"
 }
