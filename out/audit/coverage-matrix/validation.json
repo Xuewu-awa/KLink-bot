@@ -1,6 +1,6 @@
 {
   "date": "2026-11-01",
-  "batch": "display-runtime-bindings",
+  "batch": "display-campaign-direct-boundaries",
   "counts": {
     "cards": 2019,
     "cards_with_own_ir": 1709,
@@ -12,7 +12,7 @@
     "program_containers": 2626,
     "dependency_edges": 18567,
     "dependency_symbols": 440,
-    "secondary_reports": 440,
+    "secondary_reports": 441,
     "explicit_partial_units": 33,
     "partial_units_matching_bound_inputs": 0,
     "planning_work_domains": 14,
@@ -23,17 +23,18 @@
     "total_work_remaining_percent": null
   },
   "matrix_tests": 16,
-  "consumer_boundary_tests": 12,
+  "campaign_group_tests": 10,
+  "display_site_tests": 10,
   "report_regeneration": "Byte-identical from staged publication snapshot",
   "production_changes": false,
-  "csharp_tests": "Audit exporter compiled and executed against clean publication source snapshot; 11 programs and 2 actual VM call sites. No full production selftest rerun: production sources unchanged.",
+  "csharp_tests": "Not rerun: audit tools and evidence only; production files excluded.",
   "worker": {
-    "job_id": "20261101-005527-receiver-boundary-268e5b3d",
-    "status": "completed",
-    "independently_checked": "Historical 5 object headers/class/index/item/CDO checks, 9 offsets, pointer-byte decodes and cross-object reference links. No actual client interface invocation proven."
+    "job_id": "20261101-010622-display-groups-918d16a6",
+    "artifact_sha256": "14938c505671aed7aad9f58a8dea8bd94a255ea0b41dc28ece2d4ca40a34208d",
+    "independently_checked": "All 55 identities, complete source statements and exact named-local reference instruction/path sets matched packet. Derived entrypoint interval region assignments not used as reachability evidence.",
+    "status": "timed_out",
+    "delivery_note": "Worker timed out after writing the artifact; artifact hash remained unchanged and all accepted fields were independently verified. No completion claim for worker run."
   },
-  "input_scope": "Staged exact registry scope and new tools/reports only; unrelated working edits excluded. No stale fingerprints refreshed.",
-  "generation_git_head": "a9235d61adee415b7876f43b120d6b80e135c6b3",
-  "runtime_binding_tests": 14,
-  "display_site_tests": 10
+  "input_scope": "Only exact registry record, new audit tools/reports and regenerated matrix; unrelated edits preserved. No stale fingerprints refreshed.",
+  "generation_git_head": "82288b04dbfdfc91716132c2b44648e8455fee43"
 }
