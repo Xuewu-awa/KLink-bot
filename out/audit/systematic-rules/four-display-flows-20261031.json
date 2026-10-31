@@ -1,0 +1,976 @@
+{
+  "schema_version": 1,
+  "kind": "four_scoped_display_dependency_reviews",
+  "ir": {
+    "path": "D:\\Codex Workshop\\KLink-bot\\klink bot\\docs\\card-ir.json",
+    "sha256": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b",
+    "authority": "derived IR"
+  },
+  "source_files": {
+    "src/KLink.Bot/Effects/Blueprint/KismetVm.cs": "f831c4f23b4ca4db1db08df6b6f75a0d43e9a0dd96b6a8e1d63a3ceff1e2b150",
+    "src/KLink.Bot/Effects/CardApi.cs": "9897f26bd0e94138f390ad2aaae9367414034fa831fe8d8fdc175de9f53855ac",
+    "src/KLink.Bot/Effects/CardApiDispatch.cs": "8f055397bfdbd45d4d2fdebded5e0482d5fa3d96862478b94fcdf0926191cf67",
+    "klink bot/tools/audit-dynamic-text-boundary.py": "ae996eaf7ac15b6d3bcce12975950c81c88f79b8fe6789bcfdb2bdb675faa194"
+  },
+  "method": "function-local, flow-insensitive taint closure; fail on unexpected consumers; compare raw parsed reference statement sets",
+  "summary": {
+    "reviewed_assets": 4,
+    "sources": 4,
+    "reviewed_sinks": 4,
+    "unexpected_consumers": 0,
+    "raw_ir_reference_sets_match": true,
+    "lost_ir_text_templates": 3
+  },
+  "independent_review": {
+    "worker": "deepseek-worker",
+    "job": "20261031-234547-four-display-flow-b124734d",
+    "accepted_scope": "Primary independently compared all four source indices, dependent-step indices, terminal functions and input argument positions: 4/4 match. Additional worker observations are not adopted as established facts."
+  },
+  "validation": {
+    "report_regeneration": "byte-identical on repeat run",
+    "dispatch_gap": {
+      "names": 45,
+      "calls": 1013,
+      "fingerprint": "16DB07EFB256B189"
+    },
+    "runtime_changes": false
+  },
+  "reviews": [
+    {
+      "card": "card_event_carrier_battle",
+      "asset": "kards/Content/Blueprints/Cards/Japan/CovertOp/events/card_event_carrier_battle.uasset",
+      "program": "steps",
+      "source": {
+        "op": "set",
+        "dst": "CallFunc_Format_ReturnValue",
+        "dst_scope": "local",
+        "src": {
+          "math": "Format",
+          "args": [
+            {
+              "str": "null"
+            },
+            {
+              "var": "K2Node_MakeArray_Array",
+              "scope": "local",
+              "element_type": "Struct"
+            }
+          ]
+        },
+        "i": 680,
+        "bo": 680
+      },
+      "dependent_locals": [
+        "CallFunc_Conv_TextToString_ReturnValue",
+        "CallFunc_Format_ReturnValue"
+      ],
+      "uses": [
+        {
+          "i": 754,
+          "bo": 754,
+          "kind": "local_conversion",
+          "local_references": [
+            "CallFunc_Format_ReturnValue"
+          ],
+          "step": {
+            "op": "set",
+            "dst": "CallFunc_Conv_TextToString_ReturnValue",
+            "dst_scope": "local",
+            "src": {
+              "math": "Conv_TextToString",
+              "args": [
+                {
+                  "var": "CallFunc_Format_ReturnValue",
+                  "scope": "local"
+                }
+              ]
+            },
+            "i": 754,
+            "bo": 754
+          }
+        },
+        {
+          "i": 791,
+          "bo": 791,
+          "kind": "reviewed_display_or_log_argument",
+          "local_references": [
+            "CallFunc_Conv_TextToString_ReturnValue"
+          ],
+          "step": {
+            "op": "call",
+            "fn": "SpawnCardInHandBySide",
+            "args": [
+              {
+                "var": "CallFunc_GetOppositeSide_oppositeSide",
+                "scope": "local"
+              },
+              {
+                "name": "card_event_carrier_battle"
+              },
+              {
+                "var": "cardID",
+                "scope": "instance"
+              },
+              {
+                "bool": true
+              },
+              {
+                "bool": false
+              },
+              {
+                "bool": false
+              },
+              {
+                "var": "CallFunc_Conv_TextToString_ReturnValue",
+                "scope": "local"
+              },
+              {
+                "var": "Temp_text_Variable",
+                "scope": "local"
+              },
+              {
+                "int": 0
+              },
+              {
+                "var": "CallFunc_SpawnCardinHandbySide_spawnedCardID",
+                "scope": "local"
+              }
+            ],
+            "outs": [],
+            "recv": {
+              "var": "cardFunction",
+              "scope": "instance"
+            },
+            "i": 791,
+            "bo": 791
+          }
+        }
+      ],
+      "sink": {
+        "i": 791,
+        "fn": "SpawnCardInHandBySide",
+        "input_arg_zero_based": 6
+      },
+      "parsed_evidence": {
+        "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Japan\\CovertOp\\events\\card_event_carrier_battle.functions.json",
+        "sha256": "4fb8e54deb49be589c0633ba57d3eaee483f7539f7dfb4af7802dda53bd6316b",
+        "function": "ExecuteUbergraph_card_event_carrier_battle",
+        "reference_statements": [
+          {
+            "Inst": "Let",
+            "Variable": {
+              "Inst": "LocalVariable",
+              "Variable Outer": {
+                "PinCategory": "Text",
+                "PinSubCategory": "Text"
+              },
+              "Variable Name": "CallFunc_Format_ReturnValue"
+            },
+            "Expression": {
+              "Inst": "CallMath",
+              "Function": "Format",
+              "ContextClass": "/Script/Engine.KismetTextLibrary",
+              "Parameters": [
+                {
+                  "Inst": "TextConst",
+                  "TextLiteralType": "InvariantText",
+                  "SourceString": "card_event_carrier_battle:{level}"
+                },
+                {
+                  "Inst": "LocalVariable",
+                  "Variable Outer": {
+                    "PinCategory": "Struct",
+                    "PinSubCategory": "Struct",
+                    "PinSubCategoryObject": "/Script/Engine.FormatArgumentData",
+                    "ContainerType": 1
+                  },
+                  "Variable Name": "K2Node_MakeArray_Array"
+                }
+              ]
+            },
+            "StatementIndex": 680
+          },
+          {
+            "Inst": "Let",
+            "Variable": {
+              "Inst": "LocalVariable",
+              "Variable Outer": {
+                "PinCategory": "String",
+                "PinSubCategory": "String"
+              },
+              "Variable Name": "CallFunc_Conv_TextToString_ReturnValue"
+            },
+            "Expression": {
+              "Inst": "CallMath",
+              "Function": "Conv_TextToString",
+              "ContextClass": "/Script/Engine.KismetTextLibrary",
+              "Parameters": [
+                {
+                  "Inst": "LocalVariable",
+                  "Variable Outer": {
+                    "PinCategory": "Text",
+                    "PinSubCategory": "Text"
+                  },
+                  "Variable Name": "CallFunc_Format_ReturnValue"
+                }
+              ]
+            },
+            "StatementIndex": 754
+          },
+          {
+            "Inst": "Context",
+            "Context": {
+              "Inst": "InstanceVariable",
+              "Variable Outer": "##NOT SERIALIZED##",
+              "Variable Name": "cardFunction"
+            },
+            "SkipOffsetForNull": 77,
+            "RValuePropertyOuter": "#Pointer Error#",
+            "RValuePropertyName": "^^^^^",
+            "Expression": {
+              "Inst": "LocalVirtualFunction",
+              "FunctionName": "SpawnCardInHandBySide",
+              "Parameters": [
+                {
+                  "Inst": "LocalVariable",
+                  "Variable Outer": {
+                    "PinCategory": "Byte",
+                    "PinSubCategory": "Byte",
+                    "PinSubCategoryObject": "/Script/kards.ESideEnum"
+                  },
+                  "Variable Name": "CallFunc_GetOppositeSide_oppositeSide"
+                },
+                {
+                  "Inst": "NameConst",
+                  "Value": "card_event_carrier_battle"
+                },
+                {
+                  "Inst": "InstanceVariable",
+                  "Variable Outer": "##NOT SERIALIZED##",
+                  "Variable Name": "cardID"
+                },
+                {
+                  "Inst": "True"
+                },
+                {
+                  "Inst": "False"
+                },
+                {
+                  "Inst": "False"
+                },
+                {
+                  "Inst": "LocalVariable",
+                  "Variable Outer": {
+                    "PinCategory": "String",
+                    "PinSubCategory": "String"
+                  },
+                  "Variable Name": "CallFunc_Conv_TextToString_ReturnValue"
+                },
+                {
+                  "Inst": "LocalVariable",
+                  "Variable Outer": {
+                    "PinCategory": "Text",
+                    "PinSubCategory": "Text"
+                  },
+                  "Variable Name": "Temp_text_Variable"
+                },
+                {
+                  "Inst": "ByteConst",
+                  "Value": 0
+                },
+                {
+                  "Inst": "LocalVariable",
+                  "Variable Outer": {
+                    "PinCategory": "Int",
+                    "PinSubCategory": "Int"
+                  },
+                  "Variable Name": "CallFunc_SpawnCardinHandbySide_spawnedCardID"
+                }
+              ]
+            },
+            "StatementIndex": 791
+          }
+        ]
+      },
+      "raw_text_templates": [
+        "card_event_carrier_battle:{level}"
+      ],
+      "ir_text_templates": [
+        "null"
+      ],
+      "conclusion": "scoped result dependency terminates at reviewed display/log argument; no other consumer in this function"
+    },
+    {
+      "card": "card_event_seize_the_initiative",
+      "asset": "kards/Content/Blueprints/Cards/Japan/Breakthrough/events/card_event_seize_the_initiative.uasset",
+      "program": "steps",
+      "source": {
+        "op": "set",
+        "dst": "CallFunc_Format_ReturnValue",
+        "dst_scope": "local",
+        "src": {
+          "math": "Format",
+          "args": [
+            {
+              "str": "null"
+            },
+            {
+              "var": "K2Node_MakeArray_Array",
+              "scope": "local",
+              "element_type": "Struct"
+            }
+          ]
+        },
+        "i": 684,
+        "bo": 684
+      },
+      "dependent_locals": [
+        "CallFunc_Conv_TextToString_ReturnValue",
+        "CallFunc_Format_ReturnValue"
+      ],
+      "uses": [
+        {
+          "i": 764,
+          "bo": 764,
+          "kind": "local_conversion",
+          "local_references": [
+            "CallFunc_Format_ReturnValue"
+          ],
+          "step": {
+            "op": "set",
+            "dst": "CallFunc_Conv_TextToString_ReturnValue",
+            "dst_scope": "local",
+            "src": {
+              "math": "Conv_TextToString",
+              "args": [
+                {
+                  "var": "CallFunc_Format_ReturnValue",
+                  "scope": "local"
+                }
+              ]
+            },
+            "i": 764,
+            "bo": 764
+          }
+        },
+        {
+          "i": 801,
+          "bo": 801,
+          "kind": "reviewed_display_or_log_argument",
+          "local_references": [
+            "CallFunc_Conv_TextToString_ReturnValue"
+          ],
+          "step": {
+            "op": "call",
+            "fn": "SpawnCardInHandBySide",
+            "args": [
+              {
+                "var": "CallFunc_GetOppositeSide_oppositeSide",
+                "scope": "local"
+              },
+              {
+                "name": "card_event_seize_the_initiative"
+              },
+              {
+                "var": "cardID",
+                "scope": "instance"
+              },
+              {
+                "bool": true
+              },
+              {
+                "bool": false
+              },
+              {
+                "bool": false
+              },
+              {
+                "var": "CallFunc_Conv_TextToString_ReturnValue",
+                "scope": "local"
+              },
+              {
+                "var": "Temp_text_Variable",
+                "scope": "local"
+              },
+              {
+                "int": 0
+              },
+              {
+                "var": "CallFunc_SpawnCardinHandbySide_spawnedCardID",
+                "scope": "local"
+              }
+            ],
+            "outs": [],
+            "recv": {
+              "var": "cardFunction",
+              "scope": "instance"
+            },
+            "i": 801,
+            "bo": 801
+          }
+        }
+      ],
+      "sink": {
+        "i": 801,
+        "fn": "SpawnCardInHandBySide",
+        "input_arg_zero_based": 6
+      },
+      "parsed_evidence": {
+        "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Japan\\Breakthrough\\events\\card_event_seize_the_initiative.functions.json",
+        "sha256": "10701c50c80a498f422d1beceb18804575807832cb6cfe2a8d41507b31230e71",
+        "function": "ExecuteUbergraph_card_event_seize_the_initiative",
+        "reference_statements": [
+          {
+            "Inst": "Let",
+            "Variable": {
+              "Inst": "LocalVariable",
+              "Variable Outer": {
+                "PinCategory": "Text",
+                "PinSubCategory": "Text"
+              },
+              "Variable Name": "CallFunc_Format_ReturnValue"
+            },
+            "Expression": {
+              "Inst": "CallMath",
+              "Function": "Format",
+              "ContextClass": "/Script/Engine.KismetTextLibrary",
+              "Parameters": [
+                {
+                  "Inst": "TextConst",
+                  "TextLiteralType": "InvariantText",
+                  "SourceString": "card_event_seize_the_initiative:{level}"
+                },
+                {
+                  "Inst": "LocalVariable",
+                  "Variable Outer": {
+                    "PinCategory": "Struct",
+                    "PinSubCategory": "Struct",
+                    "PinSubCategoryObject": "/Script/Engine.FormatArgumentData",
+                    "ContainerType": 1
+                  },
+                  "Variable Name": "K2Node_MakeArray_Array"
+                }
+              ]
+            },
+            "StatementIndex": 684
+          },
+          {
+            "Inst": "Let",
+            "Variable": {
+              "Inst": "LocalVariable",
+              "Variable Outer": {
+                "PinCategory": "String",
+                "PinSubCategory": "String"
+              },
+              "Variable Name": "CallFunc_Conv_TextToString_ReturnValue"
+            },
+            "Expression": {
+              "Inst": "CallMath",
+              "Function": "Conv_TextToString",
+              "ContextClass": "/Script/Engine.KismetTextLibrary",
+              "Parameters": [
+                {
+                  "Inst": "LocalVariable",
+                  "Variable Outer": {
+                    "PinCategory": "Text",
+                    "PinSubCategory": "Text"
+                  },
+                  "Variable Name": "CallFunc_Format_ReturnValue"
+                }
+              ]
+            },
+            "StatementIndex": 764
+          },
+          {
+            "Inst": "Context",
+            "Context": {
+              "Inst": "InstanceVariable",
+              "Variable Outer": "##NOT SERIALIZED##",
+              "Variable Name": "cardFunction"
+            },
+            "SkipOffsetForNull": 77,
+            "RValuePropertyOuter": "#Pointer Error#",
+            "RValuePropertyName": "^^^^^",
+            "Expression": {
+              "Inst": "LocalVirtualFunction",
+              "FunctionName": "SpawnCardInHandBySide",
+              "Parameters": [
+                {
+                  "Inst": "LocalVariable",
+                  "Variable Outer": {
+                    "PinCategory": "Byte",
+                    "PinSubCategory": "Byte",
+                    "PinSubCategoryObject": "/Script/kards.ESideEnum"
+                  },
+                  "Variable Name": "CallFunc_GetOppositeSide_oppositeSide"
+                },
+                {
+                  "Inst": "NameConst",
+                  "Value": "card_event_seize_the_initiative"
+                },
+                {
+                  "Inst": "InstanceVariable",
+                  "Variable Outer": "##NOT SERIALIZED##",
+                  "Variable Name": "cardID"
+                },
+                {
+                  "Inst": "True"
+                },
+                {
+                  "Inst": "False"
+                },
+                {
+                  "Inst": "False"
+                },
+                {
+                  "Inst": "LocalVariable",
+                  "Variable Outer": {
+                    "PinCategory": "String",
+                    "PinSubCategory": "String"
+                  },
+                  "Variable Name": "CallFunc_Conv_TextToString_ReturnValue"
+                },
+                {
+                  "Inst": "LocalVariable",
+                  "Variable Outer": {
+                    "PinCategory": "Text",
+                    "PinSubCategory": "Text"
+                  },
+                  "Variable Name": "Temp_text_Variable"
+                },
+                {
+                  "Inst": "ByteConst",
+                  "Value": 0
+                },
+                {
+                  "Inst": "LocalVariable",
+                  "Variable Outer": {
+                    "PinCategory": "Int",
+                    "PinSubCategory": "Int"
+                  },
+                  "Variable Name": "CallFunc_SpawnCardinHandbySide_spawnedCardID"
+                }
+              ]
+            },
+            "StatementIndex": 801
+          }
+        ]
+      },
+      "raw_text_templates": [
+        "card_event_seize_the_initiative:{level}"
+      ],
+      "ir_text_templates": [
+        "null"
+      ],
+      "conclusion": "scoped result dependency terminates at reviewed display/log argument; no other consumer in this function"
+    },
+    {
+      "card": "card_unit_115th_separate_btn",
+      "asset": "kards/Content/Blueprints/Cards/Soviet/CovertOp/units/card_unit_115th_separate_btn.uasset",
+      "program": "steps",
+      "source": {
+        "op": "set",
+        "dst": "CallFunc_Format_ReturnValue",
+        "dst_scope": "local",
+        "src": {
+          "math": "Format",
+          "args": [
+            {
+              "str": "null"
+            },
+            {
+              "var": "K2Node_MakeArray_Array",
+              "scope": "local",
+              "element_type": "Struct"
+            }
+          ]
+        },
+        "i": 2725,
+        "bo": 2725
+      },
+      "dependent_locals": [
+        "CallFunc_AddNumberToText_qqq_1",
+        "CallFunc_Format_ReturnValue"
+      ],
+      "uses": [
+        {
+          "i": 2810,
+          "bo": 2810,
+          "kind": "reviewed_display_or_log_argument",
+          "local_references": [
+            "CallFunc_AddNumberToText_qqq_1",
+            "CallFunc_Format_ReturnValue"
+          ],
+          "step": {
+            "op": "call",
+            "fn": "AddNumberToText",
+            "args": [
+              {
+                "var": "cardID",
+                "scope": "instance"
+              },
+              {
+                "var": "CallFunc_Format_ReturnValue",
+                "scope": "local"
+              },
+              {
+                "int": 0
+              },
+              {
+                "var": "CallFunc_AddNumberToText_qqq_1",
+                "scope": "local"
+              }
+            ],
+            "outs": [
+              {
+                "param": 3,
+                "slot": "CallFunc_AddNumberToText_qqq_1"
+              }
+            ],
+            "recv": {
+              "var": "cardFunction",
+              "scope": "instance"
+            },
+            "i": 2810,
+            "bo": 2810
+          }
+        }
+      ],
+      "sink": {
+        "i": 2810,
+        "fn": "AddNumberToText",
+        "input_arg_zero_based": 1
+      },
+      "parsed_evidence": {
+        "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Soviet\\CovertOp\\units\\card_unit_115th_separate_btn.functions.json",
+        "sha256": "178c21b684fadc3c69be7821649836b282966951f1c0a574d96d8c8c49063fbb",
+        "function": "ExecuteUbergraph_card_unit_115th_separate_btn",
+        "reference_statements": [
+          {
+            "Inst": "Let",
+            "Variable": {
+              "Inst": "LocalVariable",
+              "Variable Outer": {
+                "PinCategory": "Text",
+                "PinSubCategory": "Text"
+              },
+              "Variable Name": "CallFunc_Format_ReturnValue"
+            },
+            "Expression": {
+              "Inst": "CallMath",
+              "Function": "Format",
+              "ContextClass": "/Script/Engine.KismetTextLibrary",
+              "Parameters": [
+                {
+                  "Inst": "TextConst",
+                  "TextLiteralType": "LocalizedText",
+                  "SourceString": "+{x}+{y}",
+                  "LocalizationKey": "31808C544BD64E8106B68898359365BE",
+                  "LocalizationNamespace": ""
+                },
+                {
+                  "Inst": "LocalVariable",
+                  "Variable Outer": {
+                    "PinCategory": "Struct",
+                    "PinSubCategory": "Struct",
+                    "PinSubCategoryObject": "/Script/Engine.FormatArgumentData",
+                    "ContainerType": 1
+                  },
+                  "Variable Name": "K2Node_MakeArray_Array"
+                }
+              ]
+            },
+            "StatementIndex": 2725
+          },
+          {
+            "Inst": "Context",
+            "Context": {
+              "Inst": "InstanceVariable",
+              "Variable Outer": "##NOT SERIALIZED##",
+              "Variable Name": "cardFunction"
+            },
+            "SkipOffsetForNull": 43,
+            "RValuePropertyOuter": "#Pointer Error#",
+            "RValuePropertyName": "^^^^^",
+            "Expression": {
+              "Inst": "LocalVirtualFunction",
+              "FunctionName": "AddNumberToText",
+              "Parameters": [
+                {
+                  "Inst": "InstanceVariable",
+                  "Variable Outer": "##NOT SERIALIZED##",
+                  "Variable Name": "cardID"
+                },
+                {
+                  "Inst": "LocalVariable",
+                  "Variable Outer": {
+                    "PinCategory": "Text",
+                    "PinSubCategory": "Text"
+                  },
+                  "Variable Name": "CallFunc_Format_ReturnValue"
+                },
+                {
+                  "Inst": "ByteConst",
+                  "Value": 0
+                },
+                {
+                  "Inst": "LocalVariable",
+                  "Variable Outer": {
+                    "PinCategory": "Int",
+                    "PinSubCategory": "Int"
+                  },
+                  "Variable Name": "CallFunc_AddNumberToText_qqq_1"
+                }
+              ]
+            },
+            "StatementIndex": 2810
+          }
+        ]
+      },
+      "raw_text_templates": [
+        "+{x}+{y}"
+      ],
+      "ir_text_templates": [
+        "null"
+      ],
+      "conclusion": "scoped result dependency terminates at reviewed display/log argument; no other consumer in this function"
+    },
+    {
+      "card": "card_unit_75th_rifle_regiment",
+      "asset": "Soviet/OceaniaStorm/units/card_unit_75th_rifle_regiment.uasset",
+      "program": "SpawnCopy",
+      "source": {
+        "op": "set",
+        "dst": "CallFunc_GetDisplayName_ReturnValue",
+        "dst_scope": "local",
+        "src": {
+          "math": "GetDisplayName",
+          "args": [
+            {
+              "self": true
+            }
+          ]
+        },
+        "i": 0,
+        "bo": 0
+      },
+      "dependent_locals": [
+        "CallFunc_Concat_StrStr_ReturnValue",
+        "CallFunc_GetDisplayName_ReturnValue"
+      ],
+      "uses": [
+        {
+          "i": 29,
+          "bo": 41,
+          "kind": "local_conversion",
+          "local_references": [
+            "CallFunc_GetDisplayName_ReturnValue"
+          ],
+          "step": {
+            "op": "set",
+            "dst": "CallFunc_Concat_StrStr_ReturnValue",
+            "dst_scope": "local",
+            "src": {
+              "math": "Concat_StrStr",
+              "args": [
+                {
+                  "var": "CallFunc_GetDisplayName_ReturnValue",
+                  "scope": "local"
+                },
+                {
+                  "str": " is duplicating a card"
+                }
+              ]
+            },
+            "i": 29,
+            "bo": 41
+          }
+        },
+        {
+          "i": 90,
+          "bo": 122,
+          "kind": "reviewed_display_or_log_argument",
+          "local_references": [
+            "CallFunc_Concat_StrStr_ReturnValue"
+          ],
+          "step": {
+            "op": "math",
+            "fn": "PrintString",
+            "args": [
+              {
+                "self": true
+              },
+              {
+                "var": "CallFunc_Concat_StrStr_ReturnValue",
+                "scope": "local"
+              },
+              {
+                "bool": true
+              },
+              {
+                "bool": true
+              },
+              {
+                "struct": "/Script/CoreUObject.LinearColor",
+                "array": []
+              },
+              {
+                "float": 2.0
+              },
+              {
+                "name": "None"
+              }
+            ],
+            "outs": [],
+            "i": 90,
+            "bo": 122
+          }
+        }
+      ],
+      "sink": {
+        "i": 90,
+        "fn": "PrintString",
+        "input_arg_zero_based": 1
+      },
+      "parsed_evidence": {
+        "path": "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Soviet\\OceaniaStorm\\units\\card_unit_75th_rifle_regiment.functions.json",
+        "sha256": "63f4a03b76d601ac1d8a4aea0e86b20227ea430e387d53ec1945c32f0212a579",
+        "function": "SpawnCopy",
+        "reference_statements": [
+          {
+            "Inst": "Let",
+            "Variable": {
+              "Inst": "LocalVariable",
+              "Variable Outer": {
+                "PinCategory": "String",
+                "PinSubCategory": "String"
+              },
+              "Variable Name": "CallFunc_GetDisplayName_ReturnValue"
+            },
+            "Expression": {
+              "Inst": "CallMath",
+              "Function": "GetDisplayName",
+              "ContextClass": "/Script/Engine.KismetSystemLibrary",
+              "Parameters": [
+                {
+                  "Inst": "Self"
+                }
+              ]
+            },
+            "StatementIndex": 0
+          },
+          {
+            "Inst": "Let",
+            "Variable": {
+              "Inst": "LocalVariable",
+              "Variable Outer": {
+                "PinCategory": "String",
+                "PinSubCategory": "String"
+              },
+              "Variable Name": "CallFunc_Concat_StrStr_ReturnValue"
+            },
+            "Expression": {
+              "Inst": "CallMath",
+              "Function": "Concat_StrStr",
+              "ContextClass": "/Script/Engine.KismetStringLibrary",
+              "Parameters": [
+                {
+                  "Inst": "LocalVariable",
+                  "Variable Outer": {
+                    "PinCategory": "String",
+                    "PinSubCategory": "String"
+                  },
+                  "Variable Name": "CallFunc_GetDisplayName_ReturnValue"
+                },
+                {
+                  "Inst": "StringConst",
+                  "Value": " is duplicating a card"
+                }
+              ]
+            },
+            "StatementIndex": 29
+          },
+          {
+            "Inst": "CallMath",
+            "Function": "PrintString",
+            "ContextClass": "/Script/Engine.KismetSystemLibrary",
+            "Parameters": [
+              {
+                "Inst": "Self"
+              },
+              {
+                "Inst": "LocalVariable",
+                "Variable Outer": {
+                  "PinCategory": "String",
+                  "PinSubCategory": "String"
+                },
+                "Variable Name": "CallFunc_Concat_StrStr_ReturnValue"
+              },
+              {
+                "Inst": "True"
+              },
+              {
+                "Inst": "True"
+              },
+              {
+                "Inst": "StructConst",
+                "Struct": "/Script/CoreUObject.LinearColor",
+                "Properties": {
+                  "Missing property name0": [
+                    {
+                      "Inst": "FloatConst",
+                      "Value": "+0"
+                    }
+                  ],
+                  "Missing property name1": [
+                    {
+                      "Inst": "FloatConst",
+                      "Value": 0.6600000262260437
+                    }
+                  ],
+                  "Missing property name2": [
+                    {
+                      "Inst": "FloatConst",
+                      "Value": 1.0
+                    }
+                  ],
+                  "Missing property name3": [
+                    {
+                      "Inst": "FloatConst",
+                      "Value": 1.0
+                    }
+                  ]
+                }
+              },
+              {
+                "Inst": "FloatConst",
+                "Value": 2.0
+              },
+              {
+                "Inst": "NameConst",
+                "Value": "None"
+              }
+            ],
+            "StatementIndex": 90
+          }
+        ]
+      },
+      "raw_text_templates": [],
+      "ir_text_templates": [],
+      "conclusion": "scoped result dependency terminates at reviewed display/log argument; no other consumer in this function"
+    }
+  ],
+  "runtime_review": [
+    "KismetVm.EvalMath default records math:<name> then returns null; set/math steps advance pc. CardApi.NotifyUnimplemented only updates counters.",
+    "Concat_StrStr tolerates null; missing display-name math does not itself skip SpawnCopy gameplay calls.",
+    "DoSpawnInHand does not read argument 6; AddNumberToText dispatch is a no-op. These are current simulator adaptations, not proof of all client callee behavior.",
+    "Carrier battle and seize initiative use explicit level numeric effects, ChangeKreditCost and JSON_SetInt/PersistCustomFields; see prior dynamic-text-boundary report."
+  ],
+  "limitations": [
+    "Parsed bytecode is a local extraction artifact with unresolved fields, not a fresh independently version-matched pak decode. Hashes identify evidence, not version equivalence.",
+    "Raw text templates survive in parsed bytecode but are null strings in current IR; FormatArgumentData fields remain unresolved. Text is not fully restored.",
+    "This checks dependencies of four specific return values, not whole cards, CFG reachability, inherited native behavior or every callee notification.",
+    "Static gap baseline remains 45 names / 1013 calls; no runtime implementation or coverage accounting is changed.",
+    "Display/log omission may still affect unsupported counters and training admission policies; no claim that these cards are fully certified for training."
+  ]
+}
