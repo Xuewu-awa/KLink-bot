@@ -31,6 +31,10 @@ internal static class GapReport
 
         var api = new KLink.Bot.Effects.CardApi(
             new MatchEngine(db, Array.Empty<string>(), Array.Empty<string>(), seed: 0));
+        // Keep this report's executable-name semantics identical to DispatchGap:
+        // CardApi dispatch, VM math nodes, and the per-card local/entrypoint
+        // fallbacks all count as implemented.  Looking only at CardApi here
+        // produced false positives for enum comparisons and card-local helpers.
         var implemented = new HashSet<string>(api.ImplementedNames, StringComparer.Ordinal);
 
         // ---- 卡组 → 唯一卡 ----
@@ -89,20 +93,91 @@ internal static class GapReport
             {
                 totalSteps++;
 
-                if (step.Function is { Length: > 0 } fn
-                    && !fn.StartsWith("ExecuteUbergraph", StringComparison.Ordinal)
-                    && !implemented.Contains(fn)
-                    && !fn.Contains('.'))          // math:Conv_StringToInt 之类单独统计
-                {
-                    missingCalls[fn] = missingCalls.GetValueOrDefault(fn) + 1;
-                    cardHasMissing = true;
-                }
+                VisitStep(resolved, step);
 
                 if (HasContext(step.Source) || HasContext(step.Condition)
                     || HasContext(step.Receiver) || step.Args.Any(HasContext))
                 {
                     ctxSteps++;
                     cardHasCtx = true;
+                }
+            }
+
+            // Local exports are executable functions too.  They are reached by
+            // KismetVm's same-card fallback and must be scanned for nested calls.
+            foreach (var body in card.Locals.Values)
+            {
+                foreach (var step in body)
+                {
+                    totalSteps++;
+                    VisitStep(resolved, step);
+
+                    if (HasContext(step.Source) || HasContext(step.Condition)
+                        || HasContext(step.Receiver) || step.Args.Any(HasContext))
+                    {
+                        ctxSteps++;
+                        cardHasCtx = true;
+                    }
+                }
+            }
+
+            // Keep call classification identical to DispatchGap, including
+            // VM math nodes and same-card local/entrypoint fallbacks.
+            void VisitStep(string cardName, KismetStep step)
+            {
+                if (step.Op == "call" && step.Function is { } fn)
+                {
+                    CountCall(fn,
+                        entrypointFallback: step.OutParams.Count == 0,
+                        selfCall: step.Receiver is null || step.Receiver.Self);
+                }
+
+                if (step.Op == "math" && step.Function is { } math
+                    && !KismetVm.ImplementedMathNames.Contains(math))
+                {
+                    AddMissing("math:" + math);
+                }
+
+                Visit(step.Source);
+                Visit(step.Condition);
+                Visit(step.Receiver);
+                foreach (var arg in step.Args) Visit(arg);
+
+                void CountCall(string name, bool entrypointFallback, bool selfCall)
+                {
+                    if (name is "Map_Find" or "GetDataTableRowFromName"
+                        || implemented.Contains(name)
+                        || selfCall && lib.FindLocalProgram(cardName, name) is not null
+                        || selfCall && entrypointFallback && lib.FindProgram(cardName, name) is not null)
+                    {
+                        return;
+                    }
+
+                    AddMissing(name);
+                }
+
+                void Visit(KismetExpr? expression)
+                {
+                    if (expression is null) return;
+                    if (expression.Call is { } call)
+                    {
+                        CountCall(call, entrypointFallback: false,
+                            selfCall: expression.Context is null || expression.Context.Self);
+                    }
+                    if (expression.Math is { } math
+                        && !KismetVm.ImplementedMathNames.Contains(math))
+                    {
+                        AddMissing("math:" + math);
+                    }
+                    Visit(expression.Context);
+                    foreach (var arg in expression.Args) Visit(arg);
+                    foreach (var item in expression.Array) Visit(item);
+                }
+
+                void AddMissing(string name)
+                {
+                    missingCalls[name] = missingCalls.GetValueOrDefault(name) + 1;
+                    cardHasMissing = true;
                 }
             }
 

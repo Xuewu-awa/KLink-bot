@@ -1,0 +1,62 @@
+{
+  "schema_version": 1,
+  "generated_utc": "2026-10-31T07:49:55.8246593Z",
+  "scope": "GapReport alignment after card IR synchronization",
+  "ir": {
+    "path": "klink bot/docs/card-ir.json",
+    "sha256": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b",
+    "entries": 1709
+  },
+  "changes": [
+    {
+      "before": "GapReport only checked CardApi.ImplementedNames and top-level step.Function",
+      "after": "Uses CardApi dispatch plus KismetVm.ImplementedMathNames, same-card local fallback, entrypoint fallback, and recursive expression traversal",
+      "effect": "Removes false positives from enum/math/card-local helper calls"
+    },
+    {
+      "before": "Only top-level Steps were scanned",
+      "after": "Scans Steps and Locals, including nested call/math expressions",
+      "effect": "Aligns gap accounting with DispatchGap semantics"
+    }
+  ],
+  "results": {
+    "card_data": 2019,
+    "ir_cards": 1709,
+    "representative_unique_cards": 267,
+    "missing_primitives": 0,
+    "no_blueprint_logic_cards": 6,
+    "no_blueprint_logic_names": [
+      "card_unit_15th_cavalry_regiment",
+      "card_unit_554th_rifles",
+      "card_unit_ki_61_hien",
+      "card_unit_panzer_ii_a",
+      "card_unit_red_devils",
+      "card_unit_shiden"
+    ],
+    "ctx_limited_cards": 162,
+    "dispatch_static_gap_classes": 45,
+    "dispatch_calls": 1013,
+    "dispatch_fingerprint": "16DB07EFB256B189",
+    "selftest_passed": 1042
+  },
+  "interpretation": [
+    "The seven previously reported examples (EnumCompareFaction, EnumCompareSide, EnumCompareCardLocation, didPlayBritishInfantryLastTurn, CheckAndApplyKreditBuff, updateCustomJsonIfNeeded, getPossibleCardsFromStaticCards) are no longer counted as missing after fallback-aware scanning.",
+    "Zero missing primitives applies to the representative deck scope after alignment; it is not a certification that every PvP card path is semantically complete.",
+    "Six representative cards have no blueprint logic and remain explicit gaps.",
+    "162 representative cards contain ctx-limited reads; their VM semantics still require semantic audit.",
+    "The 45-class dispatch list is whole-IR and includes campaign/tutorial/UI/brawl assets. The classification file explicitly does not certify client reachability; 247 HasCampaignUpgrade calls remain unclassified and are not declared non-PvP by this report."
+  ],
+  "validation": [
+    "dotnet build src/KLink.Bot/KLink.Bot.csproj -c Release: passed",
+    "dotnet build tools/BotSim/BotSim.csproj -c Release: passed",
+    "BotSim gaps: passed with results recorded in gaps-after-alignment-20261031.txt",
+    "BotSim dispatch-gap: passed with results recorded in dispatch-gap-after-alignment-20261031.txt",
+    "BotSim selftest: 1042/1042 passed"
+  ],
+  "evidence": [
+    "out/audit/systematic-rules/gaps-after-alignment-20261031.txt",
+    "out/audit/systematic-rules/dispatch-gap-after-alignment-20261031.txt",
+    "out/audit/systematic-rules/selftest-after-gapreport-alignment-20261031.txt",
+    "out/audit/systematic-rules/dispatch-gap-pvp-classification-20261031.json"
+  ]
+}
