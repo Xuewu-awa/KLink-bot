@@ -3,8 +3,8 @@
   "scope": "Independent afterstate model; fixed game-disjoint holdout; no promotion",
   "datasetSha256": "355ebd71834cbe39521da98d57856bf3e5ef8d2e4f778f1c8b239e6f6abbd8c8",
   "splitSha256": "8757843e5af5ae919eea5b8c8517399c677247d2613a435a101ab5673bb6f6e4",
-  "modelSha256": "abf4ed5cb661b066e8a77a1391de7618a544973b3c4706a46000b2d446a3d032",
-  "modelReportSha256": "fdef0ccd38913391342759899b95e7082a0177de4a783f1a280ee64835838666",
+  "modelSha256": "0f79892f6e19e0be7e5b9865b7f61834c3b2f2204266bbed71481450c512bf25",
+  "modelReportSha256": "fd21a4b42a78c2681d0dbbe6121f9bb8eae9512d2d037858e857d9af3968b6cd",
   "parameters": {
     "epochs": 10,
     "hidden": 16,
@@ -41,9 +41,10 @@
     "tools/NNTrain/Program.cs": "5bd4e32e97af97a80d7aac4e6c6cb51f9033c0f218afbdd405d07848aa7521ef"
   },
   "artifacts": {
-    "out/audit/systematic-rules/afterstate-win-model-20261102.bin": "abf4ed5cb661b066e8a77a1391de7618a544973b3c4706a46000b2d446a3d032",
-    "out/audit/systematic-rules/afterstate-win-model-20261102.report.json": "fdef0ccd38913391342759899b95e7082a0177de4a783f1a280ee64835838666",
+    "out/audit/systematic-rules/afterstate-win-model-20261102.bin": "0f79892f6e19e0be7e5b9865b7f61834c3b2f2204266bbed71481450c512bf25",
+    "out/audit/systematic-rules/afterstate-win-model-20261102.report.json": "fd21a4b42a78c2681d0dbbe6121f9bb8eae9512d2d037858e857d9af3968b6cd",
     "out/audit/systematic-rules/afterstate-win-training-full-20261102.txt": "b52f3d77781c4b93172989bb134585151dd40af35f76f30085711611505f44c6",
-    "out/audit/systematic-rules/afterstate-win-training-20261102.md": "bc7e076367b2e45dfbf3e6560857f4ec537e5ad06f76408c47f2947c3836f581"
+    "out/audit/systematic-rules/afterstate-win-training-20261102.md": "bc7e076367b2e45dfbf3e6560857f4ec537e5ad06f76408c47f2947c3836f581",
+    "out/audit/systematic-rules/afterstate-win-eval-full-20261102.txt": "b52f3d77781c4b93172989bb134585151dd40af35f76f30085711611505f44c6"
   }
 }

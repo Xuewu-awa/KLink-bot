@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "scope": "Afterstate model smoke only; no strength claim",
+  "evaluation": {
+    "games": [
+      {
+        "matchup": [
+          0,
+          1
+        ],
+        "seed": 460000
+      }
+    ]
+  },
+  "maxSteps": 1000,
+  "maxSeconds": 180,
+  "model": "afterstate-win-model-20261102.bin",
+  "data": "afterstate-win-16.jsonl.gz",
+  "split": "afterstate-win-16.split.json"
+}

@@ -69,15 +69,32 @@ public sealed class NnPolicy
 
     public NnPolicy(NnModel model, StateEncoder.CardVecs vecs, Side side, bool allowMoves, bool rollout)
     {
-        var contract = ValueTrainingContract.Read(model);
-        contract.RequireSampling(rollout ? "turn-end/v1" : "policy-and-choice-before/v1");
-        contract.RequireTarget("win");
-        contract.RequireRuntime();
+        ValidateContract(model, rollout);
         _model = model;
         _vecs = vecs;
         _side = side;
         _allowMoves = allowMoves;
         _rollout = rollout;
+    }
+
+    // Evaluation-only constructor for a separately versioned afterstate model.
+    // The caller must bind and validate that model's own contract before construction.
+    public NnPolicy(NnModel model, StateEncoder.CardVecs vecs, Side side, bool allowMoves, bool rollout, bool validateContract)
+    {
+        if (validateContract) ValidateContract(model, rollout);
+        _model = model;
+        _vecs = vecs;
+        _side = side;
+        _allowMoves = allowMoves;
+        _rollout = rollout;
+    }
+
+    private static void ValidateContract(NnModel model, bool rollout)
+    {
+        var contract = ValueTrainingContract.Read(model);
+        contract.RequireSampling(rollout ? "turn-end/v1" : "policy-and-choice-before/v1");
+        contract.RequireTarget("win");
+        contract.RequireRuntime();
     }
 
     /// <summary>当前局面下，模型认为 NN 这一方的胜率。</summary>

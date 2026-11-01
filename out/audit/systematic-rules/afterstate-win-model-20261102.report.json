@@ -29,7 +29,7 @@
       10,
       15
     ],
-    "simulatorSha256": "5617086d1280a352034121ca2181f706903226c39b4b258e8215d8a9968ed87a"
+    "simulatorSha256": "9c66b22ce4ba9245ddc27c5e435a525f4834fde3f7b14c8323110cf60e7907d8"
   },
   "data": "afterstate-win-16.jsonl.gz",
   "rows": 1984,
@@ -101,5 +101,5 @@
       "validationAccuracy": 0.622107969151671
     }
   ],
-  "trainedAt": "2026-11-01T18:56:55.4214276Z"
+  "trainedAt": "2026-11-01T19:36:16.5070592Z"
 }

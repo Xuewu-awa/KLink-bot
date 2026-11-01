@@ -8685,6 +8685,22 @@
         "Afterstate is left-perspective and candidate enumeration remains a structural superset.",
         "No paired model-vs-Greedy gameplay evaluation was run for this new model."
       ]
+    },
+    {
+      "id": "TRAINING/NNTrain/afterstate-win-paired-evaluation-20261102",
+      "status": "partial",
+      "report": "out/audit/systematic-rules/afterstate-win-paired-evaluation-20261102.json",
+      "report_sha256": "c0ce6ef003936af7c56fd5be10c02f6680a6fcfff1237d2471f9d8defb419800",
+      "source_bindings": {
+        "src/KLink.Bot/Server/NnPolicy.cs": "d9782d2821319349a4682c92bc093fc65b15cee2bd18ad55ff7059f825067359",
+        "tools/NNTrain/PolicyMatchEvaluation.cs": "d7123e4467c55d5d7df44a85a4dc83b6e0c7deba6982f0665c306447ff641fa2"
+      },
+      "limitations": [
+        "Four fresh attempts only; no statistical strength conclusion.",
+        "The model is scored on candidate afterstates; enumeration remains structural superset and probe isolation is unchanged.",
+        "Runtime hash changed since the prior model artifact, so the model was retrained with identical parameters before evaluation.",
+        "No promotion to default strategy."
+      ]
     }
   ]
 }

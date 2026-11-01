@@ -59,26 +59,50 @@ internal static class PolicyMatchEvaluation
     internal static int Run(Dictionary<string, string> opts, CardDatabase db, StateEncoder.CardVecs vecs, string dataDir, string vectorDir)
     {
         string Required(string key) => opts.TryGetValue(key, out var v) ? v : throw new ArgumentException("Missing --" + key);
-        var allowed = new[] { "model", "training-data", "out", "matchup", "seed", "max-steps", "max-seconds", "plan", "replay-mode" };
+        var allowed = new[] { "model", "training-data", "afterstate-data", "afterstate-split", "out", "matchup", "seed", "max-steps", "max-seconds", "plan", "replay-mode" };
         if (opts.Keys.Except(allowed).Any()) throw new ArgumentException("Unknown policy evaluation option.");
         string output = Path.GetFullPath(Required("out"));
         if (File.Exists(output)) throw new IOException("Refusing to overwrite evaluation output.");
-        string plan = Required("plan"), modelPath = Required("model"), trainingPath = Required("training-data");
+        bool afterstateMode = opts.ContainsKey("afterstate-data");
+        if (afterstateMode && opts.ContainsKey("training-data")) throw new ArgumentException("Choose one model data contract.");
+        string plan = Required("plan"), modelPath = Required("model"), trainingPath = afterstateMode
+            ? Required("afterstate-data") : Required("training-data");
         // Caller freezes the plan before training; bind the exact bytes in every result.
         string planHash = TrainingAdmission.Hash(plan);
         var model = NnModel.Load(modelPath);
-        var contract = ValueTrainingContract.Read(model);
-        contract.RequireTarget("win"); contract.RequireSampling("policy-and-choice-before/v1"); contract.RequireRuntime();
-        var quality = TrainingAdmission.VerifyDataset(trainingPath);
-        if (quality.GateVersion != 2 || quality.DataSha256 != contract.DatasetSha256)
-            throw new InvalidDataException("Original Gate2 training dataset required.");
-        var inputs = ValueTrainingContract.SelectInputs(quality.InputsSha256);
-        foreach (string key in inputs.Keys.ToArray())
-            inputs[key] = TrainingAdmission.Hash(Path.Combine(key == "card-vectors.json" ? vectorDir : dataDir, key));
-        contract.RequireDataset(quality.SamplingMode, quality.ObservationSpec, quality.ObservationPerspective,
-            quality.ChoicePolicy, ValueTrainingContract.CurrentSimulatorHash(), inputs);
+        string trainingDataHash; Dictionary<string,string> inputs; HashSet<ulong> trainingSeeds;
+        if (afterstateMode)
+        {
+            var afterQuality = AfterstateDatasetTool.Verify(trainingPath);
+            string split = Required("afterstate-split");
+            using var doc = JsonDocument.Parse(model.MetaJson);
+            var tc = doc.RootElement.GetProperty("trainingContract");
+            if (tc.GetProperty("sampling").GetString() != "afterstate-left/v1"
+                || tc.GetProperty("dataSha256").GetString() != afterQuality.DataSha256
+                || tc.GetProperty("splitSha256").GetString() != TrainingAdmission.Hash(split)
+                || tc.GetProperty("simulatorSha256").GetString() != ValueTrainingContract.CurrentSimulatorHash())
+                throw new InvalidDataException("Afterstate model/data/runtime contract mismatch.");
+            trainingDataHash = afterQuality.DataSha256;
+            inputs = new(afterQuality.Header.InputsSha256);
+            trainingSeeds = afterQuality.Games.Where(g=>g.Accepted).Select(g=>g.Seed).ToHashSet();
+        }
+        else
+        {
+            var contract = ValueTrainingContract.Read(model);
+            contract.RequireTarget("win"); contract.RequireSampling("policy-and-choice-before/v1"); contract.RequireRuntime();
+            var quality = TrainingAdmission.VerifyDataset(trainingPath);
+            if (quality.GateVersion != 2 || quality.DataSha256 != contract.DatasetSha256)
+                throw new InvalidDataException("Original Gate2 training dataset required.");
+            inputs = ValueTrainingContract.SelectInputs(quality.InputsSha256);
+            foreach (string key in inputs.Keys.ToArray())
+                inputs[key] = TrainingAdmission.Hash(Path.Combine(key == "card-vectors.json" ? vectorDir : dataDir, key));
+            contract.RequireDataset(quality.SamplingMode, quality.ObservationSpec, quality.ObservationPerspective,
+                quality.ChoicePolicy, ValueTrainingContract.CurrentSimulatorHash(), inputs);
+            trainingDataHash = quality.DataSha256;
+            trainingSeeds = quality.Games.Select(g=>g.Seed).ToHashSet();
+        }
         ulong seed = ulong.Parse(Required("seed"));
-        if (quality.Games.Any(g => g.Seed == seed)) throw new InvalidDataException("Evaluation seed overlaps training attempts.");
+        if (trainingSeeds.Contains(seed)) throw new InvalidDataException("Evaluation seed overlaps training attempts.");
         var pair = DumpMatchup.Parse(Required("matchup"), MetaDecks.All.Count)
             ?? throw new ArgumentException("Ordered matchup required.");
         int maxSteps = int.Parse(opts.GetValueOrDefault("max-steps", "1000"));
@@ -99,7 +123,7 @@ internal static class PolicyMatchEvaluation
         var report = new
         {
             SchemaVersion = 2, ReplayMode = replayMode, PlanSha256 = planHash, ModelSha256 = TrainingAdmission.Hash(modelPath),
-            TrainingDataSha256 = quality.DataSha256, SimulatorSha256 = ValueTrainingContract.CurrentSimulatorHash(), Inputs = inputs,
+            TrainingDataSha256 = trainingDataHash, SimulatorSha256 = ValueTrainingContract.CurrentSimulatorHash(), Inputs = inputs,
             ToolSha256 = TrainingAdmission.Hash(typeof(PolicyMatchEvaluation).Assembly.Location),
             Matchup = new[] { pair.Left, pair.Right }, Seed = seed, MaxSteps = maxSteps, MaxSeconds = maxSeconds,
             Scope = "Left-only win model; existing NnPolicy candidate enumeration; one-ply afterstates; first-index choices. No complete legal mask, calibrated probability, PvP certification or strength claim.",
@@ -133,7 +157,7 @@ internal static class PolicyMatchEvaluation
             var verifier = replayMode == "incremental" ? new MatchEngine(db, left, right, seed) : null;
             using var verifierAdapter = verifier is null ? null : Attach(verifier);
             string currentRoot = "";
-            var policy = new NnPolicy(model, vecs, Side.Left, true, false);
+            var policy = new NnPolicy(model, vecs, Side.Left, true, false, !afterstateMode);
             ChoicePolicyAdapter Attach(MatchEngine e) => new(e, vecs, request => request.Options.Count == 0 && request.CanCancel ? -1 : 0);
             string Fingerprint(MatchEngine e)
             {
