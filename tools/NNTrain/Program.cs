@@ -68,6 +68,7 @@ internal static class Program
             if (cmd == "value-preprocessing-selftest") return ValuePreprocessingSelfTest.Run();
             if (cmd == "value-evaluation-selftest") return ValueEvaluationSelfTest.Run();
             if (cmd == "value-learning-selftest") return ValueLearningSelfTest.Run();
+            if (cmd == "pair-direction-selftest") return PairDirectionSelfTest.Run();
             if (cmd == "verify-actions") return ActionDatasetTool.VerifyCommand(opts);
             string dataDir = FindDir("card-effects.json");
             var db = CardDatabase.Load(dataDir);
@@ -534,7 +535,7 @@ internal static class Program
             else
             {
                 // 每轮重新洗牌（确定性种子），再按对取样：
-                //   对 i 取一个**同单元、反标签**的伙伴 j，目标 = sigmoid(s_i − s_j) → 1。
+                //   取同单元、反标签伙伴，再统一为 i=胜局、j=败局；目标 = sigmoid(s_i − s_j) → 1。
                 for (int k = 0; k < nTrain; k++) shuffled[k] = k;
                 for (int k = nTrain - 1; k > 0; k--)
                 {
@@ -549,6 +550,8 @@ internal static class Program
                     var opp = y[ri] > 0.5f ? cell.L : cell.W;
                     if (opp.Count == 0) continue;
                     int rj = opp[pairRng.Next(opp.Count)];
+                    // The sampled anchor can be a loss. Always differentiate winner minus loser.
+                    if (y[ri] <= 0.5f) (ri, rj) = (rj, ri);
 
                     float si = ForwardLogit(ri, h);
                     float sj = ForwardLogit(rj, h2);
@@ -664,6 +667,7 @@ internal static class Program
             savedEpochWeights = epochs,
             processedTrainingUnits,
             trainingUnit = pairwise ? "pair" : "row",
+            pairObjective = pairwise ? "winner-minus-loser/v1" : null,
             trainedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
         };
         string metaJson = JsonSerializer.Serialize(meta,

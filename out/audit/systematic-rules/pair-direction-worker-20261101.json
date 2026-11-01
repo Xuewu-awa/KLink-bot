@@ -1,0 +1,108 @@
+{
+  "sources": [
+    {
+      "file": "D:\\Codex Workshop\\KLink-bot\\out\\audit\\deepseek-pair-direction-20261101\\Program.cs",
+      "sha256": "A5BB378C20FB7D0539511A0581A3F0158AB45D0A472CD0CE6FB647EB7D3CB8AC",
+      "total_lines": 1015
+    }
+  ],
+  "citations": [
+    {
+      "file": "D:\\Codex Workshop\\KLink-bot\\out\\audit\\deepseek-pair-direction-20261101\\Program.cs",
+      "line": 226,
+      "text": "            float label = engine.State.Winner == Side.Left ? 1f : 0f;",
+      "purpose": "dump label: label=1.0 iff Winner is Left, else 0.0 (perspective is always the left side)"
+    },
+    {
+      "file": "D:\\Codex Workshop\\KLink-bot\\out\\audit\\deepseek-pair-direction-20261101\\Program.cs",
+      "line": 466,
+      "text": "                (y[r] > 0.5f ? c.W : c.L).Add(r);",
+      "purpose": "PairRank eval: W/L cell split from dumped label y[r] > 0.5f (W = win, L = loss)"
+    },
+    {
+      "file": "D:\\Codex Workshop\\KLink-bot\\out\\audit\\deepseek-pair-direction-20261101\\Program.cs",
+      "line": 504,
+      "text": "                (y[r] > 0.5f ? c.W : c.L).Add(r);",
+      "purpose": "train pair cells: same W/L split by y[r] > 0.5f when building (pair,turn) cells"
+    },
+    {
+      "file": "D:\\Codex Workshop\\KLink-bot\\out\\audit\\deepseek-pair-direction-20261101\\Program.cs",
+      "line": 813,
+      "text": "                (y[r] > 0.5f ? c.W : c.L).Add(k);",
+      "purpose": "verify Rank: same W/L split but stores loop position k (not sample index r) in cell lists"
+    },
+    {
+      "file": "D:\\Codex Workshop\\KLink-bot\\out\\audit\\deepseek-pair-direction-20261101\\Program.cs",
+      "line": 232,
+      "text": "            float pairId = leftIdx * decks.Count + rightIdx;",
+      "purpose": "pair anchor written per row: pairId = leftIdx*deckCount + rightIdx (ordered pair, no swap)"
+    },
+    {
+      "file": "D:\\Codex Workshop\\KLink-bot\\out\\audit\\deepseek-pair-direction-20261101\\Program.cs",
+      "line": 184,
+      "text": "            var pick = new DeterministicRandom(seed ^ (0x9E3779B97F4A7C15UL * ((ulong)g + 1)));",
+      "purpose": "pair anchor selection: per-game deterministic RNG seeded from seed and game index g"
+    },
+    {
+      "file": "D:\\Codex Workshop\\KLink-bot\\out\\audit\\deepseek-pair-direction-20261101\\Program.cs",
+      "line": 188,
+      "text": "            bool swap = pick.Next(2) == 1;            // 左右随机互换",
+      "purpose": "pair anchor selection: swap coin flip (pick.Next(2)==1) decides which deck sits left"
+    },
+    {
+      "file": "D:\\Codex Workshop\\KLink-bot\\out\\audit\\deepseek-pair-direction-20261101\\Program.cs",
+      "line": 189,
+      "text": "            int leftIdx = swap ? dj : di;",
+      "purpose": "pair anchor selection: leftIdx = swap ? dj : di (rightIdx is the mirror assignment)"
+    },
+    {
+      "file": "D:\\Codex Workshop\\KLink-bot\\out\\audit\\deepseek-pair-direction-20261101\\Program.cs",
+      "line": 460,
+      "text": "                var key = ((int)pair[r], turnBucket[r]);",
+      "purpose": "PairRank cell key: ((int)pair[r], turnBucket[r]) = matchup x turn bucket"
+    },
+    {
+      "file": "D:\\Codex Workshop\\KLink-bot\\out\\audit\\deepseek-pair-direction-20261101\\Program.cs",
+      "line": 548,
+      "text": "                    var cell = cells![((int)pair[ri], turnBucket[ri])];",
+      "purpose": "train pair loop: cell looked up by the same ((int)pair[ri], turnBucket[ri]) key"
+    },
+    {
+      "file": "D:\\Codex Workshop\\KLink-bot\\out\\audit\\deepseek-pair-direction-20261101\\Program.cs",
+      "line": 549,
+      "text": "                    var opp = y[ri] > 0.5f ? cell.L : cell.W;",
+      "purpose": "partner selection: opp = the opposite-label list of the same cell (L if ri won, W if lost)"
+    },
+    {
+      "file": "D:\\Codex Workshop\\KLink-bot\\out\\audit\\deepseek-pair-direction-20261101\\Program.cs",
+      "line": 551,
+      "text": "                    int rj = opp[pairRng.Next(opp.Count)];",
+      "purpose": "partner selection: rj sampled uniformly from opp via pairRng.Next(opp.Count)"
+    },
+    {
+      "file": "D:\\Codex Workshop\\KLink-bot\\out\\audit\\deepseek-pair-direction-20261101\\Program.cs",
+      "line": 478,
+      "text": "                    bool win = ForwardLogit(c.W[i], h) > ForwardLogit(c.L[i], h2);",
+      "purpose": "PairRank win rule: win iff ForwardLogit(win-sample, h) > ForwardLogit(loss-sample, h2)"
+    },
+    {
+      "file": "D:\\Codex Workshop\\KLink-bot\\out\\audit\\deepseek-pair-direction-20261101\\Program.cs",
+      "line": 555,
+      "text": "                    float d = si - sj;",
+      "purpose": "forward score difference: d = si - sj (si forward of ri, sj forward of rj)"
+    },
+    {
+      "file": "D:\\Codex Workshop\\KLink-bot\\out\\audit\\deepseek-pair-direction-20261101\\Program.cs",
+      "line": 559,
+      "text": "                    BackwardFrom(ri, -(1f - dp), h);",
+      "purpose": "backward sign for ri: -(1-dp) with dp = sigmoid(d), i.e. same sign as score of rj over ri"
+    },
+    {
+      "file": "D:\\Codex Workshop\\KLink-bot\\out\\audit\\deepseek-pair-direction-20261101\\Program.cs",
+      "line": 560,
+      "text": "                    BackwardFrom(rj, +(1f - dp), h2);",
+      "purpose": "backward sign for rj: +(1-dp), exactly the opposite sign applied to ri"
+    }
+  ],
+  "unresolved": []
+}

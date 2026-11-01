@@ -1,0 +1,78 @@
+{
+  "scope": "NNTrain winner-minus-loser pair ranking gradient",
+  "authority": "Repository software, ranking-loss mathematics and executable synthetic regressions only",
+  "base_commit": "b65f7bf0fc0b55b522e92f5eb097a138211d5f5b",
+  "defect": "Anchor sampled from either winning or losing labels, but softplus(-(si-sj)) always pushed the anchor above its opposite-label partner. Losing anchors therefore reversed the intended ordering and contradicted PairRank evaluation.",
+  "fix": "After sampling an opposite-label partner, swap indices when the anchor label is a loss; ForwardLogit and BackwardFrom consistently use winner then loser. Preserve sampling, pair membership and weighting. Record pairObjective winner-minus-loser/v1.",
+  "objective": {
+    "loss": "log(1+exp(s_loss-s_win))",
+    "d_loss_d_s_win": "-sigmoid(s_loss-s_win)",
+    "d_loss_d_s_loss": "sigmoid(s_loss-s_win)",
+    "verification": "Central differences of a separate double-precision loss evaluator versus actual saved one-epoch parameter updates. No analytic backprop copied into the numerical oracle."
+  },
+  "reviewed_prior_scope": {
+    "report": "out/audit/systematic-rules/value-learning-20261101.json",
+    "disposition": "Closes the open negative-label anchor direction review for the scoped pair-loop correction. Retains the historical report and original bindings unchanged; does not promote previous software or game-rule evidence."
+  },
+  "regression": {
+    "before_exit_code": 1,
+    "after_exit_code": 0,
+    "pair_direction_checks": 158,
+    "learning_checks": 46,
+    "preprocessing_checks": 50,
+    "evaluation_checks": 200,
+    "admission_checks": 44,
+    "full_passed": 1058,
+    "seeds": [
+      7,
+      19
+    ],
+    "sampling_modes": [
+      "turn-end/v1",
+      "policy-and-choice-before/v1"
+    ],
+    "epochs": [
+      1,
+      12
+    ],
+    "finite_difference_checks": 96,
+    "win_parameters_sha256": "94adb7f41c3f602e40839e76b7a64e699c4c338cafcc03e2aa1b3e0dd501c274",
+    "logs": {
+      "out/audit/systematic-rules/pair-direction-before-20261101.txt": "2b6b1d693088041ec27c99f27a280fa623cdae261db1e65b26de1fb669a7793e",
+      "out/audit/systematic-rules/pair-direction-after-20261101.txt": "91719a85b468cabcba82119b0b2406b8032ff33802e6e45beb3058487f85f13a",
+      "out/audit/systematic-rules/pair-direction-learning-20261101.txt": "d7faa75602026cd8ef5ae23fc2cd86ea53ef846efd6026b4622c07fb100e502f",
+      "out/audit/systematic-rules/pair-direction-preprocessing-20261101.txt": "8934378a4acf1cfa1894f2d55b9449f00375ef7100712e3a9930a87495bb0b73",
+      "out/audit/systematic-rules/pair-direction-evaluation-20261101.txt": "41052447d2274824e827bacd7587943101f8ad853fea695c45aa8f405f5816ad",
+      "out/audit/systematic-rules/pair-direction-admission-20261101.txt": "bf321d94caa01475eb8f83fb1f3ce2655d866d2d9857ee9c20354551169ea935",
+      "out/audit/systematic-rules/pair-direction-full-20261101.txt": "9f49dd4a37eb1d983b5d3bcdf306dd1a82ee2a6d7eb020020c485efaabc6f148"
+    }
+  },
+  "worker": {
+    "job": "20261101-183455-pair-direction-ab694d3e",
+    "result": "out/audit/systematic-rules/pair-direction-worker-20261101.json",
+    "result_sha256": "f6bc030ddac664593da294f8297403fc4edc316af3356e4ca65ee58e94865c31",
+    "verified_literal_citations": 16,
+    "verification": "Primary checked source against exact base Git blob and hash/line count, and all 16 literal citations. Worker purpose prose is source inventory only; correctness follows primary math review and executable tests."
+  },
+  "validation_environment": {
+    "source": "Clean HEAD src/BotSim/NNTrain plus Program and new PairDirectionSelfTest; unrelated dirty action-probe code excluded.",
+    "runtime_data_sha256": {
+      "cards.live.json": "3550dc76eb0414c500166875f45909077aeeb3ea4d229b9b0ba9c66a81987c4b",
+      "card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b"
+    },
+    "runtime_data_note": "Exact runtime data bytes satisfy native-default proof; normalized content matches HEAD. Matrix provenance uses exact Git bytes separately."
+  },
+  "source_bindings": {
+    "tools/NNTrain/Program.cs": "b5518b6a63f5246365ae1d370b47ecf24eed0cb7f4447e3fc2ef4e27f49ad380",
+    "tools/NNTrain/PairDirectionSelfTest.cs": "7f7dbb622a4652066e7da823a61dd551cf766e75fa883a8e71be863b35df5b0a"
+  },
+  "remaining": [
+    "Software pair-ranking objective and gradient correction only; no card/native rule certification, throughput or playing-strength claim.",
+    "Regression covers one synthetic matchup/turn cell with repeated class-identical observations, two game split seeds and two sampling modes. It does not establish arbitrary multi-cell or general optimizer numerical correctness.",
+    "Finite differences check all four active-feature W1 entries, four B1 entries and four W2 entries at one initial point for eight one-step cases. Tolerance 2e-6; perturbation 1e-5. Other W1 dimensions are inactive in this fixture.",
+    "Row reorder invariance is specific to class-identical repeated observations and fixed game membership, checked within 2e-6. Arbitrary dataset reordering can legitimately change SGD sampling.",
+    "The old win/BCE parameter fingerprint matches for the fixed synthetic win case; metadata additionally contains pairObjective, null for win. No universal byte-identical model claim.",
+    "Old pair models must be retrained to benefit from this fix; adding metadata or verifying an old holdout does not repair learned weights. Existing policy consumers reject pair targets and are unchanged.",
+    "Pair validation without held-out ranking pairs still uses the existing 0.5 fallback; truthful reporting of unavailable ranking metrics remains open. No earlier evidence bindings are refreshed."
+  ]
+}

@@ -8426,6 +8426,25 @@
         "Pair gradient direction for loser anchors is a separate open review: the current code uses sigmoid(si-sj) toward 1 for either anchor label. This batch changes execution admission only; no pair-learning correctness claim.",
         "Metadata is unsigned; processed-unit counts are diagnostic, not a tamper-proof attestation. No old rule-evidence fingerprints are refreshed."
       ]
+    },
+    {
+      "id": "TRAINING/NNTrain/pair-ranking-direction-20261101",
+      "status": "partial",
+      "report": "out/audit/systematic-rules/pair-direction-20261101.json",
+      "report_sha256": "4d55ca282ce75a48a226439c4bce09d2b5471b6bc50d4cac4086f3b76eb1b079",
+      "source_bindings": {
+        "tools/NNTrain/Program.cs": "b5518b6a63f5246365ae1d370b47ecf24eed0cb7f4447e3fc2ef4e27f49ad380",
+        "tools/NNTrain/PairDirectionSelfTest.cs": "7f7dbb622a4652066e7da823a61dd551cf766e75fa883a8e71be863b35df5b0a"
+      },
+      "limitations": [
+        "Software pair-ranking objective and gradient correction only; no card/native rule certification, throughput or playing-strength claim.",
+        "Regression covers one synthetic matchup/turn cell with repeated class-identical observations, two game split seeds and two sampling modes. It does not establish arbitrary multi-cell or general optimizer numerical correctness.",
+        "Finite differences check all four active-feature W1 entries, four B1 entries and four W2 entries at one initial point for eight one-step cases. Tolerance 2e-6; perturbation 1e-5. Other W1 dimensions are inactive in this fixture.",
+        "Row reorder invariance is specific to class-identical repeated observations and fixed game membership, checked within 2e-6. Arbitrary dataset reordering can legitimately change SGD sampling.",
+        "The old win/BCE parameter fingerprint matches for the fixed synthetic win case; metadata additionally contains pairObjective, null for win. No universal byte-identical model claim.",
+        "Old pair models must be retrained to benefit from this fix; adding metadata or verifying an old holdout does not repair learned weights. Existing policy consumers reject pair targets and are unchanged.",
+        "Pair validation without held-out ranking pairs still uses the existing 0.5 fallback; truthful reporting of unavailable ranking metrics remains open. No earlier evidence bindings are refreshed."
+      ]
     }
   ]
 }
