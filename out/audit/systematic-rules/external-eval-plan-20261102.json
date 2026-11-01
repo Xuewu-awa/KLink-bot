@@ -1,0 +1,71 @@
+{
+  "spec": "external-pair-evaluation-plan/v1",
+  "baseCommit": "56cb3ee1deeeb94fa7ac59f0aa888815bb17ec02",
+  "modelSha256": "e82638b96017905798018da4ce645980a0e379820bd856ca5a60be92fea88ab5",
+  "trainingDatasetSha256": "5fa97eab224e92984359fe758a8c4ea90bf5d2a51f38093848f17fbf85af1ba8",
+  "simulatorSha256": "7cba599e45879a8af7eecefa41bafa8256bc37d602dbb29fcd78031b12c5dfb9",
+  "sampling": "decision",
+  "every": 1,
+  "gamesPerMatchup": 12,
+  "batches": [
+    {
+      "id": 0,
+      "left": 0,
+      "right": 1,
+      "seed": 210000
+    },
+    {
+      "id": 1,
+      "left": 1,
+      "right": 0,
+      "seed": 211000
+    },
+    {
+      "id": 2,
+      "left": 2,
+      "right": 3,
+      "seed": 212000
+    },
+    {
+      "id": 3,
+      "left": 3,
+      "right": 2,
+      "seed": 213000
+    },
+    {
+      "id": 4,
+      "left": 4,
+      "right": 5,
+      "seed": 214000
+    },
+    {
+      "id": 5,
+      "left": 5,
+      "right": 4,
+      "seed": 215000
+    },
+    {
+      "id": 6,
+      "left": 6,
+      "right": 7,
+      "seed": 216000
+    },
+    {
+      "id": 7,
+      "left": 7,
+      "right": 6,
+      "seed": 217000
+    }
+  ],
+  "collection": "Fixed GreedyEpisodeRunner policies; first-index choices; every attempted game once; preserve rejections; no replacements, tuning, retraining or checkpoint selection.",
+  "evaluation": "All admitted rows of each external batch, no split. Group ordered matchup and rounded turn; pair ith win with ith loss in original row order. Strict correct, incorrect and exact ties; half-credit ties secondary. Aggregate by summed counts and per matchup. No independent-observation confidence intervals.",
+  "baselines": [
+    "encoded own HQ defense minus opponent HQ defense",
+    "constant zero"
+  ],
+  "limitations": [
+    "Offline outcome-associated ranking only; not actual action quality or playing strength.",
+    "First four ordered matchups repeat training deck pairs with new seeds; last four are new deck pairs.",
+    "No PvP rule certification."
+  ]
+}

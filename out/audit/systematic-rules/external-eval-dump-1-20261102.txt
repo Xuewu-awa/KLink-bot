@@ -1,0 +1,13 @@
+卡库 2019 张，卡向量 1906 条，维度 745/局面
+蓝图 IR: 1709 张卡可解释，手写脚本 0 张
+
+自对弈 12 局；固定有序对位 1,0，输出 D:\Codex Workshop\KLink-bot\out\audit\deepseek-external-eval-20261102\batch-1.bin
+
+完成 12 局（左胜 3 / 右胜 9 / 未分 0）
+样本 1,359 条，维度 745，用时 2.2s
+速度 5 局/秒
+候选表缓存 命中 0 / 未命中 0 / 不可缓存 102
+文件 0 MB
+卡组对位：1 种有序对位，每对位 12~12 局（理论 = 12/(22×21) = 0.0）
+对位清单 D:\Codex Workshop\KLink-bot\out\audit\deepseek-external-eval-20261102\batch-1.bin.decks.json（1 KB）
+训练准入：接受 12 / 拒绝 0，仅写入已接受对局；清单 D:\Codex Workshop\KLink-bot\out\audit\deepseek-external-eval-20261102\batch-1.bin.quality.json

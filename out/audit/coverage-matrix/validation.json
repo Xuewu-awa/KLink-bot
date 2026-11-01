@@ -1,6 +1,6 @@
 {
   "date": "2026-11-02",
-  "batch": "frozen-split-smoke-20261102",
+  "batch": "external-pair-evaluation-20261102",
   "counts": {
     "cards": 2019,
     "cards_with_own_ir": 1709,
@@ -12,7 +12,7 @@
     "program_containers": 2626,
     "dependency_edges": 18567,
     "dependency_symbols": 440,
-    "secondary_reports": 492,
+    "secondary_reports": 505,
     "explicit_partial_units": 39,
     "partial_units_matching_bound_inputs": 0,
     "planning_work_domains": 14,
@@ -24,69 +24,37 @@
   },
   "matrix_tests": 16,
   "csharp_tests": {
+    "external": 31,
     "frozen": 39,
-    "matchup": 781,
-    "coverage": 171,
-    "metric": 182,
-    "direction": 158,
-    "learning": 46,
-    "preprocessing": 50,
     "evaluation": 200,
+    "ranking": 182,
     "admission": 44,
-    "full": 1058
+    "full_simulator": 1058
   },
-  "input_scope": "Clean HEAD snapshot plus four scoped trainer files; unrelated dirty probes excluded. Prior evidence bindings retained.",
+  "input_scope": "Clean HEAD snapshot with three scoped trainer files; unrelated dirty probes excluded.",
   "worker": {
-    "job": "20261102-004033-frozen-split-56fc0c97",
-    "verification": "Primary independently verified input hashes, exact identities/holdout, partition rows and per-scope pair arithmetic against original raw bytes and C# coverage. Worker scripts not integrated."
+    "job": "20261102-005650-external-pair-counts-1896c73d",
+    "skill": "C:/Users/AWQ/.codex/skills/deepseek-worker/SKILL.md",
+    "validation": "Input SHA256 and every per-batch metric compared with primary Python verifier. All raw row identities, HQ scores, unique seeds and counts independently checked; 40 model logits recomputed in float32. Worker conclusions beyond mechanical counts are not adopted."
   },
   "pipeline": {
-    "rowsComparedBytewiseExceptGameId": 11740,
-    "attemptedIdentitiesPreserved": 96,
-    "trainingGames": 72,
-    "validationGames": 24,
-    "validationGameIds": [
-      0,
-      1,
-      2,
-      3,
-      4,
-      5,
-      24,
-      25,
-      26,
-      27,
-      28,
-      29,
-      48,
-      49,
-      50,
-      51,
-      52,
-      53,
-      72,
-      73,
-      74,
-      75,
-      76,
-      77
-    ],
-    "savedMetric": {
-      "correct": 599,
-      "total": 1049,
-      "accuracy": 0.5710200190657769
-    },
-    "processedTrainingUnits": 4195,
-    "modelSha256": "e82638b96017905798018da4ce645980a0e379820bd856ca5a60be92fea88ab5",
-    "datasetSha256": "5fa97eab224e92984359fe758a8c4ea90bf5d2a51f38093848f17fbf85af1ba8",
-    "splitSha256": "7f09dea0f0690d7d34f2c23bbc17322b773a1d8c085545643ed10eacbd249a30",
-    "checks": "Independent raw-byte and per-game metadata comparison, exact saved split/metric/coverage binding, saved-only/file-bound Verify, merge overwrite refusal."
+    "attempted": 96,
+    "accepted": 96,
+    "rows": 10766,
+    "pairs": 2625,
+    "unavailableMatchups": [
+      [
+        5,
+        4
+      ]
+    ]
   },
   "limitations": [
-    "Pipeline diagnostic only: four ordered matchups and 24 held-out games; correlated observations are not independent samples or a playing-strength estimate.",
-    "Existing trainer console success heuristics (encoding validity from >55%) are not adopted as conclusions; only exact pipeline consistency is accepted.",
-    "Raw datasets, simulator binaries and model remain local SHA-256-bound evidence; no relaxation or rewriting of original admission fingerprints.",
-    "Manifest hash proves which file was used, not when it was chosen; chronological predeclaration is separately bound by the original published pilot plan.",
-    "No PvP rule or card certification is added. No overall completion percentage is inferred."
+    "Offline outcome-associated pair ranking only; not live action improvement or playing strength. The model target=pair remains rejected by NnPolicy target=win guard.",
+    "Observations and pairs are correlated within games; no independent-row confidence or significance claims.",
+    "Eight ordered matchups include four seen training pairs and four new pairs; one new pair (5,4) has only losses and zero comparable pairs. It remains unavailable; no reseeding/replacement.",
+    "Raw data, quality manifests, per-row scores and model remain local hash-bound evidence; public summaries and independent verifier are provided. Quality hashes establish file identity, not external authenticity.",
+    "Frozen source/model and strict simulator hashes unchanged; no tuning, retraining or checkpoint selection. Original holdout remains intact.",
+    "No additional PvP rules or card certification and no overall completion percentage."
   ]
 }

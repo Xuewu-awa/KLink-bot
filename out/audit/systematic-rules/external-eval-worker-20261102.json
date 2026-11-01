@@ -1,0 +1,403 @@
+{
+  "spec": "independent-ranking-audit/v1",
+  "generatedBy": "verify.py",
+  "method": "Per file: group rows by (matchup, rounded turn) in original row order; pair i-th label==1 row with i-th label==0 row, keeping min(W,L) pairs per group. Strict comparison: correct if win score > loss score, incorrect if <, tie if exactly equal. Constant-zero baseline ties on every pair. unpairedRows = rows - 2*pairs.",
+  "limitations": [
+    "Mechanical numeric audit only; not an authoritative rules conclusion.",
+    "Offline outcome-associated ranking, not real-game win probability.",
+    "Game ids are batch-local (0..11 in every file), so uniqueGames is reported per batch and summed; it is not a cross-batch identity."
+  ],
+  "batches": [
+    {
+      "file": "batch-0-eval.json",
+      "sha256": "b95027701410ae282ac535c80c60fe504932d569b36606953c5934a76c7dc566",
+      "rows": 1295,
+      "uniqueGames": 12,
+      "pairs": 144,
+      "unpairedRows": 1007,
+      "labelsSeen": [
+        0,
+        1
+      ],
+      "groups": 32,
+      "status": "available",
+      "metrics": {
+        "modelScore": {
+          "correct": 84,
+          "incorrect": 60,
+          "ties": 0,
+          "total": 144
+        },
+        "hqScore": {
+          "correct": 30,
+          "incorrect": 101,
+          "ties": 13,
+          "total": 144
+        },
+        "constant": {
+          "correct": 0,
+          "incorrect": 0,
+          "ties": 144,
+          "total": 144
+        }
+      },
+      "aggregateComparison": {
+        "checked": true,
+        "expectedStatus": "available",
+        "violations": []
+      }
+    },
+    {
+      "file": "batch-1-eval.json",
+      "sha256": "8d58c3f8d0f133c61ce71d650a4fa998394242809e15d027730b92f3bc0ad13a",
+      "rows": 1359,
+      "uniqueGames": 12,
+      "pairs": 336,
+      "unpairedRows": 687,
+      "labelsSeen": [
+        0,
+        1
+      ],
+      "groups": 31,
+      "status": "available",
+      "metrics": {
+        "modelScore": {
+          "correct": 105,
+          "incorrect": 231,
+          "ties": 0,
+          "total": 336
+        },
+        "hqScore": {
+          "correct": 126,
+          "incorrect": 137,
+          "ties": 73,
+          "total": 336
+        },
+        "constant": {
+          "correct": 0,
+          "incorrect": 0,
+          "ties": 336,
+          "total": 336
+        }
+      },
+      "aggregateComparison": {
+        "checked": true,
+        "expectedStatus": "available",
+        "violations": []
+      }
+    },
+    {
+      "file": "batch-2-eval.json",
+      "sha256": "01aa3a7a6e6f887e295dc788dfc9f38485d5cb60f6b22ef71b984ce24257b5e8",
+      "rows": 1357,
+      "uniqueGames": 12,
+      "pairs": 486,
+      "unpairedRows": 385,
+      "labelsSeen": [
+        0,
+        1
+      ],
+      "groups": 32,
+      "status": "available",
+      "metrics": {
+        "modelScore": {
+          "correct": 227,
+          "incorrect": 259,
+          "ties": 0,
+          "total": 486
+        },
+        "hqScore": {
+          "correct": 372,
+          "incorrect": 76,
+          "ties": 38,
+          "total": 486
+        },
+        "constant": {
+          "correct": 0,
+          "incorrect": 0,
+          "ties": 486,
+          "total": 486
+        }
+      },
+      "aggregateComparison": {
+        "checked": true,
+        "expectedStatus": "available",
+        "violations": []
+      }
+    },
+    {
+      "file": "batch-3-eval.json",
+      "sha256": "01a41a9c4a04f7f777f6f4146e298a594cc86d803a2a408528da2c904bf04e4d",
+      "rows": 1541,
+      "uniqueGames": 12,
+      "pairs": 583,
+      "unpairedRows": 375,
+      "labelsSeen": [
+        0,
+        1
+      ],
+      "groups": 29,
+      "status": "available",
+      "metrics": {
+        "modelScore": {
+          "correct": 273,
+          "incorrect": 310,
+          "ties": 0,
+          "total": 583
+        },
+        "hqScore": {
+          "correct": 411,
+          "incorrect": 109,
+          "ties": 63,
+          "total": 583
+        },
+        "constant": {
+          "correct": 0,
+          "incorrect": 0,
+          "ties": 583,
+          "total": 583
+        }
+      },
+      "aggregateComparison": {
+        "checked": true,
+        "expectedStatus": "available",
+        "violations": []
+      }
+    },
+    {
+      "file": "batch-4-eval.json",
+      "sha256": "0b5e4b439080d40e525401dc25486ff19c6f8bfe64e48a7122b67031fbdb03c4",
+      "rows": 1656,
+      "uniqueGames": 12,
+      "pairs": 324,
+      "unpairedRows": 1008,
+      "labelsSeen": [
+        0,
+        1
+      ],
+      "groups": 37,
+      "status": "available",
+      "metrics": {
+        "modelScore": {
+          "correct": 154,
+          "incorrect": 170,
+          "ties": 0,
+          "total": 324
+        },
+        "hqScore": {
+          "correct": 158,
+          "incorrect": 139,
+          "ties": 27,
+          "total": 324
+        },
+        "constant": {
+          "correct": 0,
+          "incorrect": 0,
+          "ties": 324,
+          "total": 324
+        }
+      },
+      "aggregateComparison": {
+        "checked": true,
+        "expectedStatus": "available",
+        "violations": []
+      }
+    },
+    {
+      "file": "batch-5-eval.json",
+      "sha256": "4977830ddf788923f4255e68753141709d7e274d5975c96cbe1f56df83bb1d5e",
+      "rows": 1424,
+      "uniqueGames": 12,
+      "pairs": 0,
+      "unpairedRows": 1424,
+      "labelsSeen": [
+        0
+      ],
+      "groups": 36,
+      "status": "no-comparable-pairs",
+      "metrics": {
+        "modelScore": {
+          "correct": 0,
+          "incorrect": 0,
+          "ties": 0,
+          "total": 0
+        },
+        "hqScore": {
+          "correct": 0,
+          "incorrect": 0,
+          "ties": 0,
+          "total": 0
+        },
+        "constant": {
+          "correct": 0,
+          "incorrect": 0,
+          "ties": 0,
+          "total": 0
+        }
+      },
+      "aggregateComparison": {
+        "checked": true,
+        "expectedStatus": "no-comparable-pairs",
+        "violations": []
+      }
+    },
+    {
+      "file": "batch-6-eval.json",
+      "sha256": "a7190a248e5a028e645d84990df9fe3b4da2ea0c6e3e5223a7d682e6570ca940",
+      "rows": 1067,
+      "uniqueGames": 12,
+      "pairs": 325,
+      "unpairedRows": 417,
+      "labelsSeen": [
+        0,
+        1
+      ],
+      "groups": 25,
+      "status": "available",
+      "metrics": {
+        "modelScore": {
+          "correct": 209,
+          "incorrect": 116,
+          "ties": 0,
+          "total": 325
+        },
+        "hqScore": {
+          "correct": 282,
+          "incorrect": 24,
+          "ties": 19,
+          "total": 325
+        },
+        "constant": {
+          "correct": 0,
+          "incorrect": 0,
+          "ties": 325,
+          "total": 325
+        }
+      },
+      "aggregateComparison": {
+        "checked": true,
+        "expectedStatus": "available",
+        "violations": []
+      }
+    },
+    {
+      "file": "batch-7-eval.json",
+      "sha256": "e8253423fa9b0a1cde15d3743d7b3939e9fe7207554821385b5d558d05b61f2b",
+      "rows": 1067,
+      "uniqueGames": 12,
+      "pairs": 427,
+      "unpairedRows": 213,
+      "labelsSeen": [
+        0,
+        1
+      ],
+      "groups": 24,
+      "status": "available",
+      "metrics": {
+        "modelScore": {
+          "correct": 308,
+          "incorrect": 119,
+          "ties": 0,
+          "total": 427
+        },
+        "hqScore": {
+          "correct": 294,
+          "incorrect": 94,
+          "ties": 39,
+          "total": 427
+        },
+        "constant": {
+          "correct": 0,
+          "incorrect": 0,
+          "ties": 427,
+          "total": 427
+        }
+      },
+      "aggregateComparison": {
+        "checked": true,
+        "expectedStatus": "available",
+        "violations": []
+      }
+    }
+  ],
+  "allBatches": {
+    "rows": 10766,
+    "uniqueGames": 96,
+    "pairs": 2625,
+    "unpairedRows": 5516,
+    "metrics": {
+      "modelScore": {
+        "correct": 1360,
+        "incorrect": 1265,
+        "ties": 0,
+        "total": 2625
+      },
+      "hqScore": {
+        "correct": 1673,
+        "incorrect": 680,
+        "ties": 272,
+        "total": 2625
+      },
+      "constant": {
+        "correct": 0,
+        "incorrect": 0,
+        "ties": 2625,
+        "total": 2625
+      }
+    }
+  },
+  "firstFourBatches": {
+    "rows": 5552,
+    "uniqueGames": 48,
+    "pairs": 1549,
+    "unpairedRows": 2454,
+    "metrics": {
+      "modelScore": {
+        "correct": 689,
+        "incorrect": 860,
+        "ties": 0,
+        "total": 1549
+      },
+      "hqScore": {
+        "correct": 939,
+        "incorrect": 423,
+        "ties": 187,
+        "total": 1549
+      },
+      "constant": {
+        "correct": 0,
+        "incorrect": 0,
+        "ties": 1549,
+        "total": 1549
+      }
+    }
+  },
+  "lastFourBatches": {
+    "rows": 5214,
+    "uniqueGames": 48,
+    "pairs": 1076,
+    "unpairedRows": 3062,
+    "metrics": {
+      "modelScore": {
+        "correct": 671,
+        "incorrect": 405,
+        "ties": 0,
+        "total": 1076
+      },
+      "hqScore": {
+        "correct": 734,
+        "incorrect": 257,
+        "ties": 85,
+        "total": 1076
+      },
+      "constant": {
+        "correct": 0,
+        "incorrect": 0,
+        "ties": 1076,
+        "total": 1076
+      }
+    }
+  },
+  "violations": [],
+  "violationCount": 0
+}

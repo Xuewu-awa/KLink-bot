@@ -8525,6 +8525,26 @@
         "Manifest hash proves which file was used, not when it was chosen; chronological predeclaration is separately bound by the original published pilot plan.",
         "No PvP rule or card certification is added. No overall completion percentage is inferred."
       ]
+    },
+    {
+      "id": "TRAINING/NNTrain/external-pair-evaluation-20261102",
+      "status": "partial",
+      "report": "out/audit/systematic-rules/external-eval-20261102.json",
+      "report_sha256": "951bad618195829fadbd6db0bcd26a6f8e0288fd1430388835f1ce6cd8638609",
+      "source_bindings": {
+        "tools/NNTrain/Program.cs": "0da2efab18fa3401b3fee0435a00844a8be2bc77ec3d5ad3dfa3563589b77683",
+        "tools/NNTrain/ExternalValueEvaluation.cs": "728c67ec74c033975d02b94cc7b2f147b6341711e1ebeff718bfe14005feb2e9",
+        "tools/NNTrain/ExternalValueEvaluationSelfTest.cs": "6c3adbe4ffe12330d847516b7577e7ba03d7c41dc894dfdebc8bbc8ac746c192",
+        "out/audit/systematic-rules/external-eval-verify-20261102.py": "ce6a105370be47b5fe4dc91701fa7e4454543de54f6f6b306b9f809b2fdeb67c"
+      },
+      "limitations": [
+        "Offline outcome-associated pair ranking only; not live action improvement or playing strength. The model target=pair remains rejected by NnPolicy target=win guard.",
+        "Observations and pairs are correlated within games; no independent-row confidence or significance claims.",
+        "Eight ordered matchups include four seen training pairs and four new pairs; one new pair (5,4) has only losses and zero comparable pairs. It remains unavailable; no reseeding/replacement.",
+        "Raw data, quality manifests, per-row scores and model remain local hash-bound evidence; public summaries and independent verifier are provided. Quality hashes establish file identity, not external authenticity.",
+        "Frozen source/model and strict simulator hashes unchanged; no tuning, retraining or checkpoint selection. Original holdout remains intact.",
+        "No additional PvP rules or card certification and no overall completion percentage."
+      ]
     }
   ]
 }

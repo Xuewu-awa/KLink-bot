@@ -1,0 +1,2 @@
+External evaluation: 4/4 games, 4 rows; output C:\Users\AWQ\AppData\Local\Temp\klink-external-d1658c75fbd9444db0ada8054a6cb797\eval.json
+External evaluation: 31 checks passed, 0 failures

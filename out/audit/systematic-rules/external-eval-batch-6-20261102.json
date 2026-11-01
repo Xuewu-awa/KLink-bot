@@ -1,0 +1,79 @@
+{
+  "spec": "external-pair-evaluation/v1",
+  "modelSha256": "e82638b96017905798018da4ce645980a0e379820bd856ca5a60be92fea88ab5",
+  "trainingDatasetSha256": "5fa97eab224e92984359fe758a8c4ea90bf5d2a51f38093848f17fbf85af1ba8",
+  "datasetSha256": "aec2087f137913b4d39c7dbd5d14dbfd4e088ee6e076d70c08752221fb28ce55",
+  "qualitySha256": "fd254c0b03f2dc096ec4007d67d513126382147998b25a4f1d1bbe2031e2f20a",
+  "trainingQualitySha256": "2d06d49e4722aea0581c09a9b0fdd12e8b132f3988beea1be1bc271f725c6297",
+  "simulatorSha256": "7cba599e45879a8af7eecefa41bafa8256bc37d602dbb29fcd78031b12c5dfb9",
+  "attempted": 12,
+  "accepted": 12,
+  "rejected": 0,
+  "aggregate": {
+    "rows": 1067,
+    "games": 12,
+    "status": "available",
+    "model": {
+      "correct": 209,
+      "incorrect": 116,
+      "ties": 0,
+      "total": 325,
+      "strictAccuracy": 0.6430769230769231,
+      "halfCreditAccuracy": 0.6430769230769231
+    },
+    "hqDifference": {
+      "correct": 282,
+      "incorrect": 24,
+      "ties": 19,
+      "total": 325,
+      "strictAccuracy": 0.8676923076923077,
+      "halfCreditAccuracy": 0.8969230769230769
+    },
+    "constant": {
+      "correct": 0,
+      "incorrect": 0,
+      "ties": 325,
+      "total": 325,
+      "strictAccuracy": 0,
+      "halfCreditAccuracy": 0.5
+    },
+    "unpairedRows": 417
+  },
+  "matchups": [
+    {
+      "matchup": 139,
+      "metrics": {
+        "rows": 1067,
+        "games": 12,
+        "status": "available",
+        "model": {
+          "correct": 209,
+          "incorrect": 116,
+          "ties": 0,
+          "total": 325,
+          "strictAccuracy": 0.6430769230769231,
+          "halfCreditAccuracy": 0.6430769230769231
+        },
+        "hqDifference": {
+          "correct": 282,
+          "incorrect": 24,
+          "ties": 19,
+          "total": 325,
+          "strictAccuracy": 0.8676923076923077,
+          "halfCreditAccuracy": 0.8969230769230769
+        },
+        "constant": {
+          "correct": 0,
+          "incorrect": 0,
+          "ties": 325,
+          "total": 325,
+          "strictAccuracy": 0,
+          "halfCreditAccuracy": 0.5
+        },
+        "unpairedRows": 417
+      }
+    }
+  ],
+  "interpretation": "All admitted external rows. Same ordered matchup and rounded turn; ith win/ith loss in original row order. Scores are ranks, not win probabilities. Correlated pairs are not independent games. No policy strength or rule certification.",
+  "localRowEvidenceSha256": "a7190a248e5a028e645d84990df9fe3b4da2ea0c6e3e5223a7d682e6570ca940"
+}

@@ -65,6 +65,8 @@ internal static class Program
         try
         {
             if (cmd == "admission-selftest") return AdmissionSelfTest.Run();
+            if (cmd == "external-evaluation-selftest") return ExternalValueEvaluationSelfTest.Run();
+            if (cmd == "evaluate-external") return ExternalValueEvaluation.Run(opts);
             if (cmd == "value-preprocessing-selftest") return ValuePreprocessingSelfTest.Run();
             if (cmd == "value-evaluation-selftest") return ValueEvaluationSelfTest.Run();
             if (cmd == "value-learning-selftest") return ValueLearningSelfTest.Run();
@@ -945,7 +947,7 @@ internal static class Program
     ///   每条： float v[dim] ; float outcome(0/1) ; float gid ; float pairId
     /// </code>
     /// </summary>
-    private static (float[] X, float[] y, float[] g, float[] pair, int n, int deckCount) LoadData(string path)
+    internal static (float[] X, float[] y, float[] g, float[] pair, int n, int deckCount) LoadData(string path)
     {
         using var fs = new FileStream(path, FileMode.Open, FileAccess.Read);
         using var br = new BinaryReader(fs);
@@ -1066,6 +1068,9 @@ internal static class Program
             admission-selftest  检查训练准入、清单及数据完整性
             value-preprocessing-selftest  检查按局切分及训练集归一化隔离
             value-evaluation-selftest  检查保存的留出对局及数据集绑定
+            external-evaluation-selftest  检查新数据独立性和固定基线排序
+              NNTrain evaluate-external --data new.bin --training-data original.bin --model pair-model.bin --out evaluation.json
+            独立评估使用全部获准新样本，要求种子不重叠；排序分数不是胜率，不证明决策改善。
             dump 拒绝异常/未支持/未结束对局；有拒绝或无样本时返回2。
             train/verify 要求匹配的 .quality.json；诊断通过不等于规则已认证。
 
