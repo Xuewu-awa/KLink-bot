@@ -1,0 +1,9 @@
+ranking metric: single-label, decision=False, controlled 0/50/100 or zero-pair cases checked
+ranking metric: matchup, decision=False, controlled 0/50/100 or zero-pair cases checked
+ranking metric: turn, decision=False, controlled 0/50/100 or zero-pair cases checked
+ranking metric: paired, decision=False, controlled 0/50/100 or zero-pair cases checked
+ranking metric: single-label, decision=True, controlled 0/50/100 or zero-pair cases checked
+ranking metric: matchup, decision=True, controlled 0/50/100 or zero-pair cases checked
+ranking metric: turn, decision=True, controlled 0/50/100 or zero-pair cases checked
+ranking metric: paired, decision=True, controlled 0/50/100 or zero-pair cases checked
+错误: InvalidOperationException: Train must save pair coverage; Train must save pair coverage; Train must save pair coverage; Train must save pair coverage; Train must save pair coverage; Train must save pair coverage; Train must save pair coverage; Train must save pair coverage

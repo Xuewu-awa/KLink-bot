@@ -6,6 +6,15 @@ namespace KLink.Bot.NNTrain;
 // The verify command reproduces the saved holdout, rather than evaluating new games.
 internal static class ValueEvaluationSplit
 {
+    internal static HashSet<float> Create(float[] gids,int seed)
+    {
+        if(gids.Distinct().Take(2).Count()<2)
+            throw new InvalidDataException("At least two admitted games required for game-disjoint evaluation.");
+        var rng=seed<0?null:new Random(seed);
+        var games=gids.Distinct().OrderBy(_=>rng is null?Random.Shared.Next():rng.Next()).ToArray();
+        return games.Take(Math.Max(1,(int)(games.Length*.15))).ToHashSet();
+    }
+
     internal static HashSet<float> Read(NnModel model,string datasetHash,float[] gids,int? requestedSeed)
     {
         if(!string.Equals(ValueTrainingContract.Read(model).DatasetSha256,datasetHash,StringComparison.OrdinalIgnoreCase))

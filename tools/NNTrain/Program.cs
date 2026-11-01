@@ -68,6 +68,8 @@ internal static class Program
             if (cmd == "value-preprocessing-selftest") return ValuePreprocessingSelfTest.Run();
             if (cmd == "value-evaluation-selftest") return ValueEvaluationSelfTest.Run();
             if (cmd == "value-learning-selftest") return ValueLearningSelfTest.Run();
+            if (cmd == "pair-coverage-selftest") return PairCoverageSelfTest.Run();
+            if (cmd == "coverage") return Coverage(opts);
             if (cmd == "ranking-metric-selftest") return RankingMetricSelfTest.Run();
             if (cmd == "pair-direction-selftest") return PairDirectionSelfTest.Run();
             if (cmd == "verify-actions") return ActionDatasetTool.VerifyCommand(opts);
@@ -353,21 +355,17 @@ internal static class Program
         // ⚠️ 默认走 `Random.Shared`（= 原来的行为，每次跑切分都不同 ⇒ 数字不可复现）。
         //    给了 `--split-seed N` 就用固定种子；verify 始终使用模型保存的对局 ID。
         int splitSeed = GetInt(opts, "split-seed", -1);
-        if (gids.Distinct().Take(2).Count() < 2)
-            throw new InvalidDataException("At least two admitted games required for game-disjoint evaluation.");
-        var splitRng = splitSeed < 0 ? null : new Random(splitSeed);
-        var gameIds = gids.Distinct()
-                          .OrderBy(_ => splitRng is null ? Random.Shared.Next() : splitRng.Next())
-                          .ToArray();
-
-        int nValGames = Math.Max(1, (int)(gameIds.Length * 0.15));
-        var valGames = new HashSet<float>(gameIds.Take(nValGames));
+        var valGames = ValueEvaluationSplit.Create(gids, splitSeed);
+        int nValGames = valGames.Count;
         var idx = Enumerable.Range(0, n)
                             .Where(i => !valGames.Contains(gids[i]))
                             .Concat(Enumerable.Range(0, n).Where(i => valGames.Contains(gids[i])))
                             .ToArray();
         int nTrain = n - idx.Count(i => valGames.Contains(gids[i]));
         Console.WriteLine($"训练 {nTrain:N0} / 验证 {n - nTrain:N0}  （按对局切分，验证集 {nValGames} 局）\n");
+
+        var pairCoverage = ValuePairCoverage.Build(y, gids, pair, turnBucket, valGames);
+        ValuePairCoverage.Print(pairCoverage);
 
         // Fit only on training games. Validation rows use the frozen scaler;
         // their observations must not influence either parameters or gradients.
@@ -674,6 +672,7 @@ internal static class Program
             validationMetricStatus = lastAcc.HasValue ? "available" : "no-comparable-pairs",
             validationMetricCorrect = lastCorrect,
             validationMetricTotal = lastTotal,
+            pairCoverage,
             savedEpochWeights = epochs,
             processedTrainingUnits,
             trainingUnit = pairwise ? "pair" : "row",
@@ -758,6 +757,8 @@ internal static class Program
                             .Concat(Enumerable.Range(0, n).Where(i => valGames.Contains(gids[i])))
                             .ToArray();
         int nTrain = n - idx.Count(i => valGames.Contains(gids[i]));
+
+        ValuePairCoverage.Print(ValuePairCoverage.Build(y, gids, pair, BuildTurnBuckets(X, n), valGames));
 
         int correct = 0, correctTrain = 0, correctAll = 0;
         // ⭐ 分档诊断（纯统计，不改任何判定逻辑）
@@ -856,6 +857,66 @@ internal static class Program
         PrintBuckets("\n【全体样本】模型分档准确率（口径 A）", bucketAll);
         PrintBuckets($"\n【验证集 {nValGames} 局】模型分档准确率（口径 A，对上表基线用）", bucketVal);
         PrintBuckets($"\n【验证集 {nValGames} 局】模型分档【对位内排序】准确率（口径 B）", bucketPairVal);
+        return 0;
+    }
+
+    // Read-only data diagnosis: never changes labels, rows or the holdout to improve metrics.
+    internal static int Coverage(Dictionary<string,string> opts)
+    {
+        string path=opts.GetValueOrDefault("data","nn-data.bin");
+        var quality=TrainingAdmission.VerifyDataset(path);
+        if(quality.GateVersion!=2)throw new InvalidDataException("Coverage requires a Gate2 dataset.");
+        var (x,y,gids,pair,n,_)=LoadData(path);
+        HashSet<float> validation;
+        int? seed=null;
+        if(opts.TryGetValue("split-seed",out var text))
+        {
+            if(!int.TryParse(text,out int parsed) || parsed<0)
+                throw new InvalidDataException("Coverage requires a nonnegative explicit split-seed.");
+            seed=parsed;
+        }
+        string splitSource;
+        if(opts.TryGetValue("model",out var modelPath))
+        {
+            var model=NnModel.Load(modelPath);
+            ValueTrainingContract.Read(model).RequireDataset(quality.SamplingMode,quality.ObservationSpec,
+                quality.ObservationPerspective,quality.ChoicePolicy,quality.InputsSha256.GetValueOrDefault("KLink.Bot.dll",""),quality.InputsSha256);
+            validation=ValueEvaluationSplit.Read(model,quality.DataSha256,gids,seed);
+            splitSource="saved-model";
+            using var metadata=JsonDocument.Parse(model.MetaJson);
+            seed=metadata.RootElement.GetProperty("splitSeed").GetInt32();
+        }
+        else
+        {
+            if(!seed.HasValue)throw new InvalidDataException("Coverage requires --split-seed or --model for a reproducible partition.");
+            validation=ValueEvaluationSplit.Create(gids,seed.Value);
+            splitSource="seeded-game-split";
+        }
+        var coverage=ValuePairCoverage.Build(y,gids,pair,BuildTurnBuckets(x,n),validation);
+        var report=new
+        {
+            schemaVersion=1, datasetSha256=quality.DataSha256, quality.SamplingMode,
+            quality.ObservationSpec, quality.ObservationPerspective, quality.ChoicePolicy,
+            datasetSimulatorSha256=quality.InputsSha256.GetValueOrDefault("KLink.Bot.dll",""),
+            currentSimulatorSha256=ValueTrainingContract.CurrentSimulatorHash(),
+            simulatorMatchesCurrent=quality.InputsSha256.GetValueOrDefault("KLink.Bot.dll","")==ValueTrainingContract.CurrentSimulatorHash(),
+            splitSource, splitSeed=seed,
+            trainingGameIds=gids.Distinct().Where(g=>!validation.Contains(g)).Order().ToArray(),
+            validationGameIds=validation.Order().ToArray(), coverage,
+            interpretation="Observation pairs are correlated within games; this is coverage diagnosis, not rule certification, statistical confidence or a reason to select a favorable split."
+        };
+        ValuePairCoverage.Print(coverage);
+        Console.WriteLine("验证对局 ID: "+string.Join(",",validation.Order()));
+        Console.WriteLine("数据模拟器与当前一致: "+report.simulatorMatchesCurrent);
+        if(opts.TryGetValue("out",out var output))
+        {
+            // A diagnostic must not overwrite its data, admission manifest or model.
+            string absolute=Path.GetFullPath(output);
+            foreach(string input in new[]{path,path+".quality.json",opts.GetValueOrDefault("model",path)})
+                if(string.Equals(absolute,Path.GetFullPath(input),StringComparison.OrdinalIgnoreCase))
+                    throw new InvalidDataException("Coverage output must differ from its inputs.");
+            File.WriteAllText(output,JsonSerializer.Serialize(report,TrainingAdmission.Json),new UTF8Encoding(false));
+        }
         return 0;
     }
 
@@ -1023,6 +1084,9 @@ internal static class Program
             train 不给 --split-seed 时每次切分可能不同。verify 使用模型保存的切分，
             要求原始训练数据集；可省略种子，显式传入时必须与模型记录一致。
             无完整切分元数据的旧模型需要重新训练后才能复验。
+            coverage --data d.bin --split-seed 7 [--out coverage.json]
+            coverage --data d.bin --model m.bin [--out coverage.json]
+            只读统计对位/回合覆盖、独立对局数、未配对行和切分损失；不搜索有利切分。
             同一对位和回合内没有胜负排序对时显示“不可评估”；保存的准确率为 null，
             validationMetricStatus 为 no-comparable-pairs，并保存正确数与总对数。
 

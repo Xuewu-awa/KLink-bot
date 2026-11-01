@@ -8465,6 +8465,26 @@
         "Existing model/dataset admission and simulator fingerprints remain enforced. No old model weights or data contracts are silently repaired. Pair-direction fixes from the prior batch still require retraining old weights.",
         "No prior evidence fingerprint refreshed; authoritative PvP denominator and overall completion remain unresolved."
       ]
+    },
+    {
+      "id": "TRAINING/NNTrain/matchup-turn-pair-coverage-20261101",
+      "status": "partial",
+      "report": "out/audit/systematic-rules/pair-coverage-20261101.json",
+      "report_sha256": "6e0f82500d426ac21467c41eff355052d78a72004e1bb90845a19bc0200bf830",
+      "source_bindings": {
+        "tools/NNTrain/Program.cs": "3192593225a562d52bd96a750c91a1b14cab00f3a70d6ad0db0a25ffc67a4718",
+        "tools/NNTrain/ValueEvaluationSplit.cs": "86f887ac013ceca8b6fd174408e76419915ef24d653f19a9ede9900e55f2edc5",
+        "tools/NNTrain/ValuePairCoverage.cs": "f8ff6185649b6bcd17daff557e90d4abc517d45f5364f73fdd08a03b7b646e63",
+        "tools/NNTrain/PairCoverageSelfTest.cs": "cd56f56a1e00c09133f51695d7ceed1dbf0cf853f0333212694238e6cc564e0f"
+      },
+      "limitations": [
+        "Training coverage diagnosis only; no card/native rule certification, statistical confidence or playing-strength measurement.",
+        "Observation pairs, including pairs from repeated same-game observations, are correlated; row pairs and SGD processed units are not independent matches. Counts report distinct game IDs but do not establish statistical independence.",
+        "Seeded splitting retains the original row-first distinct-game ordering and PRNG algorithm. It does not resample seeds, rebalance labels or repair sparse data. Reordering rows may change the seeded split; coverage counts for a fixed partition are order invariant.",
+        "The historical local dataset has a different simulator hash and is not current training data. Its binary and quality manifest are local unpublished evidence, recorded by hash; no claim that external readers possess those inputs.",
+        "Coverage validates Gate2 admission and row values/partition but does not add a complete binary-to-manifest semantic audit or verify game outcomes against the client. Output collision protection compares normalized path strings; filesystem aliases are not resolved.",
+        "Previous authority bindings are retained. PvP denominator and overall remaining percentage remain unresolved."
+      ]
     }
   ]
 }

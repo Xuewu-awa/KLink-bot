@@ -1,0 +1,128 @@
+{
+  "fixture": "fixture.json",
+  "fixtureSha256": "ef16e0040962fdcdd513e409b12910f24e33b9d16ae28e64bc2f78c66c51eb48",
+  "full": {
+    "rows": 13,
+    "distinctGames": 6,
+    "cells": [
+      {
+        "matchup": 1,
+        "turn": 3,
+        "winRows": 4,
+        "lossRows": 3,
+        "winGames": 2,
+        "lossGames": 2,
+        "pairs": 3
+      },
+      {
+        "matchup": 1,
+        "turn": 4,
+        "winRows": 1,
+        "lossRows": 1,
+        "winGames": 1,
+        "lossGames": 1,
+        "pairs": 1
+      },
+      {
+        "matchup": 1,
+        "turn": 5,
+        "winRows": 0,
+        "lossRows": 1,
+        "winGames": 0,
+        "lossGames": 1,
+        "pairs": 0
+      },
+      {
+        "matchup": 2,
+        "turn": 3,
+        "winRows": 1,
+        "lossRows": 2,
+        "winGames": 1,
+        "lossGames": 1,
+        "pairs": 1
+      }
+    ],
+    "comparableCells": 3,
+    "rowsInComparableCells": 12,
+    "deterministicPairs": 5,
+    "pairedRows": 10,
+    "unpairedRows": 3
+  },
+  "training": {
+    "rows": 8,
+    "distinctGames": 4,
+    "cells": [
+      {
+        "matchup": 1,
+        "turn": 3,
+        "winRows": 3,
+        "lossRows": 1,
+        "winGames": 1,
+        "lossGames": 1,
+        "pairs": 1
+      },
+      {
+        "matchup": 1,
+        "turn": 4,
+        "winRows": 0,
+        "lossRows": 1,
+        "winGames": 0,
+        "lossGames": 1,
+        "pairs": 0
+      },
+      {
+        "matchup": 2,
+        "turn": 3,
+        "winRows": 1,
+        "lossRows": 2,
+        "winGames": 1,
+        "lossGames": 1,
+        "pairs": 1
+      }
+    ],
+    "comparableCells": 2,
+    "rowsInComparableCells": 7,
+    "deterministicPairs": 2,
+    "pairedRows": 4,
+    "unpairedRows": 4
+  },
+  "validation": {
+    "rows": 5,
+    "distinctGames": 2,
+    "cells": [
+      {
+        "matchup": 1,
+        "turn": 3,
+        "winRows": 1,
+        "lossRows": 2,
+        "winGames": 1,
+        "lossGames": 1,
+        "pairs": 1
+      },
+      {
+        "matchup": 1,
+        "turn": 4,
+        "winRows": 1,
+        "lossRows": 0,
+        "winGames": 1,
+        "lossGames": 0,
+        "pairs": 0
+      },
+      {
+        "matchup": 1,
+        "turn": 5,
+        "winRows": 0,
+        "lossRows": 1,
+        "winGames": 0,
+        "lossGames": 1,
+        "pairs": 0
+      }
+    ],
+    "comparableCells": 1,
+    "rowsInComparableCells": 3,
+    "deterministicPairs": 1,
+    "pairedRows": 2,
+    "unpairedRows": 3
+  },
+  "lostPairsBySplit": 2
+}

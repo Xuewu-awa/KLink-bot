@@ -1,6 +1,6 @@
 {
   "date": "2026-11-01",
-  "batch": "unavailable-ranking-metric",
+  "batch": "matchup-turn-pair-coverage",
   "counts": {
     "cards": 2019,
     "cards_with_own_ir": 1709,
@@ -12,7 +12,7 @@
     "program_containers": 2626,
     "dependency_edges": 18567,
     "dependency_symbols": 440,
-    "secondary_reports": 467,
+    "secondary_reports": 471,
     "explicit_partial_units": 39,
     "partial_units_matching_bound_inputs": 0,
     "planning_work_domains": 14,
@@ -24,6 +24,7 @@
   },
   "matrix_tests": 16,
   "csharp_tests": {
+    "pair_coverage": 171,
     "ranking_metric": 182,
     "pair_direction": 158,
     "learning": 46,
@@ -35,14 +36,15 @@
     "after_exit_code": 0
   },
   "worker": {
-    "job_id": "20261101-185421-ranking-metric-2c07859d",
+    "job_id": "20261101-195121-pair-coverage-4be6c328",
     "status": "completed",
-    "verification": "Original source exact base Git blob, hash and line count and all 161 literal citations independently verified; worker purpose prose not semantic proof."
+    "verification": "Every synthetic scope/cell count and fixture SHA independently recomputed by primary; worker code not integrated."
   },
-  "input_scope": "Clean HEAD snapshot plus five scoped training metric/display sources. Training-contract review separate from native-rule partial evidence. Existing bindings retained.",
-  "source_revision": "2597ed5b7028de17b2eff955ce6fb4afc74713fb",
+  "input_scope": "Clean HEAD snapshot plus four scoped training sources. Training-contract review separate from native-rule partial evidence. Existing authority bindings retained.",
+  "source_revision": "d36fde428f6f76a7b7d131a71ca56dfb50487f75",
   "limitations": [
-    "Training unavailable-metric correction only; no game-rule certification or strength measurement.",
-    "Historical inventory.json is an existing unpublished local input; tracked inputs are verified against index bytes."
+    "Coverage diagnosis only; no game-rule certification or playing-strength measurement.",
+    "Historical 129-row dataset differs from current simulator and is unpublished local evidence.",
+    "Historical inventory.json is an existing unpublished local input; tracked inputs verified against index bytes."
   ]
 }

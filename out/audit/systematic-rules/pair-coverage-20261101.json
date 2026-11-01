@@ -1,0 +1,102 @@
+{
+  "scope": "NNTrain matchup/turn pair coverage",
+  "base_commit": "d36fde428f6f76a7b7d131a71ca56dfb50487f75",
+  "authority": "Repository software, synthetic fixture and local simulator-generated historical observations; not authoritative KARDS rules",
+  "finding": "No prior coverage contract distinguished comparable observation cells, deterministic evaluation pairs, repeated-game row counts or split-induced loss. Fixed game-disjoint holdouts can lose otherwise available row pairs.",
+  "change": "Shared unchanged split algorithm; read-only coverage command with explicit seed or saved holdout; Train prints/persists pairCoverage, Verify recomputes it. Reports full/train/validation cells, row counts, unique games and pair losses without choosing a favorable holdout.",
+  "definitions": {
+    "cell": "ordered matchup ID and rounded raw global turn",
+    "deterministicPairs": "sum(min(winRows,lossRows)) within cells, same denominator as ranking evaluation",
+    "rowsInComparableCells": "all rows in cells containing both classes; not SGD update count",
+    "lostPairsBySplit": "full pairs minus training pairs minus validation pairs",
+    "distinctGames": "unique IDs behind observed rows; per-cell win/loss game counts included"
+  },
+  "regression": {
+    "before": "Unchanged HEAD Train/Save exercised with one new metadata assertion in existing ranking-metric selftest; failed because pairCoverage absent.",
+    "after": "171 checks, both supported sampling modes, both pair and win targets, actual Train/Save/Verify/Coverage, null-pair/sparse/cross-split fixtures, exact seed algorithm, collision preservation, mismatched model contract and historical-runtime flag.",
+    "checks": {
+      "pair_coverage": 171,
+      "ranking_metric": 182,
+      "pair_direction": 158,
+      "learning": 46,
+      "preprocessing": 50,
+      "evaluation": 200,
+      "admission": 44,
+      "full": 1058
+    },
+    "logs": {
+      "out/audit/systematic-rules/pair-coverage-before-20261101.txt": "1610a5b385e8ff26195000dff31b755c8cb265ce3318f5b899f14a4975823c91",
+      "out/audit/systematic-rules/pair-coverage-after-20261101.txt": "4daa3a9265ef2866405e33b824b5d10a553f6ba0b7dcd30ebbef12a097e1c277",
+      "out/audit/systematic-rules/pair-coverage-metric-20261101.txt": "e7aeb72200e69d20622dc6406cfd37359acb014e83b39d254dc91799bd220ae5",
+      "out/audit/systematic-rules/pair-coverage-direction-20261101.txt": "91719a85b468cabcba82119b0b2406b8032ff33802e6e45beb3058487f85f13a",
+      "out/audit/systematic-rules/pair-coverage-learning-20261101.txt": "d7faa75602026cd8ef5ae23fc2cd86ea53ef846efd6026b4622c07fb100e502f",
+      "out/audit/systematic-rules/pair-coverage-preprocessing-20261101.txt": "8934378a4acf1cfa1894f2d55b9449f00375ef7100712e3a9930a87495bb0b73",
+      "out/audit/systematic-rules/pair-coverage-evaluation-20261101.txt": "41052447d2274824e827bacd7587943101f8ad853fea695c45aa8f405f5816ad",
+      "out/audit/systematic-rules/pair-coverage-admission-20261101.txt": "bf321d94caa01475eb8f83fb1f3ce2655d866d2d9857ee9c20354551169ea935",
+      "out/audit/systematic-rules/pair-coverage-full-20261101.txt": "9f49dd4a37eb1d983b5d3bcdf306dd1a82ee2a6d7eb020020c485efaabc6f148",
+      "out/audit/systematic-rules/pair-coverage-historical-20261101.txt": "823dbfa2a342cd4893a42bee341e9a28da63d1503ea4580c494378dea7dab084"
+    }
+  },
+  "worker": {
+    "job": "20261101-195121-pair-coverage-4be6c328",
+    "status": "completed",
+    "fixture_sha256": "ef16e0040962fdcdd513e409b12910f24e33b9d16ae28e64bc2f78c66c51eb48",
+    "verification": "Primary independently recomputed every scope/cell field and source fixture hash. Worker code not executed or integrated; arithmetic agrees with hardcoded C# fixture."
+  },
+  "synthetic": {
+    "full_pairs": 5,
+    "training_pairs": 2,
+    "validation_pairs": 1,
+    "lost_pairs": 2,
+    "full_rows": 13,
+    "full_games": 6
+  },
+  "historical": {
+    "dataset": "out/audit/deepseek-call-provenance-20261101/provenance-smoke.bin",
+    "dataset_sha256": "f002fe5319668c73ace673749083d563b70777d118a117799fb1b0af9219190b",
+    "quality_sha256": "cbf5fa95a39de2ee7252220e2308ef6dbcdf6c469a818f5da412c094ca7dcd32",
+    "sampling": "turn-end/v1",
+    "dataset_simulator_sha256": "43603cd40daee84149d1aec2c011cafd446f704d65d6f067c02b865332aa8063",
+    "current_simulator_sha256": "1a5ad7179f7fefc45636a7beee1f45a8f114672b9b818b5c19914c7466870c40",
+    "matches_current": false,
+    "validation_game_ids": [
+      3
+    ],
+    "full_rows": 129,
+    "full_games": 5,
+    "full_cells": 124,
+    "full_pairs": 0,
+    "training_rows": 108,
+    "training_games": 4,
+    "validation_rows": 21,
+    "validation_games": 1,
+    "verification": "Primary parsed all binary float records and exactly matched all three coverage scopes. This fixed five-game split holds out one game; per-game labels make within-holdout win/loss pairs impossible."
+  },
+  "artifacts": {
+    "out/audit/systematic-rules/pair-coverage-fixture-20261101.json": "0eff94949bc0a054c048aa382fe6558083c3e55b7b23b2b83c66e47fa9dc2c0c",
+    "out/audit/systematic-rules/pair-coverage-worker-20261101.json": "a1dc73febc727bb00ffe4e5d104c6dad4b51930611bf2f9fcd4407e54cc11dc2",
+    "out/audit/systematic-rules/pair-coverage-historical-20261101.json": "baf916ec6028d5c511b9d4e2625d3fea444a358ad26f80bf88b73d18edc96f6e"
+  },
+  "source_bindings": {
+    "tools/NNTrain/Program.cs": "3192593225a562d52bd96a750c91a1b14cab00f3a70d6ad0db0a25ffc67a4718",
+    "tools/NNTrain/ValueEvaluationSplit.cs": "86f887ac013ceca8b6fd174408e76419915ef24d653f19a9ede9900e55f2edc5",
+    "tools/NNTrain/ValuePairCoverage.cs": "f8ff6185649b6bcd17daff557e90d4abc517d45f5364f73fdd08a03b7b646e63",
+    "tools/NNTrain/PairCoverageSelfTest.cs": "cd56f56a1e00c09133f51695d7ceed1dbf0cf853f0333212694238e6cc564e0f"
+  },
+  "validation_environment": {
+    "source": "Clean HEAD src/BotSim/NNTrain plus four scoped sources; unrelated dirty action-probe changes excluded.",
+    "runtime_data_sha256": {
+      "cards.live.json": "3550dc76eb0414c500166875f45909077aeeb3ea4d229b9b0ba9c66a81987c4b",
+      "card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b"
+    }
+  },
+  "remaining": [
+    "Training coverage diagnosis only; no card/native rule certification, statistical confidence or playing-strength measurement.",
+    "Observation pairs, including pairs from repeated same-game observations, are correlated; row pairs and SGD processed units are not independent matches. Counts report distinct game IDs but do not establish statistical independence.",
+    "Seeded splitting retains the original row-first distinct-game ordering and PRNG algorithm. It does not resample seeds, rebalance labels or repair sparse data. Reordering rows may change the seeded split; coverage counts for a fixed partition are order invariant.",
+    "The historical local dataset has a different simulator hash and is not current training data. Its binary and quality manifest are local unpublished evidence, recorded by hash; no claim that external readers possess those inputs.",
+    "Coverage validates Gate2 admission and row values/partition but does not add a complete binary-to-manifest semantic audit or verify game outcomes against the client. Output collision protection compares normalized path strings; filesystem aliases are not resolved.",
+    "Previous authority bindings are retained. PvP denominator and overall remaining percentage remain unresolved."
+  ],
+  "next_step": "Predeclare a bounded collection schedule with repeated ordered matchups, multiple independent game seeds and a frozen game-disjoint holdout; measure Gate2 rejection causes and actual within-cell win/loss coverage before allocating a large training run. Do not weaken admission or search favorable labels/seeds."
+}
