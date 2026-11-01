@@ -66,6 +66,7 @@ internal static class Program
         {
             if (cmd == "admission-selftest") return AdmissionSelfTest.Run();
             if (cmd == "value-preprocessing-selftest") return ValuePreprocessingSelfTest.Run();
+            if (cmd == "value-evaluation-selftest") return ValueEvaluationSelfTest.Run();
             if (cmd == "verify-actions") return ActionDatasetTool.VerifyCommand(opts);
             string dataDir = FindDir("card-effects.json");
             var db = CardDatabase.Load(dataDir);
@@ -345,7 +346,7 @@ internal static class Program
         //    按样本切会让验证集混进训练过的对局，准确率虚高。
         //
         // ⚠️ 默认走 `Random.Shared`（= 原来的行为，每次跑切分都不同 ⇒ 数字不可复现）。
-        //    给了 `--split-seed N` 就用固定种子，切分可复现 —— `verify` 靠它复现同一份验证集。
+        //    给了 `--split-seed N` 就用固定种子；verify 始终使用模型保存的对局 ID。
         int splitSeed = GetInt(opts, "split-seed", -1);
         if (gids.Distinct().Take(2).Count() < 2)
             throw new InvalidDataException("At least two admitted games required for game-disjoint evaluation.");
@@ -691,7 +692,7 @@ internal static class Program
     /// 这是「训练 == 推理」的验收：
     /// <code>
     ///   NNTrain train  --data d.bin --epochs 5 --split-seed 7 --out m.bin   → 报告 X%
-    ///   NNTrain verify --data d.bin --model m.bin --split-seed 7            → 必须也是 X%
+    ///   NNTrain verify --data d.bin --model m.bin                           → 必须也是 X%
     /// </code>
     /// 对不上就说明模型文件/归一化参数/前向算式三处里有一处错了。
     /// </summary>
@@ -701,7 +702,13 @@ internal static class Program
         var quality = TrainingAdmission.VerifyDataset(path);
         if (quality.GateVersion != 2) throw new InvalidDataException("Bound models require a Gate2 dataset; regenerate it with current dump.");
         string modelPath = opts.GetValueOrDefault("model", "nn-model.bin");
-        int splitSeed = GetInt(opts, "split-seed", -1);
+        int? requestedSeed = null;
+        if (opts.TryGetValue("split-seed", out var seedText))
+        {
+            if (!int.TryParse(seedText, out int parsedSeed))
+                throw new InvalidDataException("Invalid evaluation split-seed option.");
+            requestedSeed = parsedSeed;
+        }
 
         var model = NnModel.Load(modelPath);
         ValueTrainingContract.Read(model).RequireDataset(quality.SamplingMode, quality.ObservationSpec,
@@ -715,23 +722,16 @@ internal static class Program
 
         if (gids.Distinct().Take(2).Count() < 2)
             throw new InvalidDataException("At least two admitted games required for game-disjoint evaluation.");
-        var splitRng = splitSeed < 0 ? null : new Random(splitSeed);
-        var gameIds = gids.Distinct()
-                          .OrderBy(_ => splitRng is null ? Random.Shared.Next() : splitRng.Next())
-                          .ToArray();
-        int nValGames = Math.Max(1, (int)(gameIds.Length * 0.15));
-        var valGames = new HashSet<float>(gameIds.Take(nValGames));
+        var valGames = ValueEvaluationSplit.Read(model, quality.DataSha256, gids,
+            requestedSeed);
+        int nValGames = valGames.Count;
+        Console.WriteLine("验证对局 ID: " + string.Join(",", valGames.Order()));
 
         var idx = Enumerable.Range(0, n)
                             .Where(i => !valGames.Contains(gids[i]))
                             .Concat(Enumerable.Range(0, n).Where(i => valGames.Contains(gids[i])))
                             .ToArray();
         int nTrain = n - idx.Count(i => valGames.Contains(gids[i]));
-
-        if (splitSeed < 0)
-        {
-            Console.WriteLine("⚠ 没给 --split-seed ⇒ 验证集与训练时不是同一份，数字只能「量级相近」，不能逐位对齐");
-        }
 
         int correct = 0, correctTrain = 0, correctAll = 0;
         // ⭐ 分档诊断（纯统计，不改任何判定逻辑）
@@ -958,6 +958,7 @@ internal static class Program
             NNTrain —— 验证向量方案的最小管线
             admission-selftest  检查训练准入、清单及数据完整性
             value-preprocessing-selftest  检查按局切分及训练集归一化隔离
+            value-evaluation-selftest  检查保存的留出对局及数据集绑定
             dump 拒绝异常/未支持/未结束对局；有拒绝或无样本时返回2。
             train/verify 要求匹配的 .quality.json；诊断通过不等于规则已认证。
 
@@ -991,8 +992,9 @@ internal static class Program
                              A 原始胜负（sign(logit) 猜谁赢；跨对位可比历史数字）
                              B 对位内成对排序（随机 = 50%，与卡池平衡程度无关）
 
-            ⚠️ 不给 --split-seed 时按对局切分用的是 Random.Shared（每次跑都不同）⇒
-               数字不可复现。要复现就显式给 --split-seed；verify 靠它复现同一份验证集。
+            train 不给 --split-seed 时每次切分可能不同。verify 使用模型保存的切分，
+            要求原始训练数据集；可省略种子，显式传入时必须与模型记录一致。
+            无完整切分元数据的旧模型需要重新训练后才能复验。
 
             状态编码在 src/KLink.Bot/NN/StateEncoder.cs —— 训练与推理共用一份。
             """);

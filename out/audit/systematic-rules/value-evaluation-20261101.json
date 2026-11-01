@@ -1,0 +1,62 @@
+{
+  "scope": "NNTrain value Verify exact saved holdout",
+  "authority": "Repository software and executable synthetic regression only",
+  "base_commit": "516e9f58e4627020a44a1f7e84ece0e9b93fe344",
+  "defect": "Verify ignored persisted split IDs and rebuilt a split from its own seed; omitted or conflicting seeds could evaluate training games as validation. Compatible but different datasets were also admitted as original holdout.",
+  "fix": "Require original dataset SHA256; load nonempty unique disjoint training/validation ID sets which partition the dataset exactly. Always use saved validation IDs; optional seed must parse and match the recorded seed. Missing/invalid legacy split metadata fails closed.",
+  "regression": {
+    "before_exit_code": 1,
+    "after_exit_code": 0,
+    "evaluation_checks": 200,
+    "preprocessing_checks": 46,
+    "admission_checks": 44,
+    "full_passed": 1058,
+    "seeds": [
+      7,
+      -1
+    ],
+    "targets": [
+      "win",
+      "pair"
+    ],
+    "sampling_modes": [
+      "turn-end/v1",
+      "policy-and-choice-before/v1"
+    ],
+    "logs": {
+      "out/audit/systematic-rules/value-evaluation-before-20261101.txt": "4b0701d67f4e377b6c8b257c0d2dcfd10203ce872d5c0960ecd797502bbdf3c6",
+      "out/audit/systematic-rules/value-evaluation-after-20261101.txt": "41052447d2274824e827bacd7587943101f8ad853fea695c45aa8f405f5816ad",
+      "out/audit/systematic-rules/value-evaluation-preprocessing-20261101.txt": "da41f75a5388371ea1d4eb9ac0fdbd7af124f409236498a4ba19902ab249b975",
+      "out/audit/systematic-rules/value-evaluation-admission-20261101.txt": "bf321d94caa01475eb8f83fb1f3ce2655d866d2d9857ee9c20354551169ea935",
+      "out/audit/systematic-rules/value-evaluation-full-20261101.txt": "9f49dd4a37eb1d983b5d3bcdf306dd1a82ee2a6d7eb020020c485efaabc6f148"
+    }
+  },
+  "worker": {
+    "job": "20261101-174917-value-verify-2eea89c9",
+    "result": "out/audit/systematic-rules/value-evaluation-worker-20261101.json",
+    "result_sha256": "c0f7a9c4dec85c4d64a18fbf73bcd19e9f6b53be3931ec6581c473f4a91f0be2",
+    "verified_literal_citations": 25,
+    "verification": "Primary verified both source hashes/line counts and every literal citation. Worker purpose prose and unresolved items are bounded inventory, not independent semantic or executable proof."
+  },
+  "validation_environment": {
+    "source": "Clean HEAD src/BotSim/NNTrain plus three scoped files. Existing unrelated dirty probe changes excluded.",
+    "runtime_data_sha256": {
+      "cards.live.json": "3550dc76eb0414c500166875f45909077aeeb3ea4d229b9b0ba9c66a81987c4b",
+      "card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b"
+    },
+    "runtime_data_note": "Exact runtime bytes satisfy native-default proof; LF-normalized runtime content matches HEAD. Matrix provenance uses exact Git bytes separately."
+  },
+  "source_bindings": {
+    "tools/NNTrain/Program.cs": "2e6f95bcae72efaec5c519804cbb3b7f4229d213f5ae28bc9a18a9786b7b44c3",
+    "tools/NNTrain/ValueEvaluationSelfTest.cs": "65b93f90da7a5a646c40e19b16ba8bcd2e1efd7c2806a04f994a2e2b7d5c01fb",
+    "tools/NNTrain/ValueEvaluationSplit.cs": "8860d8739b534badbd3d773483d885f885ce9a7cebf5ea4243781061cfc5a3db"
+  },
+  "remaining": [
+    "Software saved-holdout reproduction only; no card/native rule certification, throughput or strength claim.",
+    "Verify now requires the bound original dataset and saved split metadata. Models without complete split metadata require retraining for this command; inference consumers are unchanged.",
+    "No independent new-dataset evaluation command is introduced. ValueTrainingContract.RequireDataset remains a distribution-compatibility check; Verify additionally enforces the original dataset hash.",
+    "Metadata and sidecars are unsigned provenance, not tamper-proof artifacts. Joint malicious rewriting or a valid but falsified partition is outside this validation.",
+    "Synthetic four-game tests cover win/pair execution and two sampling modes; single-game holdouts have no ranking pairs, so no pair-learning efficacy is claimed.",
+    "Random training splits remain random when no seed is provided; saved IDs reproduce each resulting model holdout. No old evidence bindings are refreshed."
+  ]
+}

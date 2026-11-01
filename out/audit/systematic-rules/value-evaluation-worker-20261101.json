@@ -1,0 +1,174 @@
+{
+  "sources": [
+    {
+      "file": "Program.cs",
+      "sha256": "c37c9cd2a3b5996a60fc00f92882adb7eb9e4c61659805b6469c23994e13d6a6",
+      "total_lines": 1001
+    },
+    {
+      "file": "ValueTrainingContract.cs",
+      "sha256": "260a7c607c2818b45ca9b045c2e42c1a54f29cf2ecb5ccee86afa1b17b5e0c06",
+      "total_lines": 85
+    }
+  ],
+  "citations": [
+    {
+      "file": "Program.cs",
+      "line": 349,
+      "text": "        int splitSeed = GetInt(opts, \"split-seed\", -1);",
+      "purpose": "verify-split: Train reads --split-seed with default -1 (negative sentinel = no fixed seed); this option value is the only input that makes the training split reproducible."
+    },
+    {
+      "file": "Program.cs",
+      "line": 357,
+      "text": "        int nValGames = Math.Max(1, (int)(gameIds.Length * 0.15));",
+      "purpose": "verify-split: Train's validation-game count is a pure function of the number of distinct game ids: 15% truncated toward zero, floored at 1."
+    },
+    {
+      "file": "Program.cs",
+      "line": 358,
+      "text": "        var valGames = new HashSet<float>(gameIds.Take(nValGames));",
+      "purpose": "verify-split: Train takes the first nValGames entries of the sorted-by-random-key array, so the training split is exactly the prefix of that ordering."
+    },
+    {
+      "file": "Program.cs",
+      "line": 704,
+      "text": "        int splitSeed = GetInt(opts, \"split-seed\", -1);",
+      "purpose": "verify-split: Verify re-reads --split-seed independently (same default -1 as Train) rather than reading a stored seed from the model metadata."
+    },
+    {
+      "file": "Program.cs",
+      "line": 720,
+      "text": "                          .OrderBy(_ => splitRng is null ? Random.Shared.Next() : splitRng.Next())",
+      "purpose": "verify-split: Verify rebuilds the game ordering with the identical expression used in Train (case at line 354): Random(splitSeed) when given, otherwise the non-deterministic Random.Shared."
+    },
+    {
+      "file": "Program.cs",
+      "line": 723,
+      "text": "        var valGames = new HashSet<float>(gameIds.Take(nValGames));",
+      "purpose": "verify-split: Verify repeats Train's nValGames = Math.Max(1,(int)(gameIds.Length*0.15)) plus prefix take (verify lines 722-723 mirror train lines 357-358), so the reconstruction is bit-identical only if the dataset yields the same distinct gid set and same split-seed."
+    },
+    {
+      "file": "Program.cs",
+      "line": 733,
+      "text": "            Console.WriteLine(\"⚠ 没给 --split-seed ⇒ 验证集与训练时不是同一份，数字只能「量级相近」，不能逐位对齐\");",
+      "purpose": "verify-split: With splitSeed < 0 Verify itself declares the validation set is not the same one used in training (Random.Shared), so only approximate agreement is claimed; it still proceeds and prints numbers with no mismatch error."
+    },
+    {
+      "file": "Program.cs",
+      "line": 748,
+      "text": "            int r = idx[k];",
+      "purpose": "verify-split: Reconstruction is applied through idx (rows reordered as [train..., val...]); the comment above states an earlier bug sliced raw X by k instead of idx[k], so k>=nTrain now correctly selects validation rows."
+    },
+    {
+      "file": "Program.cs",
+      "line": 768,
+      "text": "        double valAcc = (double)correct / (n - nTrain);",
+      "purpose": "verify-split: Accuracy is recomputed from the reconstructed partition and printed; nothing in Verify compares it to the model's stored valAccuracy, so the train==verify agreement is a human-read acceptance step, not an enforced check."
+    },
+    {
+      "file": "Program.cs",
+      "line": 628,
+      "text": "            trainingContract = new ValueTrainingContract",
+      "purpose": "train-meta: Train embeds a trainingContract object in the model metadata; the remaining metadata fields (tool, data file name, sample counts, epochs, hidden, lr, weight init seed 42, normalizationSpec, game-id lists, valAccuracy/bestValAccuracy, savedEpochWeights, trainedAt) are the anonymous-object siblings at lines 626-654."
+    },
+    {
+      "file": "Program.cs",
+      "line": 630,
+      "text": "                Version=1, SamplingMode=quality.SamplingMode, ObservationSpec=quality.ObservationSpec,",
+      "purpose": "train-meta: Contract version is hardcoded 1; sampling mode and observation spec are copied verbatim from the .quality.json sidecar (quality), not from the model or the command line."
+    },
+    {
+      "file": "Program.cs",
+      "line": 632,
+      "text": "                Target=target, DatasetSha256=quality.DataSha256,",
+      "purpose": "train-meta: Target is the CLI value ('win' or 'pair') and DatasetSha256 is copied from the sidecar's recorded hash of the .bin."
+    },
+    {
+      "file": "Program.cs",
+      "line": 633,
+      "text": "                SimulatorSha256=simulatorHash,",
+      "purpose": "train-meta: SimulatorSha256 is the dataset's recorded KLink.Bot.dll hash that Train already required to equal CurrentSimulatorHash (lines 313-315)."
+    },
+    {
+      "file": "Program.cs",
+      "line": 634,
+      "text": "                InputsSha256=ValueTrainingContract.SelectInputs(quality.InputsSha256)",
+      "purpose": "train-meta: Only the six BoundInputs keys are persisted in the contract, filtering out the two dll entries and any other sidecar inputs."
+    },
+    {
+      "file": "Program.cs",
+      "line": 648,
+      "text": "            trainingGameIds = gids.Distinct().Where(g => !valGames.Contains(g)).Order().ToArray(),",
+      "purpose": "train-meta: The actual partition membership is persisted as trainingGameIds/validationGameIds (line 649), so the split is recorded in metadata even though Verify never reads it back."
+    },
+    {
+      "file": "Program.cs",
+      "line": 651,
+      "text": "            valAccuracy = lastAcc,",
+      "purpose": "train-meta: valAccuracy is the last-epoch metric and bestValAccuracy (line 652) the historical best; savedEpochWeights = epochs (line 653) shows the saved weights are the final epoch, described as equivalent on this data but not guaranteed by construction."
+    },
+    {
+      "file": "Program.cs",
+      "line": 676,
+      "text": "        ValueTrainingContract.Read(model).Validate();",
+      "purpose": "train-meta: Train round-trips its own metadata through ValueTrainingContract.Read/Validate before model.Save, so an unsupported or incomplete contract aborts before the model file is written."
+    },
+    {
+      "file": "Program.cs",
+      "line": 150,
+      "text": "            quality.InputsSha256[Path.GetFileName(file)] = TrainingAdmission.Hash(file);",
+      "purpose": "dataset-hash: Dump hashes every *.json in the data directory (ordinal name order) into the input map, keyed by file name, so input identity is name+content and only those names survive BoundInputs filtering."
+    },
+    {
+      "file": "Program.cs",
+      "line": 151,
+      "text": "        quality.InputsSha256[\"KLink.Bot.dll\"] = TrainingAdmission.Hash(typeof(MatchEngine).Assembly.Location);",
+      "purpose": "dataset-hash: The simulator binary identity is recorded as the engine assembly file hash, alongside NNTrain.dll on line 152 — these two dll keys are outside BoundInputs and are dropped from the contract."
+    },
+    {
+      "file": "Program.cs",
+      "line": 283,
+      "text": "        quality.Rows=rows; quality.DataSha256=TrainingAdmission.Hash(outPath);",
+      "purpose": "dataset-hash: The dataset hash is computed from the finished .bin after writing and after the pair manifest, and stored in the <out>.quality.json sidecar (line 285) together with Rows — the model never hashes the dataset itself."
+    },
+    {
+      "file": "Program.cs",
+      "line": 312,
+      "text": "        if (quality.GateVersion != 2) throw new InvalidDataException(\"Bound models require a Gate2 dataset; regenerate it with current dump.\");",
+      "purpose": "dataset-hash: Train's first gate is the sidecar GateVersion == 2; Verify applies the identical gate at line 702, so both commands depend on a sidecar produced by the current dump."
+    },
+    {
+      "file": "Program.cs",
+      "line": 314,
+      "text": "            || simulatorHash != ValueTrainingContract.CurrentSimulatorHash())",
+      "purpose": "dataset-hash: Only Train compares the recorded simulator hash against the live engine binary (CurrentSimulatorHash); Verify has no such call, so runtime equality is established at train time, not at evaluation time."
+    },
+    {
+      "file": "ValueTrainingContract.cs",
+      "line": 33,
+      "text": "        if(Version!=1 || SamplingMode is not (\"turn-end/v1\" or \"policy-and-choice-before/v1\")",
+      "purpose": "dataset-hash: Validate checks Version==1, an allowed SamplingMode pair, spec/perspective/choice-policy/target literals, and that DatasetSha256/SimulatorSha256 are 64 hex digits (line 36) — the dataset hash is only shape-validated, never matched to any dataset."
+    },
+    {
+      "file": "ValueTrainingContract.cs",
+      "line": 80,
+      "text": "        if(ObservationSpec!=observationSpec || ObservationPerspective!=perspective || ChoicePolicy!=choicePolicy || SimulatorSha256!=simulatorHash",
+      "purpose": "dataset-hash: RequireDataset compares observation spec, perspective, choice policy, simulator hash and the full input map (line 81: equal count and every key/value equal) but has no DatasetSha256 term, which is why Verify passes quality.InputsSha256['KLink.Bot.dll'] (Program.cs line 708) as the simulator value."
+    },
+    {
+      "file": "ValueTrainingContract.cs",
+      "line": 83,
+      "text": "        // A different dataset hash is allowed for genuinely new evaluation games.",
+      "purpose": "dataset-hash: The policy is stated in-source: a model may be evaluated on a dataset whose DatasetSha256 differs from the one recorded at training, so dataset bytes are not a binding constraint — only inputs, simulator hash, spec, perspective and choice policy are."
+    }
+  ],
+  "unresolved": [
+    "TrainingAdmission (VerifyDataset, Check, Hash, Json) and QualityReport are not in the permitted read set, so the exact contents of quality.InputsSha256 beyond the *.json enumeration plus the two dll keys, how GateVersion is assigned, and whether VerifyDataset recomputes DataSha256 from the .bin bytes could not be confirmed here.",
+    "NnModel.Load/NormalizeInto/ForwardLogitNormalized/MetaJson, StateEncoder (Spec, Dim, OffGlobal, TurnScale), EpisodeSampling and GreedyEpisodeRunner are outside the read set; Verify's model-side determinism and the exact meaning of the encoder spec string cannot be checked from these two files.",
+    "Program.cs Verify never calls ValueTrainingContract.RequireRuntime, so within these sources no evaluation-time check ties a model to the running engine binary; whether another component enforces that is not determinable from the read scope, and no intent is inferred from the omission.",
+    "Verify recomputes the val/train partition from --split-seed instead of using the persisted validationGameIds/trainingGameIds, so a split-seed mismatch would go undetected by these two files and would silently evaluate a different validation set; no guard exists in the read scope.",
+    "The default splitSeed = -1 routes both Train and Verify through Random.Shared, which the source states is not reproducible; exact split reconstruction therefore holds only when the same explicit --split-seed is supplied to both commands, and this was not executed or tested (no build or run was performed).",
+    "The dataset-hash exception comment (ValueTrainingContract.cs line 83) and the absence of any DatasetSha256 comparison are recorded as source facts only; whether that is the intended policy or a gap is not decided here and no certification of training or rules is proposed."
+  ]
+}

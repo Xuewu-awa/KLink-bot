@@ -1,6 +1,6 @@
 {
   "date": "2026-11-01",
-  "batch": "value-training-only-normalization",
+  "batch": "value-saved-holdout-verification",
   "counts": {
     "cards": 2019,
     "cards_with_own_ir": 1709,
@@ -12,7 +12,7 @@
     "program_containers": 2626,
     "dependency_edges": 18567,
     "dependency_symbols": 440,
-    "secondary_reports": 459,
+    "secondary_reports": 461,
     "explicit_partial_units": 39,
     "partial_units_matching_bound_inputs": 0,
     "planning_work_domains": 14,
@@ -24,6 +24,7 @@
   },
   "matrix_tests": 16,
   "csharp_tests": {
+    "evaluation": 200,
     "preprocessing": 46,
     "admission": 44,
     "full": 1058,
@@ -31,12 +32,12 @@
     "after_exit_code": 0
   },
   "worker": {
-    "job_id": "20261101-173320-value-split-a01de1af",
+    "job_id": "20261101-174917-value-verify-2eea89c9",
     "status": "completed",
-    "verification": "Both original source hashes and line counts and all 67 supplied literal citations independently verified."
+    "verification": "Both original source hashes and line counts and all 25 supplied literal citations independently verified."
   },
-  "input_scope": "Clean HEAD snapshot plus NNTrain Program and new synthetic selftest. Training-contract review separate from native-rule partial evidence. Existing bindings retained.",
-  "source_revision": "782e6254a8180d9315273d0cf4735d53c6cb2501",
+  "input_scope": "Clean HEAD snapshot plus NNTrain Program, saved split reader and new synthetic selftest. Training-contract review separate from native-rule partial evidence. Existing bindings retained.",
+  "source_revision": "516e9f58e4627020a44a1f7e84ece0e9b93fe344",
   "limitations": [
     "Training preprocessing correctness only; no game-rule certification or strength measurement.",
     "Historical inventory.json is an existing unpublished local input; tracked inputs are verified against index bytes."

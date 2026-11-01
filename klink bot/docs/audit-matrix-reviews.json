@@ -8387,6 +8387,25 @@
         "Synthetic two-game pair cases have no opposite-label training pairs; they test preprocessing isolation, not pair-learning efficacy.",
         "This closes direct scaler leakage only; repeated human model selection on validation metrics is outside this fix."
       ]
+    },
+    {
+      "id": "TRAINING/NNTrain/saved-holdout-verification-20261101",
+      "status": "partial",
+      "report": "out/audit/systematic-rules/value-evaluation-20261101.json",
+      "report_sha256": "7875d5e8596e169e5252a3404d57cd0be707140187c46ec6b1d9feeec66fd265",
+      "source_bindings": {
+        "tools/NNTrain/Program.cs": "2e6f95bcae72efaec5c519804cbb3b7f4229d213f5ae28bc9a18a9786b7b44c3",
+        "tools/NNTrain/ValueEvaluationSelfTest.cs": "65b93f90da7a5a646c40e19b16ba8bcd2e1efd7c2806a04f994a2e2b7d5c01fb",
+        "tools/NNTrain/ValueEvaluationSplit.cs": "8860d8739b534badbd3d773483d885f885ce9a7cebf5ea4243781061cfc5a3db"
+      },
+      "limitations": [
+        "Software saved-holdout reproduction only; no card/native rule certification, throughput or strength claim.",
+        "Verify now requires the bound original dataset and saved split metadata. Models without complete split metadata require retraining for this command; inference consumers are unchanged.",
+        "No independent new-dataset evaluation command is introduced. ValueTrainingContract.RequireDataset remains a distribution-compatibility check; Verify additionally enforces the original dataset hash.",
+        "Metadata and sidecars are unsigned provenance, not tamper-proof artifacts. Joint malicious rewriting or a valid but falsified partition is outside this validation.",
+        "Synthetic four-game tests cover win/pair execution and two sampling modes; single-game holdouts have no ranking pairs, so no pair-learning efficacy is claimed.",
+        "Random training splits remain random when no seed is provided; saved IDs reproduce each resulting model holdout. No old evidence bindings are refreshed."
+      ]
     }
   ]
 }
