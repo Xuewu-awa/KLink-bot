@@ -1,0 +1,54 @@
+{
+  "scope": "NNTrain value-model training-only normalization",
+  "authority": "Repository implementation and executable synthetic regression only",
+  "base_commit": "782e6254a8180d9315273d0cf4735d53c6cb2501",
+  "defect": "Mean/std were fitted on all rows before the game split, allowing validation observations into training preprocessing. A single-game dataset also produced an empty training partition.",
+  "fix": "Split games first, fit mean/std on training indices only, apply the frozen scaler to all rows, require at least two admitted games in Train/Verify, and save normalization version and split IDs in model metadata.",
+  "regression": {
+    "before_exit_code": 1,
+    "after_exit_code": 0,
+    "preprocessing_checks": 46,
+    "admission_checks": 44,
+    "full_passed": 1058,
+    "seeds": [
+      7,
+      19
+    ],
+    "targets": [
+      "win",
+      "pair"
+    ],
+    "logs": {
+      "out/audit/systematic-rules/value-preprocessing-before-20261101.txt": "5bb4a1178f69eea7b4166e979f7ed3162a5ea072c8ed1c6560314447928f56f7",
+      "out/audit/systematic-rules/value-preprocessing-after-20261101.txt": "da41f75a5388371ea1d4eb9ac0fdbd7af124f409236498a4ba19902ab249b975",
+      "out/audit/systematic-rules/value-preprocessing-admission-20261101.txt": "bf321d94caa01475eb8f83fb1f3ce2655d866d2d9857ee9c20354551169ea935",
+      "out/audit/systematic-rules/value-preprocessing-full-20261101.txt": "9f49dd4a37eb1d983b5d3bcdf306dd1a82ee2a6d7eb020020c485efaabc6f148"
+    }
+  },
+  "worker": {
+    "job": "20261101-173320-value-split-a01de1af",
+    "result": "out/audit/systematic-rules/value-preprocessing-worker-20261101.json",
+    "result_sha256": "ee800f636481472a9ff5dd6c4128cd53e5602bb6f295f56f3eaed2e268951fdd",
+    "verified_literal_citations": 67,
+    "verification": "Primary verified every source hash/line count and every literal line citation; worker only inventoried old source."
+  },
+  "validation_environment": {
+    "source": "Clean HEAD src/BotSim/NNTrain snapshot plus two scoped files; unrelated dirty probe changes excluded.",
+    "runtime_data_sha256": {
+      "cards.live.json": "3550dc76eb0414c500166875f45909077aeeb3ea4d229b9b0ba9c66a81987c4b",
+      "card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b"
+    },
+    "runtime_data_note": "Exact runtime bytes match native-default proof; LF-normalized content matches HEAD. Matrix uses Git blob bytes separately."
+  },
+  "source_bindings": {
+    "tools/NNTrain/Program.cs": "c37c9cd2a3b5996a60fc00f92882adb7eb9e4c61659805b6469c23994e13d6a6",
+    "tools/NNTrain/ValuePreprocessingSelfTest.cs": "7cb464f5d8719002b4d9ba48e94c65a606de294624176dbd27f84b9874cd8332"
+  },
+  "remaining": [
+    "Software training preprocessing contract only; no card/native rule certification or strength claim.",
+    "Existing model files retain their original normalization; retraining is required to apply this fix.",
+    "Group split algorithm is unchanged; without split-seed, repeated train/verify can choose different games. Metadata records IDs but Verify still reconstructs its split from the supplied seed.",
+    "Synthetic two-game pair cases have no opposite-label training pairs; they test preprocessing isolation, not pair-learning efficacy.",
+    "This closes direct scaler leakage only; repeated human model selection on validation metrics is outside this fix."
+  ]
+}

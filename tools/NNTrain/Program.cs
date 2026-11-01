@@ -65,6 +65,7 @@ internal static class Program
         try
         {
             if (cmd == "admission-selftest") return AdmissionSelfTest.Run();
+            if (cmd == "value-preprocessing-selftest") return ValuePreprocessingSelfTest.Run();
             if (cmd == "verify-actions") return ActionDatasetTool.VerifyCommand(opts);
             string dataDir = FindDir("card-effects.json");
             var db = CardDatabase.Load(dataDir);
@@ -304,7 +305,7 @@ internal static class Program
 
     // ==================== train ====================
 
-    private static int Train(Dictionary<string, string> opts)
+    internal static int Train(Dictionary<string, string> opts)
     {
         string path = opts.GetValueOrDefault("data", "nn-data.bin");
         var quality = TrainingAdmission.VerifyDataset(path);
@@ -340,28 +341,14 @@ internal static class Program
         //    必须在标准化**之前**取：下面的标准化会**就地**改写 X。
         var turnBucket = BuildTurnBuckets(X, n);
 
-        // 标准化
-        var mean = new float[Dim];
-        var std = new float[Dim];
-        for (int i = 0; i < n; i++)
-            for (int d = 0; d < Dim; d++) mean[d] += X[i * Dim + d];
-        for (int d = 0; d < Dim; d++) mean[d] /= n;
-        for (int i = 0; i < n; i++)
-            for (int d = 0; d < Dim; d++)
-            {
-                float t = X[i * Dim + d] - mean[d];
-                std[d] += t * t;
-            }
-        for (int d = 0; d < Dim; d++) std[d] = MathF.Sqrt(std[d] / n) + 1e-6f;
-        for (int i = 0; i < n; i++)
-            for (int d = 0; d < Dim; d++) X[i * Dim + d] = (X[i * Dim + d] - mean[d]) / std[d];
-
         // ⭐ **按对局切分**，不是按样本 —— 同一局的不同回合高度相关，
         //    按样本切会让验证集混进训练过的对局，准确率虚高。
         //
         // ⚠️ 默认走 `Random.Shared`（= 原来的行为，每次跑切分都不同 ⇒ 数字不可复现）。
         //    给了 `--split-seed N` 就用固定种子，切分可复现 —— `verify` 靠它复现同一份验证集。
         int splitSeed = GetInt(opts, "split-seed", -1);
+        if (gids.Distinct().Take(2).Count() < 2)
+            throw new InvalidDataException("At least two admitted games required for game-disjoint evaluation.");
         var splitRng = splitSeed < 0 ? null : new Random(splitSeed);
         var gameIds = gids.Distinct()
                           .OrderBy(_ => splitRng is null ? Random.Shared.Next() : splitRng.Next())
@@ -375,6 +362,23 @@ internal static class Program
                             .ToArray();
         int nTrain = n - idx.Count(i => valGames.Contains(gids[i]));
         Console.WriteLine($"训练 {nTrain:N0} / 验证 {n - nTrain:N0}  （按对局切分，验证集 {nValGames} 局）\n");
+
+        // Fit only on training games. Validation rows use the frozen scaler;
+        // their observations must not influence either parameters or gradients.
+        var mean = new float[Dim];
+        var std = new float[Dim];
+        for (int k = 0; k < nTrain; k++)
+            for (int d = 0; d < Dim; d++) mean[d] += X[idx[k] * Dim + d];
+        for (int d = 0; d < Dim; d++) mean[d] /= nTrain;
+        for (int k = 0; k < nTrain; k++)
+            for (int d = 0; d < Dim; d++)
+            {
+                float delta = X[idx[k] * Dim + d] - mean[d];
+                std[d] += delta * delta;
+            }
+        for (int d = 0; d < Dim; d++) std[d] = MathF.Sqrt(std[d] / nTrain) + 1e-6f;
+        for (int i = 0; i < n; i++)
+            for (int d = 0; d < Dim; d++) X[i * Dim + d] = (X[i * Dim + d] - mean[d]) / std[d];
 
         // ==================== 训练 ====================
         //
@@ -640,6 +644,9 @@ internal static class Program
             lr,
             weightInitSeed = 42,
             splitSeed,
+            normalizationSpec = "training-split-only/v1",
+            trainingGameIds = gids.Distinct().Where(g => !valGames.Contains(g)).Order().ToArray(),
+            validationGameIds = valGames.Order().ToArray(),
             target,
             valAccuracy = lastAcc,
             bestValAccuracy = bestAcc,
@@ -688,7 +695,7 @@ internal static class Program
     /// </code>
     /// 对不上就说明模型文件/归一化参数/前向算式三处里有一处错了。
     /// </summary>
-    private static int Verify(Dictionary<string, string> opts)
+    internal static int Verify(Dictionary<string, string> opts)
     {
         string path = opts.GetValueOrDefault("data", "nn-data.bin");
         var quality = TrainingAdmission.VerifyDataset(path);
@@ -706,6 +713,8 @@ internal static class Program
         var (X, y, gids, pair, n, deckCount) = LoadData(path);
         Console.WriteLine($"样本 {n:N0}，维度 {Dim}，卡组 {deckCount} 套");
 
+        if (gids.Distinct().Take(2).Count() < 2)
+            throw new InvalidDataException("At least two admitted games required for game-disjoint evaluation.");
         var splitRng = splitSeed < 0 ? null : new Random(splitSeed);
         var gameIds = gids.Distinct()
                           .OrderBy(_ => splitRng is null ? Random.Shared.Next() : splitRng.Next())
@@ -948,6 +957,7 @@ internal static class Program
         Console.WriteLine("""
             NNTrain —— 验证向量方案的最小管线
             admission-selftest  检查训练准入、清单及数据完整性
+            value-preprocessing-selftest  检查按局切分及训练集归一化隔离
             dump 拒绝异常/未支持/未结束对局；有拒绝或无样本时返回2。
             train/verify 要求匹配的 .quality.json；诊断通过不等于规则已认证。
 

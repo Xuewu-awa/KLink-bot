@@ -1,6 +1,6 @@
 {
   "date": "2026-11-01",
-  "batch": "choice-policy-callback-mutation",
+  "batch": "value-training-only-normalization",
   "counts": {
     "cards": 2019,
     "cards_with_own_ir": 1709,
@@ -12,7 +12,7 @@
     "program_containers": 2626,
     "dependency_edges": 18567,
     "dependency_symbols": 440,
-    "secondary_reports": 457,
+    "secondary_reports": 459,
     "explicit_partial_units": 39,
     "partial_units_matching_bound_inputs": 0,
     "planning_work_domains": 14,
@@ -24,24 +24,21 @@
   },
   "matrix_tests": 16,
   "csharp_tests": {
-    "targeted": 5,
+    "preprocessing": 46,
+    "admission": 44,
     "full": 1058,
-    "new_mutation_scenarios": 80,
-    "pure_control_scenarios": 6,
-    "pure_control_choices": 12,
     "before_regression_exit_code": 1,
     "after_exit_code": 0
   },
   "worker": {
-    "job_id": "20261101-171756-choice-mutation-5b79e3f9",
+    "job_id": "20261101-173320-value-split-a01de1af",
     "status": "completed",
-    "verification": "Both source hashes and line counts and every supplied literal citation independently verified."
+    "verification": "Both original source hashes and line counts and all 67 supplied literal citations independently verified."
   },
-  "input_scope": "Clean HEAD snapshot plus ChoicePolicyAdapter, SelfTest registration and new mutation test. Software contract registry separate from native-rule partial units; all old source/evidence bindings retained.",
-  "source_revision": "60680f08e2a7e5315f9721f38309b0b987be3d57",
+  "input_scope": "Clean HEAD snapshot plus NNTrain Program and new synthetic selftest. Training-contract review separate from native-rule partial evidence. Existing bindings retained.",
+  "source_revision": "782e6254a8180d9315273d0cf4735d53c6cb2501",
   "limitations": [
-    "Choice callback only, not full isolation or card certification.",
-    "SelfTest registration changed: earlier whole-file bindings are allowed to become stale; no old hashes refreshed.",
-    "Historical inventory.json is an existing unpublished local input, hash retained in matrix; tracked inputs verified against Git index bytes."
+    "Training preprocessing correctness only; no game-rule certification or strength measurement.",
+    "Historical inventory.json is an existing unpublished local input; tracked inputs are verified against index bytes."
   ]
 }
