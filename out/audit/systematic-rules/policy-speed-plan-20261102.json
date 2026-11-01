@@ -1,0 +1,101 @@
+{
+  "spec": "policy-speed-and-expansion/v1",
+  "modelSha256": "7ff70b1fd65be589ea7b86b6338bda3713feb0aaaff83cc1d7bb1200387e336f",
+  "trainingSha256": "5fa97eab224e92984359fe758a8c4ea90bf5d2a51f38093848f17fbf85af1ba8",
+  "toolSha256": "0391dea73f5567dc4eb64969bbeb3f6cc84ef0456636bb9d0e560fe926cd3b45",
+  "referenceToolSha256": "874aa88ee6263d0b4997b43b85e7180226ae0058c1f6a6957982aebbf1e82841",
+  "benchmark": [
+    {
+      "matchup": [
+        0,
+        1
+      ],
+      "seed": 320000,
+      "order": [
+        "reference",
+        "full",
+        "incremental"
+      ]
+    },
+    {
+      "matchup": [
+        1,
+        0
+      ],
+      "seed": 321000,
+      "order": [
+        "incremental",
+        "full",
+        "reference"
+      ]
+    }
+  ],
+  "expanded": [
+    {
+      "matchup": [
+        0,
+        1
+      ],
+      "seed": 330000
+    },
+    {
+      "matchup": [
+        0,
+        1
+      ],
+      "seed": 330001
+    },
+    {
+      "matchup": [
+        0,
+        1
+      ],
+      "seed": 330002
+    },
+    {
+      "matchup": [
+        0,
+        1
+      ],
+      "seed": 330003
+    },
+    {
+      "matchup": [
+        1,
+        0
+      ],
+      "seed": 331000
+    },
+    {
+      "matchup": [
+        1,
+        0
+      ],
+      "seed": 331001
+    },
+    {
+      "matchup": [
+        1,
+        0
+      ],
+      "seed": 331002
+    },
+    {
+      "matchup": [
+        1,
+        0
+      ],
+      "seed": 331003
+    }
+  ],
+  "maxSteps": 1000,
+  "maxSeconds": 180,
+  "training": "Existing single model; no retraining/tuning/promotion.",
+  "selection": "All benchmark and expansion attempts retained; no replacement. Expansion runs incremental regardless of outcome; benchmark disagreement blocks use and publication as equivalent.",
+  "limitations": [
+    "One timing observation per seed/mode, not a rigorous speed estimate.",
+    "Benchmark seeds deliberately reused for differential verification, never treated as new strength samples.",
+    "Expanded seeds disjoint from training and prior evaluations; left only, fixed first-index choices.",
+    "Incremental verifier checks each prefix but no longer reconstructs the committed prefix from scratch at every step. Candidate roots still reconstructed. Fingerprints do not certify hidden VM equivalence."
+  ]
+}

@@ -1,0 +1,112 @@
+[
+  {
+    "id": "PE-01",
+    "severity": "medium",
+    "code_reference": {
+      "file": "current.cs",
+      "lines": "135, 164-165, 174, 218",
+      "quote": "string currentRoot = \"\";  ...  if (Fingerprint(e) != currentRoot) throw new InvalidOperationException(\"replay_mismatch\");  ...  currentRoot = Fingerprint(engine);"
+    },
+    "explanation": "Rebuild() no longer reads the live engine: the replay check compares the reconstruction to a cached string (currentRoot) that is refreshed only at line 174 (after engine.Start) and line 218 (after each committed step). The check is currently sound only because nothing between line 218 and the next Rebuild() call (191, 201) mutates engine; that invariant is nowhere asserted or documented in code. If any probe is later added on the real engine (or a Check is moved after line 218), Rebuild() will raise a spurious 'replay_mismatch' that is then swallowed by the catch at line 230 into Attempt.Reasons, i.e. a tool bug will be reported as an ordinary non-admitted attempt with no indication that the cache, not the replay, was wrong. Conversely the check can no longer distinguish 'the tape replay diverged' from 'the cached root was stale'. Note the model branch still takes two live fingerprints (lines 195 and 212), so the cache removes only the (1+candidates) live real-engine fingerprints that Rebuild() used to take on each turn.",
+    "suggested_fix": "Refresh currentRoot from the live engine at the start of each decision (it is already fingerprinted twice there) and/or add an explicit invariant check that produces a distinct reason code such as 'stale_root'/'replay_cache_stale', so a cache desync is never reported as a replay divergence. Document the invariant in the comment at lines 162-163."
+  },
+  {
+    "id": "PE-02",
+    "severity": "medium",
+    "code_reference": {
+      "file": "current.cs",
+      "lines": "230-236",
+      "quote": "catch (Exception ex) when (ex is not OutOfMemoryException) { reasons.Add(...); }  reasons.AddRange(TrainingAdmission.Check(...));  return new(..., sw.Elapsed.TotalSeconds, Fingerprint(engine), trace.ToArray(), work);"
+    },
+    "explanation": "The newly added Fingerprint(engine) in the return statement (line 236) is evaluated outside the try/catch that ends at line 230, as is the existing TrainingAdmission.Check (lines 231-233). Any exception there escapes Play(), is converted by SafePlay (lines 116-120) into a 'setup_fault:*' attempt with empty reasons and an empty Work object, discarding a fully executed match. In addition, this fingerprint is never compared to currentRoot: on the normal path it must equal the last verified root, so it is pure extra work, while on the exception path (e.g. Apply() threw after partially mutating engine at line 217/243-245) the report will contain a FinalFingerprint that contradicts all verification results with no flag marking it unverified. It also inflates Work.Fingerprints/FingerprintSeconds by one call that is not part of the verification loop.",
+    "suggested_fix": "Compute the final fingerprint inside the try (or reuse currentRoot when the loop terminated normally) and record an explicit flag/reason when Fingerprint(engine) != currentRoot at the end; move TrainingAdmission.Check and the final fingerprint inside the protected region, or wrap the tail in its own try."
+  },
+  {
+    "id": "PE-03",
+    "severity": "medium",
+    "code_reference": {
+      "file": "current.cs",
+      "lines": "140-142, 154, 159-169",
+      "quote": "try { work.Fingerprints++; return ActionJournal.Fingerprint(e); } finally { work.FingerprintSeconds += Stopwatch.GetElapsedTime(start).TotalSeconds; }  ...  long start = Stopwatch.GetTimestamp(); work.Reconstructions++;  ...  finally { work.ReconstructionSeconds += Stopwatch.GetElapsedTime(start).TotalSeconds; }"
+    },
+    "explanation": "ReconstructionSeconds measures the whole Rebuild() body: MatchEngine construction, full tape replay (Apply), a Health check per replayed step, and the Fingerprint() at line 164, whose cost is also accumulated separately into FingerprintSeconds. The two counters therefore overlap, and ReconstructionSeconds is not 'reconstruction' time but 'construct + replay + health + one fingerprint' wall time. Any consumer that adds or subtracts these two fields double counts, and the counter cannot show whether the remaining cost is engine construction or tape replay, which is exactly what an optimization of reconstruction cost needs to demonstrate.",
+    "suggested_fix": "Time `new MatchEngine(...)` in a dedicated counter (e.g. EngineConstructionSeconds/Count) separate from ReplaySeconds/HealthSeconds, and state in the Work XML/comments that reconstruction time is inclusive of replay and fingerprinting, or exclude the fingerprint/sub-timers from it."
+  },
+  {
+    "id": "PE-04",
+    "severity": "medium",
+    "code_reference": {
+      "file": "current.cs",
+      "lines": "161, 222",
+      "quote": "foreach (var step in tape) { Apply(e, step); work.ReplayedSteps++; Check(e, a); }   ...   Apply(verifier, step); work.ReplayedSteps++; Check(verifier, verifierAdapter!);"
+    },
+    "explanation": "The same counter is incremented for two different operations: a from-scratch tape replay inside Rebuild() and a single incremental step applied to the independent verifier. In incremental mode the number therefore mixes O(tape) reconstruction work with O(1) verification work, while in full mode (line 225) it counts only reconstructions. Since the whole point of the change is to compare full against incremental, Work.ReplayedSteps cannot be used for that comparison: the same numeric value means different work per mode.",
+    "suggested_fix": "Split into two counters, e.g. RebuildReplaySteps (line 161) and VerifierSteps (line 222); keep ReplayedSteps out of the report or define it as the sum with the split fields retained."
+  },
+  {
+    "id": "PE-05",
+    "severity": "low",
+    "code_reference": {
+      "file": "current.cs",
+      "lines": "164, 220-226",
+      "quote": "if (Fingerprint(e) != currentRoot) throw new InvalidOperationException(\"replay_mismatch\");   ...   else { using var replayAdapter = Rebuild().Adapter; }   work.VerifiedPrefixes++;"
+    },
+    "explanation": "VerifiedPrefixes is incremented once per loop iteration only, but every Rebuild() call (line 191 for enumeration and once per candidate at line 201, plus line 225 in full mode) also performs a full prefix verification at line 164 and is not counted. Fingerprints, by contrast, does count those. The counter set is therefore not a consistent decomposition of the verification work, and in full mode VerifiedPrefixes undercounts prefix comparisons by roughly (1 + candidates) per decision turn, which makes the new Work block misleading rather than diagnostic.",
+    "suggested_fix": "Increment a verification counter inside Rebuild() at line 164 (e.g. RebuildVerifiedPrefixes) and count the verifier branch separately (VerifierVerifiedPrefixes), or reword the field so it plainly means 'committed steps compared with the independent verifier'."
+  },
+  {
+    "id": "PE-06",
+    "severity": "medium",
+    "code_reference": {
+      "file": "current.cs",
+      "lines": "144, 180-228, 87-88, 99-108",
+      "quote": "void Budget() { if (sw.Elapsed.TotalSeconds > maxSeconds) throw new InvalidOperationException(\"time_limit\"); }   ...   else { using var replayAdapter = Rebuild().Adapter; }"
+    },
+    "explanation": "The only budget is wall clock (maxSeconds). In full mode the per-step verification at line 225 replays the entire tape (O(steps) work per step, O(steps^2) per match), while incremental mode pays O(1) per step for the verifier. With the same seed and --max-seconds, the two modes therefore hit 'time_limit' at very different points, which makes Attempt.Admitted false, Comparable false and LeftWinDelta null (lines 98, 107). Any cross-mode comparison of outcomes is then a comparison of budget consumption, not of the verification semantics, and the report records no information about which limit tripped or how much budget the verification itself consumed. The default mode also changed silently to 'incremental' (line 87), and nothing in the report distinguishes an explicit --replay-mode from the default, so pre-change reports (always full) and post-change reports are not obviously comparable on Seconds/Work.",
+    "suggested_fix": "Record which limit terminated the run (step_limit vs time_limit) per attempt, treat wall-clock-limited runs as non-comparable across modes, and expose the budget consumed by verification (Work.ReconstructionSeconds does not cover the verifier). Consider recording whether replay-mode was defaulted, or requiring it explicitly, so reports state the mode unambiguously."
+  },
+  {
+    "id": "PE-07",
+    "severity": "medium",
+    "code_reference": {
+      "file": "current.cs",
+      "lines": "164-165, 222-223, 242, 145-150",
+      "quote": "throw new InvalidOperationException(\"replay_mismatch\");  ...  Apply(verifier, step); ...  if (Fingerprint(verifier) != currentRoot) throw new InvalidOperationException(\"replay_mismatch\");  ...  throw new InvalidOperationException(\"Blocked step.\");"
+    },
+    "explanation": "The same reason strings are used for the main engine, for reconstructions and for the new independent verifier. If Apply(verifier, step) throws at line 242 ('Blocked step.') or the verifier's Health check throws raw health text at line 222, the Attempt.Reasons entry gives no way to tell that the independent verifier diverged rather than the real engine, and no prefix index is included. `replay_mismatch` is likewise emitted both from inside Rebuild() (reconstruction) and from the verifier branch, so triage of a failed attempt -- the primary use of Attempt.Reasons in this tool -- cannot locate the failing component or step.",
+    "suggested_fix": "Use distinct reason codes that name the component and prefix, e.g. 'verifier_blocked@step=N', 'verifier_health@step=N:<detail>', 'reconstruction_mismatch@step=N', including tape.Count / work.VerifiedPrefixes in the message; wrap the verifier branch so that Apply/Check failures are rethrown with that prefix."
+  },
+  {
+    "id": "PE-08",
+    "severity": "medium",
+    "code_reference": {
+      "file": "current.cs",
+      "lines": "191, 198-201, 151-170",
+      "quote": "var enumeration = Rebuild();  ...  foreach (var action in actions) { candidates++; var rebuilt = Rebuild(); ...  }"
+    },
+    "explanation": "The dominant cost is untouched: every decision turn still performs one full-tape reconstruction for enumeration (line 191) plus one per candidate (line 201), and each of those replays the whole tape, runs a Health check per replayed step and takes a fingerprint. The change removes only the redundant real-engine fingerprint that each Rebuild() used to perform (now served from currentRoot) and, in incremental mode, the one extra full replay per committed step. Consequently Work.Reconstructions will be identical to the previous build and the measured speedup will be small relative to the per-candidate reconstruction cost; the new Work block cannot show this because of PE-03/PE-04.",
+    "suggested_fix": "Either keep this change strictly as a diagnostics/timing-only change and say so, or attack the real cost: reconstruct once per decision and derive per-candidate states from a snapshot/test-only clone instead of replaying the tape per candidate; then the Work counters can demonstrate the gain."
+  },
+  {
+    "id": "PE-09",
+    "severity": "low",
+    "code_reference": {
+      "file": "current.cs",
+      "lines": "113-121, 128-136",
+      "quote": "var work = new Work();  ...  var verifier = replayMode == \"incremental\" ? new MatchEngine(db, left, right, seed) : null;  ...  var policy = new NnPolicy(model, vecs, Side.Left, true, false);   ...   \"NotAvailable\", 0, 0, 0, 0, 0, 0, 0, \"\", [], new());"
+    },
+    "explanation": "Work is created at line 128 but the verifier construction (133-134) and NnPolicy construction (line 136) sit outside the inner try (line 171), so a failure there propagates out of Play() and SafePlay reports new() -- zero counters -- even though an engine and adapter were already built. More generally, a failed attempt always reports an empty Work block, so failed attempts look free and the cost of the failing configurations cannot be measured, which defeats part of the point of adding the metrics.",
+    "suggested_fix": "Hoist the Work instance so SafePlay can pass it into the failure Attempt (e.g. Play(out Work work) or construct Work in Run per attempt), or move the verifier/engine/policy construction inside the inner try so partially accumulated metrics survive."
+  },
+  {
+    "id": "PE-10",
+    "severity": "low",
+    "code_reference": {
+      "file": "current.cs",
+      "lines": "87-88, 255-269",
+      "quote": "string replayMode = opts.GetValueOrDefault(\"replay-mode\", \"incremental\"); if (replayMode is not (\"full\" or \"incremental\")) throw new ArgumentException(\"Replay mode must be full or incremental.\");   ...   internal static int SelfTest() { ... only Best(...) cases ... }"
+    },
+    "explanation": "The new option and the two execution paths are not covered by SelfTest: the nine checks at lines 259-267 only exercise Best(), and nothing asserts that replay-mode parsing rejects unknown values, that the default is incremental, or that full and incremental actually take different branches. Since the two modes are meant to be cross-checkable, the absence of any self-test invariant on Work (e.g. full mode performs no verifier steps, incremental performs one per committed step) means a mode wiring regression would pass the suite silently.",
+    "suggested_fix": "Add self-test cases for replay-mode validation (unknown value rejected, default resolves to incremental) and a small accounting invariant over Work (ReplayMode==full => VerifierSteps==0 / zero verifier fingerprints), or at least assert that the mode selects the intended branch."
+  }
+]

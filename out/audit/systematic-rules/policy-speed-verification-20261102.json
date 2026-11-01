@@ -1,0 +1,1171 @@
+{
+  "spec": "policy-speed-verification/v1",
+  "planSha256": "dd31a8497300169ec39dc93b495fcbf75a2e7cc92459f9e15d32cf198bf9192b",
+  "benchmark": [
+    {
+      "seed": 320000,
+      "equivalent": true,
+      "timings": {
+        "reference": {
+          "baseline": 2.4428388,
+          "treatment": 29.0558111
+        },
+        "full": {
+          "baseline": 2.4474735,
+          "treatment": 27.8182881
+        },
+        "incremental": {
+          "baseline": 0.86704,
+          "treatment": 21.8021938
+        }
+      },
+      "work": {
+        "full": {
+          "baseline": {
+            "reconstructions": 65,
+            "replayedSteps": 2145,
+            "verifiedPrefixes": 65,
+            "fingerprints": 132,
+            "reconstructionSeconds": 1.9156686999999994,
+            "fingerprintSeconds": 0.5764116999999997
+          },
+          "treatment": {
+            "reconstructions": 800,
+            "replayedSteps": 38887,
+            "verifiedPrefixes": 129,
+            "fingerprints": 1057,
+            "reconstructionSeconds": 26.732082299999988,
+            "fingerprintSeconds": 2.976625899999996
+          }
+        },
+        "incremental": {
+          "baseline": {
+            "reconstructions": 0,
+            "replayedSteps": 65,
+            "verifiedPrefixes": 65,
+            "fingerprints": 133,
+            "reconstructionSeconds": 0,
+            "fingerprintSeconds": 0.5627179000000003
+          },
+          "treatment": {
+            "reconstructions": 671,
+            "replayedSteps": 30631,
+            "verifiedPrefixes": 129,
+            "fingerprints": 1058,
+            "reconstructionSeconds": 20.0463503,
+            "fingerprintSeconds": 3.0530889999999964
+          }
+        }
+      }
+    },
+    {
+      "seed": 321000,
+      "equivalent": true,
+      "timings": {
+        "incremental": {
+          "baseline": 1.7274721,
+          "treatment": 12.4701203
+        },
+        "full": {
+          "baseline": 10.4202501,
+          "treatment": 12.4953962
+        },
+        "reference": {
+          "baseline": 10.6687648,
+          "treatment": 14.3564172
+        }
+      },
+      "work": {
+        "full": {
+          "baseline": {
+            "reconstructions": 126,
+            "replayedSteps": 8001,
+            "verifiedPrefixes": 126,
+            "fingerprints": 254,
+            "reconstructionSeconds": 9.562490399999996,
+            "fingerprintSeconds": 1.0179893999999998
+          },
+          "treatment": {
+            "reconstructions": 484,
+            "replayedSteps": 18300,
+            "verifiedPrefixes": 89,
+            "fingerprints": 643,
+            "reconstructionSeconds": 11.895013899999997,
+            "fingerprintSeconds": 1.2930965
+          }
+        },
+        "incremental": {
+          "baseline": {
+            "reconstructions": 0,
+            "replayedSteps": 126,
+            "verifiedPrefixes": 126,
+            "fingerprints": 255,
+            "reconstructionSeconds": 0,
+            "fingerprintSeconds": 1.0509494000000008
+          },
+          "treatment": {
+            "reconstructions": 395,
+            "replayedSteps": 14384,
+            "verifiedPrefixes": 89,
+            "fingerprints": 644,
+            "reconstructionSeconds": 11.1127085,
+            "fingerprintSeconds": 1.7913858000000003
+          }
+        }
+      }
+    }
+  ],
+  "expandedPairs": 8,
+  "comparablePairs": 8,
+  "modelLeftWins": 0,
+  "controlLeftWins": 5,
+  "pairedDeltaSum": -5,
+  "unpairedAttemptsRetained": 0,
+  "summaries": [
+    {
+      "schemaVersion": 1,
+      "planSha256": "dd31a8497300169ec39dc93b495fcbf75a2e7cc92459f9e15d32cf198bf9192b",
+      "modelSha256": "7ff70b1fd65be589ea7b86b6338bda3713feb0aaaff83cc1d7bb1200387e336f",
+      "trainingDataSha256": "5fa97eab224e92984359fe758a8c4ea90bf5d2a51f38093848f17fbf85af1ba8",
+      "simulatorSha256": "7cba599e45879a8af7eecefa41bafa8256bc37d602dbb29fcd78031b12c5dfb9",
+      "inputs": {
+        "cards.json": "3550dc76eb0414c500166875f45909077aeeb3ea4d229b9b0ba9c66a81987c4b",
+        "card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b",
+        "card-effects.json": "fc335d228779a2859627ee706d85949149ca595d0cfdfbc4971541831e5a8df0",
+        "card-vectors.json": "b15b93cb02e7e8a712561a2da52127a5867084ecb878a6ad58539b56b1109ab9",
+        "event-contracts.json": "e4806dd48efbfc799a27c14b3660ad76ee03cd3f13e3e4320b213c5928efb112",
+        "card-ir-native-defaults.json": "a4f2812716f03ded180f45603ac7b715e890c54b1bc5b4b75fe2b1ec0975d711"
+      },
+      "toolSha256": "874aa88ee6263d0b4997b43b85e7180226ae0058c1f6a6957982aebbf1e82841",
+      "matchup": [
+        0,
+        1
+      ],
+      "seed": 320000,
+      "maxSteps": 1000,
+      "maxSeconds": 180,
+      "scope": "Left-only win model; existing NnPolicy candidate enumeration; one-ply afterstates; first-index choices. No complete legal mask, calibrated probability, PvP certification or strength claim.",
+      "comparable": true,
+      "leftWinDelta": -1,
+      "rawSha256": "d9d869e368cd19833b1c08eda49e6a0f83165e65cc07b604b5b694186c6160cf",
+      "name": "benchmark-0-reference",
+      "baseline": {
+        "modelLeft": false,
+        "seed": 320000,
+        "admitted": true,
+        "reasons": [],
+        "winner": "Left",
+        "turn": 17,
+        "steps": 65,
+        "decisions": 0,
+        "candidates": 0,
+        "rejected": 0,
+        "choices": 3,
+        "seconds": 2.4428388,
+        "traceSha256": "bec0584c039cfec2b828a591451280009be22b48df2db305735cec2f92409832",
+        "finalFingerprintSha256": "fa4611184fac49df263793200aba34efc5fc7c1059a10cc616df20b53ce986a0"
+      },
+      "treatment": {
+        "modelLeft": true,
+        "seed": 320000,
+        "admitted": true,
+        "reasons": [],
+        "winner": "Right",
+        "turn": 28,
+        "steps": 129,
+        "decisions": 63,
+        "candidates": 608,
+        "rejected": 55,
+        "choices": 15,
+        "seconds": 29.0558111,
+        "traceSha256": "7694b02b26ac399296d4baf0e2f9fe47910a0deb3cfe93096c96464a146cf409",
+        "finalFingerprintSha256": "1ebfebe4054ad34c2ed798b12741ccc89ddec47e330983995ac2293cd7f6d4c2"
+      }
+    },
+    {
+      "schemaVersion": 2,
+      "replayMode": "full",
+      "planSha256": "dd31a8497300169ec39dc93b495fcbf75a2e7cc92459f9e15d32cf198bf9192b",
+      "modelSha256": "7ff70b1fd65be589ea7b86b6338bda3713feb0aaaff83cc1d7bb1200387e336f",
+      "trainingDataSha256": "5fa97eab224e92984359fe758a8c4ea90bf5d2a51f38093848f17fbf85af1ba8",
+      "simulatorSha256": "7cba599e45879a8af7eecefa41bafa8256bc37d602dbb29fcd78031b12c5dfb9",
+      "inputs": {
+        "cards.json": "3550dc76eb0414c500166875f45909077aeeb3ea4d229b9b0ba9c66a81987c4b",
+        "card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b",
+        "card-effects.json": "fc335d228779a2859627ee706d85949149ca595d0cfdfbc4971541831e5a8df0",
+        "card-vectors.json": "b15b93cb02e7e8a712561a2da52127a5867084ecb878a6ad58539b56b1109ab9",
+        "event-contracts.json": "e4806dd48efbfc799a27c14b3660ad76ee03cd3f13e3e4320b213c5928efb112",
+        "card-ir-native-defaults.json": "a4f2812716f03ded180f45603ac7b715e890c54b1bc5b4b75fe2b1ec0975d711"
+      },
+      "toolSha256": "0391dea73f5567dc4eb64969bbeb3f6cc84ef0456636bb9d0e560fe926cd3b45",
+      "matchup": [
+        0,
+        1
+      ],
+      "seed": 320000,
+      "maxSteps": 1000,
+      "maxSeconds": 180,
+      "scope": "Left-only win model; existing NnPolicy candidate enumeration; one-ply afterstates; first-index choices. No complete legal mask, calibrated probability, PvP certification or strength claim.",
+      "comparable": true,
+      "leftWinDelta": -1,
+      "rawSha256": "344056c3173dc4e2882831809ce788a8e5724ad7f84923d5e02ddf3dadce433e",
+      "name": "benchmark-0-full",
+      "baseline": {
+        "modelLeft": false,
+        "seed": 320000,
+        "admitted": true,
+        "reasons": [],
+        "winner": "Left",
+        "turn": 17,
+        "steps": 65,
+        "decisions": 0,
+        "candidates": 0,
+        "rejected": 0,
+        "choices": 3,
+        "seconds": 2.4474735,
+        "work": {
+          "reconstructions": 65,
+          "replayedSteps": 2145,
+          "verifiedPrefixes": 65,
+          "fingerprints": 132,
+          "reconstructionSeconds": 1.9156686999999994,
+          "fingerprintSeconds": 0.5764116999999997
+        },
+        "traceSha256": "bec0584c039cfec2b828a591451280009be22b48df2db305735cec2f92409832",
+        "finalFingerprintSha256": "fa4611184fac49df263793200aba34efc5fc7c1059a10cc616df20b53ce986a0"
+      },
+      "treatment": {
+        "modelLeft": true,
+        "seed": 320000,
+        "admitted": true,
+        "reasons": [],
+        "winner": "Right",
+        "turn": 28,
+        "steps": 129,
+        "decisions": 63,
+        "candidates": 608,
+        "rejected": 55,
+        "choices": 15,
+        "seconds": 27.8182881,
+        "work": {
+          "reconstructions": 800,
+          "replayedSteps": 38887,
+          "verifiedPrefixes": 129,
+          "fingerprints": 1057,
+          "reconstructionSeconds": 26.732082299999988,
+          "fingerprintSeconds": 2.976625899999996
+        },
+        "traceSha256": "7694b02b26ac399296d4baf0e2f9fe47910a0deb3cfe93096c96464a146cf409",
+        "finalFingerprintSha256": "1ebfebe4054ad34c2ed798b12741ccc89ddec47e330983995ac2293cd7f6d4c2"
+      }
+    },
+    {
+      "schemaVersion": 2,
+      "replayMode": "incremental",
+      "planSha256": "dd31a8497300169ec39dc93b495fcbf75a2e7cc92459f9e15d32cf198bf9192b",
+      "modelSha256": "7ff70b1fd65be589ea7b86b6338bda3713feb0aaaff83cc1d7bb1200387e336f",
+      "trainingDataSha256": "5fa97eab224e92984359fe758a8c4ea90bf5d2a51f38093848f17fbf85af1ba8",
+      "simulatorSha256": "7cba599e45879a8af7eecefa41bafa8256bc37d602dbb29fcd78031b12c5dfb9",
+      "inputs": {
+        "cards.json": "3550dc76eb0414c500166875f45909077aeeb3ea4d229b9b0ba9c66a81987c4b",
+        "card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b",
+        "card-effects.json": "fc335d228779a2859627ee706d85949149ca595d0cfdfbc4971541831e5a8df0",
+        "card-vectors.json": "b15b93cb02e7e8a712561a2da52127a5867084ecb878a6ad58539b56b1109ab9",
+        "event-contracts.json": "e4806dd48efbfc799a27c14b3660ad76ee03cd3f13e3e4320b213c5928efb112",
+        "card-ir-native-defaults.json": "a4f2812716f03ded180f45603ac7b715e890c54b1bc5b4b75fe2b1ec0975d711"
+      },
+      "toolSha256": "0391dea73f5567dc4eb64969bbeb3f6cc84ef0456636bb9d0e560fe926cd3b45",
+      "matchup": [
+        0,
+        1
+      ],
+      "seed": 320000,
+      "maxSteps": 1000,
+      "maxSeconds": 180,
+      "scope": "Left-only win model; existing NnPolicy candidate enumeration; one-ply afterstates; first-index choices. No complete legal mask, calibrated probability, PvP certification or strength claim.",
+      "comparable": true,
+      "leftWinDelta": -1,
+      "rawSha256": "4f0948459fdf243aa9f7be6b77529808cf6b0c18c92437e8a30ad662d3463c53",
+      "name": "benchmark-0-incremental",
+      "baseline": {
+        "modelLeft": false,
+        "seed": 320000,
+        "admitted": true,
+        "reasons": [],
+        "winner": "Left",
+        "turn": 17,
+        "steps": 65,
+        "decisions": 0,
+        "candidates": 0,
+        "rejected": 0,
+        "choices": 3,
+        "seconds": 0.86704,
+        "work": {
+          "reconstructions": 0,
+          "replayedSteps": 65,
+          "verifiedPrefixes": 65,
+          "fingerprints": 133,
+          "reconstructionSeconds": 0,
+          "fingerprintSeconds": 0.5627179000000003
+        },
+        "traceSha256": "bec0584c039cfec2b828a591451280009be22b48df2db305735cec2f92409832",
+        "finalFingerprintSha256": "fa4611184fac49df263793200aba34efc5fc7c1059a10cc616df20b53ce986a0"
+      },
+      "treatment": {
+        "modelLeft": true,
+        "seed": 320000,
+        "admitted": true,
+        "reasons": [],
+        "winner": "Right",
+        "turn": 28,
+        "steps": 129,
+        "decisions": 63,
+        "candidates": 608,
+        "rejected": 55,
+        "choices": 15,
+        "seconds": 21.8021938,
+        "work": {
+          "reconstructions": 671,
+          "replayedSteps": 30631,
+          "verifiedPrefixes": 129,
+          "fingerprints": 1058,
+          "reconstructionSeconds": 20.0463503,
+          "fingerprintSeconds": 3.0530889999999964
+        },
+        "traceSha256": "7694b02b26ac399296d4baf0e2f9fe47910a0deb3cfe93096c96464a146cf409",
+        "finalFingerprintSha256": "1ebfebe4054ad34c2ed798b12741ccc89ddec47e330983995ac2293cd7f6d4c2"
+      }
+    },
+    {
+      "schemaVersion": 2,
+      "replayMode": "incremental",
+      "planSha256": "dd31a8497300169ec39dc93b495fcbf75a2e7cc92459f9e15d32cf198bf9192b",
+      "modelSha256": "7ff70b1fd65be589ea7b86b6338bda3713feb0aaaff83cc1d7bb1200387e336f",
+      "trainingDataSha256": "5fa97eab224e92984359fe758a8c4ea90bf5d2a51f38093848f17fbf85af1ba8",
+      "simulatorSha256": "7cba599e45879a8af7eecefa41bafa8256bc37d602dbb29fcd78031b12c5dfb9",
+      "inputs": {
+        "cards.json": "3550dc76eb0414c500166875f45909077aeeb3ea4d229b9b0ba9c66a81987c4b",
+        "card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b",
+        "card-effects.json": "fc335d228779a2859627ee706d85949149ca595d0cfdfbc4971541831e5a8df0",
+        "card-vectors.json": "b15b93cb02e7e8a712561a2da52127a5867084ecb878a6ad58539b56b1109ab9",
+        "event-contracts.json": "e4806dd48efbfc799a27c14b3660ad76ee03cd3f13e3e4320b213c5928efb112",
+        "card-ir-native-defaults.json": "a4f2812716f03ded180f45603ac7b715e890c54b1bc5b4b75fe2b1ec0975d711"
+      },
+      "toolSha256": "0391dea73f5567dc4eb64969bbeb3f6cc84ef0456636bb9d0e560fe926cd3b45",
+      "matchup": [
+        1,
+        0
+      ],
+      "seed": 321000,
+      "maxSteps": 1000,
+      "maxSeconds": 180,
+      "scope": "Left-only win model; existing NnPolicy candidate enumeration; one-ply afterstates; first-index choices. No complete legal mask, calibrated probability, PvP certification or strength claim.",
+      "comparable": true,
+      "leftWinDelta": 0,
+      "rawSha256": "37a58511ef11f118e8cef1da333882d4d7ba67c9d42ccee3308b4a4bd6b51609",
+      "name": "benchmark-1-incremental",
+      "baseline": {
+        "modelLeft": false,
+        "seed": 321000,
+        "admitted": true,
+        "reasons": [],
+        "winner": "Right",
+        "turn": 24,
+        "steps": 126,
+        "decisions": 0,
+        "candidates": 0,
+        "rejected": 0,
+        "choices": 14,
+        "seconds": 1.7274721,
+        "work": {
+          "reconstructions": 0,
+          "replayedSteps": 126,
+          "verifiedPrefixes": 126,
+          "fingerprints": 255,
+          "reconstructionSeconds": 0,
+          "fingerprintSeconds": 1.0509494000000008
+        },
+        "traceSha256": "8042cc739572a90d268743c5953b2155f6bb5378e280bbdebb8ddf01ef9fabea",
+        "finalFingerprintSha256": "988e5cf5a5548feef55c3c34a5562df8d69cc75a77a0965bdf893f16f9b0f25e"
+      },
+      "treatment": {
+        "modelLeft": true,
+        "seed": 321000,
+        "admitted": true,
+        "reasons": [],
+        "winner": "Right",
+        "turn": 20,
+        "steps": 89,
+        "decisions": 34,
+        "candidates": 361,
+        "rejected": 65,
+        "choices": 5,
+        "seconds": 12.4701203,
+        "work": {
+          "reconstructions": 395,
+          "replayedSteps": 14384,
+          "verifiedPrefixes": 89,
+          "fingerprints": 644,
+          "reconstructionSeconds": 11.1127085,
+          "fingerprintSeconds": 1.7913858000000003
+        },
+        "traceSha256": "18eb9f72671e02dab9c2775ed98e036cacbe71f0fd31e1e71006d82890207fc1",
+        "finalFingerprintSha256": "5a46ed5305ec623854d127cfa53e80a5a868f72f1e02da3e7ca4aa0a785d2cfc"
+      }
+    },
+    {
+      "schemaVersion": 2,
+      "replayMode": "full",
+      "planSha256": "dd31a8497300169ec39dc93b495fcbf75a2e7cc92459f9e15d32cf198bf9192b",
+      "modelSha256": "7ff70b1fd65be589ea7b86b6338bda3713feb0aaaff83cc1d7bb1200387e336f",
+      "trainingDataSha256": "5fa97eab224e92984359fe758a8c4ea90bf5d2a51f38093848f17fbf85af1ba8",
+      "simulatorSha256": "7cba599e45879a8af7eecefa41bafa8256bc37d602dbb29fcd78031b12c5dfb9",
+      "inputs": {
+        "cards.json": "3550dc76eb0414c500166875f45909077aeeb3ea4d229b9b0ba9c66a81987c4b",
+        "card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b",
+        "card-effects.json": "fc335d228779a2859627ee706d85949149ca595d0cfdfbc4971541831e5a8df0",
+        "card-vectors.json": "b15b93cb02e7e8a712561a2da52127a5867084ecb878a6ad58539b56b1109ab9",
+        "event-contracts.json": "e4806dd48efbfc799a27c14b3660ad76ee03cd3f13e3e4320b213c5928efb112",
+        "card-ir-native-defaults.json": "a4f2812716f03ded180f45603ac7b715e890c54b1bc5b4b75fe2b1ec0975d711"
+      },
+      "toolSha256": "0391dea73f5567dc4eb64969bbeb3f6cc84ef0456636bb9d0e560fe926cd3b45",
+      "matchup": [
+        1,
+        0
+      ],
+      "seed": 321000,
+      "maxSteps": 1000,
+      "maxSeconds": 180,
+      "scope": "Left-only win model; existing NnPolicy candidate enumeration; one-ply afterstates; first-index choices. No complete legal mask, calibrated probability, PvP certification or strength claim.",
+      "comparable": true,
+      "leftWinDelta": 0,
+      "rawSha256": "accc194254a4d231eec62e157084075d9527901421ff1a2045bfe8aea12743b4",
+      "name": "benchmark-1-full",
+      "baseline": {
+        "modelLeft": false,
+        "seed": 321000,
+        "admitted": true,
+        "reasons": [],
+        "winner": "Right",
+        "turn": 24,
+        "steps": 126,
+        "decisions": 0,
+        "candidates": 0,
+        "rejected": 0,
+        "choices": 14,
+        "seconds": 10.4202501,
+        "work": {
+          "reconstructions": 126,
+          "replayedSteps": 8001,
+          "verifiedPrefixes": 126,
+          "fingerprints": 254,
+          "reconstructionSeconds": 9.562490399999996,
+          "fingerprintSeconds": 1.0179893999999998
+        },
+        "traceSha256": "8042cc739572a90d268743c5953b2155f6bb5378e280bbdebb8ddf01ef9fabea",
+        "finalFingerprintSha256": "988e5cf5a5548feef55c3c34a5562df8d69cc75a77a0965bdf893f16f9b0f25e"
+      },
+      "treatment": {
+        "modelLeft": true,
+        "seed": 321000,
+        "admitted": true,
+        "reasons": [],
+        "winner": "Right",
+        "turn": 20,
+        "steps": 89,
+        "decisions": 34,
+        "candidates": 361,
+        "rejected": 65,
+        "choices": 5,
+        "seconds": 12.4953962,
+        "work": {
+          "reconstructions": 484,
+          "replayedSteps": 18300,
+          "verifiedPrefixes": 89,
+          "fingerprints": 643,
+          "reconstructionSeconds": 11.895013899999997,
+          "fingerprintSeconds": 1.2930965
+        },
+        "traceSha256": "18eb9f72671e02dab9c2775ed98e036cacbe71f0fd31e1e71006d82890207fc1",
+        "finalFingerprintSha256": "5a46ed5305ec623854d127cfa53e80a5a868f72f1e02da3e7ca4aa0a785d2cfc"
+      }
+    },
+    {
+      "schemaVersion": 1,
+      "planSha256": "dd31a8497300169ec39dc93b495fcbf75a2e7cc92459f9e15d32cf198bf9192b",
+      "modelSha256": "7ff70b1fd65be589ea7b86b6338bda3713feb0aaaff83cc1d7bb1200387e336f",
+      "trainingDataSha256": "5fa97eab224e92984359fe758a8c4ea90bf5d2a51f38093848f17fbf85af1ba8",
+      "simulatorSha256": "7cba599e45879a8af7eecefa41bafa8256bc37d602dbb29fcd78031b12c5dfb9",
+      "inputs": {
+        "cards.json": "3550dc76eb0414c500166875f45909077aeeb3ea4d229b9b0ba9c66a81987c4b",
+        "card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b",
+        "card-effects.json": "fc335d228779a2859627ee706d85949149ca595d0cfdfbc4971541831e5a8df0",
+        "card-vectors.json": "b15b93cb02e7e8a712561a2da52127a5867084ecb878a6ad58539b56b1109ab9",
+        "event-contracts.json": "e4806dd48efbfc799a27c14b3660ad76ee03cd3f13e3e4320b213c5928efb112",
+        "card-ir-native-defaults.json": "a4f2812716f03ded180f45603ac7b715e890c54b1bc5b4b75fe2b1ec0975d711"
+      },
+      "toolSha256": "874aa88ee6263d0b4997b43b85e7180226ae0058c1f6a6957982aebbf1e82841",
+      "matchup": [
+        1,
+        0
+      ],
+      "seed": 321000,
+      "maxSteps": 1000,
+      "maxSeconds": 180,
+      "scope": "Left-only win model; existing NnPolicy candidate enumeration; one-ply afterstates; first-index choices. No complete legal mask, calibrated probability, PvP certification or strength claim.",
+      "comparable": true,
+      "leftWinDelta": 0,
+      "rawSha256": "88bdf7bc5e9da1a177ea17a670e010df911c82731b1d79a2c8beb756a6fcfb8d",
+      "name": "benchmark-1-reference",
+      "baseline": {
+        "modelLeft": false,
+        "seed": 321000,
+        "admitted": true,
+        "reasons": [],
+        "winner": "Right",
+        "turn": 24,
+        "steps": 126,
+        "decisions": 0,
+        "candidates": 0,
+        "rejected": 0,
+        "choices": 14,
+        "seconds": 10.6687648,
+        "traceSha256": "8042cc739572a90d268743c5953b2155f6bb5378e280bbdebb8ddf01ef9fabea",
+        "finalFingerprintSha256": "988e5cf5a5548feef55c3c34a5562df8d69cc75a77a0965bdf893f16f9b0f25e"
+      },
+      "treatment": {
+        "modelLeft": true,
+        "seed": 321000,
+        "admitted": true,
+        "reasons": [],
+        "winner": "Right",
+        "turn": 20,
+        "steps": 89,
+        "decisions": 34,
+        "candidates": 361,
+        "rejected": 65,
+        "choices": 5,
+        "seconds": 14.3564172,
+        "traceSha256": "18eb9f72671e02dab9c2775ed98e036cacbe71f0fd31e1e71006d82890207fc1",
+        "finalFingerprintSha256": "5a46ed5305ec623854d127cfa53e80a5a868f72f1e02da3e7ca4aa0a785d2cfc"
+      }
+    },
+    {
+      "schemaVersion": 2,
+      "replayMode": "incremental",
+      "planSha256": "dd31a8497300169ec39dc93b495fcbf75a2e7cc92459f9e15d32cf198bf9192b",
+      "modelSha256": "7ff70b1fd65be589ea7b86b6338bda3713feb0aaaff83cc1d7bb1200387e336f",
+      "trainingDataSha256": "5fa97eab224e92984359fe758a8c4ea90bf5d2a51f38093848f17fbf85af1ba8",
+      "simulatorSha256": "7cba599e45879a8af7eecefa41bafa8256bc37d602dbb29fcd78031b12c5dfb9",
+      "inputs": {
+        "cards.json": "3550dc76eb0414c500166875f45909077aeeb3ea4d229b9b0ba9c66a81987c4b",
+        "card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b",
+        "card-effects.json": "fc335d228779a2859627ee706d85949149ca595d0cfdfbc4971541831e5a8df0",
+        "card-vectors.json": "b15b93cb02e7e8a712561a2da52127a5867084ecb878a6ad58539b56b1109ab9",
+        "event-contracts.json": "e4806dd48efbfc799a27c14b3660ad76ee03cd3f13e3e4320b213c5928efb112",
+        "card-ir-native-defaults.json": "a4f2812716f03ded180f45603ac7b715e890c54b1bc5b4b75fe2b1ec0975d711"
+      },
+      "toolSha256": "0391dea73f5567dc4eb64969bbeb3f6cc84ef0456636bb9d0e560fe926cd3b45",
+      "matchup": [
+        0,
+        1
+      ],
+      "seed": 330000,
+      "maxSteps": 1000,
+      "maxSeconds": 180,
+      "scope": "Left-only win model; existing NnPolicy candidate enumeration; one-ply afterstates; first-index choices. No complete legal mask, calibrated probability, PvP certification or strength claim.",
+      "comparable": true,
+      "leftWinDelta": -1,
+      "rawSha256": "bf05905692fbc09835318c1bb126f961bd5af13f6b749d42068d74d84ee8f159",
+      "name": "expanded-0",
+      "baseline": {
+        "modelLeft": false,
+        "seed": 330000,
+        "admitted": true,
+        "reasons": [],
+        "winner": "Left",
+        "turn": 15,
+        "steps": 55,
+        "decisions": 0,
+        "candidates": 0,
+        "rejected": 0,
+        "choices": 4,
+        "seconds": 0.7365809,
+        "work": {
+          "reconstructions": 0,
+          "replayedSteps": 55,
+          "verifiedPrefixes": 55,
+          "fingerprints": 113,
+          "reconstructionSeconds": 0,
+          "fingerprintSeconds": 0.47012590000000004
+        },
+        "traceSha256": "75cb03fe606e39daa0493986807b7c7249dc13f80038f4ef00979af94684bd15",
+        "finalFingerprintSha256": "c2ef590dd5100273219663aa3a5120ff539921f248d4af341cecba13addf7fe3"
+      },
+      "treatment": {
+        "modelLeft": true,
+        "seed": 330000,
+        "admitted": true,
+        "reasons": [],
+        "winner": "Right",
+        "turn": 32,
+        "steps": 135,
+        "decisions": 55,
+        "candidates": 540,
+        "rejected": 155,
+        "choices": 17,
+        "seconds": 23.8084782,
+        "work": {
+          "reconstructions": 595,
+          "replayedSteps": 26156,
+          "verifiedPrefixes": 135,
+          "fingerprints": 978,
+          "reconstructionSeconds": 22.379213100000005,
+          "fingerprintSeconds": 2.605678800000003
+        },
+        "traceSha256": "6a640699b73c3495b20484018a76808b4d45c1506a6dbf5d0a67e81f6e317339",
+        "finalFingerprintSha256": "57be258cf9a04743f4c875b0463b9692132a151d39a7d2c956c0f7552f939fb0"
+      }
+    },
+    {
+      "schemaVersion": 2,
+      "replayMode": "incremental",
+      "planSha256": "dd31a8497300169ec39dc93b495fcbf75a2e7cc92459f9e15d32cf198bf9192b",
+      "modelSha256": "7ff70b1fd65be589ea7b86b6338bda3713feb0aaaff83cc1d7bb1200387e336f",
+      "trainingDataSha256": "5fa97eab224e92984359fe758a8c4ea90bf5d2a51f38093848f17fbf85af1ba8",
+      "simulatorSha256": "7cba599e45879a8af7eecefa41bafa8256bc37d602dbb29fcd78031b12c5dfb9",
+      "inputs": {
+        "cards.json": "3550dc76eb0414c500166875f45909077aeeb3ea4d229b9b0ba9c66a81987c4b",
+        "card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b",
+        "card-effects.json": "fc335d228779a2859627ee706d85949149ca595d0cfdfbc4971541831e5a8df0",
+        "card-vectors.json": "b15b93cb02e7e8a712561a2da52127a5867084ecb878a6ad58539b56b1109ab9",
+        "event-contracts.json": "e4806dd48efbfc799a27c14b3660ad76ee03cd3f13e3e4320b213c5928efb112",
+        "card-ir-native-defaults.json": "a4f2812716f03ded180f45603ac7b715e890c54b1bc5b4b75fe2b1ec0975d711"
+      },
+      "toolSha256": "0391dea73f5567dc4eb64969bbeb3f6cc84ef0456636bb9d0e560fe926cd3b45",
+      "matchup": [
+        0,
+        1
+      ],
+      "seed": 330001,
+      "maxSteps": 1000,
+      "maxSeconds": 180,
+      "scope": "Left-only win model; existing NnPolicy candidate enumeration; one-ply afterstates; first-index choices. No complete legal mask, calibrated probability, PvP certification or strength claim.",
+      "comparable": true,
+      "leftWinDelta": -1,
+      "rawSha256": "399cdefe11a43e0ff65bad77e25fbd2b47c29bf92f2bae225e13187793e2facd",
+      "name": "expanded-1",
+      "baseline": {
+        "modelLeft": false,
+        "seed": 330001,
+        "admitted": true,
+        "reasons": [],
+        "winner": "Left",
+        "turn": 17,
+        "steps": 59,
+        "decisions": 0,
+        "candidates": 0,
+        "rejected": 0,
+        "choices": 8,
+        "seconds": 0.9073712,
+        "work": {
+          "reconstructions": 0,
+          "replayedSteps": 59,
+          "verifiedPrefixes": 59,
+          "fingerprints": 121,
+          "reconstructionSeconds": 0,
+          "fingerprintSeconds": 0.5549821999999998
+        },
+        "traceSha256": "c09d2c2268730cea34b12829c599d312ca0b2d86bf67a84283151f4b915609ce",
+        "finalFingerprintSha256": "0f64233270be37b08934eb341f5c4a2ecb1ececbf1d2e3311edab78ab9f7f937"
+      },
+      "treatment": {
+        "modelLeft": true,
+        "seed": 330001,
+        "admitted": true,
+        "reasons": [],
+        "winner": "Right",
+        "turn": 32,
+        "steps": 134,
+        "decisions": 48,
+        "candidates": 334,
+        "rejected": 83,
+        "choices": 18,
+        "seconds": 31.8213772,
+        "work": {
+          "reconstructions": 382,
+          "replayedSteps": 20096,
+          "verifiedPrefixes": 134,
+          "fingerprints": 749,
+          "reconstructionSeconds": 30.16631099999999,
+          "fingerprintSeconds": 2.3226506999999987
+        },
+        "traceSha256": "aff38155cd6304a60f61c27976cfb091009ff4e9174ed0c440b1a3b4ac4bdbf5",
+        "finalFingerprintSha256": "592578db2e4469defcc5ea5f4893186fff19af7acc8684b4c1bbe2b815264f0a"
+      }
+    },
+    {
+      "schemaVersion": 2,
+      "replayMode": "incremental",
+      "planSha256": "dd31a8497300169ec39dc93b495fcbf75a2e7cc92459f9e15d32cf198bf9192b",
+      "modelSha256": "7ff70b1fd65be589ea7b86b6338bda3713feb0aaaff83cc1d7bb1200387e336f",
+      "trainingDataSha256": "5fa97eab224e92984359fe758a8c4ea90bf5d2a51f38093848f17fbf85af1ba8",
+      "simulatorSha256": "7cba599e45879a8af7eecefa41bafa8256bc37d602dbb29fcd78031b12c5dfb9",
+      "inputs": {
+        "cards.json": "3550dc76eb0414c500166875f45909077aeeb3ea4d229b9b0ba9c66a81987c4b",
+        "card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b",
+        "card-effects.json": "fc335d228779a2859627ee706d85949149ca595d0cfdfbc4971541831e5a8df0",
+        "card-vectors.json": "b15b93cb02e7e8a712561a2da52127a5867084ecb878a6ad58539b56b1109ab9",
+        "event-contracts.json": "e4806dd48efbfc799a27c14b3660ad76ee03cd3f13e3e4320b213c5928efb112",
+        "card-ir-native-defaults.json": "a4f2812716f03ded180f45603ac7b715e890c54b1bc5b4b75fe2b1ec0975d711"
+      },
+      "toolSha256": "0391dea73f5567dc4eb64969bbeb3f6cc84ef0456636bb9d0e560fe926cd3b45",
+      "matchup": [
+        0,
+        1
+      ],
+      "seed": 330002,
+      "maxSteps": 1000,
+      "maxSeconds": 180,
+      "scope": "Left-only win model; existing NnPolicy candidate enumeration; one-ply afterstates; first-index choices. No complete legal mask, calibrated probability, PvP certification or strength claim.",
+      "comparable": true,
+      "leftWinDelta": -1,
+      "rawSha256": "9223db0da1fca17e8e5025e02eb24c6b4af1339b70785db32e8569106eb8440c",
+      "name": "expanded-2",
+      "baseline": {
+        "modelLeft": false,
+        "seed": 330002,
+        "admitted": true,
+        "reasons": [],
+        "winner": "Left",
+        "turn": 27,
+        "steps": 137,
+        "decisions": 0,
+        "candidates": 0,
+        "rejected": 0,
+        "choices": 13,
+        "seconds": 1.7834428,
+        "work": {
+          "reconstructions": 0,
+          "replayedSteps": 137,
+          "verifiedPrefixes": 137,
+          "fingerprints": 277,
+          "reconstructionSeconds": 0,
+          "fingerprintSeconds": 1.1864946
+        },
+        "traceSha256": "8228012ca4f8ae8d4afaebff877bbd36823b1c7366fb24e9bd93eaf2b12c7ace",
+        "finalFingerprintSha256": "03221bd28b8641144dcef7ec87f34cd92e23f8aee73427d9fe9be8e10393e924"
+      },
+      "treatment": {
+        "modelLeft": true,
+        "seed": 330002,
+        "admitted": true,
+        "reasons": [],
+        "winner": "Right",
+        "turn": 30,
+        "steps": 133,
+        "decisions": 60,
+        "candidates": 506,
+        "rejected": 114,
+        "choices": 16,
+        "seconds": 33.4520137,
+        "work": {
+          "reconstructions": 566,
+          "replayedSteps": 26075,
+          "verifiedPrefixes": 133,
+          "fingerprints": 955,
+          "reconstructionSeconds": 31.773680299999995,
+          "fingerprintSeconds": 2.8512079000000012
+        },
+        "traceSha256": "352d66da903e094d14205735b63e6ea533c288eeef67a0379d5851679f805115",
+        "finalFingerprintSha256": "19285444facf0b1cc9ecd921d1d554d6d93da7ec0c239dd438f0493ea30c2fb8"
+      }
+    },
+    {
+      "schemaVersion": 2,
+      "replayMode": "incremental",
+      "planSha256": "dd31a8497300169ec39dc93b495fcbf75a2e7cc92459f9e15d32cf198bf9192b",
+      "modelSha256": "7ff70b1fd65be589ea7b86b6338bda3713feb0aaaff83cc1d7bb1200387e336f",
+      "trainingDataSha256": "5fa97eab224e92984359fe758a8c4ea90bf5d2a51f38093848f17fbf85af1ba8",
+      "simulatorSha256": "7cba599e45879a8af7eecefa41bafa8256bc37d602dbb29fcd78031b12c5dfb9",
+      "inputs": {
+        "cards.json": "3550dc76eb0414c500166875f45909077aeeb3ea4d229b9b0ba9c66a81987c4b",
+        "card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b",
+        "card-effects.json": "fc335d228779a2859627ee706d85949149ca595d0cfdfbc4971541831e5a8df0",
+        "card-vectors.json": "b15b93cb02e7e8a712561a2da52127a5867084ecb878a6ad58539b56b1109ab9",
+        "event-contracts.json": "e4806dd48efbfc799a27c14b3660ad76ee03cd3f13e3e4320b213c5928efb112",
+        "card-ir-native-defaults.json": "a4f2812716f03ded180f45603ac7b715e890c54b1bc5b4b75fe2b1ec0975d711"
+      },
+      "toolSha256": "0391dea73f5567dc4eb64969bbeb3f6cc84ef0456636bb9d0e560fe926cd3b45",
+      "matchup": [
+        0,
+        1
+      ],
+      "seed": 330003,
+      "maxSteps": 1000,
+      "maxSeconds": 180,
+      "scope": "Left-only win model; existing NnPolicy candidate enumeration; one-ply afterstates; first-index choices. No complete legal mask, calibrated probability, PvP certification or strength claim.",
+      "comparable": true,
+      "leftWinDelta": -1,
+      "rawSha256": "2339b27a08f866f82febb2e25436f1b6e9da05b0a6542da5f5bd28f7430203b1",
+      "name": "expanded-3",
+      "baseline": {
+        "modelLeft": false,
+        "seed": 330003,
+        "admitted": true,
+        "reasons": [],
+        "winner": "Left",
+        "turn": 21,
+        "steps": 101,
+        "decisions": 0,
+        "candidates": 0,
+        "rejected": 0,
+        "choices": 10,
+        "seconds": 1.2673499,
+        "work": {
+          "reconstructions": 0,
+          "replayedSteps": 101,
+          "verifiedPrefixes": 101,
+          "fingerprints": 205,
+          "reconstructionSeconds": 0,
+          "fingerprintSeconds": 0.8015782999999995
+        },
+        "traceSha256": "af7bc32b3222957df32066d339f75096f9d1d20346702742c9a2e3a1a21997f7",
+        "finalFingerprintSha256": "1a536bf624dbb5c74987662d30498153560577e152ef78387ac03a92934cacd6"
+      },
+      "treatment": {
+        "modelLeft": true,
+        "seed": 330003,
+        "admitted": true,
+        "reasons": [],
+        "winner": "Right",
+        "turn": 34,
+        "steps": 169,
+        "decisions": 72,
+        "candidates": 740,
+        "rejected": 205,
+        "choices": 18,
+        "seconds": 60.150407,
+        "work": {
+          "reconstructions": 812,
+          "replayedSteps": 51118,
+          "verifiedPrefixes": 169,
+          "fingerprints": 1297,
+          "reconstructionSeconds": 57.71402909999999,
+          "fingerprintSeconds": 4.196719499999993
+        },
+        "traceSha256": "b9b9ccf86642d904008c8c5ab10b3acd1b922dae443697b636cc2762138f1ec6",
+        "finalFingerprintSha256": "da874fb77990ecfe01246b77c6c51be1e7560a55ae0e7f7a44adabbb9f3b6bd2"
+      }
+    },
+    {
+      "schemaVersion": 2,
+      "replayMode": "incremental",
+      "planSha256": "dd31a8497300169ec39dc93b495fcbf75a2e7cc92459f9e15d32cf198bf9192b",
+      "modelSha256": "7ff70b1fd65be589ea7b86b6338bda3713feb0aaaff83cc1d7bb1200387e336f",
+      "trainingDataSha256": "5fa97eab224e92984359fe758a8c4ea90bf5d2a51f38093848f17fbf85af1ba8",
+      "simulatorSha256": "7cba599e45879a8af7eecefa41bafa8256bc37d602dbb29fcd78031b12c5dfb9",
+      "inputs": {
+        "cards.json": "3550dc76eb0414c500166875f45909077aeeb3ea4d229b9b0ba9c66a81987c4b",
+        "card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b",
+        "card-effects.json": "fc335d228779a2859627ee706d85949149ca595d0cfdfbc4971541831e5a8df0",
+        "card-vectors.json": "b15b93cb02e7e8a712561a2da52127a5867084ecb878a6ad58539b56b1109ab9",
+        "event-contracts.json": "e4806dd48efbfc799a27c14b3660ad76ee03cd3f13e3e4320b213c5928efb112",
+        "card-ir-native-defaults.json": "a4f2812716f03ded180f45603ac7b715e890c54b1bc5b4b75fe2b1ec0975d711"
+      },
+      "toolSha256": "0391dea73f5567dc4eb64969bbeb3f6cc84ef0456636bb9d0e560fe926cd3b45",
+      "matchup": [
+        1,
+        0
+      ],
+      "seed": 331000,
+      "maxSteps": 1000,
+      "maxSeconds": 180,
+      "scope": "Left-only win model; existing NnPolicy candidate enumeration; one-ply afterstates; first-index choices. No complete legal mask, calibrated probability, PvP certification or strength claim.",
+      "comparable": true,
+      "leftWinDelta": 0,
+      "rawSha256": "58d18fc66fae3650455f03869c230ce7ed6caf57f6b4a276110d2c96f12ed51a",
+      "name": "expanded-4",
+      "baseline": {
+        "modelLeft": false,
+        "seed": 331000,
+        "admitted": true,
+        "reasons": [],
+        "winner": "Right",
+        "turn": 12,
+        "steps": 43,
+        "decisions": 0,
+        "candidates": 0,
+        "rejected": 0,
+        "choices": 3,
+        "seconds": 0.6480705,
+        "work": {
+          "reconstructions": 0,
+          "replayedSteps": 43,
+          "verifiedPrefixes": 43,
+          "fingerprints": 89,
+          "reconstructionSeconds": 0,
+          "fingerprintSeconds": 0.4226853000000001
+        },
+        "traceSha256": "af46d8d8f4acb0f448e429010338d8d95fb77cd7a7f26116c85a431a4cfd3b5a",
+        "finalFingerprintSha256": "a69b8ce259f3b6e556a5f6878b25c0d75f6103ccde0769fbedd20125dbfbcd89"
+      },
+      "treatment": {
+        "modelLeft": true,
+        "seed": 331000,
+        "admitted": true,
+        "reasons": [],
+        "winner": "Right",
+        "turn": 10,
+        "steps": 28,
+        "decisions": 9,
+        "candidates": 41,
+        "rejected": 0,
+        "choices": 3,
+        "seconds": 1.5350321,
+        "work": {
+          "reconstructions": 50,
+          "replayedSteps": 696,
+          "verifiedPrefixes": 28,
+          "fingerprints": 127,
+          "reconstructionSeconds": 1.067441,
+          "fingerprintSeconds": 0.46714110000000003
+        },
+        "traceSha256": "f46ee04b8556e88abd234465aa22675b931440f395a5366c86ec51f873926821",
+        "finalFingerprintSha256": "3e75c00f14e84b7f28fb5e84700c8c7b93c86fe5562a674df0c6431228dc36df"
+      }
+    },
+    {
+      "schemaVersion": 2,
+      "replayMode": "incremental",
+      "planSha256": "dd31a8497300169ec39dc93b495fcbf75a2e7cc92459f9e15d32cf198bf9192b",
+      "modelSha256": "7ff70b1fd65be589ea7b86b6338bda3713feb0aaaff83cc1d7bb1200387e336f",
+      "trainingDataSha256": "5fa97eab224e92984359fe758a8c4ea90bf5d2a51f38093848f17fbf85af1ba8",
+      "simulatorSha256": "7cba599e45879a8af7eecefa41bafa8256bc37d602dbb29fcd78031b12c5dfb9",
+      "inputs": {
+        "cards.json": "3550dc76eb0414c500166875f45909077aeeb3ea4d229b9b0ba9c66a81987c4b",
+        "card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b",
+        "card-effects.json": "fc335d228779a2859627ee706d85949149ca595d0cfdfbc4971541831e5a8df0",
+        "card-vectors.json": "b15b93cb02e7e8a712561a2da52127a5867084ecb878a6ad58539b56b1109ab9",
+        "event-contracts.json": "e4806dd48efbfc799a27c14b3660ad76ee03cd3f13e3e4320b213c5928efb112",
+        "card-ir-native-defaults.json": "a4f2812716f03ded180f45603ac7b715e890c54b1bc5b4b75fe2b1ec0975d711"
+      },
+      "toolSha256": "0391dea73f5567dc4eb64969bbeb3f6cc84ef0456636bb9d0e560fe926cd3b45",
+      "matchup": [
+        1,
+        0
+      ],
+      "seed": 331001,
+      "maxSteps": 1000,
+      "maxSeconds": 180,
+      "scope": "Left-only win model; existing NnPolicy candidate enumeration; one-ply afterstates; first-index choices. No complete legal mask, calibrated probability, PvP certification or strength claim.",
+      "comparable": true,
+      "leftWinDelta": 0,
+      "rawSha256": "55c46936b58aca98361a50e3eea2504e2dfafd06f8dee59c9783e08d9d7cae30",
+      "name": "expanded-5",
+      "baseline": {
+        "modelLeft": false,
+        "seed": 331001,
+        "admitted": true,
+        "reasons": [],
+        "winner": "Right",
+        "turn": 30,
+        "steps": 140,
+        "decisions": 0,
+        "candidates": 0,
+        "rejected": 0,
+        "choices": 14,
+        "seconds": 1.7958346,
+        "work": {
+          "reconstructions": 0,
+          "replayedSteps": 140,
+          "verifiedPrefixes": 140,
+          "fingerprints": 283,
+          "reconstructionSeconds": 0,
+          "fingerprintSeconds": 1.2060705999999994
+        },
+        "traceSha256": "b48d145316ca623bccfe6240e2170d668f5b5e1f52e24fc761327c2ad7e44436",
+        "finalFingerprintSha256": "4787ec152991bd50679fb27ee78dff51033659ae1211b91ba1a00a3b5ec8ce84"
+      },
+      "treatment": {
+        "modelLeft": true,
+        "seed": 331001,
+        "admitted": true,
+        "reasons": [],
+        "winner": "Right",
+        "turn": 22,
+        "steps": 98,
+        "decisions": 38,
+        "candidates": 342,
+        "rejected": 40,
+        "choices": 7,
+        "seconds": 14.3182078,
+        "work": {
+          "reconstructions": 380,
+          "replayedSteps": 18698,
+          "verifiedPrefixes": 98,
+          "fingerprints": 655,
+          "reconstructionSeconds": 12.559567700000002,
+          "fingerprintSeconds": 1.7815162000000033
+        },
+        "traceSha256": "33db6b76cb53fa6cf76a6da82fa258974e32c47d6b9d35fcdcda0b3c0f1f4784",
+        "finalFingerprintSha256": "d69f5ea53975abe61974ba3bfeeb96670abca00e83bd692287172cbf59991004"
+      }
+    },
+    {
+      "schemaVersion": 2,
+      "replayMode": "incremental",
+      "planSha256": "dd31a8497300169ec39dc93b495fcbf75a2e7cc92459f9e15d32cf198bf9192b",
+      "modelSha256": "7ff70b1fd65be589ea7b86b6338bda3713feb0aaaff83cc1d7bb1200387e336f",
+      "trainingDataSha256": "5fa97eab224e92984359fe758a8c4ea90bf5d2a51f38093848f17fbf85af1ba8",
+      "simulatorSha256": "7cba599e45879a8af7eecefa41bafa8256bc37d602dbb29fcd78031b12c5dfb9",
+      "inputs": {
+        "cards.json": "3550dc76eb0414c500166875f45909077aeeb3ea4d229b9b0ba9c66a81987c4b",
+        "card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b",
+        "card-effects.json": "fc335d228779a2859627ee706d85949149ca595d0cfdfbc4971541831e5a8df0",
+        "card-vectors.json": "b15b93cb02e7e8a712561a2da52127a5867084ecb878a6ad58539b56b1109ab9",
+        "event-contracts.json": "e4806dd48efbfc799a27c14b3660ad76ee03cd3f13e3e4320b213c5928efb112",
+        "card-ir-native-defaults.json": "a4f2812716f03ded180f45603ac7b715e890c54b1bc5b4b75fe2b1ec0975d711"
+      },
+      "toolSha256": "0391dea73f5567dc4eb64969bbeb3f6cc84ef0456636bb9d0e560fe926cd3b45",
+      "matchup": [
+        1,
+        0
+      ],
+      "seed": 331002,
+      "maxSteps": 1000,
+      "maxSeconds": 180,
+      "scope": "Left-only win model; existing NnPolicy candidate enumeration; one-ply afterstates; first-index choices. No complete legal mask, calibrated probability, PvP certification or strength claim.",
+      "comparable": true,
+      "leftWinDelta": -1,
+      "rawSha256": "3c126267303a895fcc1f1d5fce45a9f79c146611e24a4af358b7d62c4a031002",
+      "name": "expanded-6",
+      "baseline": {
+        "modelLeft": false,
+        "seed": 331002,
+        "admitted": true,
+        "reasons": [],
+        "winner": "Left",
+        "turn": 31,
+        "steps": 152,
+        "decisions": 0,
+        "candidates": 0,
+        "rejected": 0,
+        "choices": 18,
+        "seconds": 2.1025812,
+        "work": {
+          "reconstructions": 0,
+          "replayedSteps": 152,
+          "verifiedPrefixes": 152,
+          "fingerprints": 307,
+          "reconstructionSeconds": 0,
+          "fingerprintSeconds": 1.3722414000000005
+        },
+        "traceSha256": "6c29a292ee233c5ba3072a3a729abc4f2ab7b471459d4c8defe49052d3fcf75b",
+        "finalFingerprintSha256": "2bf5a3a4dc94ff5860bad1ee4c42864a40db3ac037cbaee3b6422f964f5331a8"
+      },
+      "treatment": {
+        "modelLeft": true,
+        "seed": 331002,
+        "admitted": true,
+        "reasons": [],
+        "winner": "Right",
+        "turn": 18,
+        "steps": 73,
+        "decisions": 32,
+        "candidates": 270,
+        "rejected": 10,
+        "choices": 10,
+        "seconds": 12.4749383,
+        "work": {
+          "reconstructions": 302,
+          "replayedSteps": 9423,
+          "verifiedPrefixes": 73,
+          "fingerprints": 515,
+          "reconstructionSeconds": 11.310707100000002,
+          "fingerprintSeconds": 1.4743434000000017
+        },
+        "traceSha256": "c05687f17c9ccdbc37f70b3439ba70bc83a5163ea8f4b3f39e212906ccd1ade1",
+        "finalFingerprintSha256": "5ffe76d5ce04024cf906bb9a2599073e135c00f9efe3845bdd20fdf94e2fb0ec"
+      }
+    },
+    {
+      "schemaVersion": 2,
+      "replayMode": "incremental",
+      "planSha256": "dd31a8497300169ec39dc93b495fcbf75a2e7cc92459f9e15d32cf198bf9192b",
+      "modelSha256": "7ff70b1fd65be589ea7b86b6338bda3713feb0aaaff83cc1d7bb1200387e336f",
+      "trainingDataSha256": "5fa97eab224e92984359fe758a8c4ea90bf5d2a51f38093848f17fbf85af1ba8",
+      "simulatorSha256": "7cba599e45879a8af7eecefa41bafa8256bc37d602dbb29fcd78031b12c5dfb9",
+      "inputs": {
+        "cards.json": "3550dc76eb0414c500166875f45909077aeeb3ea4d229b9b0ba9c66a81987c4b",
+        "card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b",
+        "card-effects.json": "fc335d228779a2859627ee706d85949149ca595d0cfdfbc4971541831e5a8df0",
+        "card-vectors.json": "b15b93cb02e7e8a712561a2da52127a5867084ecb878a6ad58539b56b1109ab9",
+        "event-contracts.json": "e4806dd48efbfc799a27c14b3660ad76ee03cd3f13e3e4320b213c5928efb112",
+        "card-ir-native-defaults.json": "a4f2812716f03ded180f45603ac7b715e890c54b1bc5b4b75fe2b1ec0975d711"
+      },
+      "toolSha256": "0391dea73f5567dc4eb64969bbeb3f6cc84ef0456636bb9d0e560fe926cd3b45",
+      "matchup": [
+        1,
+        0
+      ],
+      "seed": 331003,
+      "maxSteps": 1000,
+      "maxSeconds": 180,
+      "scope": "Left-only win model; existing NnPolicy candidate enumeration; one-ply afterstates; first-index choices. No complete legal mask, calibrated probability, PvP certification or strength claim.",
+      "comparable": true,
+      "leftWinDelta": 0,
+      "rawSha256": "7667146e1325dba8e0be1f22e65ef147473a8ab39c3f8c6d368527d2f3b8b9d9",
+      "name": "expanded-7",
+      "baseline": {
+        "modelLeft": false,
+        "seed": 331003,
+        "admitted": true,
+        "reasons": [],
+        "winner": "Right",
+        "turn": 32,
+        "steps": 184,
+        "decisions": 0,
+        "candidates": 0,
+        "rejected": 0,
+        "choices": 20,
+        "seconds": 2.6495425,
+        "work": {
+          "reconstructions": 0,
+          "replayedSteps": 184,
+          "verifiedPrefixes": 184,
+          "fingerprints": 371,
+          "reconstructionSeconds": 0,
+          "fingerprintSeconds": 1.6598901000000008
+        },
+        "traceSha256": "b7713d23897cd70435ce5806a3f227904bc4cb305f18fb0a3141660d5be9ffc2",
+        "finalFingerprintSha256": "6a6c283ee1d8ba15d2fbb0359b8fc8bf68fd0c7af577ea6a9785f795a5761be8"
+      },
+      "treatment": {
+        "modelLeft": true,
+        "seed": 331003,
+        "admitted": true,
+        "reasons": [],
+        "winner": "Right",
+        "turn": 16,
+        "steps": 57,
+        "decisions": 23,
+        "candidates": 148,
+        "rejected": 20,
+        "choices": 5,
+        "seconds": 6.5118732,
+        "work": {
+          "reconstructions": 171,
+          "replayedSteps": 4632,
+          "verifiedPrefixes": 57,
+          "fingerprints": 334,
+          "reconstructionSeconds": 5.705772300000001,
+          "fingerprintSeconds": 0.9626737000000001
+        },
+        "traceSha256": "a5f7fb70002e3a07d18b76a2db1d781f2952b99c4eea4504b77b2cf2d84e974c",
+        "finalFingerprintSha256": "ac85b7b95708e0d9599fca73aa36eccdacfcd77ff66fa9aaade6237477d8cfa1"
+      }
+    }
+  ],
+  "checks": "Exact model/data/plan/tool/runtime/input bindings; benchmark complete action trace/fingerprint/outcome/count/health equivalence; all expanded seed disjointness, attempts, work counts and paired deltas."
+}

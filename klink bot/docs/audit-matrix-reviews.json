@@ -8567,6 +8567,28 @@
         "Known terminal wins/losses override sigmoid estimates; invalid terminal winners, nonfinite or out-of-range scores reject the attempt. First-index choice policy remains fixed, not learned.",
         "The two immutable plan files retain their original CRLF bytes via exact-path Git attributes; their pre-execution SHA256 is preserved in the repository."
       ]
+    },
+    {
+      "id": "TRAINING/NNTrain/policy-replay-speed-20261102",
+      "status": "partial",
+      "report": "out/audit/systematic-rules/policy-speed-20261102.json",
+      "report_sha256": "1984b51b825c494c59886118fa2d36bbb0bab0387693f3b53a02c816629c642d",
+      "source_bindings": {
+        "tools/NNTrain/PolicyMatchEvaluation.cs": "5241e2606baff3ab8218451c33543c689d1c0048d739c34372306587a1c33cfb",
+        "tools/NNTrain/Program.cs": "3ca9b6b8c8419904d2711b8e14fbc857b7dd40cc9c14833dd2a2630be960fcd3",
+        "out/audit/systematic-rules/policy-speed-verify-20261102.py": "9c787271fa1189fbf77ae6a43b3bee1b4febc7a2de943299b06524335077480a"
+      },
+      "limitations": [
+        "Two seeds reused solely for differential verification; one timing observation per seed/mode in one local environment, not a statistical speed estimate. Comparison uses unchanged engine, model, decks, choices and seed; no tuning/retraining.",
+        "Incremental mode maintains an independent engine executing each committed step instead of reconstructing each committed prefix from scratch. Candidate/enumeration roots remain fresh full reconstructions. Default mode is now incremental; explicit full mode remains available.",
+        "Root fingerprint cache assumes the live engine changes only in Start/committed Apply, after which it is refreshed. Live root is checked around model enumeration/probes. Neither fingerprints nor these limited differential runs prove complete hidden-VM-state equivalence.",
+        "Work.VerifiedPrefixes counts committed prefixes only. Work.ReplayedSteps counts all tape applications, including incremental verifier steps. ReconstructionSeconds includes replay, health checks and fingerprint time; it overlaps FingerprintSeconds, and these timers must not be added. Initial verifier construction is outside reconstruction counters.",
+        "Setup failures report zero metrics. An inherited exception in final Health/Fingerprint may fall through SafePlay as setup_fault and lose partial trace/cost; current differential and expanded artifacts are checked explicitly for these reasons. Failure messages do not always identify the component/prefix.",
+        "All expanded attempts retained; no replacement, no result-driven seed choice. Eight paired games with left-only model and fixed first-index choices are engineering evaluation, insufficient for general strength, calibrated probability or statistical superiority.",
+        "Same pre-decision Greedy training distribution vs model afterstates shift remains; enumerator is not certified complete; production NnPolicy.Choose unchanged. No new rule/card certification or overall progress percentage.",
+        "Budget includes verification/replay and is checked only between synchronous calls; over-budget games are inadmissible. The new fixed 180-second evaluation budget differs from earlier 60-second pilot; earlier pilot outcomes are not pooled into strength estimates.",
+        "Exact runtime engine preserved with build PathMap to the prior snapshot and pinned source revision metadata. Build used clean HEAD source plus two tool overlays, excluding unrelated dirty probes. Old and new binaries and raw traces retained locally, SHA256-bound publicly; verification script requires those local artifacts."
+      ]
     }
   ]
 }

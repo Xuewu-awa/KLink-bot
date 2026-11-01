@@ -1085,6 +1085,7 @@ internal static class Program
               NNTrain action-model-selftest
               NNTrain evaluate-policy --model win-model.bin --training-data original.bin --plan frozen.json
                        --matchup L,R --seed N --out result.json [--max-steps 1000] [--max-seconds 60]
+                       [--replay-mode incremental|full] 默认独立逐步校验；full 从开局重建每个前缀供对照。
                        左方模型 vs Greedy，配对 Greedy 对照；保留不准入/超限结果，不据此认证规则或强度。
               NNTrain policy-evaluation-selftest
               NNTrain train-actions --data actions.jsonl.gz --out action-model.json [--epochs 3] [--hidden 16] [--lr 0.01] [--split-seed 1]

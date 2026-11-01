@@ -15,7 +15,17 @@ internal static class PolicyMatchEvaluation
     internal sealed record Step(AtomicAction? Action); // null = one complete Greedy PlayStep, including probes
     internal sealed record Attempt(bool ModelLeft, ulong Seed, bool Admitted, string[] Reasons,
         string Winner, int Turn, int Steps, int Decisions, int Candidates, int Rejected,
-        long Choices, double Seconds, string FinalFingerprint, string[] Trace);
+        long Choices, double Seconds, string FinalFingerprint, string[] Trace, Work Work);
+
+    internal sealed class Work
+    {
+        public long Reconstructions { get; set; }
+        public long ReplayedSteps { get; set; }
+        public long VerifiedPrefixes { get; set; }
+        public long Fingerprints { get; set; }
+        public double ReconstructionSeconds { get; set; }
+        public double FingerprintSeconds { get; set; }
+    }
 
     internal static int Best(IReadOnlyList<(float Score, bool Terminal, bool Wins)> scores)
     {
@@ -49,7 +59,7 @@ internal static class PolicyMatchEvaluation
     internal static int Run(Dictionary<string, string> opts, CardDatabase db, StateEncoder.CardVecs vecs, string dataDir, string vectorDir)
     {
         string Required(string key) => opts.TryGetValue(key, out var v) ? v : throw new ArgumentException("Missing --" + key);
-        var allowed = new[] { "model", "training-data", "out", "matchup", "seed", "max-steps", "max-seconds", "plan" };
+        var allowed = new[] { "model", "training-data", "out", "matchup", "seed", "max-steps", "max-seconds", "plan", "replay-mode" };
         if (opts.Keys.Except(allowed).Any()) throw new ArgumentException("Unknown policy evaluation option.");
         string output = Path.GetFullPath(Required("out"));
         if (File.Exists(output)) throw new IOException("Refusing to overwrite evaluation output.");
@@ -74,6 +84,8 @@ internal static class PolicyMatchEvaluation
         int maxSteps = int.Parse(opts.GetValueOrDefault("max-steps", "1000"));
         int maxSeconds = int.Parse(opts.GetValueOrDefault("max-seconds", "60"));
         if (maxSteps <= 0 || maxSeconds <= 0) throw new ArgumentException("Positive limits required.");
+        string replayMode = opts.GetValueOrDefault("replay-mode", "incremental");
+        if (replayMode is not ("full" or "incremental")) throw new ArgumentException("Replay mode must be full or incremental.");
         List<string> Deck(int index)
         {
             var parsed = DeckCodeParser.Parse(MetaDecks.All[index].Code);
@@ -86,7 +98,7 @@ internal static class PolicyMatchEvaluation
         bool comparable = baseline.Admitted && treatment.Admitted;
         var report = new
         {
-            SchemaVersion = 1, PlanSha256 = planHash, ModelSha256 = TrainingAdmission.Hash(modelPath),
+            SchemaVersion = 2, ReplayMode = replayMode, PlanSha256 = planHash, ModelSha256 = TrainingAdmission.Hash(modelPath),
             TrainingDataSha256 = quality.DataSha256, SimulatorSha256 = ValueTrainingContract.CurrentSimulatorHash(), Inputs = inputs,
             ToolSha256 = TrainingAdmission.Hash(typeof(PolicyMatchEvaluation).Assembly.Location),
             Matchup = new[] { pair.Left, pair.Right }, Seed = seed, MaxSteps = maxSteps, MaxSeconds = maxSeconds,
@@ -104,7 +116,7 @@ internal static class PolicyMatchEvaluation
             catch (Exception ex) when (ex is not OutOfMemoryException)
             {
                 return new(useModel, seed, false, ["setup_fault:" + ex.GetType().Name + ":" + ex.Message],
-                    "NotAvailable", 0, 0, 0, 0, 0, 0, 0, "", []);
+                    "NotAvailable", 0, 0, 0, 0, 0, 0, 0, "", [], new());
             }
         }
 
@@ -113,10 +125,22 @@ internal static class PolicyMatchEvaluation
             var sw = Stopwatch.StartNew();
             var tape = new List<Step>(); var trace = new List<string>(); var reasons = new List<string>();
             int decisions = 0, candidates = 0, rejected = 0;
+            var work = new Work();
             var engine = new MatchEngine(db, left, right, seed);
             using var adapter = Attach(engine);
+            // This independent engine only executes the committed tape. Never enumerate
+            // or probe candidates on it; compare it after every prefix, including terminal.
+            var verifier = replayMode == "incremental" ? new MatchEngine(db, left, right, seed) : null;
+            using var verifierAdapter = verifier is null ? null : Attach(verifier);
+            string currentRoot = "";
             var policy = new NnPolicy(model, vecs, Side.Left, true, false);
             ChoicePolicyAdapter Attach(MatchEngine e) => new(e, vecs, request => request.Options.Count == 0 && request.CanCancel ? -1 : 0);
+            string Fingerprint(MatchEngine e)
+            {
+                long start = Stopwatch.GetTimestamp();
+                try { work.Fingerprints++; return ActionJournal.Fingerprint(e); }
+                finally { work.FingerprintSeconds += Stopwatch.GetElapsedTime(start).TotalSeconds; }
+            }
             void Budget() { if (sw.Elapsed.TotalSeconds > maxSeconds) throw new InvalidOperationException("time_limit"); }
             void Check(MatchEngine e, ChoicePolicyAdapter a)
             {
@@ -127,22 +151,32 @@ internal static class PolicyMatchEvaluation
             (MatchEngine Engine, ChoicePolicyAdapter Adapter) Rebuild()
             {
                 Budget();
+                long start = Stopwatch.GetTimestamp(); work.Reconstructions++;
                 var e = new MatchEngine(db, left, right, seed);
                 // This adapter remains attached for the candidate applied after replay.
                 var a = Attach(e);
                 try
                 {
                     e.Start(); Check(e, a);
-                    foreach (var step in tape) { Apply(e, step); Check(e, a); }
-                    if (ActionJournal.Fingerprint(e) != ActionJournal.Fingerprint(engine))
+                    foreach (var step in tape) { Apply(e, step); work.ReplayedSteps++; Check(e, a); }
+                    // The real engine is unchanged throughout this decision. Cache its
+                    // prefix fingerprint, but still check it after enumeration and probes.
+                    if (Fingerprint(e) != currentRoot)
                         throw new InvalidOperationException("replay_mismatch");
                     return (e, a);
                 }
                 catch { a.Dispose(); throw; }
+                finally { work.ReconstructionSeconds += Stopwatch.GetElapsedTime(start).TotalSeconds; }
             }
             try
             {
                 engine.Start(); Check(engine, adapter);
+                currentRoot = Fingerprint(engine);
+                if (verifier is not null)
+                {
+                    verifier.Start(); Check(verifier, verifierAdapter!);
+                    if (Fingerprint(verifier) != currentRoot) throw new InvalidOperationException("initial_replay_mismatch");
+                }
                 while (!engine.State.IsFinished && tape.Count < maxSteps)
                 {
                     Budget();
@@ -150,7 +184,7 @@ internal static class PolicyMatchEvaluation
                     if (useModel && engine.State.ActiveSide == Side.Left)
                     {
                         decisions++;
-                        string root = ActionJournal.Fingerprint(engine);
+                        string root = currentRoot;
                         // CanPlay/target predicates can update engine state. Enumerate
                         // on a disposable reconstruction, then test each action from
                         // a fresh, unprobed reconstruction of the real prefix.
@@ -158,7 +192,7 @@ internal static class PolicyMatchEvaluation
                         using var enumerationAdapter = enumeration.Adapter;
                         var actions = policy.Enumerate(enumeration.Engine);
                         Check(enumeration.Engine, enumeration.Adapter);
-                        if (ActionJournal.Fingerprint(engine) != root) throw new InvalidOperationException("enumerator_mutated_root");
+                        if (Fingerprint(engine) != root) throw new InvalidOperationException("enumerator_mutated_root");
                         var accepted = new List<AtomicAction>();
                         var scores = new List<(float Score, bool Terminal, bool Wins)>();
                         foreach (var action in actions)
@@ -175,14 +209,21 @@ internal static class PolicyMatchEvaluation
                             accepted.Add(action);
                             scores.Add((policy.Evaluate(trial), trial.State.IsFinished, trial.State.Winner == Side.Left));
                         }
-                        if (ActionJournal.Fingerprint(engine) != root) throw new InvalidOperationException("probe_mutated_root");
+                        if (Fingerprint(engine) != root) throw new InvalidOperationException("probe_mutated_root");
                         step = new(accepted[Best(scores)]);
                     }
                     else step = new(null);
                     trace.Add($"{engine.State.Turn}:{engine.State.ActiveSide}:{step.Action?.ToString() ?? "GreedyStep"}");
                     Apply(engine, step); tape.Add(step); Check(engine, adapter);
+                    currentRoot = Fingerprint(engine);
                     // Compare every executed prefix, including the terminal prefix.
-                    using var replayAdapter = Rebuild().Adapter;
+                    if (verifier is not null)
+                    {
+                        Apply(verifier, step); work.ReplayedSteps++; Check(verifier, verifierAdapter!);
+                        if (Fingerprint(verifier) != currentRoot) throw new InvalidOperationException("replay_mismatch");
+                    }
+                    else { using var replayAdapter = Rebuild().Adapter; }
+                    work.VerifiedPrefixes++;
                 }
                 if (!engine.State.IsFinished) reasons.Add("step_limit");
             }
@@ -192,7 +233,7 @@ internal static class PolicyMatchEvaluation
                 tape.Count, true, adapter.Faults, 0, engine.PendingSelectionCount));
             return new(useModel, seed, reasons.Count == 0, reasons.Distinct().ToArray(), engine.State.Winner.ToString(),
                 engine.State.Turn, tape.Count, decisions, candidates, rejected, adapter.CompletedChoices,
-                sw.Elapsed.TotalSeconds, ActionJournal.Fingerprint(engine), trace.ToArray());
+                sw.Elapsed.TotalSeconds, Fingerprint(engine), trace.ToArray(), work);
         }
     }
 

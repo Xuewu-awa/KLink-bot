@@ -1,6 +1,6 @@
 {
   "date": "2026-11-02",
-  "batch": "policy-match-evaluation-20261102",
+  "batch": "policy-replay-speed-20261102",
   "counts": {
     "cards": 2019,
     "cards_with_own_ir": 1709,
@@ -12,7 +12,7 @@
     "program_containers": 2626,
     "dependency_edges": 18567,
     "dependency_symbols": 440,
-    "secondary_reports": 516,
+    "secondary_reports": 520,
     "explicit_partial_units": 39,
     "partial_units_matching_bound_inputs": 0,
     "planning_work_domains": 14,
@@ -23,33 +23,39 @@
     "total_work_remaining_percent": null
   },
   "matrix_tests": 16,
-  "csharp_tests": {
-    "policy_selector": 9,
-    "negative_consumer_guards": 2,
-    "full_simulator": 1058
+  "tests": {
+    "selector": 9,
+    "negative_cli_guards": 3,
+    "full_simulator": 1058,
+    "differential_seed_cases": 2,
+    "differential_modes": 3
   },
   "input_scope": "Clean HEAD snapshot plus two scoped trainer files; unrelated dirty probes excluded.",
   "worker": {
-    "job": "20261102-011106-policy-eval-review-211bf3ae",
+    "job": "20261102-012828-policy-speed-review-09d787b8",
     "skill": "C:/Users/AWQ/.codex/skills/deepseek-worker/SKILL.md",
     "dispositions": {
-      "F1": "Added adapter disposal on replay exceptions; unreachable engine-adapter cycles are GC collectible, no unmanaged engine resource claim.",
-      "F2": "Centralized candidate health check. IR is validated on intermediate states; final literal true is safe only after that gate.",
-      "F3": "Intermediate liveness/sample checks intentionally bypassed with synthetic values; real winner checked if terminal and final admission checks actual finish/winner/count. Added clarifying comment.",
-      "F4": "Intended strict wall-budget censoring, even if a finishing call crosses limit; actual winner and seconds remain in report.",
-      "F5": "Reject terminal invalid winner; no unsupported draw scoring.",
-      "F6": "Sigmoid is bounded, but added explicit range validation and regressions.",
-      "F7": "Added per-attempt setup-fault report wrapper. Global input contract failures still reject command before attempts."
+      "PE-01": "Current real-engine mutations occur only at Start/committed Apply, followed by refreshing currentRoot; candidate enumeration/probes use reconstructions and the live root is checked before/after them. Reviewed current invariant; cache diagnostics for future mutations remain a limitation, not evidence of a current replay divergence.",
+      "PE-02": "Valid inherited diagnostic limitation: exceptions in final Health/Fingerprint escape to SafePlay and lose partial metrics as setup_fault. No observed attempts did so; no claimed successful preservation of partial failed-run metrics. Raw failed attempts remain recorded. Deferred diagnostic hardening.",
+      "PE-03": "Accepted interpretation: ReconstructionSeconds is inclusive construct+replay+health+fingerprint time, overlapping FingerprintSeconds. Report explicitly forbids summing them; no exclusive cost attribution claim.",
+      "PE-04": "ReplayedSteps deliberately counts all tape Apply operations in reconstruction or incremental verification; total avoided repeated work is meaningful. It is not a separate category decomposition; baseline count checked analytically.",
+      "PE-05": "VerifiedPrefixes means committed prefixes checked, excluding candidate/enumeration root checks. Enforced equal to Steps for admitted attempts; not claimed to count all comparisons.",
+      "PE-06": "Reports already preserve time_limit/step_limit in Reasons and resolved ReplayMode. Differential acceptance requires all modes admitted; benchmark limit raised to frozen 180 seconds and no censored benchmark accepted. No rigorous cross-machine timing claim.",
+      "PE-07": "Useful future diagnostic refinement: shared failure text does not locate component/prefix. No such divergence observed; no claim to have implemented component-specific errors.",
+      "PE-08": "Per-candidate replay remains dominant and is explicitly retained for isolation. Worker claim that reconstruction counts are identical is false: measured model full/incremental counts 800/671 and 484/395. No unsafe snapshot clone introduced.",
+      "PE-09": "Setup failures have zero Work and Seconds rather than partial cost accounting; explicitly disclosed. Healthy-run performance checks do not use setup failures.",
+      "PE-10": "Covered by actual invalid-mode CLI rejection and full/incremental differential runs plus analytical work-count checks; existing 9 selector tests are not mislabeled as replay-path tests."
     }
   },
   "limitations": [
-    "Engineering smoke only: two corrected ordered-matchup seed pairs, left perspective only; no independent strength, calibrated probability, card certification or overall completion claim.",
-    "Existing NnPolicy enumerator is reused on a disposable reconstruction; it is not a certified complete legal-action mask. Production NnPolicy.Choose remains unchanged and is not promoted.",
-    "Training observations are Greedy before-decision states; one-ply afterstates under the model have distribution shift even though input and encoder contracts agree.",
-    "Original four treatment failures are preserved and excluded from paired wins, never called losses. Isolation amendment used two new seeds; not a blinded rerun of the initial comparison.",
-    "Wall limits are checked between synchronous calls and include replay/validation. Over-budget finished attempts remain inadmissible. Fingerprints are change detectors, not proof that all hidden VM state is equal.",
-    "Raw binary, model, complete trace/fingerprint results and quality manifests remain local with public SHA256 bindings. Original tool binary was not retained; initial attempts bind recorded tool hash and raw output, not final-source rerun. Corrected attempts bind the final tool binary.",
-    "Known terminal wins/losses override sigmoid estimates; invalid terminal winners, nonfinite or out-of-range scores reject the attempt. First-index choice policy remains fixed, not learned.",
-    "The two immutable plan files retain their original CRLF bytes via exact-path Git attributes; their pre-execution SHA256 is preserved in the repository."
+    "Two seeds reused solely for differential verification; one timing observation per seed/mode in one local environment, not a statistical speed estimate. Comparison uses unchanged engine, model, decks, choices and seed; no tuning/retraining.",
+    "Incremental mode maintains an independent engine executing each committed step instead of reconstructing each committed prefix from scratch. Candidate/enumeration roots remain fresh full reconstructions. Default mode is now incremental; explicit full mode remains available.",
+    "Root fingerprint cache assumes the live engine changes only in Start/committed Apply, after which it is refreshed. Live root is checked around model enumeration/probes. Neither fingerprints nor these limited differential runs prove complete hidden-VM-state equivalence.",
+    "Work.VerifiedPrefixes counts committed prefixes only. Work.ReplayedSteps counts all tape applications, including incremental verifier steps. ReconstructionSeconds includes replay, health checks and fingerprint time; it overlaps FingerprintSeconds, and these timers must not be added. Initial verifier construction is outside reconstruction counters.",
+    "Setup failures report zero metrics. An inherited exception in final Health/Fingerprint may fall through SafePlay as setup_fault and lose partial trace/cost; current differential and expanded artifacts are checked explicitly for these reasons. Failure messages do not always identify the component/prefix.",
+    "All expanded attempts retained; no replacement, no result-driven seed choice. Eight paired games with left-only model and fixed first-index choices are engineering evaluation, insufficient for general strength, calibrated probability or statistical superiority.",
+    "Same pre-decision Greedy training distribution vs model afterstates shift remains; enumerator is not certified complete; production NnPolicy.Choose unchanged. No new rule/card certification or overall progress percentage.",
+    "Budget includes verification/replay and is checked only between synchronous calls; over-budget games are inadmissible. The new fixed 180-second evaluation budget differs from earlier 60-second pilot; earlier pilot outcomes are not pooled into strength estimates.",
+    "Exact runtime engine preserved with build PathMap to the prior snapshot and pinned source revision metadata. Build used clean HEAD source plus two tool overlays, excluding unrelated dirty probes. Old and new binaries and raw traces retained locally, SHA256-bound publicly; verification script requires those local artifacts."
   ]
 }

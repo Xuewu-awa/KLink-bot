@@ -1,0 +1,179 @@
+{
+  "spec": "policy-replay-speed-review/v1",
+  "base_commit": "855e14e9dfb78850b88a8d9c2720182a42e7d5e0",
+  "scope": "Evaluation-tool replay optimization; same engine binary/model and bounded expansion",
+  "source_bindings": {
+    "tools/NNTrain/PolicyMatchEvaluation.cs": "5241e2606baff3ab8218451c33543c689d1c0048d739c34372306587a1c33cfb",
+    "tools/NNTrain/Program.cs": "3ca9b6b8c8419904d2711b8e14fbc857b7dd40cc9c14833dd2a2630be960fcd3",
+    "out/audit/systematic-rules/policy-speed-verify-20261102.py": "9c787271fa1189fbf77ae6a43b3bee1b4febc7a2de943299b06524335077480a"
+  },
+  "artifacts": {
+    "out/audit/systematic-rules/policy-speed-plan-20261102.json": "dd31a8497300169ec39dc93b495fcbf75a2e7cc92459f9e15d32cf198bf9192b",
+    "out/audit/systematic-rules/policy-speed-verification-20261102.json": "09d558342ff87ff3168a4bbc68496e08a2657cba3168ead88fd9b6e55de24b28",
+    "out/audit/systematic-rules/policy-speed-worker-findings-20261102.json": "51865e8c1297d6d58db9e4fadff5551b439f4d7529af6f37c90ce6acfacec252"
+  },
+  "logs": {
+    "out/audit/systematic-rules/policy-speed-selector-20261102.txt": "c52e802d27937b0b1020ed3e0d126c18ece8b4ef0a3088faa8cad287126fdbde",
+    "out/audit/systematic-rules/policy-speed-full-20261102.txt": "553b21f8fd265f71b4625b91cd3ccabd7343cf42f13ab23297dc46e1c60a9ed7",
+    "out/audit/systematic-rules/policy-speed-reject-pair-20261102.txt": "70839b8331f92d8489458c8952b49d78da7543c3263875e9cdff7e2190e2b795",
+    "out/audit/systematic-rules/policy-speed-reject-seed-20261102.txt": "1fc5188dd214b38f819140de802e144a68a044235e458b691639b676c2ffb300",
+    "out/audit/systematic-rules/policy-speed-reject-mode-20261102.txt": "567977105267b6a17f1807fee59c678ae06916bbafdddfc88578e99d9f9c7758"
+  },
+  "benchmark": [
+    {
+      "seed": 320000,
+      "equivalent": true,
+      "timings": {
+        "reference": {
+          "baseline": 2.4428388,
+          "treatment": 29.0558111
+        },
+        "full": {
+          "baseline": 2.4474735,
+          "treatment": 27.8182881
+        },
+        "incremental": {
+          "baseline": 0.86704,
+          "treatment": 21.8021938
+        }
+      },
+      "work": {
+        "full": {
+          "baseline": {
+            "reconstructions": 65,
+            "replayedSteps": 2145,
+            "verifiedPrefixes": 65,
+            "fingerprints": 132,
+            "reconstructionSeconds": 1.9156686999999994,
+            "fingerprintSeconds": 0.5764116999999997
+          },
+          "treatment": {
+            "reconstructions": 800,
+            "replayedSteps": 38887,
+            "verifiedPrefixes": 129,
+            "fingerprints": 1057,
+            "reconstructionSeconds": 26.732082299999988,
+            "fingerprintSeconds": 2.976625899999996
+          }
+        },
+        "incremental": {
+          "baseline": {
+            "reconstructions": 0,
+            "replayedSteps": 65,
+            "verifiedPrefixes": 65,
+            "fingerprints": 133,
+            "reconstructionSeconds": 0,
+            "fingerprintSeconds": 0.5627179000000003
+          },
+          "treatment": {
+            "reconstructions": 671,
+            "replayedSteps": 30631,
+            "verifiedPrefixes": 129,
+            "fingerprints": 1058,
+            "reconstructionSeconds": 20.0463503,
+            "fingerprintSeconds": 3.0530889999999964
+          }
+        }
+      }
+    },
+    {
+      "seed": 321000,
+      "equivalent": true,
+      "timings": {
+        "incremental": {
+          "baseline": 1.7274721,
+          "treatment": 12.4701203
+        },
+        "full": {
+          "baseline": 10.4202501,
+          "treatment": 12.4953962
+        },
+        "reference": {
+          "baseline": 10.6687648,
+          "treatment": 14.3564172
+        }
+      },
+      "work": {
+        "full": {
+          "baseline": {
+            "reconstructions": 126,
+            "replayedSteps": 8001,
+            "verifiedPrefixes": 126,
+            "fingerprints": 254,
+            "reconstructionSeconds": 9.562490399999996,
+            "fingerprintSeconds": 1.0179893999999998
+          },
+          "treatment": {
+            "reconstructions": 484,
+            "replayedSteps": 18300,
+            "verifiedPrefixes": 89,
+            "fingerprints": 643,
+            "reconstructionSeconds": 11.895013899999997,
+            "fingerprintSeconds": 1.2930965
+          }
+        },
+        "incremental": {
+          "baseline": {
+            "reconstructions": 0,
+            "replayedSteps": 126,
+            "verifiedPrefixes": 126,
+            "fingerprints": 255,
+            "reconstructionSeconds": 0,
+            "fingerprintSeconds": 1.0509494000000008
+          },
+          "treatment": {
+            "reconstructions": 395,
+            "replayedSteps": 14384,
+            "verifiedPrefixes": 89,
+            "fingerprints": 644,
+            "reconstructionSeconds": 11.1127085,
+            "fingerprintSeconds": 1.7913858000000003
+          }
+        }
+      }
+    }
+  ],
+  "expanded": {
+    "expandedPairs": 8,
+    "comparablePairs": 8,
+    "modelLeftWins": 0,
+    "controlLeftWins": 5,
+    "pairedDeltaSum": -5,
+    "unpairedAttemptsRetained": 0
+  },
+  "tests": {
+    "selector": 9,
+    "negative_cli_guards": 3,
+    "full_simulator": 1058,
+    "differential_seed_cases": 2,
+    "differential_modes": 3
+  },
+  "worker": {
+    "job": "20261102-012828-policy-speed-review-09d787b8",
+    "skill": "C:/Users/AWQ/.codex/skills/deepseek-worker/SKILL.md",
+    "dispositions": {
+      "PE-01": "Current real-engine mutations occur only at Start/committed Apply, followed by refreshing currentRoot; candidate enumeration/probes use reconstructions and the live root is checked before/after them. Reviewed current invariant; cache diagnostics for future mutations remain a limitation, not evidence of a current replay divergence.",
+      "PE-02": "Valid inherited diagnostic limitation: exceptions in final Health/Fingerprint escape to SafePlay and lose partial metrics as setup_fault. No observed attempts did so; no claimed successful preservation of partial failed-run metrics. Raw failed attempts remain recorded. Deferred diagnostic hardening.",
+      "PE-03": "Accepted interpretation: ReconstructionSeconds is inclusive construct+replay+health+fingerprint time, overlapping FingerprintSeconds. Report explicitly forbids summing them; no exclusive cost attribution claim.",
+      "PE-04": "ReplayedSteps deliberately counts all tape Apply operations in reconstruction or incremental verification; total avoided repeated work is meaningful. It is not a separate category decomposition; baseline count checked analytically.",
+      "PE-05": "VerifiedPrefixes means committed prefixes checked, excluding candidate/enumeration root checks. Enforced equal to Steps for admitted attempts; not claimed to count all comparisons.",
+      "PE-06": "Reports already preserve time_limit/step_limit in Reasons and resolved ReplayMode. Differential acceptance requires all modes admitted; benchmark limit raised to frozen 180 seconds and no censored benchmark accepted. No rigorous cross-machine timing claim.",
+      "PE-07": "Useful future diagnostic refinement: shared failure text does not locate component/prefix. No such divergence observed; no claim to have implemented component-specific errors.",
+      "PE-08": "Per-candidate replay remains dominant and is explicitly retained for isolation. Worker claim that reconstruction counts are identical is false: measured model full/incremental counts 800/671 and 484/395. No unsafe snapshot clone introduced.",
+      "PE-09": "Setup failures have zero Work and Seconds rather than partial cost accounting; explicitly disclosed. Healthy-run performance checks do not use setup failures.",
+      "PE-10": "Covered by actual invalid-mode CLI rejection and full/incremental differential runs plus analytical work-count checks; existing 9 selector tests are not mislabeled as replay-path tests."
+    }
+  },
+  "decision": "Keep the model experimental. Preserve full replay mode as reference; use bounded incremental mode with explicit changed verification contract. Candidate replay remains principal cost; do not introduce a clone until hidden VM state can be preserved and tested.",
+  "limitations": [
+    "Two seeds reused solely for differential verification; one timing observation per seed/mode in one local environment, not a statistical speed estimate. Comparison uses unchanged engine, model, decks, choices and seed; no tuning/retraining.",
+    "Incremental mode maintains an independent engine executing each committed step instead of reconstructing each committed prefix from scratch. Candidate/enumeration roots remain fresh full reconstructions. Default mode is now incremental; explicit full mode remains available.",
+    "Root fingerprint cache assumes the live engine changes only in Start/committed Apply, after which it is refreshed. Live root is checked around model enumeration/probes. Neither fingerprints nor these limited differential runs prove complete hidden-VM-state equivalence.",
+    "Work.VerifiedPrefixes counts committed prefixes only. Work.ReplayedSteps counts all tape applications, including incremental verifier steps. ReconstructionSeconds includes replay, health checks and fingerprint time; it overlaps FingerprintSeconds, and these timers must not be added. Initial verifier construction is outside reconstruction counters.",
+    "Setup failures report zero metrics. An inherited exception in final Health/Fingerprint may fall through SafePlay as setup_fault and lose partial trace/cost; current differential and expanded artifacts are checked explicitly for these reasons. Failure messages do not always identify the component/prefix.",
+    "All expanded attempts retained; no replacement, no result-driven seed choice. Eight paired games with left-only model and fixed first-index choices are engineering evaluation, insufficient for general strength, calibrated probability or statistical superiority.",
+    "Same pre-decision Greedy training distribution vs model afterstates shift remains; enumerator is not certified complete; production NnPolicy.Choose unchanged. No new rule/card certification or overall progress percentage.",
+    "Budget includes verification/replay and is checked only between synchronous calls; over-budget games are inadmissible. The new fixed 180-second evaluation budget differs from earlier 60-second pilot; earlier pilot outcomes are not pooled into strength estimates.",
+    "Exact runtime engine preserved with build PathMap to the prior snapshot and pinned source revision metadata. Build used clean HEAD source plus two tool overlays, excluding unrelated dirty probes. Old and new binaries and raw traces retained locally, SHA256-bound publicly; verification script requires those local artifacts."
+  ]
+}
