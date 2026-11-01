@@ -1,0 +1,696 @@
+{
+  "spec": "frozen-pilot-merge/v1",
+  "sourcePlanSha256": "6b5d02219cc0dcff212f4eb25764e922c5103cf3813c9b4ea52c1d393f10794a",
+  "sourceBindings": {
+    "out/audit/deepseek-repeat-pilot-20261101/batch-0.bin": "73976c6c9657dda1def3a4efca40b902a65e6d5052c2b217dd417330d32cf1b4",
+    "out/audit/deepseek-repeat-pilot-20261101/batch-0.bin.quality.json": "2af6553eaea842e7ffea38683a42a68a2ebc073a5fbbc245555e37c6407efe24",
+    "out/audit/deepseek-repeat-pilot-20261101/batch-0.bin.decks.json": "dd0ed235e9ef77db820cc4178fd2835d748431d4766d84587f02005e0a362631",
+    "out/audit/deepseek-repeat-pilot-20261101/batch-1.bin": "5c55e65971681c6602eeb7c219dbc4ef075ae3875aafea07e6dab78cc609f7e8",
+    "out/audit/deepseek-repeat-pilot-20261101/batch-1.bin.quality.json": "d9446580556dc671dde60420198e07364886781dc0d4694cfd72c0d135a7dfea",
+    "out/audit/deepseek-repeat-pilot-20261101/batch-1.bin.decks.json": "5e9e2a5c8c6fa68b14913ec56d076c8fedcbf5c5e6a3a0b72e153e596f60eeea",
+    "out/audit/deepseek-repeat-pilot-20261101/batch-2.bin": "52d7ea984a2acde8bdc083880d68708cb6302593fc4377bd783c30875d90b7c2",
+    "out/audit/deepseek-repeat-pilot-20261101/batch-2.bin.quality.json": "ec7ee6bf6906572d1cd914e9677ffe919df9dd13b46c3003089e4a3aad9540cd",
+    "out/audit/deepseek-repeat-pilot-20261101/batch-2.bin.decks.json": "df07e80f8696891cd2964d9e7719791dd964222539dbf80bcf67c83352c1f606",
+    "out/audit/deepseek-repeat-pilot-20261101/batch-3.bin": "97f5517fe57a0eb5153857e98f8911730c6ca7bc685196546617b83a19f9c267",
+    "out/audit/deepseek-repeat-pilot-20261101/batch-3.bin.quality.json": "78257f02425fea9ac5621925608eaa037ac044e436f9ff8c5e8edb1355696ac9",
+    "out/audit/deepseek-repeat-pilot-20261101/batch-3.bin.decks.json": "7283eda620f993ab3a190cf8f418b0698192a94d08a3a2b7bc65699309f1e565"
+  },
+  "mapping": [
+    {
+      "game": 0,
+      "batch": 0,
+      "localGame": 0,
+      "seed": 110000,
+      "accepted": true
+    },
+    {
+      "game": 1,
+      "batch": 0,
+      "localGame": 1,
+      "seed": 110001,
+      "accepted": true
+    },
+    {
+      "game": 2,
+      "batch": 0,
+      "localGame": 2,
+      "seed": 110002,
+      "accepted": true
+    },
+    {
+      "game": 3,
+      "batch": 0,
+      "localGame": 3,
+      "seed": 110003,
+      "accepted": true
+    },
+    {
+      "game": 4,
+      "batch": 0,
+      "localGame": 4,
+      "seed": 110004,
+      "accepted": true
+    },
+    {
+      "game": 5,
+      "batch": 0,
+      "localGame": 5,
+      "seed": 110005,
+      "accepted": true
+    },
+    {
+      "game": 6,
+      "batch": 0,
+      "localGame": 6,
+      "seed": 110006,
+      "accepted": true
+    },
+    {
+      "game": 7,
+      "batch": 0,
+      "localGame": 7,
+      "seed": 110007,
+      "accepted": true
+    },
+    {
+      "game": 8,
+      "batch": 0,
+      "localGame": 8,
+      "seed": 110008,
+      "accepted": true
+    },
+    {
+      "game": 9,
+      "batch": 0,
+      "localGame": 9,
+      "seed": 110009,
+      "accepted": true
+    },
+    {
+      "game": 10,
+      "batch": 0,
+      "localGame": 10,
+      "seed": 110010,
+      "accepted": true
+    },
+    {
+      "game": 11,
+      "batch": 0,
+      "localGame": 11,
+      "seed": 110011,
+      "accepted": true
+    },
+    {
+      "game": 12,
+      "batch": 0,
+      "localGame": 12,
+      "seed": 110012,
+      "accepted": true
+    },
+    {
+      "game": 13,
+      "batch": 0,
+      "localGame": 13,
+      "seed": 110013,
+      "accepted": true
+    },
+    {
+      "game": 14,
+      "batch": 0,
+      "localGame": 14,
+      "seed": 110014,
+      "accepted": true
+    },
+    {
+      "game": 15,
+      "batch": 0,
+      "localGame": 15,
+      "seed": 110015,
+      "accepted": true
+    },
+    {
+      "game": 16,
+      "batch": 0,
+      "localGame": 16,
+      "seed": 110016,
+      "accepted": true
+    },
+    {
+      "game": 17,
+      "batch": 0,
+      "localGame": 17,
+      "seed": 110017,
+      "accepted": true
+    },
+    {
+      "game": 18,
+      "batch": 0,
+      "localGame": 18,
+      "seed": 110018,
+      "accepted": true
+    },
+    {
+      "game": 19,
+      "batch": 0,
+      "localGame": 19,
+      "seed": 110019,
+      "accepted": true
+    },
+    {
+      "game": 20,
+      "batch": 0,
+      "localGame": 20,
+      "seed": 110020,
+      "accepted": true
+    },
+    {
+      "game": 21,
+      "batch": 0,
+      "localGame": 21,
+      "seed": 110021,
+      "accepted": true
+    },
+    {
+      "game": 22,
+      "batch": 0,
+      "localGame": 22,
+      "seed": 110022,
+      "accepted": true
+    },
+    {
+      "game": 23,
+      "batch": 0,
+      "localGame": 23,
+      "seed": 110023,
+      "accepted": true
+    },
+    {
+      "game": 24,
+      "batch": 1,
+      "localGame": 0,
+      "seed": 111000,
+      "accepted": true
+    },
+    {
+      "game": 25,
+      "batch": 1,
+      "localGame": 1,
+      "seed": 111001,
+      "accepted": true
+    },
+    {
+      "game": 26,
+      "batch": 1,
+      "localGame": 2,
+      "seed": 111002,
+      "accepted": true
+    },
+    {
+      "game": 27,
+      "batch": 1,
+      "localGame": 3,
+      "seed": 111003,
+      "accepted": true
+    },
+    {
+      "game": 28,
+      "batch": 1,
+      "localGame": 4,
+      "seed": 111004,
+      "accepted": true
+    },
+    {
+      "game": 29,
+      "batch": 1,
+      "localGame": 5,
+      "seed": 111005,
+      "accepted": true
+    },
+    {
+      "game": 30,
+      "batch": 1,
+      "localGame": 6,
+      "seed": 111006,
+      "accepted": true
+    },
+    {
+      "game": 31,
+      "batch": 1,
+      "localGame": 7,
+      "seed": 111007,
+      "accepted": true
+    },
+    {
+      "game": 32,
+      "batch": 1,
+      "localGame": 8,
+      "seed": 111008,
+      "accepted": true
+    },
+    {
+      "game": 33,
+      "batch": 1,
+      "localGame": 9,
+      "seed": 111009,
+      "accepted": true
+    },
+    {
+      "game": 34,
+      "batch": 1,
+      "localGame": 10,
+      "seed": 111010,
+      "accepted": true
+    },
+    {
+      "game": 35,
+      "batch": 1,
+      "localGame": 11,
+      "seed": 111011,
+      "accepted": true
+    },
+    {
+      "game": 36,
+      "batch": 1,
+      "localGame": 12,
+      "seed": 111012,
+      "accepted": true
+    },
+    {
+      "game": 37,
+      "batch": 1,
+      "localGame": 13,
+      "seed": 111013,
+      "accepted": true
+    },
+    {
+      "game": 38,
+      "batch": 1,
+      "localGame": 14,
+      "seed": 111014,
+      "accepted": true
+    },
+    {
+      "game": 39,
+      "batch": 1,
+      "localGame": 15,
+      "seed": 111015,
+      "accepted": true
+    },
+    {
+      "game": 40,
+      "batch": 1,
+      "localGame": 16,
+      "seed": 111016,
+      "accepted": true
+    },
+    {
+      "game": 41,
+      "batch": 1,
+      "localGame": 17,
+      "seed": 111017,
+      "accepted": true
+    },
+    {
+      "game": 42,
+      "batch": 1,
+      "localGame": 18,
+      "seed": 111018,
+      "accepted": true
+    },
+    {
+      "game": 43,
+      "batch": 1,
+      "localGame": 19,
+      "seed": 111019,
+      "accepted": true
+    },
+    {
+      "game": 44,
+      "batch": 1,
+      "localGame": 20,
+      "seed": 111020,
+      "accepted": true
+    },
+    {
+      "game": 45,
+      "batch": 1,
+      "localGame": 21,
+      "seed": 111021,
+      "accepted": true
+    },
+    {
+      "game": 46,
+      "batch": 1,
+      "localGame": 22,
+      "seed": 111022,
+      "accepted": true
+    },
+    {
+      "game": 47,
+      "batch": 1,
+      "localGame": 23,
+      "seed": 111023,
+      "accepted": true
+    },
+    {
+      "game": 48,
+      "batch": 2,
+      "localGame": 0,
+      "seed": 112000,
+      "accepted": true
+    },
+    {
+      "game": 49,
+      "batch": 2,
+      "localGame": 1,
+      "seed": 112001,
+      "accepted": true
+    },
+    {
+      "game": 50,
+      "batch": 2,
+      "localGame": 2,
+      "seed": 112002,
+      "accepted": true
+    },
+    {
+      "game": 51,
+      "batch": 2,
+      "localGame": 3,
+      "seed": 112003,
+      "accepted": true
+    },
+    {
+      "game": 52,
+      "batch": 2,
+      "localGame": 4,
+      "seed": 112004,
+      "accepted": true
+    },
+    {
+      "game": 53,
+      "batch": 2,
+      "localGame": 5,
+      "seed": 112005,
+      "accepted": true
+    },
+    {
+      "game": 54,
+      "batch": 2,
+      "localGame": 6,
+      "seed": 112006,
+      "accepted": true
+    },
+    {
+      "game": 55,
+      "batch": 2,
+      "localGame": 7,
+      "seed": 112007,
+      "accepted": true
+    },
+    {
+      "game": 56,
+      "batch": 2,
+      "localGame": 8,
+      "seed": 112008,
+      "accepted": true
+    },
+    {
+      "game": 57,
+      "batch": 2,
+      "localGame": 9,
+      "seed": 112009,
+      "accepted": true
+    },
+    {
+      "game": 58,
+      "batch": 2,
+      "localGame": 10,
+      "seed": 112010,
+      "accepted": true
+    },
+    {
+      "game": 59,
+      "batch": 2,
+      "localGame": 11,
+      "seed": 112011,
+      "accepted": true
+    },
+    {
+      "game": 60,
+      "batch": 2,
+      "localGame": 12,
+      "seed": 112012,
+      "accepted": true
+    },
+    {
+      "game": 61,
+      "batch": 2,
+      "localGame": 13,
+      "seed": 112013,
+      "accepted": true
+    },
+    {
+      "game": 62,
+      "batch": 2,
+      "localGame": 14,
+      "seed": 112014,
+      "accepted": true
+    },
+    {
+      "game": 63,
+      "batch": 2,
+      "localGame": 15,
+      "seed": 112015,
+      "accepted": true
+    },
+    {
+      "game": 64,
+      "batch": 2,
+      "localGame": 16,
+      "seed": 112016,
+      "accepted": true
+    },
+    {
+      "game": 65,
+      "batch": 2,
+      "localGame": 17,
+      "seed": 112017,
+      "accepted": true
+    },
+    {
+      "game": 66,
+      "batch": 2,
+      "localGame": 18,
+      "seed": 112018,
+      "accepted": true
+    },
+    {
+      "game": 67,
+      "batch": 2,
+      "localGame": 19,
+      "seed": 112019,
+      "accepted": true
+    },
+    {
+      "game": 68,
+      "batch": 2,
+      "localGame": 20,
+      "seed": 112020,
+      "accepted": true
+    },
+    {
+      "game": 69,
+      "batch": 2,
+      "localGame": 21,
+      "seed": 112021,
+      "accepted": true
+    },
+    {
+      "game": 70,
+      "batch": 2,
+      "localGame": 22,
+      "seed": 112022,
+      "accepted": true
+    },
+    {
+      "game": 71,
+      "batch": 2,
+      "localGame": 23,
+      "seed": 112023,
+      "accepted": true
+    },
+    {
+      "game": 72,
+      "batch": 3,
+      "localGame": 0,
+      "seed": 113000,
+      "accepted": true
+    },
+    {
+      "game": 73,
+      "batch": 3,
+      "localGame": 1,
+      "seed": 113001,
+      "accepted": true
+    },
+    {
+      "game": 74,
+      "batch": 3,
+      "localGame": 2,
+      "seed": 113002,
+      "accepted": true
+    },
+    {
+      "game": 75,
+      "batch": 3,
+      "localGame": 3,
+      "seed": 113003,
+      "accepted": true
+    },
+    {
+      "game": 76,
+      "batch": 3,
+      "localGame": 4,
+      "seed": 113004,
+      "accepted": true
+    },
+    {
+      "game": 77,
+      "batch": 3,
+      "localGame": 5,
+      "seed": 113005,
+      "accepted": true
+    },
+    {
+      "game": 78,
+      "batch": 3,
+      "localGame": 6,
+      "seed": 113006,
+      "accepted": true
+    },
+    {
+      "game": 79,
+      "batch": 3,
+      "localGame": 7,
+      "seed": 113007,
+      "accepted": true
+    },
+    {
+      "game": 80,
+      "batch": 3,
+      "localGame": 8,
+      "seed": 113008,
+      "accepted": true
+    },
+    {
+      "game": 81,
+      "batch": 3,
+      "localGame": 9,
+      "seed": 113009,
+      "accepted": true
+    },
+    {
+      "game": 82,
+      "batch": 3,
+      "localGame": 10,
+      "seed": 113010,
+      "accepted": true
+    },
+    {
+      "game": 83,
+      "batch": 3,
+      "localGame": 11,
+      "seed": 113011,
+      "accepted": true
+    },
+    {
+      "game": 84,
+      "batch": 3,
+      "localGame": 12,
+      "seed": 113012,
+      "accepted": true
+    },
+    {
+      "game": 85,
+      "batch": 3,
+      "localGame": 13,
+      "seed": 113013,
+      "accepted": true
+    },
+    {
+      "game": 86,
+      "batch": 3,
+      "localGame": 14,
+      "seed": 113014,
+      "accepted": true
+    },
+    {
+      "game": 87,
+      "batch": 3,
+      "localGame": 15,
+      "seed": 113015,
+      "accepted": true
+    },
+    {
+      "game": 88,
+      "batch": 3,
+      "localGame": 16,
+      "seed": 113016,
+      "accepted": true
+    },
+    {
+      "game": 89,
+      "batch": 3,
+      "localGame": 17,
+      "seed": 113017,
+      "accepted": true
+    },
+    {
+      "game": 90,
+      "batch": 3,
+      "localGame": 18,
+      "seed": 113018,
+      "accepted": true
+    },
+    {
+      "game": 91,
+      "batch": 3,
+      "localGame": 19,
+      "seed": 113019,
+      "accepted": true
+    },
+    {
+      "game": 92,
+      "batch": 3,
+      "localGame": 20,
+      "seed": 113020,
+      "accepted": true
+    },
+    {
+      "game": 93,
+      "batch": 3,
+      "localGame": 21,
+      "seed": 113021,
+      "accepted": true
+    },
+    {
+      "game": 94,
+      "batch": 3,
+      "localGame": 22,
+      "seed": 113022,
+      "accepted": true
+    },
+    {
+      "game": 95,
+      "batch": 3,
+      "localGame": 23,
+      "seed": 113023,
+      "accepted": true
+    }
+  ],
+  "datasetSha256": "5fa97eab224e92984359fe758a8c4ea90bf5d2a51f38093848f17fbf85af1ba8",
+  "transformation": "Concatenate source rows in original batch order; replace only local game float with unique integer mapped from (batch,local-game). Preserve all other bytes, all attempted games and original seeds.",
+  "holdout": "Frozen planned local IDs intersect admitted games, no replacement or re-splitting.",
+  "scope": "Pipeline smoke dataset, not authoritative KARDS rules or representative meta coverage."
+}

@@ -70,6 +70,7 @@ internal static class Program
             if (cmd == "value-learning-selftest") return ValueLearningSelfTest.Run();
             if (cmd == "pair-coverage-selftest") return PairCoverageSelfTest.Run();
             if (cmd == "dump-matchup-selftest") return DumpMatchupSelfTest.Run();
+            if (cmd == "frozen-split-selftest") return FrozenSplitSelfTest.Run();
             if (cmd == "coverage") return Coverage(opts);
             if (cmd == "ranking-metric-selftest") return RankingMetricSelfTest.Run();
             if (cmd == "pair-direction-selftest") return PairDirectionSelfTest.Run();
@@ -352,7 +353,12 @@ internal static class Program
         // ⚠️ 默认走 `Random.Shared`（= 原来的行为，每次跑切分都不同 ⇒ 数字不可复现）。
         //    给了 `--split-seed N` 就用固定种子；verify 始终使用模型保存的对局 ID。
         int splitSeed = GetInt(opts, "split-seed", -1);
-        var valGames = ValueEvaluationSplit.Create(gids, splitSeed);
+        bool frozenSplit=opts.TryGetValue("split-manifest",out var splitPath);
+        if(frozenSplit && opts.ContainsKey("split-seed"))
+            throw new InvalidDataException("--split-manifest and --split-seed are mutually exclusive.");
+        var valGames = frozenSplit ? FrozenValueSplit.Load(splitPath,quality.DataSha256,gids)
+            : ValueEvaluationSplit.Create(gids, splitSeed);
+        string splitManifestHash=frozenSplit ? TrainingAdmission.Hash(splitPath) : null;
         int nValGames = valGames.Count;
         var idx = Enumerable.Range(0, n)
                             .Where(i => !valGames.Contains(gids[i]))
@@ -659,6 +665,8 @@ internal static class Program
             lr,
             weightInitSeed = 42,
             splitSeed,
+            splitSource = frozenSplit ? "frozen-manifest/v1" : "random-game-split/v1",
+            splitManifestSha256 = splitManifestHash,
             normalizationSpec = "training-split-only/v1",
             trainingGameIds = gids.Distinct().Where(g => !valGames.Contains(g)).Order().ToArray(),
             validationGameIds = valGames.Order().ToArray(),
@@ -702,7 +710,9 @@ internal static class Program
         Console.WriteLine();
         Console.WriteLine($"模型已存: {modelPath}  ({new FileInfo(modelPath).Length / 1024.0:F0} KB)");
         Console.WriteLine($"  结构 {Dim}→{hidden}→1，含 mean/std 归一化参数 + 编码规格");        Console.WriteLine($"  复现命令: NNTrain train --data {Path.GetFileName(path)} --epochs {epochs} "
-                          + $"--hidden {hidden} --split-seed {splitSeed} --out {Path.GetFileName(modelPath)}");
+                          + $"--hidden {hidden} --target {target} "
+                          + (frozenSplit ? $"--split-manifest \"{splitPath}\" " : $"--split-seed {splitSeed} ")
+                          + $"--out {Path.GetFileName(modelPath)}");
         return 0;
     }
 
@@ -746,6 +756,8 @@ internal static class Program
             throw new InvalidDataException("At least two admitted games required for game-disjoint evaluation.");
         var valGames = ValueEvaluationSplit.Read(model, quality.DataSha256, gids,
             requestedSeed);
+        if(opts.TryGetValue("split-manifest",out var requestedSplit))
+            FrozenValueSplit.RequireSaved(requestedSplit,quality.DataSha256,gids,model.MetaJson);
         int nValGames = valGames.Count;
         Console.WriteLine("验证对局 ID: " + string.Join(",", valGames.Order()));
 
@@ -879,15 +891,24 @@ internal static class Program
             ValueTrainingContract.Read(model).RequireDataset(quality.SamplingMode,quality.ObservationSpec,
                 quality.ObservationPerspective,quality.ChoicePolicy,quality.InputsSha256.GetValueOrDefault("KLink.Bot.dll",""),quality.InputsSha256);
             validation=ValueEvaluationSplit.Read(model,quality.DataSha256,gids,seed);
+            if(opts.TryGetValue("split-manifest",out var requestedSplit))
+                FrozenValueSplit.RequireSaved(requestedSplit,quality.DataSha256,gids,model.MetaJson);
             splitSource="saved-model";
             using var metadata=JsonDocument.Parse(model.MetaJson);
             seed=metadata.RootElement.GetProperty("splitSeed").GetInt32();
         }
         else
         {
-            if(!seed.HasValue)throw new InvalidDataException("Coverage requires --split-seed or --model for a reproducible partition.");
-            validation=ValueEvaluationSplit.Create(gids,seed.Value);
-            splitSource="seeded-game-split";
+            if(opts.TryGetValue("split-manifest",out var splitPath))
+            {
+                if(seed.HasValue)throw new InvalidDataException("--split-manifest and --split-seed are mutually exclusive.");
+                validation=FrozenValueSplit.Load(splitPath,quality.DataSha256,gids);splitSource="frozen-manifest/v1";
+            }
+            else
+            {
+                if(!seed.HasValue)throw new InvalidDataException("Coverage requires --split-seed, --split-manifest or --model.");
+                validation=ValueEvaluationSplit.Create(gids,seed.Value);splitSource="seeded-game-split";
+            }
         }
         var coverage=ValuePairCoverage.Build(y,gids,pair,BuildTurnBuckets(x,n),validation);
         var report=new
@@ -909,7 +930,7 @@ internal static class Program
         {
             // A diagnostic must not overwrite its data, admission manifest or model.
             string absolute=Path.GetFullPath(output);
-            foreach(string input in new[]{path,path+".quality.json",opts.GetValueOrDefault("model",path)})
+            foreach(string input in new[]{path,path+".quality.json",opts.GetValueOrDefault("model",path),opts.GetValueOrDefault("split-manifest",path)})
                 if(string.Equals(absolute,Path.GetFullPath(input),StringComparison.OrdinalIgnoreCase))
                     throw new InvalidDataException("Coverage output must differ from its inputs.");
             File.WriteAllText(output,JsonSerializer.Serialize(report,TrainingAdmission.Json),new UTF8Encoding(false));
@@ -1059,8 +1080,8 @@ internal static class Program
               NNTrain verify-action-model --data actions.jsonl.gz --model action-model.json
             动作评分器仅离线模仿教师，不提供合法掩码、不执行对局；按整局分离训练/验证，精确绑定输入和教师。
               NNTrain train  --data nn-data.bin [--epochs 30] [--hidden 64]
-                             [--out nn-model.bin] [--split-seed N] [--target win|pair]
-              NNTrain verify --data nn-data.bin [--model nn-model.bin] [--split-seed N]
+                             [--out nn-model.bin] [--split-seed N | --split-manifest split.json] [--target win|pair]
+              NNTrain verify --data nn-data.bin [--model nn-model.bin] [--split-seed N | --split-manifest split.json]
 
             判据：验证准确率明显 > 50% = 编码有信号；≈50% = 编码是垃圾。
 
@@ -1078,11 +1099,14 @@ internal static class Program
                              A 原始胜负（sign(logit) 猜谁赢；跨对位可比历史数字）
                              B 对位内成对排序（随机 = 50%，与卡池平衡程度无关）
 
-            train 不给 --split-seed 时每次切分可能不同。verify 使用模型保存的切分，
+            train 用 --split-manifest 显式绑定预定留出名单，与 --split-seed 互斥。
+            两者均省略时每次切分可能不同。verify 使用模型保存的切分，
             要求原始训练数据集；可省略种子，显式传入时必须与模型记录一致。
             无完整切分元数据的旧模型需要重新训练后才能复验。
             coverage --data d.bin --split-seed 7 [--out coverage.json]
             coverage --data d.bin --model m.bin [--out coverage.json]
+            coverage --data d.bin --split-manifest split.json [--out coverage.json]
+            verify/coverage 指定 manifest 时，还会核对模型保存的该文件 SHA-256。
             只读统计对位/回合覆盖、独立对局数、未配对行和切分损失；不搜索有利切分。
             同一对位和回合内没有胜负排序对时显示“不可评估”；保存的准确率为 null，
             validationMetricStatus 为 no-comparable-pairs，并保存正确数与总对数。

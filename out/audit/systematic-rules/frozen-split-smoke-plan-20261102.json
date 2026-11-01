@@ -1,0 +1,14 @@
+{
+  "spec": "frozen-pilot-training-smoke/v1",
+  "frozenUtc": "2026-11-01T16:40:33.088363+00:00",
+  "datasetSha256": "5fa97eab224e92984359fe758a8c4ea90bf5d2a51f38093848f17fbf85af1ba8",
+  "splitSha256": "7f09dea0f0690d7d34f2c23bbc17322b773a1d8c085545643ed10eacbd249a30",
+  "target": "pair",
+  "epochs": 1,
+  "hidden": 16,
+  "learningRate": 0.05,
+  "weightAndShuffleSeed": "existing trainer fixed Random(42); inspect source",
+  "attempts": 1,
+  "selection": "No seed, holdout, checkpoint or hyperparameter search. One final epoch, diagnostic pipeline only.",
+  "configurationCorrectionBeforeExecution": "Source inspection confirmed value trainer hardcodes 0.05 and has no lr option. Corrected initial transcription 0.01 before running any smoke; no metrics observed."
+}

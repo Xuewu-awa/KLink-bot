@@ -1,0 +1,134 @@
+{
+  "spec": "frozen-split-training-smoke/v1",
+  "base_commit": "fc0c4e98da5267caf6d1f1ed48395462986952c3",
+  "scope": "Training contracts only",
+  "source_bindings": {
+    "tools/NNTrain/Program.cs": "6be5e66a7d6b74fcdb207793f1683e88f63dbada746def4abee65245540b6032",
+    "tools/NNTrain/ValueEvaluationSplit.cs": "4e4d54eda4a3148b93404a01167f2c95202c0e79cac00ff4aa15f4e028fb79dc",
+    "tools/NNTrain/FrozenValueSplit.cs": "cc97227dc10ba863917ba420bf8cbc5f3e6957dd741be3f01783593bf17dfe0b",
+    "tools/NNTrain/FrozenSplitSelfTest.cs": "09d00f580fa681c0e41ce335df513c6c819ceffa3851f3d6b89be118c7212ab0",
+    "out/audit/systematic-rules/frozen-pilot-merge-20261102.py": "c693c72fe3bd32d2c75d77c69af6a563e18fe9b8dca5aacaf538c9f57794446a",
+    "out/audit/systematic-rules/frozen-split-verify-20261102.py": "6aa976fe11fdd74f6deefcf6f6c15c59803887da3eca62d5e316ea109ddc4b99"
+  },
+  "artifacts": {
+    "out/audit/systematic-rules/frozen-split-split-20261102.json": "7f09dea0f0690d7d34f2c23bbc17322b773a1d8c085545643ed10eacbd249a30",
+    "out/audit/systematic-rules/frozen-split-provenance-20261102.json": "7f3964d8274146f025e08c87f7453512a5d42982f10654aca7149f9cbbfd1931",
+    "out/audit/systematic-rules/frozen-split-quality-20261102.json": "2d06d49e4722aea0581c09a9b0fdd12e8b132f3988beea1be1bc271f725c6297",
+    "out/audit/systematic-rules/frozen-split-model-meta-20261102.json": "72957150fc885f7baaded867de117ae8ac0de4463c1581699681f88d5a2dc4f6",
+    "out/audit/systematic-rules/frozen-split-coverage-20261102.json": "0d86699932ba46b455087eb4f620b05e34ee87dfa96d6acac6acfac5377dc439",
+    "out/audit/systematic-rules/frozen-split-verification-20261102.json": "a8b466084d90e514420bdf8d28945b7a5012fa62f884cfbcab1e4515fec9096b",
+    "out/audit/systematic-rules/frozen-split-worker-20261102.json": "38749606abe1c65f92cc257e6880553e83150cc23df6c1a110aa156033d8d4ae",
+    "out/audit/systematic-rules/frozen-split-smoke-plan-20261102.json": "aefde3d7ff09edb6ba9525d5d602ccf00839694400dee581f6e0290e811d379f"
+  },
+  "logs": {
+    "out/audit/systematic-rules/frozen-split-before-20261102.txt": "c4e6f61f784f87649b3dbf3d359f64226c2b7087af9a48171fc47e33f37bac9f",
+    "out/audit/systematic-rules/frozen-split-frozen-20261102.txt": "64a61b932bd66bb8d0b7d5aaf57ef6132c96536a285f27a0a5af9ef042cf452b",
+    "out/audit/systematic-rules/frozen-split-matchup-20261102.txt": "6b306372a9ac172c82811a12efec74420d7a486407ae9307850d0e96aa000a55",
+    "out/audit/systematic-rules/frozen-split-coverage-20261102.txt": "4daa3a9265ef2866405e33b824b5d10a553f6ba0b7dcd30ebbef12a097e1c277",
+    "out/audit/systematic-rules/frozen-split-metric-20261102.txt": "e7aeb72200e69d20622dc6406cfd37359acb014e83b39d254dc91799bd220ae5",
+    "out/audit/systematic-rules/frozen-split-direction-20261102.txt": "91719a85b468cabcba82119b0b2406b8032ff33802e6e45beb3058487f85f13a",
+    "out/audit/systematic-rules/frozen-split-learning-20261102.txt": "d7faa75602026cd8ef5ae23fc2cd86ea53ef846efd6026b4622c07fb100e502f",
+    "out/audit/systematic-rules/frozen-split-preprocessing-20261102.txt": "8934378a4acf1cfa1894f2d55b9449f00375ef7100712e3a9930a87495bb0b73",
+    "out/audit/systematic-rules/frozen-split-evaluation-20261102.txt": "41052447d2274824e827bacd7587943101f8ad853fea695c45aa8f405f5816ad",
+    "out/audit/systematic-rules/frozen-split-admission-20261102.txt": "bf321d94caa01475eb8f83fb1f3ce2655d866d2d9857ee9c20354551169ea935",
+    "out/audit/systematic-rules/frozen-split-full-20261102.txt": "9f49dd4a37eb1d983b5d3bcdf306dd1a82ee2a6d7eb020020c485efaabc6f148",
+    "out/audit/systematic-rules/frozen-split-train-20261102.txt": "8c53a9dcf5269cb084ad1d7325d196e36ffd64bc028eef64d2a5162de15516a0",
+    "out/audit/systematic-rules/frozen-split-verify-20261102.txt": "5aa6a5b5909ce6e11c3862a2a079334bacd8271fe039cb576b2a738a053fb326",
+    "out/audit/systematic-rules/frozen-split-verify-saved-20261102.txt": "5aa6a5b5909ce6e11c3862a2a079334bacd8271fe039cb576b2a738a053fb326",
+    "out/audit/systematic-rules/frozen-split-merge-20261102.txt": "b74e050aebd6be93a77c1919448a843133733cb363dd791cc044f7c6ff6a9dc6"
+  },
+  "verification": {
+    "rowsComparedBytewiseExceptGameId": 11740,
+    "attemptedIdentitiesPreserved": 96,
+    "trainingGames": 72,
+    "validationGames": 24,
+    "validationGameIds": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      48,
+      49,
+      50,
+      51,
+      52,
+      53,
+      72,
+      73,
+      74,
+      75,
+      76,
+      77
+    ],
+    "savedMetric": {
+      "correct": 599,
+      "total": 1049,
+      "accuracy": 0.5710200190657769
+    },
+    "processedTrainingUnits": 4195,
+    "modelSha256": "e82638b96017905798018da4ce645980a0e379820bd856ca5a60be92fea88ab5",
+    "datasetSha256": "5fa97eab224e92984359fe758a8c4ea90bf5d2a51f38093848f17fbf85af1ba8",
+    "splitSha256": "7f09dea0f0690d7d34f2c23bbc17322b773a1d8c085545643ed10eacbd249a30",
+    "checks": "Independent raw-byte and per-game metadata comparison, exact saved split/metric/coverage binding, saved-only/file-bound Verify, merge overwrite refusal."
+  },
+  "regression": {
+    "before": "Old Train ignored --split-manifest and accepted conflicting --split-seed; new selftest failed before fix.",
+    "after": "Explicit frozen partitions required to cover admitted games exactly; saved model binds dataset and manifest hashes; Verify rejects changed manifest and seed override.",
+    "checks": {
+      "frozen": 39,
+      "matchup": 781,
+      "coverage": 171,
+      "metric": 182,
+      "direction": 158,
+      "learning": 46,
+      "preprocessing": 50,
+      "evaluation": 200,
+      "admission": 44,
+      "full": 1058
+    }
+  },
+  "build": {
+    "simulatorSha256": "7cba599e45879a8af7eecefa41bafa8256bc37d602dbb29fcd78031b12c5dfb9",
+    "source": "Clean HEAD src and tools; four scoped trainer files overlaid; unrelated dirty probes excluded.",
+    "sdk": "10.0.401",
+    "explanation": "Default rebuild embedded current Git HEAD in AssemblyInformationalVersion and SourceLink and failed strict dataset admission. Rebuilt unchanged source with original 4041041 revision metadata and explicit original SourceLink; DLL is byte-identical to pilot. Original manifests unchanged.",
+    "properties": {
+      "SourceRevisionId": "404104120cf0caab27b47c7b795a9c567c077752",
+      "EnableSourceLink": false,
+      "SourceLink": "explicit JSON mapping D:\\Codex Workshop\\KLink-bot\\* to https://raw.githubusercontent.com/Xuewu-awa/KLink-bot/404104120cf0caab27b47c7b795a9c567c077752/*"
+    },
+    "rebuild": "dotnet build src/KLink.Bot/KLink.Bot.csproj -t:Rebuild -c Release -p:SourceRevisionId=<above> -p:EnableSourceLink=false -p:SourceLink=<saved mapping JSON>"
+  },
+  "training": {
+    "target": "pair",
+    "epochs": 1,
+    "hidden": 16,
+    "learningRate": 0.05,
+    "weightInitSeed": 42,
+    "pairDrawSeed": 20260926,
+    "attempts": 1,
+    "checkpoint": "last/final epoch only",
+    "note": "Frozen smoke plan weightAndShuffleSeed wording is imprecise: 42 initializes weights; existing pair-draw RNG uses 20260926. No RNG configuration was changed or searched.",
+    "noNewGameplay": true
+  },
+  "worker": {
+    "job": "20261102-004033-frozen-split-56fc0c97",
+    "verification": "Primary independently verified input hashes, exact identities/holdout, partition rows and per-scope pair arithmetic against original raw bytes and C# coverage. Worker scripts not integrated."
+  },
+  "limitations": [
+    "Pipeline diagnostic only: four ordered matchups and 24 held-out games; correlated observations are not independent samples or a playing-strength estimate.",
+    "Existing trainer console success heuristics (encoding validity from >55%) are not adopted as conclusions; only exact pipeline consistency is accepted.",
+    "Raw datasets, simulator binaries and model remain local SHA-256-bound evidence; no relaxation or rewriting of original admission fingerprints.",
+    "Manifest hash proves which file was used, not when it was chosen; chronological predeclaration is separately bound by the original published pilot plan.",
+    "No PvP rule or card certification is added. No overall completion percentage is inferred."
+  ],
+  "decision": "Frozen pilot now trains/saves/verifies end-to-end. Next predeclare broader independent matchup/seed and baseline evaluation before any strength claim; keep this smoke holdout intact and avoid tuning against it."
+}

@@ -1,6 +1,6 @@
 {
   "date": "2026-11-02",
-  "batch": "frozen-repeat-pilot-20261101",
+  "batch": "frozen-split-smoke-20261102",
   "counts": {
     "cards": 2019,
     "cards_with_own_ir": 1709,
@@ -12,7 +12,7 @@
     "program_containers": 2626,
     "dependency_edges": 18567,
     "dependency_symbols": 440,
-    "secondary_reports": 483,
+    "secondary_reports": 492,
     "explicit_partial_units": 39,
     "partial_units_matching_bound_inputs": 0,
     "planning_work_domains": 14,
@@ -24,6 +24,7 @@
   },
   "matrix_tests": 16,
   "csharp_tests": {
+    "frozen": 39,
     "matchup": 781,
     "coverage": 171,
     "metric": 182,
@@ -32,31 +33,60 @@
     "preprocessing": 50,
     "evaluation": 200,
     "admission": 44,
-    "full": 1058,
-    "pilot_analysis_negative": 8
+    "full": 1058
   },
-  "input_scope": "Clean HEAD snapshot plus three scoped producer sources; dirty action probes excluded; prior authority bindings retained.",
+  "input_scope": "Clean HEAD snapshot plus four scoped trainer files; unrelated dirty probes excluded. Prior evidence bindings retained.",
   "worker": {
-    "job": "20261101-235937-repeat-pilot-6bde2701",
-    "status": "completed",
-    "verification": "Primary verified all per-batch counts/partitions, fault counters, input hashes, call names/game counts/occurrences and aggregate totals from original manifests. Worker scripts not integrated.",
-    "correction": "Worker informational_call_totals.games=274 sums per-call game incidences, NOT distinct games. Actual unique games with recorded informational calls: 75. The 274 figure is not adopted as game coverage."
+    "job": "20261102-004033-frozen-split-56fc0c97",
+    "verification": "Primary independently verified input hashes, exact identities/holdout, partition rows and per-scope pair arithmetic against original raw bytes and C# coverage. Worker scripts not integrated."
   },
-  "pilot": {
-    "attempted": 96,
-    "accepted": 96,
-    "rejected": 0,
-    "rows": 11740,
-    "training_games": 72,
-    "validation_games": 24,
-    "training_row_pairs": 2495,
-    "validation_row_pairs": 1049
+  "pipeline": {
+    "rowsComparedBytewiseExceptGameId": 11740,
+    "attemptedIdentitiesPreserved": 96,
+    "trainingGames": 72,
+    "validationGames": 24,
+    "validationGameIds": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      48,
+      49,
+      50,
+      51,
+      52,
+      53,
+      72,
+      73,
+      74,
+      75,
+      76,
+      77
+    ],
+    "savedMetric": {
+      "correct": 599,
+      "total": 1049,
+      "accuracy": 0.5710200190657769
+    },
+    "processedTrainingUnits": 4195,
+    "modelSha256": "e82638b96017905798018da4ce645980a0e379820bd856ca5a60be92fea88ab5",
+    "datasetSha256": "5fa97eab224e92984359fe758a8c4ea90bf5d2a51f38093848f17fbf85af1ba8",
+    "splitSha256": "7f09dea0f0690d7d34f2c23bbc17322b773a1d8c085545643ed10eacbd249a30",
+    "checks": "Independent raw-byte and per-game metadata comparison, exact saved split/metric/coverage binding, saved-only/file-bound Verify, merge overwrite refusal."
   },
   "limitations": [
-    "Execution health and observation coverage only; not game-rule or playing-strength certification.",
-    "Pairs count correlated observation rows, not independent games or training updates.",
-    "Fixed four-matchup pilot is not a representative meta sample. No favorable reseeding, rejected-game replacement or holdout search.",
-    "Raw binaries remain unpublished local evidence, bound by SHA-256. Quality manifests and compact row metadata are published.",
-    "This frozen split has not been wired into model training; existing random-split trainer must not be represented as using it."
+    "Pipeline diagnostic only: four ordered matchups and 24 held-out games; correlated observations are not independent samples or a playing-strength estimate.",
+    "Existing trainer console success heuristics (encoding validity from >55%) are not adopted as conclusions; only exact pipeline consistency is accepted.",
+    "Raw datasets, simulator binaries and model remain local SHA-256-bound evidence; no relaxation or rewriting of original admission fingerprints.",
+    "Manifest hash proves which file was used, not when it was chosen; chronological predeclaration is separately bound by the original published pilot plan.",
+    "No PvP rule or card certification is added. No overall completion percentage is inferred."
   ]
 }

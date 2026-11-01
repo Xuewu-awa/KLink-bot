@@ -1,0 +1,42 @@
+{
+  "rowsComparedBytewiseExceptGameId": 11740,
+  "attemptedIdentitiesPreserved": 96,
+  "trainingGames": 72,
+  "validationGames": 24,
+  "validationGameIds": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    48,
+    49,
+    50,
+    51,
+    52,
+    53,
+    72,
+    73,
+    74,
+    75,
+    76,
+    77
+  ],
+  "savedMetric": {
+    "correct": 599,
+    "total": 1049,
+    "accuracy": 0.5710200190657769
+  },
+  "processedTrainingUnits": 4195,
+  "modelSha256": "e82638b96017905798018da4ce645980a0e379820bd856ca5a60be92fea88ab5",
+  "datasetSha256": "5fa97eab224e92984359fe758a8c4ea90bf5d2a51f38093848f17fbf85af1ba8",
+  "splitSha256": "7f09dea0f0690d7d34f2c23bbc17322b773a1d8c085545643ed10eacbd249a30",
+  "checks": "Independent raw-byte and per-game metadata comparison, exact saved split/metric/coverage binding, saved-only/file-bound Verify, merge overwrite refusal."
+}

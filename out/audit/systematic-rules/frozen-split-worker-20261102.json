@@ -1,0 +1,1086 @@
+{
+  "schema": "frozen-split-verification/v1",
+  "scope": "Mechanical verification of four local JSON training-metadata inputs. Not authoritative KARDS game rules. No strength inference and no partition change.",
+  "inputs": {
+    "plan.json": {
+      "bytes": 1720,
+      "sha256": "6b5d02219cc0dcff212f4eb25764e922c5103cf3813c9b4ea52c1d393f10794a"
+    },
+    "rows.json": {
+      "bytes": 1463543,
+      "sha256": "ec2c1fc270a9b7b810e786ddf03d1002153782c5024768b4dbd6dc99fe0ff910"
+    },
+    "provenance.json": {
+      "bytes": 13494,
+      "sha256": "7f3964d8274146f025e08c87f7453512a5d42982f10654aca7149f9cbbfd1931"
+    },
+    "split.json": {
+      "bytes": 1016,
+      "sha256": "7f09dea0f0690d7d34f2c23bbc17322b773a1d8c085545643ed10eacbd249a30"
+    }
+  },
+  "declaredHashBindings": {
+    "sourcePlanSha256": {
+      "planJsonSha256": "6b5d02219cc0dcff212f4eb25764e922c5103cf3813c9b4ea52c1d393f10794a",
+      "splitJsonValue": "6b5d02219cc0dcff212f4eb25764e922c5103cf3813c9b4ea52c1d393f10794a",
+      "provenanceJsonValue": "6b5d02219cc0dcff212f4eb25764e922c5103cf3813c9b4ea52c1d393f10794a",
+      "matchesPlanJson": true
+    },
+    "datasetSha256": {
+      "declaredDatasetSha256": "5fa97eab224e92984359fe758a8c4ea90bf5d2a51f38093848f17fbf85af1ba8",
+      "rowsJsonSha256": "ec2c1fc270a9b7b810e786ddf03d1002153782c5024768b4dbd6dc99fe0ff910",
+      "rowsJsonEqualsDeclaredDataset": false,
+      "comparable": false,
+      "treatedAsViolation": false,
+      "reason": "rows.json is the compact decision-row projection; datasetSha256/provenance datasetSha256 identifies the merged pilot.bin dataset, which is not one of the four input JSON files.",
+      "parentPilotBinSha256": "5fa97eab224e92984359fe758a8c4ea90bf5d2a51f38093848f17fbf85af1ba8",
+      "parentPilotBinMatchesDeclaredDataset": true
+    }
+  },
+  "mapping": {
+    "entries": 96,
+    "uniqueComposites": 96,
+    "uniqueGlobalIds": 96,
+    "globalIdRange": [
+      0,
+      95
+    ],
+    "globalIdsContiguous": true,
+    "expectedAttemptedComposites": 96,
+    "missingComposites": [],
+    "unexpectedComposites": [],
+    "duplicateGlobalIds": [],
+    "allAttemptsAccepted": true,
+    "seedDerivationMatches": true,
+    "batches": [
+      {
+        "batch": 0,
+        "left": 0,
+        "right": 1,
+        "seed": 110000,
+        "mappedLocalGames": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23
+        ],
+        "globalIds": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23
+        ],
+        "validationLocalGames": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "validationGlobalIds": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "trainingLocalGames": [
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23
+        ],
+        "trainingGlobalIds": [
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23
+        ]
+      },
+      {
+        "batch": 1,
+        "left": 1,
+        "right": 0,
+        "seed": 111000,
+        "mappedLocalGames": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23
+        ],
+        "globalIds": [
+          24,
+          25,
+          26,
+          27,
+          28,
+          29,
+          30,
+          31,
+          32,
+          33,
+          34,
+          35,
+          36,
+          37,
+          38,
+          39,
+          40,
+          41,
+          42,
+          43,
+          44,
+          45,
+          46,
+          47
+        ],
+        "validationLocalGames": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "validationGlobalIds": [
+          24,
+          25,
+          26,
+          27,
+          28,
+          29
+        ],
+        "trainingLocalGames": [
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23
+        ],
+        "trainingGlobalIds": [
+          30,
+          31,
+          32,
+          33,
+          34,
+          35,
+          36,
+          37,
+          38,
+          39,
+          40,
+          41,
+          42,
+          43,
+          44,
+          45,
+          46,
+          47
+        ]
+      },
+      {
+        "batch": 2,
+        "left": 2,
+        "right": 3,
+        "seed": 112000,
+        "mappedLocalGames": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23
+        ],
+        "globalIds": [
+          48,
+          49,
+          50,
+          51,
+          52,
+          53,
+          54,
+          55,
+          56,
+          57,
+          58,
+          59,
+          60,
+          61,
+          62,
+          63,
+          64,
+          65,
+          66,
+          67,
+          68,
+          69,
+          70,
+          71
+        ],
+        "validationLocalGames": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "validationGlobalIds": [
+          48,
+          49,
+          50,
+          51,
+          52,
+          53
+        ],
+        "trainingLocalGames": [
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23
+        ],
+        "trainingGlobalIds": [
+          54,
+          55,
+          56,
+          57,
+          58,
+          59,
+          60,
+          61,
+          62,
+          63,
+          64,
+          65,
+          66,
+          67,
+          68,
+          69,
+          70,
+          71
+        ]
+      },
+      {
+        "batch": 3,
+        "left": 3,
+        "right": 2,
+        "seed": 113000,
+        "mappedLocalGames": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23
+        ],
+        "globalIds": [
+          72,
+          73,
+          74,
+          75,
+          76,
+          77,
+          78,
+          79,
+          80,
+          81,
+          82,
+          83,
+          84,
+          85,
+          86,
+          87,
+          88,
+          89,
+          90,
+          91,
+          92,
+          93,
+          94,
+          95
+        ],
+        "validationLocalGames": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "validationGlobalIds": [
+          72,
+          73,
+          74,
+          75,
+          76,
+          77
+        ],
+        "trainingLocalGames": [
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23
+        ],
+        "trainingGlobalIds": [
+          78,
+          79,
+          80,
+          81,
+          82,
+          83,
+          84,
+          85,
+          86,
+          87,
+          88,
+          89,
+          90,
+          91,
+          92,
+          93,
+          94,
+          95
+        ]
+      }
+    ]
+  },
+  "validationIds": {
+    "planLocalIds": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "planTrainingLocalIds": [
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23
+    ],
+    "perBatch": [
+      {
+        "batch": 0,
+        "local": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "global": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ]
+      },
+      {
+        "batch": 1,
+        "local": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "global": [
+          24,
+          25,
+          26,
+          27,
+          28,
+          29
+        ]
+      },
+      {
+        "batch": 2,
+        "local": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "global": [
+          48,
+          49,
+          50,
+          51,
+          52,
+          53
+        ]
+      },
+      {
+        "batch": 3,
+        "local": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "global": [
+          72,
+          73,
+          74,
+          75,
+          76,
+          77
+        ]
+      }
+    ],
+    "global": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      48,
+      49,
+      50,
+      51,
+      52,
+      53,
+      72,
+      73,
+      74,
+      75,
+      76,
+      77
+    ],
+    "exactMatchToSplitValidationGameIds": true,
+    "exactMatchToPlanLocal0Through5PerBatch": true
+  },
+  "split": {
+    "schemaVersion": 1,
+    "trainingCount": 72,
+    "validationCount": 24,
+    "trainingGameIds": [
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35,
+      36,
+      37,
+      38,
+      39,
+      40,
+      41,
+      42,
+      43,
+      44,
+      45,
+      46,
+      47,
+      54,
+      55,
+      56,
+      57,
+      58,
+      59,
+      60,
+      61,
+      62,
+      63,
+      64,
+      65,
+      66,
+      67,
+      68,
+      69,
+      70,
+      71,
+      78,
+      79,
+      80,
+      81,
+      82,
+      83,
+      84,
+      85,
+      86,
+      87,
+      88,
+      89,
+      90,
+      91,
+      92,
+      93,
+      94,
+      95
+    ],
+    "validationGameIds": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      48,
+      49,
+      50,
+      51,
+      52,
+      53,
+      72,
+      73,
+      74,
+      75,
+      76,
+      77
+    ],
+    "disjoint": true,
+    "unionSize": 96,
+    "unionEqualsMappedGlobalIds": true,
+    "matchesMappingOfPlanLocalIds": true
+  },
+  "rows": {
+    "total": 11740,
+    "compositeIdentitiesSeen": 96,
+    "missingCompositeIdentities": [],
+    "unknownCompositeRows": 0,
+    "declaredPartitionCounts": {
+      "training": 8457,
+      "validation": 3283
+    },
+    "derivedPartitionCounts": {
+      "training": 8457,
+      "validation": 3283
+    },
+    "partitionLabelMismatches": 0,
+    "winValueCounts": {
+      "0": 5800,
+      "1": 5940
+    },
+    "matchupIds": [
+      1,
+      22,
+      47,
+      68
+    ],
+    "turnRange": [
+      1,
+      44
+    ],
+    "groupsByMatchup": {
+      "1": 42,
+      "22": 44,
+      "47": 25,
+      "68": 33
+    }
+  },
+  "counts": {
+    "rowCounts": {
+      "full": 11740,
+      "training": 8457,
+      "validation": 3283,
+      "trainingPlusValidation": 11740,
+      "fullEqualsTrainingPlusValidation": true,
+      "declaredTraining": 8457,
+      "declaredValidation": 3283,
+      "declaredEqualsDerived": true,
+      "method": "composite (batch,localGame) -> global id via provenance.mapping, then split.json training/validation ids"
+    },
+    "pairedMin": {
+      "definition": "for each (matchup,turn) group count winRows (win=1) and lossRows (win=0), take min(winRows,lossRows), then sum over groups",
+      "full": {
+        "groups": 144,
+        "winRows": 5940,
+        "lossRows": 5800,
+        "sumMin": 3747,
+        "oneSidedGroups": 21
+      },
+      "training": {
+        "groups": 129,
+        "winRows": 4439,
+        "lossRows": 4018,
+        "sumMin": 2495,
+        "oneSidedGroups": 11
+      },
+      "validation": {
+        "groups": 138,
+        "winRows": 1501,
+        "lossRows": 1782,
+        "sumMin": 1049,
+        "oneSidedGroups": 35
+      },
+      "declaredPartitionCrossCheck": {
+        "training": {
+          "groups": 129,
+          "winRows": 4439,
+          "lossRows": 4018,
+          "sumMin": 2495,
+          "oneSidedGroups": 11
+        },
+        "validation": {
+          "groups": 138,
+          "winRows": 1501,
+          "lossRows": 1782,
+          "sumMin": 1049,
+          "oneSidedGroups": 35
+        }
+      }
+    }
+  },
+  "checks": [
+    {
+      "id": "plan.batch_ids",
+      "passed": true,
+      "detail": "plan batch ids are [0, 1, 2, 3]"
+    },
+    {
+      "id": "plan.games_per_matchup",
+      "passed": true,
+      "detail": "games_per_matchup=24"
+    },
+    {
+      "id": "plan.attempted_total",
+      "passed": true,
+      "detail": "4 batches x 24 = 96 attempted identities"
+    },
+    {
+      "id": "plan.validation_local_ids_exact",
+      "passed": true,
+      "detail": "plan validation_game_ids=[0, 1, 2, 3, 4, 5]"
+    },
+    {
+      "id": "plan.training_local_ids_exact",
+      "passed": true,
+      "detail": "plan training_game_ids=[6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]"
+    },
+    {
+      "id": "plan.local_ids_partition",
+      "passed": true,
+      "detail": "plan validation/training local ids are disjoint and cover 0..23"
+    },
+    {
+      "id": "plan.batch_seeds_unique",
+      "passed": true,
+      "detail": "batch seeds=[110000, 111000, 112000, 113000]"
+    },
+    {
+      "id": "mapping.entry_count",
+      "passed": true,
+      "detail": "mapping entries=96"
+    },
+    {
+      "id": "mapping.composite_unique",
+      "passed": true,
+      "detail": "unique (batch,localGame) composites=96"
+    },
+    {
+      "id": "mapping.global_unique",
+      "passed": true,
+      "detail": "unique global game ids=96"
+    },
+    {
+      "id": "mapping.global_contiguous",
+      "passed": true,
+      "detail": "global id set is [0, 1, 2]..[93, 94, 95] (size 96); expected 0..95"
+    },
+    {
+      "id": "mapping.composite_coverage",
+      "passed": true,
+      "detail": "missing=[] unexpected=[]"
+    },
+    {
+      "id": "mapping.all_attempts_accepted",
+      "passed": true,
+      "detail": "accepted=true entries=96 of 96"
+    },
+    {
+      "id": "mapping.seed_derivation",
+      "passed": true,
+      "detail": "global ids whose seed != batch.seed + localGame: []"
+    },
+    {
+      "id": "mapping.source_order",
+      "passed": true,
+      "detail": "mapping is ordered by global id and by (batch, localGame); matches the declared concatenation order"
+    },
+    {
+      "id": "mapping.batch_0_local_ids",
+      "passed": true,
+      "detail": "batch 0 mapped local games=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]"
+    },
+    {
+      "id": "mapping.batch_0_validation_local0_5",
+      "passed": true,
+      "detail": "batch 0 validation local games=[0, 1, 2, 3, 4, 5]"
+    },
+    {
+      "id": "mapping.batch_1_local_ids",
+      "passed": true,
+      "detail": "batch 1 mapped local games=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]"
+    },
+    {
+      "id": "mapping.batch_1_validation_local0_5",
+      "passed": true,
+      "detail": "batch 1 validation local games=[0, 1, 2, 3, 4, 5]"
+    },
+    {
+      "id": "mapping.batch_2_local_ids",
+      "passed": true,
+      "detail": "batch 2 mapped local games=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]"
+    },
+    {
+      "id": "mapping.batch_2_validation_local0_5",
+      "passed": true,
+      "detail": "batch 2 validation local games=[0, 1, 2, 3, 4, 5]"
+    },
+    {
+      "id": "mapping.batch_3_local_ids",
+      "passed": true,
+      "detail": "batch 3 mapped local games=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]"
+    },
+    {
+      "id": "mapping.batch_3_validation_local0_5",
+      "passed": true,
+      "detail": "batch 3 validation local games=[0, 1, 2, 3, 4, 5]"
+    },
+    {
+      "id": "split.schema_version",
+      "passed": true,
+      "detail": "schemaVersion=1"
+    },
+    {
+      "id": "split.no_duplicate_ids",
+      "passed": true,
+      "detail": "validation ids=24, unique=24; training ids=72, unique=72"
+    },
+    {
+      "id": "split.disjoint",
+      "passed": true,
+      "detail": "overlap=[]"
+    },
+    {
+      "id": "split.union_equals_mapped_ids",
+      "passed": true,
+      "detail": "union size=96; missing=[]; extra=[]"
+    },
+    {
+      "id": "split.validation_equals_derived",
+      "passed": true,
+      "detail": "split validation ids equal the mapping of plan local ids 0..5 for each batch; missing=[], extra=[]"
+    },
+    {
+      "id": "split.training_equals_derived",
+      "passed": true,
+      "detail": "split training ids equal the mapping of plan local ids 6..23 for each batch; missing=[], extra=[]"
+    },
+    {
+      "id": "split.validation_ids_sorted",
+      "passed": true,
+      "detail": "validationGameIds are ascending"
+    },
+    {
+      "id": "split.training_ids_sorted",
+      "passed": true,
+      "detail": "trainingGameIds are ascending"
+    },
+    {
+      "id": "rows.game_shape",
+      "passed": true,
+      "detail": "rows whose 'game' is not a 2-int list: 0"
+    },
+    {
+      "id": "rows.declared_partition_values",
+      "passed": true,
+      "detail": "declared partition values={'validation': 3283, 'training': 8457}"
+    },
+    {
+      "id": "rows.win_values",
+      "passed": true,
+      "detail": "win value counts={0: 5800, 1: 5940}"
+    },
+    {
+      "id": "rows.unknown_composites",
+      "passed": true,
+      "detail": "rows with composite absent from provenance mapping: 0"
+    },
+    {
+      "id": "rows.all_96_identities_present",
+      "passed": true,
+      "detail": "composite identities with rows=96; missing=[]; unexpected=[]"
+    },
+    {
+      "id": "rows.one_partition_per_game",
+      "passed": true,
+      "detail": "every (batch,localGame) game has exactly one declared partition label"
+    },
+    {
+      "id": "rows.declared_partition_matches_mapping",
+      "passed": true,
+      "detail": "rows whose declared partition differs from split membership: 0"
+    },
+    {
+      "id": "rows.one_matchup_per_game",
+      "passed": true,
+      "detail": "every (batch,localGame) game has exactly one matchup id"
+    },
+    {
+      "id": "counts.partition_sum",
+      "passed": true,
+      "detail": "training+validation=11740 full=11740"
+    },
+    {
+      "id": "counts.declared_matches_derived",
+      "passed": true,
+      "detail": "declared={'validation': 3283, 'training': 8457} derived={'validation': 3283, 'training': 8457}"
+    },
+    {
+      "id": "paired.declared_matches_derived",
+      "passed": true,
+      "detail": "min(winRows,lossRows) sums computed from declared labels equal those computed from mapped split membership"
+    },
+    {
+      "id": "paired.win_loss_rows_cover_partition",
+      "passed": true,
+      "detail": "winRows+lossRows per partition equal the recomputed row counts: full=11740/11740, training=8457/8457, validation=3283/3283"
+    },
+    {
+      "id": "hash.plan_bound_by_split",
+      "passed": true,
+      "detail": "split.sourcePlanSha256=6b5d02219cc0dcff212f4eb25764e922c5103cf3813c9b4ea52c1d393f10794a actual=6b5d02219cc0dcff212f4eb25764e922c5103cf3813c9b4ea52c1d393f10794a"
+    },
+    {
+      "id": "hash.plan_bound_by_provenance",
+      "passed": true,
+      "detail": "provenance.sourcePlanSha256=6b5d02219cc0dcff212f4eb25764e922c5103cf3813c9b4ea52c1d393f10794a actual=6b5d02219cc0dcff212f4eb25764e922c5103cf3813c9b4ea52c1d393f10794a"
+    },
+    {
+      "id": "hash.dataset_declarations_agree",
+      "passed": true,
+      "detail": "split=5fa97eab224e92984359fe758a8c4ea90bf5d2a51f38093848f17fbf85af1ba8 provenance=5fa97eab224e92984359fe758a8c4ea90bf5d2a51f38093848f17fbf85af1ba8"
+    }
+  ],
+  "violations": [],
+  "unresolved": [
+    {
+      "item": "datasetSha256 of split.json/provenance.json is not the hash of rows.json",
+      "detail": "The declared dataset hash identifies the merged pilot.bin (hashed read-only at ../pilot.bin and matching), not the compact decision-row projection rows.json. The merged dataset is outside the four local JSON inputs, so this representational difference is reported as context, not as a mapping or split defect."
+    }
+  ]
+}

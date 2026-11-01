@@ -8504,6 +8504,27 @@
         "Raw binaries remain unpublished local evidence, bound by SHA-256. Quality manifests and compact row metadata are published.",
         "This frozen split has not been wired into model training; existing random-split trainer must not be represented as using it."
       ]
+    },
+    {
+      "id": "TRAINING/NNTrain/frozen-split-smoke-20261102",
+      "status": "partial",
+      "report": "out/audit/systematic-rules/frozen-split-20261102.json",
+      "report_sha256": "cb909394d5a1b655efba08129e1d5d7d0ef3e4e1e209dd0544d6dda3f792bd7e",
+      "source_bindings": {
+        "tools/NNTrain/Program.cs": "6be5e66a7d6b74fcdb207793f1683e88f63dbada746def4abee65245540b6032",
+        "tools/NNTrain/ValueEvaluationSplit.cs": "4e4d54eda4a3148b93404a01167f2c95202c0e79cac00ff4aa15f4e028fb79dc",
+        "tools/NNTrain/FrozenValueSplit.cs": "cc97227dc10ba863917ba420bf8cbc5f3e6957dd741be3f01783593bf17dfe0b",
+        "tools/NNTrain/FrozenSplitSelfTest.cs": "09d00f580fa681c0e41ce335df513c6c819ceffa3851f3d6b89be118c7212ab0",
+        "out/audit/systematic-rules/frozen-pilot-merge-20261102.py": "c693c72fe3bd32d2c75d77c69af6a563e18fe9b8dca5aacaf538c9f57794446a",
+        "out/audit/systematic-rules/frozen-split-verify-20261102.py": "6aa976fe11fdd74f6deefcf6f6c15c59803887da3eca62d5e316ea109ddc4b99"
+      },
+      "limitations": [
+        "Pipeline diagnostic only: four ordered matchups and 24 held-out games; correlated observations are not independent samples or a playing-strength estimate.",
+        "Existing trainer console success heuristics (encoding validity from >55%) are not adopted as conclusions; only exact pipeline consistency is accepted.",
+        "Raw datasets, simulator binaries and model remain local SHA-256-bound evidence; no relaxation or rewriting of original admission fingerprints.",
+        "Manifest hash proves which file was used, not when it was chosen; chronological predeclaration is separately bound by the original published pilot plan.",
+        "No PvP rule or card certification is added. No overall completion percentage is inferred."
+      ]
     }
   ]
 }

@@ -23,6 +23,9 @@ internal static class ValueEvaluationSplit
         {
             using var doc=JsonDocument.Parse(model.MetaJson);
             var root=doc.RootElement;
+            if(requestedSeed.HasValue && root.TryGetProperty("splitSource",out var source)
+                && source.GetString()=="frozen-manifest/v1")
+                throw new InvalidDataException("A frozen manifest split cannot be overridden by --split-seed.");
             if(!root.TryGetProperty("splitSeed",out var seedElement) || !seedElement.TryGetInt32(out int savedSeed))
                 throw new InvalidDataException("Missing or invalid evaluation split seed; retrain the model.");
             HashSet<float> ReadIds(string name)

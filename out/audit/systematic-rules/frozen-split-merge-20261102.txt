@@ -1,0 +1,1 @@
+{"rows": 11740, "attempted": 96, "accepted": 96, "trainingGames": 72, "validationGames": 24, "datasetSha256": "5fa97eab224e92984359fe758a8c4ea90bf5d2a51f38093848f17fbf85af1ba8", "splitSha256": "7f09dea0f0690d7d34f2c23bbc17322b773a1d8c085545643ed10eacbd249a30"}
