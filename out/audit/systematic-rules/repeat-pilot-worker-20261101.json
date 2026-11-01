@@ -1,0 +1,935 @@
+{
+  "report": "mechanical-manifest-inventory/v1",
+  "scope_note": "Simulator execution diagnostics only. Counts are mechanical aggregations of the supplied manifests. No game-rule authority, no outcome/label inference, and no pair-coverage inference is made; the manifests contain no label fields.",
+  "informational_call_definition": "Name matching /^<local-ran:.*>$/ or exactly '<frontline-blocked-full>' or '<frontline-blocked-by-opponent>'.",
+  "inputs": {
+    "plan.json": {
+      "bytes": 1720,
+      "sha256": "6b5d02219cc0dcff212f4eb25764e922c5103cf3813c9b4ea52c1d393f10794a"
+    },
+    "quality-0.json": {
+      "bytes": 89745,
+      "sha256": "2af6553eaea842e7ffea38683a42a68a2ebc073a5fbbc245555e37c6407efe24"
+    },
+    "quality-1.json": {
+      "bytes": 108733,
+      "sha256": "d9446580556dc671dde60420198e07364886781dc0d4694cfd72c0d135a7dfea"
+    },
+    "quality-2.json": {
+      "bytes": 81424,
+      "sha256": "ec7ee6bf6906572d1cd914e9677ffe919df9dd13b46c3003089e4a3aad9540cd"
+    },
+    "quality-3.json": {
+      "bytes": 92147,
+      "sha256": "78257f02425fea9ac5621925608eaa037ac044e436f9ff8c5e8edb1355696ac9"
+    }
+  },
+  "manifest_internal_hashes": {
+    "quality-0.json": {
+      "dataSha256": "73976c6c9657dda1def3a4efca40b902a65e6d5052c2b217dd417330d32cf1b4",
+      "inputsSha256": {
+        "card-effects.json": "fc335d228779a2859627ee706d85949149ca595d0cfdfbc4971541831e5a8df0",
+        "card-ir-native-defaults.json": "a4f2812716f03ded180f45603ac7b715e890c54b1bc5b4b75fe2b1ec0975d711",
+        "card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b",
+        "card-vectors.json": "b15b93cb02e7e8a712561a2da52127a5867084ecb878a6ad58539b56b1109ab9",
+        "cards.json": "3550dc76eb0414c500166875f45909077aeeb3ea4d229b9b0ba9c66a81987c4b",
+        "deck_code_ids.json": "261cfd518c1a1ce40488f141e8dbd617ff19abe0734c49319ebcd6ac5dcb257e",
+        "event-contracts.json": "e4806dd48efbfc799a27c14b3660ad76ee03cd3f13e3e4320b213c5928efb112",
+        "live-actions.json": "db413a4644afe75806e66c47e200d93c5d93e91ca03e23fca38465b7dcb4dab3",
+        "KLink.Bot.dll": "7cba599e45879a8af7eecefa41bafa8256bc37d602dbb29fcd78031b12c5dfb9",
+        "NNTrain.dll": "5230a9a0aceb3ffa137be790603bc69183ed037f285fb1a74551ea1c63b8a221"
+      }
+    },
+    "quality-1.json": {
+      "dataSha256": "5c55e65971681c6602eeb7c219dbc4ef075ae3875aafea07e6dab78cc609f7e8",
+      "inputsSha256": {
+        "card-effects.json": "fc335d228779a2859627ee706d85949149ca595d0cfdfbc4971541831e5a8df0",
+        "card-ir-native-defaults.json": "a4f2812716f03ded180f45603ac7b715e890c54b1bc5b4b75fe2b1ec0975d711",
+        "card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b",
+        "card-vectors.json": "b15b93cb02e7e8a712561a2da52127a5867084ecb878a6ad58539b56b1109ab9",
+        "cards.json": "3550dc76eb0414c500166875f45909077aeeb3ea4d229b9b0ba9c66a81987c4b",
+        "deck_code_ids.json": "261cfd518c1a1ce40488f141e8dbd617ff19abe0734c49319ebcd6ac5dcb257e",
+        "event-contracts.json": "e4806dd48efbfc799a27c14b3660ad76ee03cd3f13e3e4320b213c5928efb112",
+        "live-actions.json": "db413a4644afe75806e66c47e200d93c5d93e91ca03e23fca38465b7dcb4dab3",
+        "KLink.Bot.dll": "7cba599e45879a8af7eecefa41bafa8256bc37d602dbb29fcd78031b12c5dfb9",
+        "NNTrain.dll": "5230a9a0aceb3ffa137be790603bc69183ed037f285fb1a74551ea1c63b8a221"
+      }
+    },
+    "quality-2.json": {
+      "dataSha256": "52d7ea984a2acde8bdc083880d68708cb6302593fc4377bd783c30875d90b7c2",
+      "inputsSha256": {
+        "card-effects.json": "fc335d228779a2859627ee706d85949149ca595d0cfdfbc4971541831e5a8df0",
+        "card-ir-native-defaults.json": "a4f2812716f03ded180f45603ac7b715e890c54b1bc5b4b75fe2b1ec0975d711",
+        "card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b",
+        "card-vectors.json": "b15b93cb02e7e8a712561a2da52127a5867084ecb878a6ad58539b56b1109ab9",
+        "cards.json": "3550dc76eb0414c500166875f45909077aeeb3ea4d229b9b0ba9c66a81987c4b",
+        "deck_code_ids.json": "261cfd518c1a1ce40488f141e8dbd617ff19abe0734c49319ebcd6ac5dcb257e",
+        "event-contracts.json": "e4806dd48efbfc799a27c14b3660ad76ee03cd3f13e3e4320b213c5928efb112",
+        "live-actions.json": "db413a4644afe75806e66c47e200d93c5d93e91ca03e23fca38465b7dcb4dab3",
+        "KLink.Bot.dll": "7cba599e45879a8af7eecefa41bafa8256bc37d602dbb29fcd78031b12c5dfb9",
+        "NNTrain.dll": "5230a9a0aceb3ffa137be790603bc69183ed037f285fb1a74551ea1c63b8a221"
+      }
+    },
+    "quality-3.json": {
+      "dataSha256": "97f5517fe57a0eb5153857e98f8911730c6ca7bc685196546617b83a19f9c267",
+      "inputsSha256": {
+        "card-effects.json": "fc335d228779a2859627ee706d85949149ca595d0cfdfbc4971541831e5a8df0",
+        "card-ir-native-defaults.json": "a4f2812716f03ded180f45603ac7b715e890c54b1bc5b4b75fe2b1ec0975d711",
+        "card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b",
+        "card-vectors.json": "b15b93cb02e7e8a712561a2da52127a5867084ecb878a6ad58539b56b1109ab9",
+        "cards.json": "3550dc76eb0414c500166875f45909077aeeb3ea4d229b9b0ba9c66a81987c4b",
+        "deck_code_ids.json": "261cfd518c1a1ce40488f141e8dbd617ff19abe0734c49319ebcd6ac5dcb257e",
+        "event-contracts.json": "e4806dd48efbfc799a27c14b3660ad76ee03cd3f13e3e4320b213c5928efb112",
+        "live-actions.json": "db413a4644afe75806e66c47e200d93c5d93e91ca03e23fca38465b7dcb4dab3",
+        "KLink.Bot.dll": "7cba599e45879a8af7eecefa41bafa8256bc37d602dbb29fcd78031b12c5dfb9",
+        "NNTrain.dll": "5230a9a0aceb3ffa137be790603bc69183ed037f285fb1a74551ea1c63b8a221"
+      }
+    }
+  },
+  "plan": {
+    "spec": "repeated-matchup-pilot/v1",
+    "frozen_utc": "2026-11-01T15:55:25.601880+00:00",
+    "base_commit": "404104120cf0caab27b47c7b795a9c567c077752",
+    "selection": "First four deck indices, paired adjacent and reversed, chosen before new outcomes. Bounded diagnostic only, not a representative meta sample.",
+    "sampling": "decision",
+    "every": 1,
+    "games_per_matchup": 24,
+    "validation_game_ids": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "training_game_ids": [
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23
+    ],
+    "batches": [
+      {
+        "id": 0,
+        "left": 0,
+        "right": 1,
+        "seed": 110000
+      },
+      {
+        "id": 1,
+        "left": 1,
+        "right": 0,
+        "seed": 111000
+      },
+      {
+        "id": 2,
+        "left": 2,
+        "right": 3,
+        "seed": 112000
+      },
+      {
+        "id": 3,
+        "left": 3,
+        "right": 2,
+        "seed": 113000
+      }
+    ]
+  },
+  "batches": [
+    {
+      "batch": 0,
+      "file": "quality-0.json",
+      "manifest_seed": 110000,
+      "planned_batch": {
+        "id": 0,
+        "left": 0,
+        "right": 1,
+        "seed": 110000
+      },
+      "seed_matches_plan": true,
+      "games_in_manifest": 24,
+      "requested": 24,
+      "accepted": 24,
+      "rejected": 0,
+      "rows": 2668,
+      "accepted_by_partition": {
+        "validation_game_ids": 6,
+        "training_game_ids": 18,
+        "unplanned_game_ids": 0,
+        "both_partitions": 0
+      },
+      "rejected_by_partition": {
+        "validation_game_ids": 0,
+        "training_game_ids": 0,
+        "unplanned_game_ids": 0,
+        "both_partitions": 0
+      },
+      "attempted_game_ids": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23
+      ],
+      "missing_attempted_game_ids": [],
+      "duplicate_attempted_game_ids": [],
+      "unplanned_attempted_game_ids": [],
+      "games_per_reason": {},
+      "rejected_games_per_reason": {},
+      "total_vm_faults": 0,
+      "total_choice_faults": 0,
+      "total_driver_faults": 0,
+      "missing_call_site_entries": 0,
+      "missing_call_sites_omitted": 0,
+      "missing_call_site_capture_failures": 0,
+      "calls": {
+        "<frontline-blocked-full>": {
+          "games": 9,
+          "occurrences": 16,
+          "informational": true
+        },
+        "<local-ran:ApplyTheBuff>": {
+          "games": 15,
+          "occurrences": 85,
+          "informational": true
+        },
+        "<local-ran:GetPlayFromHandDamage>": {
+          "games": 14,
+          "occurrences": 23,
+          "informational": true
+        },
+        "<local-ran:RemoveTheBuff>": {
+          "games": 15,
+          "occurrences": 78,
+          "informational": true
+        },
+        "<local-ran:anyOrderPlayedThisTurn>": {
+          "games": 15,
+          "occurrences": 15,
+          "informational": true
+        },
+        "<local-ran:didPlayBritishInfantryLastTurn>": {
+          "games": 16,
+          "occurrences": 23,
+          "informational": true
+        },
+        "<local-ran:isSecondOrderThisTurn>": {
+          "games": 16,
+          "occurrences": 16,
+          "informational": true
+        },
+        "<local-ran:updateCustomJsonIfNeeded>": {
+          "games": 23,
+          "occurrences": 235,
+          "informational": true
+        }
+      },
+      "noninformational_calls": {},
+      "noninformational_call_totals": {
+        "distinct": 0,
+        "games": 0,
+        "occurrences": 0
+      },
+      "informational_call_totals": {
+        "distinct": 8,
+        "games": 123,
+        "occurrences": 491
+      },
+      "distinct_deck_pairs": [
+        "德芬车|德澳老兵"
+      ],
+      "game_seeds": {
+        "first": 110000,
+        "last": 110023,
+        "distinct": 24
+      },
+      "consistency": {
+        "acceptedGames_field_matches": true,
+        "rejectedGames_field_matches": true,
+        "requestedGames_equals_games_length": true,
+        "requested_equals_accepted_plus_rejected": true,
+        "rows_equals_sum_writtenSamples": true,
+        "rows_equals_sum_observedSamples": true,
+        "rows_equals_sum_sampleKinds_length": true,
+        "calls_values_nonnegative_integers": true
+      }
+    },
+    {
+      "batch": 1,
+      "file": "quality-1.json",
+      "manifest_seed": 111000,
+      "planned_batch": {
+        "id": 1,
+        "left": 1,
+        "right": 0,
+        "seed": 111000
+      },
+      "seed_matches_plan": true,
+      "games_in_manifest": 24,
+      "requested": 24,
+      "accepted": 24,
+      "rejected": 0,
+      "rows": 3452,
+      "accepted_by_partition": {
+        "validation_game_ids": 6,
+        "training_game_ids": 18,
+        "unplanned_game_ids": 0,
+        "both_partitions": 0
+      },
+      "rejected_by_partition": {
+        "validation_game_ids": 0,
+        "training_game_ids": 0,
+        "unplanned_game_ids": 0,
+        "both_partitions": 0
+      },
+      "attempted_game_ids": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23
+      ],
+      "missing_attempted_game_ids": [],
+      "duplicate_attempted_game_ids": [],
+      "unplanned_attempted_game_ids": [],
+      "games_per_reason": {},
+      "rejected_games_per_reason": {},
+      "total_vm_faults": 0,
+      "total_choice_faults": 0,
+      "total_driver_faults": 0,
+      "missing_call_site_entries": 0,
+      "missing_call_sites_omitted": 0,
+      "missing_call_site_capture_failures": 0,
+      "calls": {
+        "<frontline-blocked-full>": {
+          "games": 6,
+          "occurrences": 11,
+          "informational": true
+        },
+        "<local-ran:ApplyTheBuff>": {
+          "games": 13,
+          "occurrences": 64,
+          "informational": true
+        },
+        "<local-ran:GetPlayFromHandDamage>": {
+          "games": 22,
+          "occurrences": 42,
+          "informational": true
+        },
+        "<local-ran:RemoveTheBuff>": {
+          "games": 13,
+          "occurrences": 59,
+          "informational": true
+        },
+        "<local-ran:anyOrderPlayedThisTurn>": {
+          "games": 13,
+          "occurrences": 13,
+          "informational": true
+        },
+        "<local-ran:didPlayBritishInfantryLastTurn>": {
+          "games": 19,
+          "occurrences": 31,
+          "informational": true
+        },
+        "<local-ran:isSecondOrderThisTurn>": {
+          "games": 14,
+          "occurrences": 14,
+          "informational": true
+        },
+        "<local-ran:updateCustomJsonIfNeeded>": {
+          "games": 24,
+          "occurrences": 332,
+          "informational": true
+        }
+      },
+      "noninformational_calls": {},
+      "noninformational_call_totals": {
+        "distinct": 0,
+        "games": 0,
+        "occurrences": 0
+      },
+      "informational_call_totals": {
+        "distinct": 8,
+        "games": 124,
+        "occurrences": 566
+      },
+      "distinct_deck_pairs": [
+        "德澳老兵|德芬车"
+      ],
+      "game_seeds": {
+        "first": 111000,
+        "last": 111023,
+        "distinct": 24
+      },
+      "consistency": {
+        "acceptedGames_field_matches": true,
+        "rejectedGames_field_matches": true,
+        "requestedGames_equals_games_length": true,
+        "requested_equals_accepted_plus_rejected": true,
+        "rows_equals_sum_writtenSamples": true,
+        "rows_equals_sum_observedSamples": true,
+        "rows_equals_sum_sampleKinds_length": true,
+        "calls_values_nonnegative_integers": true
+      }
+    },
+    {
+      "batch": 2,
+      "file": "quality-2.json",
+      "manifest_seed": 112000,
+      "planned_batch": {
+        "id": 2,
+        "left": 2,
+        "right": 3,
+        "seed": 112000
+      },
+      "seed_matches_plan": true,
+      "games_in_manifest": 24,
+      "requested": 24,
+      "accepted": 24,
+      "rejected": 0,
+      "rows": 2594,
+      "accepted_by_partition": {
+        "validation_game_ids": 6,
+        "training_game_ids": 18,
+        "unplanned_game_ids": 0,
+        "both_partitions": 0
+      },
+      "rejected_by_partition": {
+        "validation_game_ids": 0,
+        "training_game_ids": 0,
+        "unplanned_game_ids": 0,
+        "both_partitions": 0
+      },
+      "attempted_game_ids": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23
+      ],
+      "missing_attempted_game_ids": [],
+      "duplicate_attempted_game_ids": [],
+      "unplanned_attempted_game_ids": [],
+      "games_per_reason": {},
+      "rejected_games_per_reason": {},
+      "total_vm_faults": 0,
+      "total_choice_faults": 0,
+      "total_driver_faults": 0,
+      "missing_call_site_entries": 0,
+      "missing_call_sites_omitted": 0,
+      "missing_call_site_capture_failures": 0,
+      "calls": {
+        "<frontline-blocked-full>": {
+          "games": 1,
+          "occurrences": 1,
+          "informational": true
+        },
+        "<local-ran:updateCustomJsonIfNeeded>": {
+          "games": 10,
+          "occurrences": 20,
+          "informational": true
+        }
+      },
+      "noninformational_calls": {},
+      "noninformational_call_totals": {
+        "distinct": 0,
+        "games": 0,
+        "occurrences": 0
+      },
+      "informational_call_totals": {
+        "distinct": 2,
+        "games": 11,
+        "occurrences": 21
+      },
+      "distinct_deck_pairs": [
+        "德芬车2|德澳老兵2"
+      ],
+      "game_seeds": {
+        "first": 112000,
+        "last": 112023,
+        "distinct": 24
+      },
+      "consistency": {
+        "acceptedGames_field_matches": true,
+        "rejectedGames_field_matches": true,
+        "requestedGames_equals_games_length": true,
+        "requested_equals_accepted_plus_rejected": true,
+        "rows_equals_sum_writtenSamples": true,
+        "rows_equals_sum_observedSamples": true,
+        "rows_equals_sum_sampleKinds_length": true,
+        "calls_values_nonnegative_integers": true
+      }
+    },
+    {
+      "batch": 3,
+      "file": "quality-3.json",
+      "manifest_seed": 113000,
+      "planned_batch": {
+        "id": 3,
+        "left": 3,
+        "right": 2,
+        "seed": 113000
+      },
+      "seed_matches_plan": true,
+      "games_in_manifest": 24,
+      "requested": 24,
+      "accepted": 24,
+      "rejected": 0,
+      "rows": 3026,
+      "accepted_by_partition": {
+        "validation_game_ids": 6,
+        "training_game_ids": 18,
+        "unplanned_game_ids": 0,
+        "both_partitions": 0
+      },
+      "rejected_by_partition": {
+        "validation_game_ids": 0,
+        "training_game_ids": 0,
+        "unplanned_game_ids": 0,
+        "both_partitions": 0
+      },
+      "attempted_game_ids": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23
+      ],
+      "missing_attempted_game_ids": [],
+      "duplicate_attempted_game_ids": [],
+      "unplanned_attempted_game_ids": [],
+      "games_per_reason": {},
+      "rejected_games_per_reason": {},
+      "total_vm_faults": 0,
+      "total_choice_faults": 0,
+      "total_driver_faults": 0,
+      "missing_call_site_entries": 0,
+      "missing_call_sites_omitted": 0,
+      "missing_call_site_capture_failures": 0,
+      "calls": {
+        "<frontline-blocked-full>": {
+          "games": 2,
+          "occurrences": 4,
+          "informational": true
+        },
+        "<local-ran:updateCustomJsonIfNeeded>": {
+          "games": 14,
+          "occurrences": 28,
+          "informational": true
+        }
+      },
+      "noninformational_calls": {},
+      "noninformational_call_totals": {
+        "distinct": 0,
+        "games": 0,
+        "occurrences": 0
+      },
+      "informational_call_totals": {
+        "distinct": 2,
+        "games": 16,
+        "occurrences": 32
+      },
+      "distinct_deck_pairs": [
+        "德澳老兵2|德芬车2"
+      ],
+      "game_seeds": {
+        "first": 113000,
+        "last": 113023,
+        "distinct": 24
+      },
+      "consistency": {
+        "acceptedGames_field_matches": true,
+        "rejectedGames_field_matches": true,
+        "requestedGames_equals_games_length": true,
+        "requested_equals_accepted_plus_rejected": true,
+        "rows_equals_sum_writtenSamples": true,
+        "rows_equals_sum_observedSamples": true,
+        "rows_equals_sum_sampleKinds_length": true,
+        "calls_values_nonnegative_integers": true
+      }
+    }
+  ],
+  "totals": {
+    "batch_count": 4,
+    "planned_attempts_per_batch": 24,
+    "expected_total_attempts": 96,
+    "games_in_manifests": 96,
+    "requested": 96,
+    "accepted": 96,
+    "rejected": 0,
+    "rows": 11740,
+    "accepted_by_partition": {
+      "validation_game_ids": 24,
+      "training_game_ids": 72,
+      "unplanned_game_ids": 0,
+      "both_partitions": 0
+    },
+    "rejected_by_partition": {
+      "validation_game_ids": 0,
+      "training_game_ids": 0,
+      "unplanned_game_ids": 0,
+      "both_partitions": 0
+    },
+    "total_vm_faults": 0,
+    "total_choice_faults": 0,
+    "total_driver_faults": 0,
+    "missing_call_site_entries": 0,
+    "missing_call_sites_omitted": 0,
+    "missing_call_site_capture_failures": 0,
+    "games_per_reason": {},
+    "rejected_games_per_reason": {},
+    "calls": {
+      "<frontline-blocked-full>": {
+        "games": 18,
+        "occurrences": 32,
+        "informational": true
+      },
+      "<local-ran:ApplyTheBuff>": {
+        "games": 28,
+        "occurrences": 149,
+        "informational": true
+      },
+      "<local-ran:GetPlayFromHandDamage>": {
+        "games": 36,
+        "occurrences": 65,
+        "informational": true
+      },
+      "<local-ran:RemoveTheBuff>": {
+        "games": 28,
+        "occurrences": 137,
+        "informational": true
+      },
+      "<local-ran:anyOrderPlayedThisTurn>": {
+        "games": 28,
+        "occurrences": 28,
+        "informational": true
+      },
+      "<local-ran:didPlayBritishInfantryLastTurn>": {
+        "games": 35,
+        "occurrences": 54,
+        "informational": true
+      },
+      "<local-ran:isSecondOrderThisTurn>": {
+        "games": 30,
+        "occurrences": 30,
+        "informational": true
+      },
+      "<local-ran:updateCustomJsonIfNeeded>": {
+        "games": 71,
+        "occurrences": 615,
+        "informational": true
+      }
+    },
+    "noninformational_calls": {},
+    "noninformational_call_totals": {
+      "distinct": 0,
+      "games": 0,
+      "occurrences": 0
+    },
+    "informational_call_totals": {
+      "distinct": 8,
+      "games": 274,
+      "occurrences": 1110
+    }
+  },
+  "attempted_id_audit": {
+    "plan_validation_ids": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "plan_training_ids": [
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23
+    ],
+    "plan_union_ids": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23
+    ],
+    "plan_validation_count": 6,
+    "plan_training_count": 18,
+    "plan_union_count": 24,
+    "plan_expected_local_id_range": [
+      0,
+      23
+    ],
+    "plan_validation_training_overlap": [],
+    "plan_duplicate_validation_ids": [],
+    "plan_duplicate_training_ids": [],
+    "plan_ids_missing_from_contiguous_union": [],
+    "plan_batch_ids": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "plan_duplicate_batch_ids": [],
+    "expected_attempts_per_batch": 24,
+    "expected_total_attempts": 96,
+    "attempted_total": 96,
+    "distinct_attempted_pairs": 96,
+    "missing_attempted_pairs": [],
+    "duplicate_attempted_pairs": [],
+    "unplanned_attempted_pairs": [],
+    "local_ids_reused_across_batches": [
+      {
+        "id": 0,
+        "attempts": 4
+      },
+      {
+        "id": 1,
+        "attempts": 4
+      },
+      {
+        "id": 2,
+        "attempts": 4
+      },
+      {
+        "id": 3,
+        "attempts": 4
+      },
+      {
+        "id": 4,
+        "attempts": 4
+      },
+      {
+        "id": 5,
+        "attempts": 4
+      },
+      {
+        "id": 6,
+        "attempts": 4
+      },
+      {
+        "id": 7,
+        "attempts": 4
+      },
+      {
+        "id": 8,
+        "attempts": 4
+      },
+      {
+        "id": 9,
+        "attempts": 4
+      },
+      {
+        "id": 10,
+        "attempts": 4
+      },
+      {
+        "id": 11,
+        "attempts": 4
+      },
+      {
+        "id": 12,
+        "attempts": 4
+      },
+      {
+        "id": 13,
+        "attempts": 4
+      },
+      {
+        "id": 14,
+        "attempts": 4
+      },
+      {
+        "id": 15,
+        "attempts": 4
+      },
+      {
+        "id": 16,
+        "attempts": 4
+      },
+      {
+        "id": 17,
+        "attempts": 4
+      },
+      {
+        "id": 18,
+        "attempts": 4
+      },
+      {
+        "id": 19,
+        "attempts": 4
+      },
+      {
+        "id": 20,
+        "attempts": 4
+      },
+      {
+        "id": 21,
+        "attempts": 4
+      },
+      {
+        "id": 22,
+        "attempts": 4
+      },
+      {
+        "id": 23,
+        "attempts": 4
+      }
+    ],
+    "per_batch_missing_ids": {
+      "0": [],
+      "1": [],
+      "2": [],
+      "3": []
+    },
+    "per_batch_duplicate_ids": {
+      "0": [],
+      "1": [],
+      "2": [],
+      "3": []
+    },
+    "per_batch_unplanned_ids": {
+      "0": [],
+      "1": [],
+      "2": [],
+      "3": []
+    }
+  },
+  "metadata_checks": {
+    "schemaVersion": 1,
+    "gateVersion": 2,
+    "samplingMode": "policy-and-choice-before/v1",
+    "choicePolicy": "first-index/v1",
+    "observationPerspective": "left",
+    "dim": 745,
+    "deckCount": 22,
+    "all_manifests_same_top_level_keys": true,
+    "label_fields_present": [],
+    "contains_label_or_outcome_fields": false,
+    "all_per_batch_consistency_checks_pass": true
+  }
+}

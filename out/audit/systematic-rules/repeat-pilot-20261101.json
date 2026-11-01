@@ -1,0 +1,7886 @@
+{
+  "plan_sha256": "6b5d02219cc0dcff212f4eb25764e922c5103cf3813c9b4ea52c1d393f10794a",
+  "inputsSha256": {
+    "card-effects.json": "fc335d228779a2859627ee706d85949149ca595d0cfdfbc4971541831e5a8df0",
+    "card-ir-native-defaults.json": "a4f2812716f03ded180f45603ac7b715e890c54b1bc5b4b75fe2b1ec0975d711",
+    "card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b",
+    "card-vectors.json": "b15b93cb02e7e8a712561a2da52127a5867084ecb878a6ad58539b56b1109ab9",
+    "cards.json": "3550dc76eb0414c500166875f45909077aeeb3ea4d229b9b0ba9c66a81987c4b",
+    "deck_code_ids.json": "261cfd518c1a1ce40488f141e8dbd617ff19abe0734c49319ebcd6ac5dcb257e",
+    "event-contracts.json": "e4806dd48efbfc799a27c14b3660ad76ee03cd3f13e3e4320b213c5928efb112",
+    "live-actions.json": "db413a4644afe75806e66c47e200d93c5d93e91ca03e23fca38465b7dcb4dab3",
+    "KLink.Bot.dll": "7cba599e45879a8af7eecefa41bafa8256bc37d602dbb29fcd78031b12c5dfb9",
+    "NNTrain.dll": "5230a9a0aceb3ffa137be790603bc69183ed037f285fb1a74551ea1c63b8a221"
+  },
+  "raw_bindings": {
+    "out/audit/deepseek-repeat-pilot-20261101/batch-0.bin": "73976c6c9657dda1def3a4efca40b902a65e6d5052c2b217dd417330d32cf1b4",
+    "out/audit/deepseek-repeat-pilot-20261101/batch-0.bin.quality.json": "2af6553eaea842e7ffea38683a42a68a2ebc073a5fbbc245555e37c6407efe24",
+    "out/audit/deepseek-repeat-pilot-20261101/batch-0.bin.decks.json": "dd0ed235e9ef77db820cc4178fd2835d748431d4766d84587f02005e0a362631",
+    "out/audit/deepseek-repeat-pilot-20261101/batch-1.bin": "5c55e65971681c6602eeb7c219dbc4ef075ae3875aafea07e6dab78cc609f7e8",
+    "out/audit/deepseek-repeat-pilot-20261101/batch-1.bin.quality.json": "d9446580556dc671dde60420198e07364886781dc0d4694cfd72c0d135a7dfea",
+    "out/audit/deepseek-repeat-pilot-20261101/batch-1.bin.decks.json": "5e9e2a5c8c6fa68b14913ec56d076c8fedcbf5c5e6a3a0b72e153e596f60eeea",
+    "out/audit/deepseek-repeat-pilot-20261101/batch-2.bin": "52d7ea984a2acde8bdc083880d68708cb6302593fc4377bd783c30875d90b7c2",
+    "out/audit/deepseek-repeat-pilot-20261101/batch-2.bin.quality.json": "ec7ee6bf6906572d1cd914e9677ffe919df9dd13b46c3003089e4a3aad9540cd",
+    "out/audit/deepseek-repeat-pilot-20261101/batch-2.bin.decks.json": "df07e80f8696891cd2964d9e7719791dd964222539dbf80bcf67c83352c1f606",
+    "out/audit/deepseek-repeat-pilot-20261101/batch-3.bin": "97f5517fe57a0eb5153857e98f8911730c6ca7bc685196546617b83a19f9c267",
+    "out/audit/deepseek-repeat-pilot-20261101/batch-3.bin.quality.json": "78257f02425fea9ac5621925608eaa037ac044e436f9ff8c5e8edb1355696ac9",
+    "out/audit/deepseek-repeat-pilot-20261101/batch-3.bin.decks.json": "7283eda620f993ab3a190cf8f418b0698192a94d08a3a2b7bc65699309f1e565"
+  },
+  "attempted": 96,
+  "accepted": 96,
+  "rejected": 0,
+  "batches": [
+    {
+      "batch": 0,
+      "left": "德芬车",
+      "right": "德澳老兵",
+      "requested": 24,
+      "accepted": 24,
+      "rejected": 0,
+      "coverage": {
+        "rows": 2668,
+        "distinctGames": 24,
+        "cells": [
+          {
+            "matchup": 1,
+            "turn": 1,
+            "winRows": 33,
+            "lossRows": 12,
+            "winGames": 18,
+            "lossGames": 6,
+            "pairs": 12
+          },
+          {
+            "matchup": 1,
+            "turn": 2,
+            "winRows": 33,
+            "lossRows": 11,
+            "winGames": 18,
+            "lossGames": 6,
+            "pairs": 11
+          },
+          {
+            "matchup": 1,
+            "turn": 3,
+            "winRows": 51,
+            "lossRows": 18,
+            "winGames": 18,
+            "lossGames": 6,
+            "pairs": 18
+          },
+          {
+            "matchup": 1,
+            "turn": 4,
+            "winRows": 44,
+            "lossRows": 20,
+            "winGames": 18,
+            "lossGames": 6,
+            "pairs": 20
+          },
+          {
+            "matchup": 1,
+            "turn": 5,
+            "winRows": 81,
+            "lossRows": 17,
+            "winGames": 18,
+            "lossGames": 6,
+            "pairs": 17
+          },
+          {
+            "matchup": 1,
+            "turn": 6,
+            "winRows": 54,
+            "lossRows": 11,
+            "winGames": 18,
+            "lossGames": 6,
+            "pairs": 11
+          },
+          {
+            "matchup": 1,
+            "turn": 7,
+            "winRows": 98,
+            "lossRows": 14,
+            "winGames": 18,
+            "lossGames": 6,
+            "pairs": 14
+          },
+          {
+            "matchup": 1,
+            "turn": 8,
+            "winRows": 55,
+            "lossRows": 20,
+            "winGames": 18,
+            "lossGames": 6,
+            "pairs": 20
+          },
+          {
+            "matchup": 1,
+            "turn": 9,
+            "winRows": 111,
+            "lossRows": 22,
+            "winGames": 18,
+            "lossGames": 6,
+            "pairs": 22
+          },
+          {
+            "matchup": 1,
+            "turn": 10,
+            "winRows": 64,
+            "lossRows": 20,
+            "winGames": 18,
+            "lossGames": 6,
+            "pairs": 20
+          },
+          {
+            "matchup": 1,
+            "turn": 11,
+            "winRows": 143,
+            "lossRows": 45,
+            "winGames": 18,
+            "lossGames": 6,
+            "pairs": 45
+          },
+          {
+            "matchup": 1,
+            "turn": 12,
+            "winRows": 54,
+            "lossRows": 26,
+            "winGames": 16,
+            "lossGames": 6,
+            "pairs": 26
+          },
+          {
+            "matchup": 1,
+            "turn": 13,
+            "winRows": 123,
+            "lossRows": 50,
+            "winGames": 16,
+            "lossGames": 6,
+            "pairs": 50
+          },
+          {
+            "matchup": 1,
+            "turn": 14,
+            "winRows": 45,
+            "lossRows": 28,
+            "winGames": 13,
+            "lossGames": 6,
+            "pairs": 28
+          },
+          {
+            "matchup": 1,
+            "turn": 15,
+            "winRows": 90,
+            "lossRows": 53,
+            "winGames": 13,
+            "lossGames": 6,
+            "pairs": 53
+          },
+          {
+            "matchup": 1,
+            "turn": 16,
+            "winRows": 48,
+            "lossRows": 33,
+            "winGames": 7,
+            "lossGames": 6,
+            "pairs": 33
+          },
+          {
+            "matchup": 1,
+            "turn": 17,
+            "winRows": 62,
+            "lossRows": 49,
+            "winGames": 7,
+            "lossGames": 6,
+            "pairs": 49
+          },
+          {
+            "matchup": 1,
+            "turn": 18,
+            "winRows": 26,
+            "lossRows": 33,
+            "winGames": 6,
+            "lossGames": 6,
+            "pairs": 26
+          },
+          {
+            "matchup": 1,
+            "turn": 19,
+            "winRows": 45,
+            "lossRows": 42,
+            "winGames": 6,
+            "lossGames": 6,
+            "pairs": 42
+          },
+          {
+            "matchup": 1,
+            "turn": 20,
+            "winRows": 42,
+            "lossRows": 64,
+            "winGames": 6,
+            "lossGames": 6,
+            "pairs": 42
+          },
+          {
+            "matchup": 1,
+            "turn": 21,
+            "winRows": 47,
+            "lossRows": 23,
+            "winGames": 6,
+            "lossGames": 6,
+            "pairs": 23
+          },
+          {
+            "matchup": 1,
+            "turn": 22,
+            "winRows": 56,
+            "lossRows": 54,
+            "winGames": 6,
+            "lossGames": 6,
+            "pairs": 54
+          },
+          {
+            "matchup": 1,
+            "turn": 23,
+            "winRows": 42,
+            "lossRows": 24,
+            "winGames": 6,
+            "lossGames": 6,
+            "pairs": 24
+          },
+          {
+            "matchup": 1,
+            "turn": 24,
+            "winRows": 53,
+            "lossRows": 46,
+            "winGames": 5,
+            "lossGames": 6,
+            "pairs": 46
+          },
+          {
+            "matchup": 1,
+            "turn": 25,
+            "winRows": 23,
+            "lossRows": 18,
+            "winGames": 5,
+            "lossGames": 6,
+            "pairs": 18
+          },
+          {
+            "matchup": 1,
+            "turn": 26,
+            "winRows": 18,
+            "lossRows": 56,
+            "winGames": 3,
+            "lossGames": 6,
+            "pairs": 18
+          },
+          {
+            "matchup": 1,
+            "turn": 27,
+            "winRows": 24,
+            "lossRows": 26,
+            "winGames": 3,
+            "lossGames": 6,
+            "pairs": 24
+          },
+          {
+            "matchup": 1,
+            "turn": 28,
+            "winRows": 22,
+            "lossRows": 56,
+            "winGames": 3,
+            "lossGames": 6,
+            "pairs": 22
+          },
+          {
+            "matchup": 1,
+            "turn": 29,
+            "winRows": 22,
+            "lossRows": 22,
+            "winGames": 3,
+            "lossGames": 5,
+            "pairs": 22
+          },
+          {
+            "matchup": 1,
+            "turn": 30,
+            "winRows": 7,
+            "lossRows": 40,
+            "winGames": 2,
+            "lossGames": 5,
+            "pairs": 7
+          },
+          {
+            "matchup": 1,
+            "turn": 31,
+            "winRows": 4,
+            "lossRows": 8,
+            "winGames": 1,
+            "lossGames": 3,
+            "pairs": 4
+          },
+          {
+            "matchup": 1,
+            "turn": 32,
+            "winRows": 0,
+            "lossRows": 33,
+            "winGames": 0,
+            "lossGames": 3,
+            "pairs": 0
+          },
+          {
+            "matchup": 1,
+            "turn": 33,
+            "winRows": 0,
+            "lossRows": 3,
+            "winGames": 0,
+            "lossGames": 2,
+            "pairs": 0
+          },
+          {
+            "matchup": 1,
+            "turn": 34,
+            "winRows": 0,
+            "lossRows": 11,
+            "winGames": 0,
+            "lossGames": 2,
+            "pairs": 0
+          },
+          {
+            "matchup": 1,
+            "turn": 35,
+            "winRows": 0,
+            "lossRows": 1,
+            "winGames": 0,
+            "lossGames": 1,
+            "pairs": 0
+          },
+          {
+            "matchup": 1,
+            "turn": 36,
+            "winRows": 0,
+            "lossRows": 8,
+            "winGames": 0,
+            "lossGames": 1,
+            "pairs": 0
+          },
+          {
+            "matchup": 1,
+            "turn": 37,
+            "winRows": 0,
+            "lossRows": 5,
+            "winGames": 0,
+            "lossGames": 1,
+            "pairs": 0
+          },
+          {
+            "matchup": 1,
+            "turn": 38,
+            "winRows": 0,
+            "lossRows": 8,
+            "winGames": 0,
+            "lossGames": 1,
+            "pairs": 0
+          },
+          {
+            "matchup": 1,
+            "turn": 39,
+            "winRows": 0,
+            "lossRows": 3,
+            "winGames": 0,
+            "lossGames": 1,
+            "pairs": 0
+          },
+          {
+            "matchup": 1,
+            "turn": 40,
+            "winRows": 0,
+            "lossRows": 8,
+            "winGames": 0,
+            "lossGames": 1,
+            "pairs": 0
+          },
+          {
+            "matchup": 1,
+            "turn": 41,
+            "winRows": 0,
+            "lossRows": 2,
+            "winGames": 0,
+            "lossGames": 1,
+            "pairs": 0
+          },
+          {
+            "matchup": 1,
+            "turn": 42,
+            "winRows": 0,
+            "lossRows": 5,
+            "winGames": 0,
+            "lossGames": 1,
+            "pairs": 0
+          }
+        ],
+        "comparableCells": 31,
+        "deterministicPairs": 821,
+        "pairedRows": 1642,
+        "unpairedRows": 1026
+      },
+      "partitions": {
+        "training": {
+          "planned": 18,
+          "accepted": 18,
+          "rejected": 0,
+          "gameIds": [
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            23
+          ],
+          "leftWins": 15,
+          "rightWins": 3,
+          "coverage": {
+            "rows": 1816,
+            "distinctGames": 18,
+            "cells": [
+              {
+                "matchup": 1,
+                "turn": 1,
+                "winRows": 27,
+                "lossRows": 6,
+                "winGames": 15,
+                "lossGames": 3,
+                "pairs": 6
+              },
+              {
+                "matchup": 1,
+                "turn": 2,
+                "winRows": 28,
+                "lossRows": 5,
+                "winGames": 15,
+                "lossGames": 3,
+                "pairs": 5
+              },
+              {
+                "matchup": 1,
+                "turn": 3,
+                "winRows": 43,
+                "lossRows": 9,
+                "winGames": 15,
+                "lossGames": 3,
+                "pairs": 9
+              },
+              {
+                "matchup": 1,
+                "turn": 4,
+                "winRows": 35,
+                "lossRows": 10,
+                "winGames": 15,
+                "lossGames": 3,
+                "pairs": 10
+              },
+              {
+                "matchup": 1,
+                "turn": 5,
+                "winRows": 75,
+                "lossRows": 9,
+                "winGames": 15,
+                "lossGames": 3,
+                "pairs": 9
+              },
+              {
+                "matchup": 1,
+                "turn": 6,
+                "winRows": 45,
+                "lossRows": 6,
+                "winGames": 15,
+                "lossGames": 3,
+                "pairs": 6
+              },
+              {
+                "matchup": 1,
+                "turn": 7,
+                "winRows": 89,
+                "lossRows": 7,
+                "winGames": 15,
+                "lossGames": 3,
+                "pairs": 7
+              },
+              {
+                "matchup": 1,
+                "turn": 8,
+                "winRows": 48,
+                "lossRows": 10,
+                "winGames": 15,
+                "lossGames": 3,
+                "pairs": 10
+              },
+              {
+                "matchup": 1,
+                "turn": 9,
+                "winRows": 101,
+                "lossRows": 12,
+                "winGames": 15,
+                "lossGames": 3,
+                "pairs": 12
+              },
+              {
+                "matchup": 1,
+                "turn": 10,
+                "winRows": 53,
+                "lossRows": 8,
+                "winGames": 15,
+                "lossGames": 3,
+                "pairs": 8
+              },
+              {
+                "matchup": 1,
+                "turn": 11,
+                "winRows": 122,
+                "lossRows": 26,
+                "winGames": 15,
+                "lossGames": 3,
+                "pairs": 26
+              },
+              {
+                "matchup": 1,
+                "turn": 12,
+                "winRows": 48,
+                "lossRows": 7,
+                "winGames": 13,
+                "lossGames": 3,
+                "pairs": 7
+              },
+              {
+                "matchup": 1,
+                "turn": 13,
+                "winRows": 94,
+                "lossRows": 30,
+                "winGames": 13,
+                "lossGames": 3,
+                "pairs": 30
+              },
+              {
+                "matchup": 1,
+                "turn": 14,
+                "winRows": 35,
+                "lossRows": 13,
+                "winGames": 10,
+                "lossGames": 3,
+                "pairs": 13
+              },
+              {
+                "matchup": 1,
+                "turn": 15,
+                "winRows": 69,
+                "lossRows": 26,
+                "winGames": 10,
+                "lossGames": 3,
+                "pairs": 26
+              },
+              {
+                "matchup": 1,
+                "turn": 16,
+                "winRows": 44,
+                "lossRows": 15,
+                "winGames": 6,
+                "lossGames": 3,
+                "pairs": 15
+              },
+              {
+                "matchup": 1,
+                "turn": 17,
+                "winRows": 52,
+                "lossRows": 25,
+                "winGames": 6,
+                "lossGames": 3,
+                "pairs": 25
+              },
+              {
+                "matchup": 1,
+                "turn": 18,
+                "winRows": 22,
+                "lossRows": 20,
+                "winGames": 5,
+                "lossGames": 3,
+                "pairs": 20
+              },
+              {
+                "matchup": 1,
+                "turn": 19,
+                "winRows": 40,
+                "lossRows": 23,
+                "winGames": 5,
+                "lossGames": 3,
+                "pairs": 23
+              },
+              {
+                "matchup": 1,
+                "turn": 20,
+                "winRows": 32,
+                "lossRows": 27,
+                "winGames": 5,
+                "lossGames": 3,
+                "pairs": 27
+              },
+              {
+                "matchup": 1,
+                "turn": 21,
+                "winRows": 39,
+                "lossRows": 9,
+                "winGames": 5,
+                "lossGames": 3,
+                "pairs": 9
+              },
+              {
+                "matchup": 1,
+                "turn": 22,
+                "winRows": 45,
+                "lossRows": 31,
+                "winGames": 5,
+                "lossGames": 3,
+                "pairs": 31
+              },
+              {
+                "matchup": 1,
+                "turn": 23,
+                "winRows": 39,
+                "lossRows": 7,
+                "winGames": 5,
+                "lossGames": 3,
+                "pairs": 7
+              },
+              {
+                "matchup": 1,
+                "turn": 24,
+                "winRows": 37,
+                "lossRows": 29,
+                "winGames": 4,
+                "lossGames": 3,
+                "pairs": 29
+              },
+              {
+                "matchup": 1,
+                "turn": 25,
+                "winRows": 21,
+                "lossRows": 5,
+                "winGames": 4,
+                "lossGames": 3,
+                "pairs": 5
+              },
+              {
+                "matchup": 1,
+                "turn": 26,
+                "winRows": 7,
+                "lossRows": 35,
+                "winGames": 2,
+                "lossGames": 3,
+                "pairs": 7
+              },
+              {
+                "matchup": 1,
+                "turn": 27,
+                "winRows": 15,
+                "lossRows": 15,
+                "winGames": 2,
+                "lossGames": 3,
+                "pairs": 15
+              },
+              {
+                "matchup": 1,
+                "turn": 28,
+                "winRows": 14,
+                "lossRows": 22,
+                "winGames": 2,
+                "lossGames": 3,
+                "pairs": 14
+              },
+              {
+                "matchup": 1,
+                "turn": 29,
+                "winRows": 13,
+                "lossRows": 9,
+                "winGames": 2,
+                "lossGames": 2,
+                "pairs": 9
+              },
+              {
+                "matchup": 1,
+                "turn": 30,
+                "winRows": 5,
+                "lossRows": 12,
+                "winGames": 1,
+                "lossGames": 2,
+                "pairs": 5
+              },
+              {
+                "matchup": 1,
+                "turn": 31,
+                "winRows": 4,
+                "lossRows": 1,
+                "winGames": 1,
+                "lossGames": 1,
+                "pairs": 1
+              },
+              {
+                "matchup": 1,
+                "turn": 32,
+                "winRows": 0,
+                "lossRows": 6,
+                "winGames": 0,
+                "lossGames": 1,
+                "pairs": 0
+              }
+            ],
+            "comparableCells": 31,
+            "deterministicPairs": 426,
+            "pairedRows": 852,
+            "unpairedRows": 964
+          }
+        },
+        "validation": {
+          "planned": 6,
+          "accepted": 6,
+          "rejected": 0,
+          "gameIds": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "leftWins": 3,
+          "rightWins": 3,
+          "coverage": {
+            "rows": 852,
+            "distinctGames": 6,
+            "cells": [
+              {
+                "matchup": 1,
+                "turn": 1,
+                "winRows": 6,
+                "lossRows": 6,
+                "winGames": 3,
+                "lossGames": 3,
+                "pairs": 6
+              },
+              {
+                "matchup": 1,
+                "turn": 2,
+                "winRows": 5,
+                "lossRows": 6,
+                "winGames": 3,
+                "lossGames": 3,
+                "pairs": 5
+              },
+              {
+                "matchup": 1,
+                "turn": 3,
+                "winRows": 8,
+                "lossRows": 9,
+                "winGames": 3,
+                "lossGames": 3,
+                "pairs": 8
+              },
+              {
+                "matchup": 1,
+                "turn": 4,
+                "winRows": 9,
+                "lossRows": 10,
+                "winGames": 3,
+                "lossGames": 3,
+                "pairs": 9
+              },
+              {
+                "matchup": 1,
+                "turn": 5,
+                "winRows": 6,
+                "lossRows": 8,
+                "winGames": 3,
+                "lossGames": 3,
+                "pairs": 6
+              },
+              {
+                "matchup": 1,
+                "turn": 6,
+                "winRows": 9,
+                "lossRows": 5,
+                "winGames": 3,
+                "lossGames": 3,
+                "pairs": 5
+              },
+              {
+                "matchup": 1,
+                "turn": 7,
+                "winRows": 9,
+                "lossRows": 7,
+                "winGames": 3,
+                "lossGames": 3,
+                "pairs": 7
+              },
+              {
+                "matchup": 1,
+                "turn": 8,
+                "winRows": 7,
+                "lossRows": 10,
+                "winGames": 3,
+                "lossGames": 3,
+                "pairs": 7
+              },
+              {
+                "matchup": 1,
+                "turn": 9,
+                "winRows": 10,
+                "lossRows": 10,
+                "winGames": 3,
+                "lossGames": 3,
+                "pairs": 10
+              },
+              {
+                "matchup": 1,
+                "turn": 10,
+                "winRows": 11,
+                "lossRows": 12,
+                "winGames": 3,
+                "lossGames": 3,
+                "pairs": 11
+              },
+              {
+                "matchup": 1,
+                "turn": 11,
+                "winRows": 21,
+                "lossRows": 19,
+                "winGames": 3,
+                "lossGames": 3,
+                "pairs": 19
+              },
+              {
+                "matchup": 1,
+                "turn": 12,
+                "winRows": 6,
+                "lossRows": 19,
+                "winGames": 3,
+                "lossGames": 3,
+                "pairs": 6
+              },
+              {
+                "matchup": 1,
+                "turn": 13,
+                "winRows": 29,
+                "lossRows": 20,
+                "winGames": 3,
+                "lossGames": 3,
+                "pairs": 20
+              },
+              {
+                "matchup": 1,
+                "turn": 14,
+                "winRows": 10,
+                "lossRows": 15,
+                "winGames": 3,
+                "lossGames": 3,
+                "pairs": 10
+              },
+              {
+                "matchup": 1,
+                "turn": 15,
+                "winRows": 21,
+                "lossRows": 27,
+                "winGames": 3,
+                "lossGames": 3,
+                "pairs": 21
+              },
+              {
+                "matchup": 1,
+                "turn": 16,
+                "winRows": 4,
+                "lossRows": 18,
+                "winGames": 1,
+                "lossGames": 3,
+                "pairs": 4
+              },
+              {
+                "matchup": 1,
+                "turn": 17,
+                "winRows": 10,
+                "lossRows": 24,
+                "winGames": 1,
+                "lossGames": 3,
+                "pairs": 10
+              },
+              {
+                "matchup": 1,
+                "turn": 18,
+                "winRows": 4,
+                "lossRows": 13,
+                "winGames": 1,
+                "lossGames": 3,
+                "pairs": 4
+              },
+              {
+                "matchup": 1,
+                "turn": 19,
+                "winRows": 5,
+                "lossRows": 19,
+                "winGames": 1,
+                "lossGames": 3,
+                "pairs": 5
+              },
+              {
+                "matchup": 1,
+                "turn": 20,
+                "winRows": 10,
+                "lossRows": 37,
+                "winGames": 1,
+                "lossGames": 3,
+                "pairs": 10
+              },
+              {
+                "matchup": 1,
+                "turn": 21,
+                "winRows": 8,
+                "lossRows": 14,
+                "winGames": 1,
+                "lossGames": 3,
+                "pairs": 8
+              },
+              {
+                "matchup": 1,
+                "turn": 22,
+                "winRows": 11,
+                "lossRows": 23,
+                "winGames": 1,
+                "lossGames": 3,
+                "pairs": 11
+              },
+              {
+                "matchup": 1,
+                "turn": 23,
+                "winRows": 3,
+                "lossRows": 17,
+                "winGames": 1,
+                "lossGames": 3,
+                "pairs": 3
+              },
+              {
+                "matchup": 1,
+                "turn": 24,
+                "winRows": 16,
+                "lossRows": 17,
+                "winGames": 1,
+                "lossGames": 3,
+                "pairs": 16
+              },
+              {
+                "matchup": 1,
+                "turn": 25,
+                "winRows": 2,
+                "lossRows": 13,
+                "winGames": 1,
+                "lossGames": 3,
+                "pairs": 2
+              },
+              {
+                "matchup": 1,
+                "turn": 26,
+                "winRows": 11,
+                "lossRows": 21,
+                "winGames": 1,
+                "lossGames": 3,
+                "pairs": 11
+              },
+              {
+                "matchup": 1,
+                "turn": 27,
+                "winRows": 9,
+                "lossRows": 11,
+                "winGames": 1,
+                "lossGames": 3,
+                "pairs": 9
+              },
+              {
+                "matchup": 1,
+                "turn": 28,
+                "winRows": 8,
+                "lossRows": 34,
+                "winGames": 1,
+                "lossGames": 3,
+                "pairs": 8
+              },
+              {
+                "matchup": 1,
+                "turn": 29,
+                "winRows": 9,
+                "lossRows": 13,
+                "winGames": 1,
+                "lossGames": 3,
+                "pairs": 9
+              },
+              {
+                "matchup": 1,
+                "turn": 30,
+                "winRows": 2,
+                "lossRows": 28,
+                "winGames": 1,
+                "lossGames": 3,
+                "pairs": 2
+              },
+              {
+                "matchup": 1,
+                "turn": 31,
+                "winRows": 0,
+                "lossRows": 7,
+                "winGames": 0,
+                "lossGames": 2,
+                "pairs": 0
+              },
+              {
+                "matchup": 1,
+                "turn": 32,
+                "winRows": 0,
+                "lossRows": 27,
+                "winGames": 0,
+                "lossGames": 2,
+                "pairs": 0
+              },
+              {
+                "matchup": 1,
+                "turn": 33,
+                "winRows": 0,
+                "lossRows": 3,
+                "winGames": 0,
+                "lossGames": 2,
+                "pairs": 0
+              },
+              {
+                "matchup": 1,
+                "turn": 34,
+                "winRows": 0,
+                "lossRows": 11,
+                "winGames": 0,
+                "lossGames": 2,
+                "pairs": 0
+              },
+              {
+                "matchup": 1,
+                "turn": 35,
+                "winRows": 0,
+                "lossRows": 1,
+                "winGames": 0,
+                "lossGames": 1,
+                "pairs": 0
+              },
+              {
+                "matchup": 1,
+                "turn": 36,
+                "winRows": 0,
+                "lossRows": 8,
+                "winGames": 0,
+                "lossGames": 1,
+                "pairs": 0
+              },
+              {
+                "matchup": 1,
+                "turn": 37,
+                "winRows": 0,
+                "lossRows": 5,
+                "winGames": 0,
+                "lossGames": 1,
+                "pairs": 0
+              },
+              {
+                "matchup": 1,
+                "turn": 38,
+                "winRows": 0,
+                "lossRows": 8,
+                "winGames": 0,
+                "lossGames": 1,
+                "pairs": 0
+              },
+              {
+                "matchup": 1,
+                "turn": 39,
+                "winRows": 0,
+                "lossRows": 3,
+                "winGames": 0,
+                "lossGames": 1,
+                "pairs": 0
+              },
+              {
+                "matchup": 1,
+                "turn": 40,
+                "winRows": 0,
+                "lossRows": 8,
+                "winGames": 0,
+                "lossGames": 1,
+                "pairs": 0
+              },
+              {
+                "matchup": 1,
+                "turn": 41,
+                "winRows": 0,
+                "lossRows": 2,
+                "winGames": 0,
+                "lossGames": 1,
+                "pairs": 0
+              },
+              {
+                "matchup": 1,
+                "turn": 42,
+                "winRows": 0,
+                "lossRows": 5,
+                "winGames": 0,
+                "lossGames": 1,
+                "pairs": 0
+              }
+            ],
+            "comparableCells": 30,
+            "deterministicPairs": 262,
+            "pairedRows": 524,
+            "unpairedRows": 328
+          }
+        }
+      }
+    },
+    {
+      "batch": 1,
+      "left": "德澳老兵",
+      "right": "德芬车",
+      "requested": 24,
+      "accepted": 24,
+      "rejected": 0,
+      "coverage": {
+        "rows": 3452,
+        "distinctGames": 24,
+        "cells": [
+          {
+            "matchup": 22,
+            "turn": 1,
+            "winRows": 9,
+            "lossRows": 35,
+            "winGames": 5,
+            "lossGames": 19,
+            "pairs": 9
+          },
+          {
+            "matchup": 22,
+            "turn": 2,
+            "winRows": 10,
+            "lossRows": 38,
+            "winGames": 5,
+            "lossGames": 19,
+            "pairs": 10
+          },
+          {
+            "matchup": 22,
+            "turn": 3,
+            "winRows": 15,
+            "lossRows": 54,
+            "winGames": 5,
+            "lossGames": 19,
+            "pairs": 15
+          },
+          {
+            "matchup": 22,
+            "turn": 4,
+            "winRows": 15,
+            "lossRows": 55,
+            "winGames": 5,
+            "lossGames": 19,
+            "pairs": 15
+          },
+          {
+            "matchup": 22,
+            "turn": 5,
+            "winRows": 15,
+            "lossRows": 57,
+            "winGames": 5,
+            "lossGames": 19,
+            "pairs": 15
+          },
+          {
+            "matchup": 22,
+            "turn": 6,
+            "winRows": 13,
+            "lossRows": 67,
+            "winGames": 5,
+            "lossGames": 19,
+            "pairs": 13
+          },
+          {
+            "matchup": 22,
+            "turn": 7,
+            "winRows": 10,
+            "lossRows": 57,
+            "winGames": 5,
+            "lossGames": 19,
+            "pairs": 10
+          },
+          {
+            "matchup": 22,
+            "turn": 8,
+            "winRows": 20,
+            "lossRows": 80,
+            "winGames": 5,
+            "lossGames": 19,
+            "pairs": 20
+          },
+          {
+            "matchup": 22,
+            "turn": 9,
+            "winRows": 15,
+            "lossRows": 73,
+            "winGames": 5,
+            "lossGames": 19,
+            "pairs": 15
+          },
+          {
+            "matchup": 22,
+            "turn": 10,
+            "winRows": 17,
+            "lossRows": 110,
+            "winGames": 5,
+            "lossGames": 19,
+            "pairs": 17
+          },
+          {
+            "matchup": 22,
+            "turn": 11,
+            "winRows": 14,
+            "lossRows": 75,
+            "winGames": 5,
+            "lossGames": 19,
+            "pairs": 14
+          },
+          {
+            "matchup": 22,
+            "turn": 12,
+            "winRows": 35,
+            "lossRows": 124,
+            "winGames": 5,
+            "lossGames": 19,
+            "pairs": 35
+          },
+          {
+            "matchup": 22,
+            "turn": 13,
+            "winRows": 18,
+            "lossRows": 101,
+            "winGames": 5,
+            "lossGames": 19,
+            "pairs": 18
+          },
+          {
+            "matchup": 22,
+            "turn": 14,
+            "winRows": 30,
+            "lossRows": 192,
+            "winGames": 5,
+            "lossGames": 19,
+            "pairs": 30
+          },
+          {
+            "matchup": 22,
+            "turn": 15,
+            "winRows": 26,
+            "lossRows": 108,
+            "winGames": 5,
+            "lossGames": 19,
+            "pairs": 26
+          },
+          {
+            "matchup": 22,
+            "turn": 16,
+            "winRows": 34,
+            "lossRows": 171,
+            "winGames": 5,
+            "lossGames": 19,
+            "pairs": 34
+          },
+          {
+            "matchup": 22,
+            "turn": 17,
+            "winRows": 30,
+            "lossRows": 98,
+            "winGames": 5,
+            "lossGames": 17,
+            "pairs": 30
+          },
+          {
+            "matchup": 22,
+            "turn": 18,
+            "winRows": 31,
+            "lossRows": 139,
+            "winGames": 5,
+            "lossGames": 17,
+            "pairs": 31
+          },
+          {
+            "matchup": 22,
+            "turn": 19,
+            "winRows": 40,
+            "lossRows": 106,
+            "winGames": 5,
+            "lossGames": 14,
+            "pairs": 40
+          },
+          {
+            "matchup": 22,
+            "turn": 20,
+            "winRows": 23,
+            "lossRows": 129,
+            "winGames": 5,
+            "lossGames": 14,
+            "pairs": 23
+          },
+          {
+            "matchup": 22,
+            "turn": 21,
+            "winRows": 40,
+            "lossRows": 77,
+            "winGames": 5,
+            "lossGames": 13,
+            "pairs": 40
+          },
+          {
+            "matchup": 22,
+            "turn": 22,
+            "winRows": 32,
+            "lossRows": 112,
+            "winGames": 5,
+            "lossGames": 13,
+            "pairs": 32
+          },
+          {
+            "matchup": 22,
+            "turn": 23,
+            "winRows": 28,
+            "lossRows": 97,
+            "winGames": 5,
+            "lossGames": 9,
+            "pairs": 28
+          },
+          {
+            "matchup": 22,
+            "turn": 24,
+            "winRows": 30,
+            "lossRows": 63,
+            "winGames": 5,
+            "lossGames": 9,
+            "pairs": 30
+          },
+          {
+            "matchup": 22,
+            "turn": 25,
+            "winRows": 51,
+            "lossRows": 46,
+            "winGames": 5,
+            "lossGames": 7,
+            "pairs": 46
+          },
+          {
+            "matchup": 22,
+            "turn": 26,
+            "winRows": 28,
+            "lossRows": 31,
+            "winGames": 5,
+            "lossGames": 7,
+            "pairs": 28
+          },
+          {
+            "matchup": 22,
+            "turn": 27,
+            "winRows": 50,
+            "lossRows": 37,
+            "winGames": 5,
+            "lossGames": 5,
+            "pairs": 37
+          },
+          {
+            "matchup": 22,
+            "turn": 28,
+            "winRows": 25,
+            "lossRows": 33,
+            "winGames": 5,
+            "lossGames": 5,
+            "pairs": 25
+          },
+          {
+            "matchup": 22,
+            "turn": 29,
+            "winRows": 51,
+            "lossRows": 30,
+            "winGames": 5,
+            "lossGames": 5,
+            "pairs": 30
+          },
+          {
+            "matchup": 22,
+            "turn": 30,
+            "winRows": 27,
+            "lossRows": 33,
+            "winGames": 5,
+            "lossGames": 5,
+            "pairs": 27
+          },
+          {
+            "matchup": 22,
+            "turn": 31,
+            "winRows": 50,
+            "lossRows": 38,
+            "winGames": 5,
+            "lossGames": 5,
+            "pairs": 38
+          },
+          {
+            "matchup": 22,
+            "turn": 32,
+            "winRows": 14,
+            "lossRows": 20,
+            "winGames": 4,
+            "lossGames": 5,
+            "pairs": 14
+          },
+          {
+            "matchup": 22,
+            "turn": 33,
+            "winRows": 28,
+            "lossRows": 14,
+            "winGames": 4,
+            "lossGames": 3,
+            "pairs": 14
+          },
+          {
+            "matchup": 22,
+            "turn": 34,
+            "winRows": 4,
+            "lossRows": 18,
+            "winGames": 2,
+            "lossGames": 3,
+            "pairs": 4
+          },
+          {
+            "matchup": 22,
+            "turn": 35,
+            "winRows": 13,
+            "lossRows": 5,
+            "winGames": 2,
+            "lossGames": 2,
+            "pairs": 5
+          },
+          {
+            "matchup": 22,
+            "turn": 36,
+            "winRows": 4,
+            "lossRows": 8,
+            "winGames": 1,
+            "lossGames": 2,
+            "pairs": 4
+          },
+          {
+            "matchup": 22,
+            "turn": 37,
+            "winRows": 10,
+            "lossRows": 2,
+            "winGames": 1,
+            "lossGames": 1,
+            "pairs": 2
+          },
+          {
+            "matchup": 22,
+            "turn": 38,
+            "winRows": 4,
+            "lossRows": 2,
+            "winGames": 1,
+            "lossGames": 1,
+            "pairs": 2
+          },
+          {
+            "matchup": 22,
+            "turn": 39,
+            "winRows": 2,
+            "lossRows": 1,
+            "winGames": 1,
+            "lossGames": 1,
+            "pairs": 1
+          },
+          {
+            "matchup": 22,
+            "turn": 40,
+            "winRows": 0,
+            "lossRows": 1,
+            "winGames": 0,
+            "lossGames": 1,
+            "pairs": 0
+          },
+          {
+            "matchup": 22,
+            "turn": 41,
+            "winRows": 0,
+            "lossRows": 1,
+            "winGames": 0,
+            "lossGames": 1,
+            "pairs": 0
+          },
+          {
+            "matchup": 22,
+            "turn": 42,
+            "winRows": 0,
+            "lossRows": 1,
+            "winGames": 0,
+            "lossGames": 1,
+            "pairs": 0
+          },
+          {
+            "matchup": 22,
+            "turn": 43,
+            "winRows": 0,
+            "lossRows": 1,
+            "winGames": 0,
+            "lossGames": 1,
+            "pairs": 0
+          },
+          {
+            "matchup": 22,
+            "turn": 44,
+            "winRows": 0,
+            "lossRows": 1,
+            "winGames": 0,
+            "lossGames": 1,
+            "pairs": 0
+          }
+        ],
+        "comparableCells": 39,
+        "deterministicPairs": 827,
+        "pairedRows": 1654,
+        "unpairedRows": 1798
+      },
+      "partitions": {
+        "training": {
+          "planned": 18,
+          "accepted": 18,
+          "rejected": 0,
+          "gameIds": [
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            23
+          ],
+          "leftWins": 3,
+          "rightWins": 15,
+          "coverage": {
+            "rows": 2426,
+            "distinctGames": 18,
+            "cells": [
+              {
+                "matchup": 22,
+                "turn": 1,
+                "winRows": 7,
+                "lossRows": 28,
+                "winGames": 3,
+                "lossGames": 15,
+                "pairs": 7
+              },
+              {
+                "matchup": 22,
+                "turn": 2,
+                "winRows": 6,
+                "lossRows": 30,
+                "winGames": 3,
+                "lossGames": 15,
+                "pairs": 6
+              },
+              {
+                "matchup": 22,
+                "turn": 3,
+                "winRows": 11,
+                "lossRows": 38,
+                "winGames": 3,
+                "lossGames": 15,
+                "pairs": 11
+              },
+              {
+                "matchup": 22,
+                "turn": 4,
+                "winRows": 9,
+                "lossRows": 43,
+                "winGames": 3,
+                "lossGames": 15,
+                "pairs": 9
+              },
+              {
+                "matchup": 22,
+                "turn": 5,
+                "winRows": 10,
+                "lossRows": 47,
+                "winGames": 3,
+                "lossGames": 15,
+                "pairs": 10
+              },
+              {
+                "matchup": 22,
+                "turn": 6,
+                "winRows": 7,
+                "lossRows": 57,
+                "winGames": 3,
+                "lossGames": 15,
+                "pairs": 7
+              },
+              {
+                "matchup": 22,
+                "turn": 7,
+                "winRows": 7,
+                "lossRows": 44,
+                "winGames": 3,
+                "lossGames": 15,
+                "pairs": 7
+              },
+              {
+                "matchup": 22,
+                "turn": 8,
+                "winRows": 12,
+                "lossRows": 57,
+                "winGames": 3,
+                "lossGames": 15,
+                "pairs": 12
+              },
+              {
+                "matchup": 22,
+                "turn": 9,
+                "winRows": 11,
+                "lossRows": 58,
+                "winGames": 3,
+                "lossGames": 15,
+                "pairs": 11
+              },
+              {
+                "matchup": 22,
+                "turn": 10,
+                "winRows": 11,
+                "lossRows": 89,
+                "winGames": 3,
+                "lossGames": 15,
+                "pairs": 11
+              },
+              {
+                "matchup": 22,
+                "turn": 11,
+                "winRows": 8,
+                "lossRows": 60,
+                "winGames": 3,
+                "lossGames": 15,
+                "pairs": 8
+              },
+              {
+                "matchup": 22,
+                "turn": 12,
+                "winRows": 19,
+                "lossRows": 99,
+                "winGames": 3,
+                "lossGames": 15,
+                "pairs": 19
+              },
+              {
+                "matchup": 22,
+                "turn": 13,
+                "winRows": 7,
+                "lossRows": 75,
+                "winGames": 3,
+                "lossGames": 15,
+                "pairs": 7
+              },
+              {
+                "matchup": 22,
+                "turn": 14,
+                "winRows": 19,
+                "lossRows": 153,
+                "winGames": 3,
+                "lossGames": 15,
+                "pairs": 19
+              },
+              {
+                "matchup": 22,
+                "turn": 15,
+                "winRows": 15,
+                "lossRows": 88,
+                "winGames": 3,
+                "lossGames": 15,
+                "pairs": 15
+              },
+              {
+                "matchup": 22,
+                "turn": 16,
+                "winRows": 23,
+                "lossRows": 143,
+                "winGames": 3,
+                "lossGames": 15,
+                "pairs": 23
+              },
+              {
+                "matchup": 22,
+                "turn": 17,
+                "winRows": 16,
+                "lossRows": 78,
+                "winGames": 3,
+                "lossGames": 13,
+                "pairs": 16
+              },
+              {
+                "matchup": 22,
+                "turn": 18,
+                "winRows": 17,
+                "lossRows": 105,
+                "winGames": 3,
+                "lossGames": 13,
+                "pairs": 17
+              },
+              {
+                "matchup": 22,
+                "turn": 19,
+                "winRows": 27,
+                "lossRows": 57,
+                "winGames": 3,
+                "lossGames": 10,
+                "pairs": 27
+              },
+              {
+                "matchup": 22,
+                "turn": 20,
+                "winRows": 14,
+                "lossRows": 90,
+                "winGames": 3,
+                "lossGames": 10,
+                "pairs": 14
+              },
+              {
+                "matchup": 22,
+                "turn": 21,
+                "winRows": 18,
+                "lossRows": 47,
+                "winGames": 3,
+                "lossGames": 9,
+                "pairs": 18
+              },
+              {
+                "matchup": 22,
+                "turn": 22,
+                "winRows": 15,
+                "lossRows": 72,
+                "winGames": 3,
+                "lossGames": 9,
+                "pairs": 15
+              },
+              {
+                "matchup": 22,
+                "turn": 23,
+                "winRows": 15,
+                "lossRows": 72,
+                "winGames": 3,
+                "lossGames": 6,
+                "pairs": 15
+              },
+              {
+                "matchup": 22,
+                "turn": 24,
+                "winRows": 17,
+                "lossRows": 49,
+                "winGames": 3,
+                "lossGames": 6,
+                "pairs": 17
+              },
+              {
+                "matchup": 22,
+                "turn": 25,
+                "winRows": 38,
+                "lossRows": 36,
+                "winGames": 3,
+                "lossGames": 5,
+                "pairs": 36
+              },
+              {
+                "matchup": 22,
+                "turn": 26,
+                "winRows": 19,
+                "lossRows": 22,
+                "winGames": 3,
+                "lossGames": 5,
+                "pairs": 19
+              },
+              {
+                "matchup": 22,
+                "turn": 27,
+                "winRows": 34,
+                "lossRows": 19,
+                "winGames": 3,
+                "lossGames": 3,
+                "pairs": 19
+              },
+              {
+                "matchup": 22,
+                "turn": 28,
+                "winRows": 19,
+                "lossRows": 23,
+                "winGames": 3,
+                "lossGames": 3,
+                "pairs": 19
+              },
+              {
+                "matchup": 22,
+                "turn": 29,
+                "winRows": 25,
+                "lossRows": 19,
+                "winGames": 3,
+                "lossGames": 3,
+                "pairs": 19
+              },
+              {
+                "matchup": 22,
+                "turn": 30,
+                "winRows": 21,
+                "lossRows": 21,
+                "winGames": 3,
+                "lossGames": 3,
+                "pairs": 21
+              },
+              {
+                "matchup": 22,
+                "turn": 31,
+                "winRows": 29,
+                "lossRows": 18,
+                "winGames": 3,
+                "lossGames": 3,
+                "pairs": 18
+              },
+              {
+                "matchup": 22,
+                "turn": 32,
+                "winRows": 11,
+                "lossRows": 8,
+                "winGames": 3,
+                "lossGames": 3,
+                "pairs": 8
+              },
+              {
+                "matchup": 22,
+                "turn": 33,
+                "winRows": 20,
+                "lossRows": 5,
+                "winGames": 3,
+                "lossGames": 1,
+                "pairs": 5
+              },
+              {
+                "matchup": 22,
+                "turn": 34,
+                "winRows": 4,
+                "lossRows": 2,
+                "winGames": 2,
+                "lossGames": 1,
+                "pairs": 2
+              },
+              {
+                "matchup": 22,
+                "turn": 35,
+                "winRows": 13,
+                "lossRows": 0,
+                "winGames": 2,
+                "lossGames": 0,
+                "pairs": 0
+              },
+              {
+                "matchup": 22,
+                "turn": 36,
+                "winRows": 4,
+                "lossRows": 0,
+                "winGames": 1,
+                "lossGames": 0,
+                "pairs": 0
+              },
+              {
+                "matchup": 22,
+                "turn": 37,
+                "winRows": 10,
+                "lossRows": 0,
+                "winGames": 1,
+                "lossGames": 0,
+                "pairs": 0
+              },
+              {
+                "matchup": 22,
+                "turn": 38,
+                "winRows": 4,
+                "lossRows": 0,
+                "winGames": 1,
+                "lossGames": 0,
+                "pairs": 0
+              },
+              {
+                "matchup": 22,
+                "turn": 39,
+                "winRows": 2,
+                "lossRows": 0,
+                "winGames": 1,
+                "lossGames": 0,
+                "pairs": 0
+              }
+            ],
+            "comparableCells": 34,
+            "deterministicPairs": 487,
+            "pairedRows": 974,
+            "unpairedRows": 1452
+          }
+        },
+        "validation": {
+          "planned": 6,
+          "accepted": 6,
+          "rejected": 0,
+          "gameIds": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "leftWins": 2,
+          "rightWins": 4,
+          "coverage": {
+            "rows": 1026,
+            "distinctGames": 6,
+            "cells": [
+              {
+                "matchup": 22,
+                "turn": 1,
+                "winRows": 2,
+                "lossRows": 7,
+                "winGames": 2,
+                "lossGames": 4,
+                "pairs": 2
+              },
+              {
+                "matchup": 22,
+                "turn": 2,
+                "winRows": 4,
+                "lossRows": 8,
+                "winGames": 2,
+                "lossGames": 4,
+                "pairs": 4
+              },
+              {
+                "matchup": 22,
+                "turn": 3,
+                "winRows": 4,
+                "lossRows": 16,
+                "winGames": 2,
+                "lossGames": 4,
+                "pairs": 4
+              },
+              {
+                "matchup": 22,
+                "turn": 4,
+                "winRows": 6,
+                "lossRows": 12,
+                "winGames": 2,
+                "lossGames": 4,
+                "pairs": 6
+              },
+              {
+                "matchup": 22,
+                "turn": 5,
+                "winRows": 5,
+                "lossRows": 10,
+                "winGames": 2,
+                "lossGames": 4,
+                "pairs": 5
+              },
+              {
+                "matchup": 22,
+                "turn": 6,
+                "winRows": 6,
+                "lossRows": 10,
+                "winGames": 2,
+                "lossGames": 4,
+                "pairs": 6
+              },
+              {
+                "matchup": 22,
+                "turn": 7,
+                "winRows": 3,
+                "lossRows": 13,
+                "winGames": 2,
+                "lossGames": 4,
+                "pairs": 3
+              },
+              {
+                "matchup": 22,
+                "turn": 8,
+                "winRows": 8,
+                "lossRows": 23,
+                "winGames": 2,
+                "lossGames": 4,
+                "pairs": 8
+              },
+              {
+                "matchup": 22,
+                "turn": 9,
+                "winRows": 4,
+                "lossRows": 15,
+                "winGames": 2,
+                "lossGames": 4,
+                "pairs": 4
+              },
+              {
+                "matchup": 22,
+                "turn": 10,
+                "winRows": 6,
+                "lossRows": 21,
+                "winGames": 2,
+                "lossGames": 4,
+                "pairs": 6
+              },
+              {
+                "matchup": 22,
+                "turn": 11,
+                "winRows": 6,
+                "lossRows": 15,
+                "winGames": 2,
+                "lossGames": 4,
+                "pairs": 6
+              },
+              {
+                "matchup": 22,
+                "turn": 12,
+                "winRows": 16,
+                "lossRows": 25,
+                "winGames": 2,
+                "lossGames": 4,
+                "pairs": 16
+              },
+              {
+                "matchup": 22,
+                "turn": 13,
+                "winRows": 11,
+                "lossRows": 26,
+                "winGames": 2,
+                "lossGames": 4,
+                "pairs": 11
+              },
+              {
+                "matchup": 22,
+                "turn": 14,
+                "winRows": 11,
+                "lossRows": 39,
+                "winGames": 2,
+                "lossGames": 4,
+                "pairs": 11
+              },
+              {
+                "matchup": 22,
+                "turn": 15,
+                "winRows": 11,
+                "lossRows": 20,
+                "winGames": 2,
+                "lossGames": 4,
+                "pairs": 11
+              },
+              {
+                "matchup": 22,
+                "turn": 16,
+                "winRows": 11,
+                "lossRows": 28,
+                "winGames": 2,
+                "lossGames": 4,
+                "pairs": 11
+              },
+              {
+                "matchup": 22,
+                "turn": 17,
+                "winRows": 14,
+                "lossRows": 20,
+                "winGames": 2,
+                "lossGames": 4,
+                "pairs": 14
+              },
+              {
+                "matchup": 22,
+                "turn": 18,
+                "winRows": 14,
+                "lossRows": 34,
+                "winGames": 2,
+                "lossGames": 4,
+                "pairs": 14
+              },
+              {
+                "matchup": 22,
+                "turn": 19,
+                "winRows": 13,
+                "lossRows": 49,
+                "winGames": 2,
+                "lossGames": 4,
+                "pairs": 13
+              },
+              {
+                "matchup": 22,
+                "turn": 20,
+                "winRows": 9,
+                "lossRows": 39,
+                "winGames": 2,
+                "lossGames": 4,
+                "pairs": 9
+              },
+              {
+                "matchup": 22,
+                "turn": 21,
+                "winRows": 22,
+                "lossRows": 30,
+                "winGames": 2,
+                "lossGames": 4,
+                "pairs": 22
+              },
+              {
+                "matchup": 22,
+                "turn": 22,
+                "winRows": 17,
+                "lossRows": 40,
+                "winGames": 2,
+                "lossGames": 4,
+                "pairs": 17
+              },
+              {
+                "matchup": 22,
+                "turn": 23,
+                "winRows": 13,
+                "lossRows": 25,
+                "winGames": 2,
+                "lossGames": 3,
+                "pairs": 13
+              },
+              {
+                "matchup": 22,
+                "turn": 24,
+                "winRows": 13,
+                "lossRows": 14,
+                "winGames": 2,
+                "lossGames": 3,
+                "pairs": 13
+              },
+              {
+                "matchup": 22,
+                "turn": 25,
+                "winRows": 13,
+                "lossRows": 10,
+                "winGames": 2,
+                "lossGames": 2,
+                "pairs": 10
+              },
+              {
+                "matchup": 22,
+                "turn": 26,
+                "winRows": 9,
+                "lossRows": 9,
+                "winGames": 2,
+                "lossGames": 2,
+                "pairs": 9
+              },
+              {
+                "matchup": 22,
+                "turn": 27,
+                "winRows": 16,
+                "lossRows": 18,
+                "winGames": 2,
+                "lossGames": 2,
+                "pairs": 16
+              },
+              {
+                "matchup": 22,
+                "turn": 28,
+                "winRows": 6,
+                "lossRows": 10,
+                "winGames": 2,
+                "lossGames": 2,
+                "pairs": 6
+              },
+              {
+                "matchup": 22,
+                "turn": 29,
+                "winRows": 26,
+                "lossRows": 11,
+                "winGames": 2,
+                "lossGames": 2,
+                "pairs": 11
+              },
+              {
+                "matchup": 22,
+                "turn": 30,
+                "winRows": 6,
+                "lossRows": 12,
+                "winGames": 2,
+                "lossGames": 2,
+                "pairs": 6
+              },
+              {
+                "matchup": 22,
+                "turn": 31,
+                "winRows": 21,
+                "lossRows": 20,
+                "winGames": 2,
+                "lossGames": 2,
+                "pairs": 20
+              },
+              {
+                "matchup": 22,
+                "turn": 32,
+                "winRows": 3,
+                "lossRows": 12,
+                "winGames": 1,
+                "lossGames": 2,
+                "pairs": 3
+              },
+              {
+                "matchup": 22,
+                "turn": 33,
+                "winRows": 8,
+                "lossRows": 9,
+                "winGames": 1,
+                "lossGames": 2,
+                "pairs": 8
+              },
+              {
+                "matchup": 22,
+                "turn": 34,
+                "winRows": 0,
+                "lossRows": 16,
+                "winGames": 0,
+                "lossGames": 2,
+                "pairs": 0
+              },
+              {
+                "matchup": 22,
+                "turn": 35,
+                "winRows": 0,
+                "lossRows": 5,
+                "winGames": 0,
+                "lossGames": 2,
+                "pairs": 0
+              },
+              {
+                "matchup": 22,
+                "turn": 36,
+                "winRows": 0,
+                "lossRows": 8,
+                "winGames": 0,
+                "lossGames": 2,
+                "pairs": 0
+              },
+              {
+                "matchup": 22,
+                "turn": 37,
+                "winRows": 0,
+                "lossRows": 2,
+                "winGames": 0,
+                "lossGames": 1,
+                "pairs": 0
+              },
+              {
+                "matchup": 22,
+                "turn": 38,
+                "winRows": 0,
+                "lossRows": 2,
+                "winGames": 0,
+                "lossGames": 1,
+                "pairs": 0
+              },
+              {
+                "matchup": 22,
+                "turn": 39,
+                "winRows": 0,
+                "lossRows": 1,
+                "winGames": 0,
+                "lossGames": 1,
+                "pairs": 0
+              },
+              {
+                "matchup": 22,
+                "turn": 40,
+                "winRows": 0,
+                "lossRows": 1,
+                "winGames": 0,
+                "lossGames": 1,
+                "pairs": 0
+              },
+              {
+                "matchup": 22,
+                "turn": 41,
+                "winRows": 0,
+                "lossRows": 1,
+                "winGames": 0,
+                "lossGames": 1,
+                "pairs": 0
+              },
+              {
+                "matchup": 22,
+                "turn": 42,
+                "winRows": 0,
+                "lossRows": 1,
+                "winGames": 0,
+                "lossGames": 1,
+                "pairs": 0
+              },
+              {
+                "matchup": 22,
+                "turn": 43,
+                "winRows": 0,
+                "lossRows": 1,
+                "winGames": 0,
+                "lossGames": 1,
+                "pairs": 0
+              },
+              {
+                "matchup": 22,
+                "turn": 44,
+                "winRows": 0,
+                "lossRows": 1,
+                "winGames": 0,
+                "lossGames": 1,
+                "pairs": 0
+              }
+            ],
+            "comparableCells": 33,
+            "deterministicPairs": 318,
+            "pairedRows": 636,
+            "unpairedRows": 390
+          }
+        }
+      }
+    },
+    {
+      "batch": 2,
+      "left": "德芬车2",
+      "right": "德澳老兵2",
+      "requested": 24,
+      "accepted": 24,
+      "rejected": 0,
+      "coverage": {
+        "rows": 2594,
+        "distinctGames": 24,
+        "cells": [
+          {
+            "matchup": 47,
+            "turn": 1,
+            "winRows": 31,
+            "lossRows": 13,
+            "winGames": 16,
+            "lossGames": 8,
+            "pairs": 13
+          },
+          {
+            "matchup": 47,
+            "turn": 2,
+            "winRows": 37,
+            "lossRows": 20,
+            "winGames": 16,
+            "lossGames": 8,
+            "pairs": 20
+          },
+          {
+            "matchup": 47,
+            "turn": 3,
+            "winRows": 47,
+            "lossRows": 21,
+            "winGames": 16,
+            "lossGames": 8,
+            "pairs": 21
+          },
+          {
+            "matchup": 47,
+            "turn": 4,
+            "winRows": 42,
+            "lossRows": 27,
+            "winGames": 16,
+            "lossGames": 8,
+            "pairs": 27
+          },
+          {
+            "matchup": 47,
+            "turn": 5,
+            "winRows": 68,
+            "lossRows": 23,
+            "winGames": 16,
+            "lossGames": 8,
+            "pairs": 23
+          },
+          {
+            "matchup": 47,
+            "turn": 6,
+            "winRows": 39,
+            "lossRows": 35,
+            "winGames": 16,
+            "lossGames": 8,
+            "pairs": 35
+          },
+          {
+            "matchup": 47,
+            "turn": 7,
+            "winRows": 83,
+            "lossRows": 26,
+            "winGames": 16,
+            "lossGames": 8,
+            "pairs": 26
+          },
+          {
+            "matchup": 47,
+            "turn": 8,
+            "winRows": 67,
+            "lossRows": 48,
+            "winGames": 16,
+            "lossGames": 8,
+            "pairs": 48
+          },
+          {
+            "matchup": 47,
+            "turn": 9,
+            "winRows": 116,
+            "lossRows": 30,
+            "winGames": 16,
+            "lossGames": 8,
+            "pairs": 30
+          },
+          {
+            "matchup": 47,
+            "turn": 10,
+            "winRows": 84,
+            "lossRows": 61,
+            "winGames": 16,
+            "lossGames": 8,
+            "pairs": 61
+          },
+          {
+            "matchup": 47,
+            "turn": 11,
+            "winRows": 110,
+            "lossRows": 49,
+            "winGames": 16,
+            "lossGames": 8,
+            "pairs": 49
+          },
+          {
+            "matchup": 47,
+            "turn": 12,
+            "winRows": 96,
+            "lossRows": 46,
+            "winGames": 15,
+            "lossGames": 8,
+            "pairs": 46
+          },
+          {
+            "matchup": 47,
+            "turn": 13,
+            "winRows": 132,
+            "lossRows": 67,
+            "winGames": 15,
+            "lossGames": 8,
+            "pairs": 67
+          },
+          {
+            "matchup": 47,
+            "turn": 14,
+            "winRows": 96,
+            "lossRows": 64,
+            "winGames": 13,
+            "lossGames": 8,
+            "pairs": 64
+          },
+          {
+            "matchup": 47,
+            "turn": 15,
+            "winRows": 138,
+            "lossRows": 62,
+            "winGames": 13,
+            "lossGames": 8,
+            "pairs": 62
+          },
+          {
+            "matchup": 47,
+            "turn": 16,
+            "winRows": 80,
+            "lossRows": 61,
+            "winGames": 12,
+            "lossGames": 8,
+            "pairs": 61
+          },
+          {
+            "matchup": 47,
+            "turn": 17,
+            "winRows": 101,
+            "lossRows": 50,
+            "winGames": 12,
+            "lossGames": 8,
+            "pairs": 50
+          },
+          {
+            "matchup": 47,
+            "turn": 18,
+            "winRows": 50,
+            "lossRows": 73,
+            "winGames": 9,
+            "lossGames": 8,
+            "pairs": 50
+          },
+          {
+            "matchup": 47,
+            "turn": 19,
+            "winRows": 89,
+            "lossRows": 38,
+            "winGames": 9,
+            "lossGames": 7,
+            "pairs": 38
+          },
+          {
+            "matchup": 47,
+            "turn": 20,
+            "winRows": 45,
+            "lossRows": 47,
+            "winGames": 7,
+            "lossGames": 7,
+            "pairs": 45
+          },
+          {
+            "matchup": 47,
+            "turn": 21,
+            "winRows": 47,
+            "lossRows": 23,
+            "winGames": 7,
+            "lossGames": 4,
+            "pairs": 23
+          },
+          {
+            "matchup": 47,
+            "turn": 22,
+            "winRows": 16,
+            "lossRows": 22,
+            "winGames": 3,
+            "lossGames": 4,
+            "pairs": 16
+          },
+          {
+            "matchup": 47,
+            "turn": 23,
+            "winRows": 23,
+            "lossRows": 21,
+            "winGames": 3,
+            "lossGames": 2,
+            "pairs": 21
+          },
+          {
+            "matchup": 47,
+            "turn": 24,
+            "winRows": 2,
+            "lossRows": 16,
+            "winGames": 1,
+            "lossGames": 2,
+            "pairs": 2
+          },
+          {
+            "matchup": 47,
+            "turn": 25,
+            "winRows": 10,
+            "lossRows": 2,
+            "winGames": 1,
+            "lossGames": 1,
+            "pairs": 2
+          }
+        ],
+        "comparableCells": 25,
+        "deterministicPairs": 900,
+        "pairedRows": 1800,
+        "unpairedRows": 794
+      },
+      "partitions": {
+        "training": {
+          "planned": 18,
+          "accepted": 18,
+          "rejected": 0,
+          "gameIds": [
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            23
+          ],
+          "leftWins": 12,
+          "rightWins": 6,
+          "coverage": {
+            "rows": 1962,
+            "distinctGames": 18,
+            "cells": [
+              {
+                "matchup": 47,
+                "turn": 1,
+                "winRows": 24,
+                "lossRows": 11,
+                "winGames": 12,
+                "lossGames": 6,
+                "pairs": 11
+              },
+              {
+                "matchup": 47,
+                "turn": 2,
+                "winRows": 25,
+                "lossRows": 14,
+                "winGames": 12,
+                "lossGames": 6,
+                "pairs": 14
+              },
+              {
+                "matchup": 47,
+                "turn": 3,
+                "winRows": 35,
+                "lossRows": 16,
+                "winGames": 12,
+                "lossGames": 6,
+                "pairs": 16
+              },
+              {
+                "matchup": 47,
+                "turn": 4,
+                "winRows": 32,
+                "lossRows": 21,
+                "winGames": 12,
+                "lossGames": 6,
+                "pairs": 21
+              },
+              {
+                "matchup": 47,
+                "turn": 5,
+                "winRows": 53,
+                "lossRows": 17,
+                "winGames": 12,
+                "lossGames": 6,
+                "pairs": 17
+              },
+              {
+                "matchup": 47,
+                "turn": 6,
+                "winRows": 29,
+                "lossRows": 25,
+                "winGames": 12,
+                "lossGames": 6,
+                "pairs": 25
+              },
+              {
+                "matchup": 47,
+                "turn": 7,
+                "winRows": 62,
+                "lossRows": 19,
+                "winGames": 12,
+                "lossGames": 6,
+                "pairs": 19
+              },
+              {
+                "matchup": 47,
+                "turn": 8,
+                "winRows": 42,
+                "lossRows": 37,
+                "winGames": 12,
+                "lossGames": 6,
+                "pairs": 37
+              },
+              {
+                "matchup": 47,
+                "turn": 9,
+                "winRows": 80,
+                "lossRows": 23,
+                "winGames": 12,
+                "lossGames": 6,
+                "pairs": 23
+              },
+              {
+                "matchup": 47,
+                "turn": 10,
+                "winRows": 61,
+                "lossRows": 45,
+                "winGames": 12,
+                "lossGames": 6,
+                "pairs": 45
+              },
+              {
+                "matchup": 47,
+                "turn": 11,
+                "winRows": 75,
+                "lossRows": 37,
+                "winGames": 12,
+                "lossGames": 6,
+                "pairs": 37
+              },
+              {
+                "matchup": 47,
+                "turn": 12,
+                "winRows": 74,
+                "lossRows": 37,
+                "winGames": 11,
+                "lossGames": 6,
+                "pairs": 37
+              },
+              {
+                "matchup": 47,
+                "turn": 13,
+                "winRows": 92,
+                "lossRows": 43,
+                "winGames": 11,
+                "lossGames": 6,
+                "pairs": 43
+              },
+              {
+                "matchup": 47,
+                "turn": 14,
+                "winRows": 58,
+                "lossRows": 49,
+                "winGames": 9,
+                "lossGames": 6,
+                "pairs": 49
+              },
+              {
+                "matchup": 47,
+                "turn": 15,
+                "winRows": 95,
+                "lossRows": 47,
+                "winGames": 9,
+                "lossGames": 6,
+                "pairs": 47
+              },
+              {
+                "matchup": 47,
+                "turn": 16,
+                "winRows": 53,
+                "lossRows": 47,
+                "winGames": 8,
+                "lossGames": 6,
+                "pairs": 47
+              },
+              {
+                "matchup": 47,
+                "turn": 17,
+                "winRows": 83,
+                "lossRows": 43,
+                "winGames": 8,
+                "lossGames": 6,
+                "pairs": 43
+              },
+              {
+                "matchup": 47,
+                "turn": 18,
+                "winRows": 45,
+                "lossRows": 52,
+                "winGames": 8,
+                "lossGames": 6,
+                "pairs": 45
+              },
+              {
+                "matchup": 47,
+                "turn": 19,
+                "winRows": 80,
+                "lossRows": 33,
+                "winGames": 8,
+                "lossGames": 6,
+                "pairs": 33
+              },
+              {
+                "matchup": 47,
+                "turn": 20,
+                "winRows": 36,
+                "lossRows": 35,
+                "winGames": 6,
+                "lossGames": 6,
+                "pairs": 35
+              },
+              {
+                "matchup": 47,
+                "turn": 21,
+                "winRows": 42,
+                "lossRows": 23,
+                "winGames": 6,
+                "lossGames": 4,
+                "pairs": 23
+              },
+              {
+                "matchup": 47,
+                "turn": 22,
+                "winRows": 16,
+                "lossRows": 22,
+                "winGames": 3,
+                "lossGames": 4,
+                "pairs": 16
+              },
+              {
+                "matchup": 47,
+                "turn": 23,
+                "winRows": 23,
+                "lossRows": 21,
+                "winGames": 3,
+                "lossGames": 2,
+                "pairs": 21
+              },
+              {
+                "matchup": 47,
+                "turn": 24,
+                "winRows": 2,
+                "lossRows": 16,
+                "winGames": 1,
+                "lossGames": 2,
+                "pairs": 2
+              },
+              {
+                "matchup": 47,
+                "turn": 25,
+                "winRows": 10,
+                "lossRows": 2,
+                "winGames": 1,
+                "lossGames": 1,
+                "pairs": 2
+              }
+            ],
+            "comparableCells": 25,
+            "deterministicPairs": 708,
+            "pairedRows": 1416,
+            "unpairedRows": 546
+          }
+        },
+        "validation": {
+          "planned": 6,
+          "accepted": 6,
+          "rejected": 0,
+          "gameIds": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "leftWins": 4,
+          "rightWins": 2,
+          "coverage": {
+            "rows": 632,
+            "distinctGames": 6,
+            "cells": [
+              {
+                "matchup": 47,
+                "turn": 1,
+                "winRows": 7,
+                "lossRows": 2,
+                "winGames": 4,
+                "lossGames": 2,
+                "pairs": 2
+              },
+              {
+                "matchup": 47,
+                "turn": 2,
+                "winRows": 12,
+                "lossRows": 6,
+                "winGames": 4,
+                "lossGames": 2,
+                "pairs": 6
+              },
+              {
+                "matchup": 47,
+                "turn": 3,
+                "winRows": 12,
+                "lossRows": 5,
+                "winGames": 4,
+                "lossGames": 2,
+                "pairs": 5
+              },
+              {
+                "matchup": 47,
+                "turn": 4,
+                "winRows": 10,
+                "lossRows": 6,
+                "winGames": 4,
+                "lossGames": 2,
+                "pairs": 6
+              },
+              {
+                "matchup": 47,
+                "turn": 5,
+                "winRows": 15,
+                "lossRows": 6,
+                "winGames": 4,
+                "lossGames": 2,
+                "pairs": 6
+              },
+              {
+                "matchup": 47,
+                "turn": 6,
+                "winRows": 10,
+                "lossRows": 10,
+                "winGames": 4,
+                "lossGames": 2,
+                "pairs": 10
+              },
+              {
+                "matchup": 47,
+                "turn": 7,
+                "winRows": 21,
+                "lossRows": 7,
+                "winGames": 4,
+                "lossGames": 2,
+                "pairs": 7
+              },
+              {
+                "matchup": 47,
+                "turn": 8,
+                "winRows": 25,
+                "lossRows": 11,
+                "winGames": 4,
+                "lossGames": 2,
+                "pairs": 11
+              },
+              {
+                "matchup": 47,
+                "turn": 9,
+                "winRows": 36,
+                "lossRows": 7,
+                "winGames": 4,
+                "lossGames": 2,
+                "pairs": 7
+              },
+              {
+                "matchup": 47,
+                "turn": 10,
+                "winRows": 23,
+                "lossRows": 16,
+                "winGames": 4,
+                "lossGames": 2,
+                "pairs": 16
+              },
+              {
+                "matchup": 47,
+                "turn": 11,
+                "winRows": 35,
+                "lossRows": 12,
+                "winGames": 4,
+                "lossGames": 2,
+                "pairs": 12
+              },
+              {
+                "matchup": 47,
+                "turn": 12,
+                "winRows": 22,
+                "lossRows": 9,
+                "winGames": 4,
+                "lossGames": 2,
+                "pairs": 9
+              },
+              {
+                "matchup": 47,
+                "turn": 13,
+                "winRows": 40,
+                "lossRows": 24,
+                "winGames": 4,
+                "lossGames": 2,
+                "pairs": 24
+              },
+              {
+                "matchup": 47,
+                "turn": 14,
+                "winRows": 38,
+                "lossRows": 15,
+                "winGames": 4,
+                "lossGames": 2,
+                "pairs": 15
+              },
+              {
+                "matchup": 47,
+                "turn": 15,
+                "winRows": 43,
+                "lossRows": 15,
+                "winGames": 4,
+                "lossGames": 2,
+                "pairs": 15
+              },
+              {
+                "matchup": 47,
+                "turn": 16,
+                "winRows": 27,
+                "lossRows": 14,
+                "winGames": 4,
+                "lossGames": 2,
+                "pairs": 14
+              },
+              {
+                "matchup": 47,
+                "turn": 17,
+                "winRows": 18,
+                "lossRows": 7,
+                "winGames": 4,
+                "lossGames": 2,
+                "pairs": 7
+              },
+              {
+                "matchup": 47,
+                "turn": 18,
+                "winRows": 5,
+                "lossRows": 21,
+                "winGames": 1,
+                "lossGames": 2,
+                "pairs": 5
+              },
+              {
+                "matchup": 47,
+                "turn": 19,
+                "winRows": 9,
+                "lossRows": 5,
+                "winGames": 1,
+                "lossGames": 1,
+                "pairs": 5
+              },
+              {
+                "matchup": 47,
+                "turn": 20,
+                "winRows": 9,
+                "lossRows": 12,
+                "winGames": 1,
+                "lossGames": 1,
+                "pairs": 9
+              },
+              {
+                "matchup": 47,
+                "turn": 21,
+                "winRows": 5,
+                "lossRows": 0,
+                "winGames": 1,
+                "lossGames": 0,
+                "pairs": 0
+              }
+            ],
+            "comparableCells": 20,
+            "deterministicPairs": 191,
+            "pairedRows": 382,
+            "unpairedRows": 250
+          }
+        }
+      }
+    },
+    {
+      "batch": 3,
+      "left": "德澳老兵2",
+      "right": "德芬车2",
+      "requested": 24,
+      "accepted": 24,
+      "rejected": 0,
+      "coverage": {
+        "rows": 3026,
+        "distinctGames": 24,
+        "cells": [
+          {
+            "matchup": 68,
+            "turn": 1,
+            "winRows": 31,
+            "lossRows": 26,
+            "winGames": 13,
+            "lossGames": 11,
+            "pairs": 26
+          },
+          {
+            "matchup": 68,
+            "turn": 2,
+            "winRows": 26,
+            "lossRows": 22,
+            "winGames": 13,
+            "lossGames": 11,
+            "pairs": 22
+          },
+          {
+            "matchup": 68,
+            "turn": 3,
+            "winRows": 52,
+            "lossRows": 37,
+            "winGames": 13,
+            "lossGames": 11,
+            "pairs": 37
+          },
+          {
+            "matchup": 68,
+            "turn": 4,
+            "winRows": 37,
+            "lossRows": 33,
+            "winGames": 13,
+            "lossGames": 11,
+            "pairs": 33
+          },
+          {
+            "matchup": 68,
+            "turn": 5,
+            "winRows": 45,
+            "lossRows": 45,
+            "winGames": 13,
+            "lossGames": 11,
+            "pairs": 45
+          },
+          {
+            "matchup": 68,
+            "turn": 6,
+            "winRows": 28,
+            "lossRows": 50,
+            "winGames": 13,
+            "lossGames": 11,
+            "pairs": 28
+          },
+          {
+            "matchup": 68,
+            "turn": 7,
+            "winRows": 70,
+            "lossRows": 47,
+            "winGames": 13,
+            "lossGames": 11,
+            "pairs": 47
+          },
+          {
+            "matchup": 68,
+            "turn": 8,
+            "winRows": 45,
+            "lossRows": 66,
+            "winGames": 13,
+            "lossGames": 11,
+            "pairs": 45
+          },
+          {
+            "matchup": 68,
+            "turn": 9,
+            "winRows": 67,
+            "lossRows": 56,
+            "winGames": 13,
+            "lossGames": 11,
+            "pairs": 56
+          },
+          {
+            "matchup": 68,
+            "turn": 10,
+            "winRows": 68,
+            "lossRows": 87,
+            "winGames": 13,
+            "lossGames": 11,
+            "pairs": 68
+          },
+          {
+            "matchup": 68,
+            "turn": 11,
+            "winRows": 99,
+            "lossRows": 60,
+            "winGames": 13,
+            "lossGames": 11,
+            "pairs": 60
+          },
+          {
+            "matchup": 68,
+            "turn": 12,
+            "winRows": 98,
+            "lossRows": 88,
+            "winGames": 13,
+            "lossGames": 11,
+            "pairs": 88
+          },
+          {
+            "matchup": 68,
+            "turn": 13,
+            "winRows": 107,
+            "lossRows": 73,
+            "winGames": 13,
+            "lossGames": 10,
+            "pairs": 73
+          },
+          {
+            "matchup": 68,
+            "turn": 14,
+            "winRows": 102,
+            "lossRows": 100,
+            "winGames": 13,
+            "lossGames": 10,
+            "pairs": 100
+          },
+          {
+            "matchup": 68,
+            "turn": 15,
+            "winRows": 110,
+            "lossRows": 56,
+            "winGames": 13,
+            "lossGames": 10,
+            "pairs": 56
+          },
+          {
+            "matchup": 68,
+            "turn": 16,
+            "winRows": 93,
+            "lossRows": 98,
+            "winGames": 13,
+            "lossGames": 10,
+            "pairs": 93
+          },
+          {
+            "matchup": 68,
+            "turn": 17,
+            "winRows": 97,
+            "lossRows": 55,
+            "winGames": 13,
+            "lossGames": 10,
+            "pairs": 55
+          },
+          {
+            "matchup": 68,
+            "turn": 18,
+            "winRows": 86,
+            "lossRows": 81,
+            "winGames": 12,
+            "lossGames": 10,
+            "pairs": 81
+          },
+          {
+            "matchup": 68,
+            "turn": 19,
+            "winRows": 94,
+            "lossRows": 40,
+            "winGames": 12,
+            "lossGames": 6,
+            "pairs": 40
+          },
+          {
+            "matchup": 68,
+            "turn": 20,
+            "winRows": 74,
+            "lossRows": 41,
+            "winGames": 11,
+            "lossGames": 6,
+            "pairs": 41
+          },
+          {
+            "matchup": 68,
+            "turn": 21,
+            "winRows": 83,
+            "lossRows": 18,
+            "winGames": 11,
+            "lossGames": 4,
+            "pairs": 18
+          },
+          {
+            "matchup": 68,
+            "turn": 22,
+            "winRows": 46,
+            "lossRows": 35,
+            "winGames": 7,
+            "lossGames": 4,
+            "pairs": 35
+          },
+          {
+            "matchup": 68,
+            "turn": 23,
+            "winRows": 41,
+            "lossRows": 5,
+            "winGames": 7,
+            "lossGames": 2,
+            "pairs": 5
+          },
+          {
+            "matchup": 68,
+            "turn": 24,
+            "winRows": 27,
+            "lossRows": 17,
+            "winGames": 5,
+            "lossGames": 2,
+            "pairs": 17
+          },
+          {
+            "matchup": 68,
+            "turn": 25,
+            "winRows": 38,
+            "lossRows": 5,
+            "winGames": 5,
+            "lossGames": 1,
+            "pairs": 5
+          },
+          {
+            "matchup": 68,
+            "turn": 26,
+            "winRows": 22,
+            "lossRows": 15,
+            "winGames": 4,
+            "lossGames": 1,
+            "pairs": 15
+          },
+          {
+            "matchup": 68,
+            "turn": 27,
+            "winRows": 26,
+            "lossRows": 3,
+            "winGames": 4,
+            "lossGames": 1,
+            "pairs": 3
+          },
+          {
+            "matchup": 68,
+            "turn": 28,
+            "winRows": 8,
+            "lossRows": 7,
+            "winGames": 2,
+            "lossGames": 1,
+            "pairs": 7
+          },
+          {
+            "matchup": 68,
+            "turn": 29,
+            "winRows": 14,
+            "lossRows": 0,
+            "winGames": 2,
+            "lossGames": 0,
+            "pairs": 0
+          },
+          {
+            "matchup": 68,
+            "turn": 30,
+            "winRows": 5,
+            "lossRows": 0,
+            "winGames": 2,
+            "lossGames": 0,
+            "pairs": 0
+          },
+          {
+            "matchup": 68,
+            "turn": 31,
+            "winRows": 13,
+            "lossRows": 0,
+            "winGames": 2,
+            "lossGames": 0,
+            "pairs": 0
+          },
+          {
+            "matchup": 68,
+            "turn": 32,
+            "winRows": 2,
+            "lossRows": 0,
+            "winGames": 1,
+            "lossGames": 0,
+            "pairs": 0
+          },
+          {
+            "matchup": 68,
+            "turn": 33,
+            "winRows": 6,
+            "lossRows": 0,
+            "winGames": 1,
+            "lossGames": 0,
+            "pairs": 0
+          }
+        ],
+        "comparableCells": 28,
+        "deterministicPairs": 1199,
+        "pairedRows": 2398,
+        "unpairedRows": 628
+      },
+      "partitions": {
+        "training": {
+          "planned": 18,
+          "accepted": 18,
+          "rejected": 0,
+          "gameIds": [
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            23
+          ],
+          "leftWins": 10,
+          "rightWins": 8,
+          "coverage": {
+            "rows": 2253,
+            "distinctGames": 18,
+            "cells": [
+              {
+                "matchup": 68,
+                "turn": 1,
+                "winRows": 25,
+                "lossRows": 18,
+                "winGames": 10,
+                "lossGames": 8,
+                "pairs": 18
+              },
+              {
+                "matchup": 68,
+                "turn": 2,
+                "winRows": 20,
+                "lossRows": 16,
+                "winGames": 10,
+                "lossGames": 8,
+                "pairs": 16
+              },
+              {
+                "matchup": 68,
+                "turn": 3,
+                "winRows": 41,
+                "lossRows": 26,
+                "winGames": 10,
+                "lossGames": 8,
+                "pairs": 26
+              },
+              {
+                "matchup": 68,
+                "turn": 4,
+                "winRows": 28,
+                "lossRows": 24,
+                "winGames": 10,
+                "lossGames": 8,
+                "pairs": 24
+              },
+              {
+                "matchup": 68,
+                "turn": 5,
+                "winRows": 34,
+                "lossRows": 29,
+                "winGames": 10,
+                "lossGames": 8,
+                "pairs": 29
+              },
+              {
+                "matchup": 68,
+                "turn": 6,
+                "winRows": 20,
+                "lossRows": 43,
+                "winGames": 10,
+                "lossGames": 8,
+                "pairs": 20
+              },
+              {
+                "matchup": 68,
+                "turn": 7,
+                "winRows": 51,
+                "lossRows": 34,
+                "winGames": 10,
+                "lossGames": 8,
+                "pairs": 34
+              },
+              {
+                "matchup": 68,
+                "turn": 8,
+                "winRows": 31,
+                "lossRows": 51,
+                "winGames": 10,
+                "lossGames": 8,
+                "pairs": 31
+              },
+              {
+                "matchup": 68,
+                "turn": 9,
+                "winRows": 46,
+                "lossRows": 41,
+                "winGames": 10,
+                "lossGames": 8,
+                "pairs": 41
+              },
+              {
+                "matchup": 68,
+                "turn": 10,
+                "winRows": 49,
+                "lossRows": 67,
+                "winGames": 10,
+                "lossGames": 8,
+                "pairs": 49
+              },
+              {
+                "matchup": 68,
+                "turn": 11,
+                "winRows": 77,
+                "lossRows": 39,
+                "winGames": 10,
+                "lossGames": 8,
+                "pairs": 39
+              },
+              {
+                "matchup": 68,
+                "turn": 12,
+                "winRows": 67,
+                "lossRows": 62,
+                "winGames": 10,
+                "lossGames": 8,
+                "pairs": 62
+              },
+              {
+                "matchup": 68,
+                "turn": 13,
+                "winRows": 92,
+                "lossRows": 48,
+                "winGames": 10,
+                "lossGames": 7,
+                "pairs": 48
+              },
+              {
+                "matchup": 68,
+                "turn": 14,
+                "winRows": 78,
+                "lossRows": 69,
+                "winGames": 10,
+                "lossGames": 7,
+                "pairs": 69
+              },
+              {
+                "matchup": 68,
+                "turn": 15,
+                "winRows": 84,
+                "lossRows": 35,
+                "winGames": 10,
+                "lossGames": 7,
+                "pairs": 35
+              },
+              {
+                "matchup": 68,
+                "turn": 16,
+                "winRows": 65,
+                "lossRows": 71,
+                "winGames": 10,
+                "lossGames": 7,
+                "pairs": 65
+              },
+              {
+                "matchup": 68,
+                "turn": 17,
+                "winRows": 73,
+                "lossRows": 39,
+                "winGames": 10,
+                "lossGames": 7,
+                "pairs": 39
+              },
+              {
+                "matchup": 68,
+                "turn": 18,
+                "winRows": 76,
+                "lossRows": 65,
+                "winGames": 9,
+                "lossGames": 7,
+                "pairs": 65
+              },
+              {
+                "matchup": 68,
+                "turn": 19,
+                "winRows": 68,
+                "lossRows": 36,
+                "winGames": 9,
+                "lossGames": 5,
+                "pairs": 36
+              },
+              {
+                "matchup": 68,
+                "turn": 20,
+                "winRows": 54,
+                "lossRows": 38,
+                "winGames": 8,
+                "lossGames": 5,
+                "pairs": 38
+              },
+              {
+                "matchup": 68,
+                "turn": 21,
+                "winRows": 59,
+                "lossRows": 18,
+                "winGames": 8,
+                "lossGames": 4,
+                "pairs": 18
+              },
+              {
+                "matchup": 68,
+                "turn": 22,
+                "winRows": 29,
+                "lossRows": 35,
+                "winGames": 5,
+                "lossGames": 4,
+                "pairs": 29
+              },
+              {
+                "matchup": 68,
+                "turn": 23,
+                "winRows": 30,
+                "lossRows": 5,
+                "winGames": 5,
+                "lossGames": 2,
+                "pairs": 5
+              },
+              {
+                "matchup": 68,
+                "turn": 24,
+                "winRows": 15,
+                "lossRows": 17,
+                "winGames": 4,
+                "lossGames": 2,
+                "pairs": 15
+              },
+              {
+                "matchup": 68,
+                "turn": 25,
+                "winRows": 33,
+                "lossRows": 5,
+                "winGames": 4,
+                "lossGames": 1,
+                "pairs": 5
+              },
+              {
+                "matchup": 68,
+                "turn": 26,
+                "winRows": 13,
+                "lossRows": 15,
+                "winGames": 3,
+                "lossGames": 1,
+                "pairs": 13
+              },
+              {
+                "matchup": 68,
+                "turn": 27,
+                "winRows": 14,
+                "lossRows": 3,
+                "winGames": 3,
+                "lossGames": 1,
+                "pairs": 3
+              },
+              {
+                "matchup": 68,
+                "turn": 28,
+                "winRows": 2,
+                "lossRows": 7,
+                "winGames": 1,
+                "lossGames": 1,
+                "pairs": 2
+              },
+              {
+                "matchup": 68,
+                "turn": 29,
+                "winRows": 4,
+                "lossRows": 0,
+                "winGames": 1,
+                "lossGames": 0,
+                "pairs": 0
+              },
+              {
+                "matchup": 68,
+                "turn": 30,
+                "winRows": 2,
+                "lossRows": 0,
+                "winGames": 1,
+                "lossGames": 0,
+                "pairs": 0
+              },
+              {
+                "matchup": 68,
+                "turn": 31,
+                "winRows": 9,
+                "lossRows": 0,
+                "winGames": 1,
+                "lossGames": 0,
+                "pairs": 0
+              },
+              {
+                "matchup": 68,
+                "turn": 32,
+                "winRows": 2,
+                "lossRows": 0,
+                "winGames": 1,
+                "lossGames": 0,
+                "pairs": 0
+              },
+              {
+                "matchup": 68,
+                "turn": 33,
+                "winRows": 6,
+                "lossRows": 0,
+                "winGames": 1,
+                "lossGames": 0,
+                "pairs": 0
+              }
+            ],
+            "comparableCells": 28,
+            "deterministicPairs": 874,
+            "pairedRows": 1748,
+            "unpairedRows": 505
+          }
+        },
+        "validation": {
+          "planned": 6,
+          "accepted": 6,
+          "rejected": 0,
+          "gameIds": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "leftWins": 3,
+          "rightWins": 3,
+          "coverage": {
+            "rows": 773,
+            "distinctGames": 6,
+            "cells": [
+              {
+                "matchup": 68,
+                "turn": 1,
+                "winRows": 6,
+                "lossRows": 8,
+                "winGames": 3,
+                "lossGames": 3,
+                "pairs": 6
+              },
+              {
+                "matchup": 68,
+                "turn": 2,
+                "winRows": 6,
+                "lossRows": 6,
+                "winGames": 3,
+                "lossGames": 3,
+                "pairs": 6
+              },
+              {
+                "matchup": 68,
+                "turn": 3,
+                "winRows": 11,
+                "lossRows": 11,
+                "winGames": 3,
+                "lossGames": 3,
+                "pairs": 11
+              },
+              {
+                "matchup": 68,
+                "turn": 4,
+                "winRows": 9,
+                "lossRows": 9,
+                "winGames": 3,
+                "lossGames": 3,
+                "pairs": 9
+              },
+              {
+                "matchup": 68,
+                "turn": 5,
+                "winRows": 11,
+                "lossRows": 16,
+                "winGames": 3,
+                "lossGames": 3,
+                "pairs": 11
+              },
+              {
+                "matchup": 68,
+                "turn": 6,
+                "winRows": 8,
+                "lossRows": 7,
+                "winGames": 3,
+                "lossGames": 3,
+                "pairs": 7
+              },
+              {
+                "matchup": 68,
+                "turn": 7,
+                "winRows": 19,
+                "lossRows": 13,
+                "winGames": 3,
+                "lossGames": 3,
+                "pairs": 13
+              },
+              {
+                "matchup": 68,
+                "turn": 8,
+                "winRows": 14,
+                "lossRows": 15,
+                "winGames": 3,
+                "lossGames": 3,
+                "pairs": 14
+              },
+              {
+                "matchup": 68,
+                "turn": 9,
+                "winRows": 21,
+                "lossRows": 15,
+                "winGames": 3,
+                "lossGames": 3,
+                "pairs": 15
+              },
+              {
+                "matchup": 68,
+                "turn": 10,
+                "winRows": 19,
+                "lossRows": 20,
+                "winGames": 3,
+                "lossGames": 3,
+                "pairs": 19
+              },
+              {
+                "matchup": 68,
+                "turn": 11,
+                "winRows": 22,
+                "lossRows": 21,
+                "winGames": 3,
+                "lossGames": 3,
+                "pairs": 21
+              },
+              {
+                "matchup": 68,
+                "turn": 12,
+                "winRows": 31,
+                "lossRows": 26,
+                "winGames": 3,
+                "lossGames": 3,
+                "pairs": 26
+              },
+              {
+                "matchup": 68,
+                "turn": 13,
+                "winRows": 15,
+                "lossRows": 25,
+                "winGames": 3,
+                "lossGames": 3,
+                "pairs": 15
+              },
+              {
+                "matchup": 68,
+                "turn": 14,
+                "winRows": 24,
+                "lossRows": 31,
+                "winGames": 3,
+                "lossGames": 3,
+                "pairs": 24
+              },
+              {
+                "matchup": 68,
+                "turn": 15,
+                "winRows": 26,
+                "lossRows": 21,
+                "winGames": 3,
+                "lossGames": 3,
+                "pairs": 21
+              },
+              {
+                "matchup": 68,
+                "turn": 16,
+                "winRows": 28,
+                "lossRows": 27,
+                "winGames": 3,
+                "lossGames": 3,
+                "pairs": 27
+              },
+              {
+                "matchup": 68,
+                "turn": 17,
+                "winRows": 24,
+                "lossRows": 16,
+                "winGames": 3,
+                "lossGames": 3,
+                "pairs": 16
+              },
+              {
+                "matchup": 68,
+                "turn": 18,
+                "winRows": 10,
+                "lossRows": 16,
+                "winGames": 3,
+                "lossGames": 3,
+                "pairs": 10
+              },
+              {
+                "matchup": 68,
+                "turn": 19,
+                "winRows": 26,
+                "lossRows": 4,
+                "winGames": 3,
+                "lossGames": 1,
+                "pairs": 4
+              },
+              {
+                "matchup": 68,
+                "turn": 20,
+                "winRows": 20,
+                "lossRows": 3,
+                "winGames": 3,
+                "lossGames": 1,
+                "pairs": 3
+              },
+              {
+                "matchup": 68,
+                "turn": 21,
+                "winRows": 24,
+                "lossRows": 0,
+                "winGames": 3,
+                "lossGames": 0,
+                "pairs": 0
+              },
+              {
+                "matchup": 68,
+                "turn": 22,
+                "winRows": 17,
+                "lossRows": 0,
+                "winGames": 2,
+                "lossGames": 0,
+                "pairs": 0
+              },
+              {
+                "matchup": 68,
+                "turn": 23,
+                "winRows": 11,
+                "lossRows": 0,
+                "winGames": 2,
+                "lossGames": 0,
+                "pairs": 0
+              },
+              {
+                "matchup": 68,
+                "turn": 24,
+                "winRows": 12,
+                "lossRows": 0,
+                "winGames": 1,
+                "lossGames": 0,
+                "pairs": 0
+              },
+              {
+                "matchup": 68,
+                "turn": 25,
+                "winRows": 5,
+                "lossRows": 0,
+                "winGames": 1,
+                "lossGames": 0,
+                "pairs": 0
+              },
+              {
+                "matchup": 68,
+                "turn": 26,
+                "winRows": 9,
+                "lossRows": 0,
+                "winGames": 1,
+                "lossGames": 0,
+                "pairs": 0
+              },
+              {
+                "matchup": 68,
+                "turn": 27,
+                "winRows": 12,
+                "lossRows": 0,
+                "winGames": 1,
+                "lossGames": 0,
+                "pairs": 0
+              },
+              {
+                "matchup": 68,
+                "turn": 28,
+                "winRows": 6,
+                "lossRows": 0,
+                "winGames": 1,
+                "lossGames": 0,
+                "pairs": 0
+              },
+              {
+                "matchup": 68,
+                "turn": 29,
+                "winRows": 10,
+                "lossRows": 0,
+                "winGames": 1,
+                "lossGames": 0,
+                "pairs": 0
+              },
+              {
+                "matchup": 68,
+                "turn": 30,
+                "winRows": 3,
+                "lossRows": 0,
+                "winGames": 1,
+                "lossGames": 0,
+                "pairs": 0
+              },
+              {
+                "matchup": 68,
+                "turn": 31,
+                "winRows": 4,
+                "lossRows": 0,
+                "winGames": 1,
+                "lossGames": 0,
+                "pairs": 0
+              }
+            ],
+            "comparableCells": 20,
+            "deterministicPairs": 278,
+            "pairedRows": 556,
+            "unpairedRows": 217
+          }
+        }
+      }
+    }
+  ],
+  "coverage": {
+    "full": {
+      "rows": 11740,
+      "distinctGames": 96,
+      "cells": [
+        {
+          "matchup": 1,
+          "turn": 1,
+          "winRows": 33,
+          "lossRows": 12,
+          "winGames": 18,
+          "lossGames": 6,
+          "pairs": 12
+        },
+        {
+          "matchup": 1,
+          "turn": 2,
+          "winRows": 33,
+          "lossRows": 11,
+          "winGames": 18,
+          "lossGames": 6,
+          "pairs": 11
+        },
+        {
+          "matchup": 1,
+          "turn": 3,
+          "winRows": 51,
+          "lossRows": 18,
+          "winGames": 18,
+          "lossGames": 6,
+          "pairs": 18
+        },
+        {
+          "matchup": 1,
+          "turn": 4,
+          "winRows": 44,
+          "lossRows": 20,
+          "winGames": 18,
+          "lossGames": 6,
+          "pairs": 20
+        },
+        {
+          "matchup": 1,
+          "turn": 5,
+          "winRows": 81,
+          "lossRows": 17,
+          "winGames": 18,
+          "lossGames": 6,
+          "pairs": 17
+        },
+        {
+          "matchup": 1,
+          "turn": 6,
+          "winRows": 54,
+          "lossRows": 11,
+          "winGames": 18,
+          "lossGames": 6,
+          "pairs": 11
+        },
+        {
+          "matchup": 1,
+          "turn": 7,
+          "winRows": 98,
+          "lossRows": 14,
+          "winGames": 18,
+          "lossGames": 6,
+          "pairs": 14
+        },
+        {
+          "matchup": 1,
+          "turn": 8,
+          "winRows": 55,
+          "lossRows": 20,
+          "winGames": 18,
+          "lossGames": 6,
+          "pairs": 20
+        },
+        {
+          "matchup": 1,
+          "turn": 9,
+          "winRows": 111,
+          "lossRows": 22,
+          "winGames": 18,
+          "lossGames": 6,
+          "pairs": 22
+        },
+        {
+          "matchup": 1,
+          "turn": 10,
+          "winRows": 64,
+          "lossRows": 20,
+          "winGames": 18,
+          "lossGames": 6,
+          "pairs": 20
+        },
+        {
+          "matchup": 1,
+          "turn": 11,
+          "winRows": 143,
+          "lossRows": 45,
+          "winGames": 18,
+          "lossGames": 6,
+          "pairs": 45
+        },
+        {
+          "matchup": 1,
+          "turn": 12,
+          "winRows": 54,
+          "lossRows": 26,
+          "winGames": 16,
+          "lossGames": 6,
+          "pairs": 26
+        },
+        {
+          "matchup": 1,
+          "turn": 13,
+          "winRows": 123,
+          "lossRows": 50,
+          "winGames": 16,
+          "lossGames": 6,
+          "pairs": 50
+        },
+        {
+          "matchup": 1,
+          "turn": 14,
+          "winRows": 45,
+          "lossRows": 28,
+          "winGames": 13,
+          "lossGames": 6,
+          "pairs": 28
+        },
+        {
+          "matchup": 1,
+          "turn": 15,
+          "winRows": 90,
+          "lossRows": 53,
+          "winGames": 13,
+          "lossGames": 6,
+          "pairs": 53
+        },
+        {
+          "matchup": 1,
+          "turn": 16,
+          "winRows": 48,
+          "lossRows": 33,
+          "winGames": 7,
+          "lossGames": 6,
+          "pairs": 33
+        },
+        {
+          "matchup": 1,
+          "turn": 17,
+          "winRows": 62,
+          "lossRows": 49,
+          "winGames": 7,
+          "lossGames": 6,
+          "pairs": 49
+        },
+        {
+          "matchup": 1,
+          "turn": 18,
+          "winRows": 26,
+          "lossRows": 33,
+          "winGames": 6,
+          "lossGames": 6,
+          "pairs": 26
+        },
+        {
+          "matchup": 1,
+          "turn": 19,
+          "winRows": 45,
+          "lossRows": 42,
+          "winGames": 6,
+          "lossGames": 6,
+          "pairs": 42
+        },
+        {
+          "matchup": 1,
+          "turn": 20,
+          "winRows": 42,
+          "lossRows": 64,
+          "winGames": 6,
+          "lossGames": 6,
+          "pairs": 42
+        },
+        {
+          "matchup": 1,
+          "turn": 21,
+          "winRows": 47,
+          "lossRows": 23,
+          "winGames": 6,
+          "lossGames": 6,
+          "pairs": 23
+        },
+        {
+          "matchup": 1,
+          "turn": 22,
+          "winRows": 56,
+          "lossRows": 54,
+          "winGames": 6,
+          "lossGames": 6,
+          "pairs": 54
+        },
+        {
+          "matchup": 1,
+          "turn": 23,
+          "winRows": 42,
+          "lossRows": 24,
+          "winGames": 6,
+          "lossGames": 6,
+          "pairs": 24
+        },
+        {
+          "matchup": 1,
+          "turn": 24,
+          "winRows": 53,
+          "lossRows": 46,
+          "winGames": 5,
+          "lossGames": 6,
+          "pairs": 46
+        },
+        {
+          "matchup": 1,
+          "turn": 25,
+          "winRows": 23,
+          "lossRows": 18,
+          "winGames": 5,
+          "lossGames": 6,
+          "pairs": 18
+        },
+        {
+          "matchup": 1,
+          "turn": 26,
+          "winRows": 18,
+          "lossRows": 56,
+          "winGames": 3,
+          "lossGames": 6,
+          "pairs": 18
+        },
+        {
+          "matchup": 1,
+          "turn": 27,
+          "winRows": 24,
+          "lossRows": 26,
+          "winGames": 3,
+          "lossGames": 6,
+          "pairs": 24
+        },
+        {
+          "matchup": 1,
+          "turn": 28,
+          "winRows": 22,
+          "lossRows": 56,
+          "winGames": 3,
+          "lossGames": 6,
+          "pairs": 22
+        },
+        {
+          "matchup": 1,
+          "turn": 29,
+          "winRows": 22,
+          "lossRows": 22,
+          "winGames": 3,
+          "lossGames": 5,
+          "pairs": 22
+        },
+        {
+          "matchup": 1,
+          "turn": 30,
+          "winRows": 7,
+          "lossRows": 40,
+          "winGames": 2,
+          "lossGames": 5,
+          "pairs": 7
+        },
+        {
+          "matchup": 1,
+          "turn": 31,
+          "winRows": 4,
+          "lossRows": 8,
+          "winGames": 1,
+          "lossGames": 3,
+          "pairs": 4
+        },
+        {
+          "matchup": 1,
+          "turn": 32,
+          "winRows": 0,
+          "lossRows": 33,
+          "winGames": 0,
+          "lossGames": 3,
+          "pairs": 0
+        },
+        {
+          "matchup": 1,
+          "turn": 33,
+          "winRows": 0,
+          "lossRows": 3,
+          "winGames": 0,
+          "lossGames": 2,
+          "pairs": 0
+        },
+        {
+          "matchup": 1,
+          "turn": 34,
+          "winRows": 0,
+          "lossRows": 11,
+          "winGames": 0,
+          "lossGames": 2,
+          "pairs": 0
+        },
+        {
+          "matchup": 1,
+          "turn": 35,
+          "winRows": 0,
+          "lossRows": 1,
+          "winGames": 0,
+          "lossGames": 1,
+          "pairs": 0
+        },
+        {
+          "matchup": 1,
+          "turn": 36,
+          "winRows": 0,
+          "lossRows": 8,
+          "winGames": 0,
+          "lossGames": 1,
+          "pairs": 0
+        },
+        {
+          "matchup": 1,
+          "turn": 37,
+          "winRows": 0,
+          "lossRows": 5,
+          "winGames": 0,
+          "lossGames": 1,
+          "pairs": 0
+        },
+        {
+          "matchup": 1,
+          "turn": 38,
+          "winRows": 0,
+          "lossRows": 8,
+          "winGames": 0,
+          "lossGames": 1,
+          "pairs": 0
+        },
+        {
+          "matchup": 1,
+          "turn": 39,
+          "winRows": 0,
+          "lossRows": 3,
+          "winGames": 0,
+          "lossGames": 1,
+          "pairs": 0
+        },
+        {
+          "matchup": 1,
+          "turn": 40,
+          "winRows": 0,
+          "lossRows": 8,
+          "winGames": 0,
+          "lossGames": 1,
+          "pairs": 0
+        },
+        {
+          "matchup": 1,
+          "turn": 41,
+          "winRows": 0,
+          "lossRows": 2,
+          "winGames": 0,
+          "lossGames": 1,
+          "pairs": 0
+        },
+        {
+          "matchup": 1,
+          "turn": 42,
+          "winRows": 0,
+          "lossRows": 5,
+          "winGames": 0,
+          "lossGames": 1,
+          "pairs": 0
+        },
+        {
+          "matchup": 22,
+          "turn": 1,
+          "winRows": 9,
+          "lossRows": 35,
+          "winGames": 5,
+          "lossGames": 19,
+          "pairs": 9
+        },
+        {
+          "matchup": 22,
+          "turn": 2,
+          "winRows": 10,
+          "lossRows": 38,
+          "winGames": 5,
+          "lossGames": 19,
+          "pairs": 10
+        },
+        {
+          "matchup": 22,
+          "turn": 3,
+          "winRows": 15,
+          "lossRows": 54,
+          "winGames": 5,
+          "lossGames": 19,
+          "pairs": 15
+        },
+        {
+          "matchup": 22,
+          "turn": 4,
+          "winRows": 15,
+          "lossRows": 55,
+          "winGames": 5,
+          "lossGames": 19,
+          "pairs": 15
+        },
+        {
+          "matchup": 22,
+          "turn": 5,
+          "winRows": 15,
+          "lossRows": 57,
+          "winGames": 5,
+          "lossGames": 19,
+          "pairs": 15
+        },
+        {
+          "matchup": 22,
+          "turn": 6,
+          "winRows": 13,
+          "lossRows": 67,
+          "winGames": 5,
+          "lossGames": 19,
+          "pairs": 13
+        },
+        {
+          "matchup": 22,
+          "turn": 7,
+          "winRows": 10,
+          "lossRows": 57,
+          "winGames": 5,
+          "lossGames": 19,
+          "pairs": 10
+        },
+        {
+          "matchup": 22,
+          "turn": 8,
+          "winRows": 20,
+          "lossRows": 80,
+          "winGames": 5,
+          "lossGames": 19,
+          "pairs": 20
+        },
+        {
+          "matchup": 22,
+          "turn": 9,
+          "winRows": 15,
+          "lossRows": 73,
+          "winGames": 5,
+          "lossGames": 19,
+          "pairs": 15
+        },
+        {
+          "matchup": 22,
+          "turn": 10,
+          "winRows": 17,
+          "lossRows": 110,
+          "winGames": 5,
+          "lossGames": 19,
+          "pairs": 17
+        },
+        {
+          "matchup": 22,
+          "turn": 11,
+          "winRows": 14,
+          "lossRows": 75,
+          "winGames": 5,
+          "lossGames": 19,
+          "pairs": 14
+        },
+        {
+          "matchup": 22,
+          "turn": 12,
+          "winRows": 35,
+          "lossRows": 124,
+          "winGames": 5,
+          "lossGames": 19,
+          "pairs": 35
+        },
+        {
+          "matchup": 22,
+          "turn": 13,
+          "winRows": 18,
+          "lossRows": 101,
+          "winGames": 5,
+          "lossGames": 19,
+          "pairs": 18
+        },
+        {
+          "matchup": 22,
+          "turn": 14,
+          "winRows": 30,
+          "lossRows": 192,
+          "winGames": 5,
+          "lossGames": 19,
+          "pairs": 30
+        },
+        {
+          "matchup": 22,
+          "turn": 15,
+          "winRows": 26,
+          "lossRows": 108,
+          "winGames": 5,
+          "lossGames": 19,
+          "pairs": 26
+        },
+        {
+          "matchup": 22,
+          "turn": 16,
+          "winRows": 34,
+          "lossRows": 171,
+          "winGames": 5,
+          "lossGames": 19,
+          "pairs": 34
+        },
+        {
+          "matchup": 22,
+          "turn": 17,
+          "winRows": 30,
+          "lossRows": 98,
+          "winGames": 5,
+          "lossGames": 17,
+          "pairs": 30
+        },
+        {
+          "matchup": 22,
+          "turn": 18,
+          "winRows": 31,
+          "lossRows": 139,
+          "winGames": 5,
+          "lossGames": 17,
+          "pairs": 31
+        },
+        {
+          "matchup": 22,
+          "turn": 19,
+          "winRows": 40,
+          "lossRows": 106,
+          "winGames": 5,
+          "lossGames": 14,
+          "pairs": 40
+        },
+        {
+          "matchup": 22,
+          "turn": 20,
+          "winRows": 23,
+          "lossRows": 129,
+          "winGames": 5,
+          "lossGames": 14,
+          "pairs": 23
+        },
+        {
+          "matchup": 22,
+          "turn": 21,
+          "winRows": 40,
+          "lossRows": 77,
+          "winGames": 5,
+          "lossGames": 13,
+          "pairs": 40
+        },
+        {
+          "matchup": 22,
+          "turn": 22,
+          "winRows": 32,
+          "lossRows": 112,
+          "winGames": 5,
+          "lossGames": 13,
+          "pairs": 32
+        },
+        {
+          "matchup": 22,
+          "turn": 23,
+          "winRows": 28,
+          "lossRows": 97,
+          "winGames": 5,
+          "lossGames": 9,
+          "pairs": 28
+        },
+        {
+          "matchup": 22,
+          "turn": 24,
+          "winRows": 30,
+          "lossRows": 63,
+          "winGames": 5,
+          "lossGames": 9,
+          "pairs": 30
+        },
+        {
+          "matchup": 22,
+          "turn": 25,
+          "winRows": 51,
+          "lossRows": 46,
+          "winGames": 5,
+          "lossGames": 7,
+          "pairs": 46
+        },
+        {
+          "matchup": 22,
+          "turn": 26,
+          "winRows": 28,
+          "lossRows": 31,
+          "winGames": 5,
+          "lossGames": 7,
+          "pairs": 28
+        },
+        {
+          "matchup": 22,
+          "turn": 27,
+          "winRows": 50,
+          "lossRows": 37,
+          "winGames": 5,
+          "lossGames": 5,
+          "pairs": 37
+        },
+        {
+          "matchup": 22,
+          "turn": 28,
+          "winRows": 25,
+          "lossRows": 33,
+          "winGames": 5,
+          "lossGames": 5,
+          "pairs": 25
+        },
+        {
+          "matchup": 22,
+          "turn": 29,
+          "winRows": 51,
+          "lossRows": 30,
+          "winGames": 5,
+          "lossGames": 5,
+          "pairs": 30
+        },
+        {
+          "matchup": 22,
+          "turn": 30,
+          "winRows": 27,
+          "lossRows": 33,
+          "winGames": 5,
+          "lossGames": 5,
+          "pairs": 27
+        },
+        {
+          "matchup": 22,
+          "turn": 31,
+          "winRows": 50,
+          "lossRows": 38,
+          "winGames": 5,
+          "lossGames": 5,
+          "pairs": 38
+        },
+        {
+          "matchup": 22,
+          "turn": 32,
+          "winRows": 14,
+          "lossRows": 20,
+          "winGames": 4,
+          "lossGames": 5,
+          "pairs": 14
+        },
+        {
+          "matchup": 22,
+          "turn": 33,
+          "winRows": 28,
+          "lossRows": 14,
+          "winGames": 4,
+          "lossGames": 3,
+          "pairs": 14
+        },
+        {
+          "matchup": 22,
+          "turn": 34,
+          "winRows": 4,
+          "lossRows": 18,
+          "winGames": 2,
+          "lossGames": 3,
+          "pairs": 4
+        },
+        {
+          "matchup": 22,
+          "turn": 35,
+          "winRows": 13,
+          "lossRows": 5,
+          "winGames": 2,
+          "lossGames": 2,
+          "pairs": 5
+        },
+        {
+          "matchup": 22,
+          "turn": 36,
+          "winRows": 4,
+          "lossRows": 8,
+          "winGames": 1,
+          "lossGames": 2,
+          "pairs": 4
+        },
+        {
+          "matchup": 22,
+          "turn": 37,
+          "winRows": 10,
+          "lossRows": 2,
+          "winGames": 1,
+          "lossGames": 1,
+          "pairs": 2
+        },
+        {
+          "matchup": 22,
+          "turn": 38,
+          "winRows": 4,
+          "lossRows": 2,
+          "winGames": 1,
+          "lossGames": 1,
+          "pairs": 2
+        },
+        {
+          "matchup": 22,
+          "turn": 39,
+          "winRows": 2,
+          "lossRows": 1,
+          "winGames": 1,
+          "lossGames": 1,
+          "pairs": 1
+        },
+        {
+          "matchup": 22,
+          "turn": 40,
+          "winRows": 0,
+          "lossRows": 1,
+          "winGames": 0,
+          "lossGames": 1,
+          "pairs": 0
+        },
+        {
+          "matchup": 22,
+          "turn": 41,
+          "winRows": 0,
+          "lossRows": 1,
+          "winGames": 0,
+          "lossGames": 1,
+          "pairs": 0
+        },
+        {
+          "matchup": 22,
+          "turn": 42,
+          "winRows": 0,
+          "lossRows": 1,
+          "winGames": 0,
+          "lossGames": 1,
+          "pairs": 0
+        },
+        {
+          "matchup": 22,
+          "turn": 43,
+          "winRows": 0,
+          "lossRows": 1,
+          "winGames": 0,
+          "lossGames": 1,
+          "pairs": 0
+        },
+        {
+          "matchup": 22,
+          "turn": 44,
+          "winRows": 0,
+          "lossRows": 1,
+          "winGames": 0,
+          "lossGames": 1,
+          "pairs": 0
+        },
+        {
+          "matchup": 47,
+          "turn": 1,
+          "winRows": 31,
+          "lossRows": 13,
+          "winGames": 16,
+          "lossGames": 8,
+          "pairs": 13
+        },
+        {
+          "matchup": 47,
+          "turn": 2,
+          "winRows": 37,
+          "lossRows": 20,
+          "winGames": 16,
+          "lossGames": 8,
+          "pairs": 20
+        },
+        {
+          "matchup": 47,
+          "turn": 3,
+          "winRows": 47,
+          "lossRows": 21,
+          "winGames": 16,
+          "lossGames": 8,
+          "pairs": 21
+        },
+        {
+          "matchup": 47,
+          "turn": 4,
+          "winRows": 42,
+          "lossRows": 27,
+          "winGames": 16,
+          "lossGames": 8,
+          "pairs": 27
+        },
+        {
+          "matchup": 47,
+          "turn": 5,
+          "winRows": 68,
+          "lossRows": 23,
+          "winGames": 16,
+          "lossGames": 8,
+          "pairs": 23
+        },
+        {
+          "matchup": 47,
+          "turn": 6,
+          "winRows": 39,
+          "lossRows": 35,
+          "winGames": 16,
+          "lossGames": 8,
+          "pairs": 35
+        },
+        {
+          "matchup": 47,
+          "turn": 7,
+          "winRows": 83,
+          "lossRows": 26,
+          "winGames": 16,
+          "lossGames": 8,
+          "pairs": 26
+        },
+        {
+          "matchup": 47,
+          "turn": 8,
+          "winRows": 67,
+          "lossRows": 48,
+          "winGames": 16,
+          "lossGames": 8,
+          "pairs": 48
+        },
+        {
+          "matchup": 47,
+          "turn": 9,
+          "winRows": 116,
+          "lossRows": 30,
+          "winGames": 16,
+          "lossGames": 8,
+          "pairs": 30
+        },
+        {
+          "matchup": 47,
+          "turn": 10,
+          "winRows": 84,
+          "lossRows": 61,
+          "winGames": 16,
+          "lossGames": 8,
+          "pairs": 61
+        },
+        {
+          "matchup": 47,
+          "turn": 11,
+          "winRows": 110,
+          "lossRows": 49,
+          "winGames": 16,
+          "lossGames": 8,
+          "pairs": 49
+        },
+        {
+          "matchup": 47,
+          "turn": 12,
+          "winRows": 96,
+          "lossRows": 46,
+          "winGames": 15,
+          "lossGames": 8,
+          "pairs": 46
+        },
+        {
+          "matchup": 47,
+          "turn": 13,
+          "winRows": 132,
+          "lossRows": 67,
+          "winGames": 15,
+          "lossGames": 8,
+          "pairs": 67
+        },
+        {
+          "matchup": 47,
+          "turn": 14,
+          "winRows": 96,
+          "lossRows": 64,
+          "winGames": 13,
+          "lossGames": 8,
+          "pairs": 64
+        },
+        {
+          "matchup": 47,
+          "turn": 15,
+          "winRows": 138,
+          "lossRows": 62,
+          "winGames": 13,
+          "lossGames": 8,
+          "pairs": 62
+        },
+        {
+          "matchup": 47,
+          "turn": 16,
+          "winRows": 80,
+          "lossRows": 61,
+          "winGames": 12,
+          "lossGames": 8,
+          "pairs": 61
+        },
+        {
+          "matchup": 47,
+          "turn": 17,
+          "winRows": 101,
+          "lossRows": 50,
+          "winGames": 12,
+          "lossGames": 8,
+          "pairs": 50
+        },
+        {
+          "matchup": 47,
+          "turn": 18,
+          "winRows": 50,
+          "lossRows": 73,
+          "winGames": 9,
+          "lossGames": 8,
+          "pairs": 50
+        },
+        {
+          "matchup": 47,
+          "turn": 19,
+          "winRows": 89,
+          "lossRows": 38,
+          "winGames": 9,
+          "lossGames": 7,
+          "pairs": 38
+        },
+        {
+          "matchup": 47,
+          "turn": 20,
+          "winRows": 45,
+          "lossRows": 47,
+          "winGames": 7,
+          "lossGames": 7,
+          "pairs": 45
+        },
+        {
+          "matchup": 47,
+          "turn": 21,
+          "winRows": 47,
+          "lossRows": 23,
+          "winGames": 7,
+          "lossGames": 4,
+          "pairs": 23
+        },
+        {
+          "matchup": 47,
+          "turn": 22,
+          "winRows": 16,
+          "lossRows": 22,
+          "winGames": 3,
+          "lossGames": 4,
+          "pairs": 16
+        },
+        {
+          "matchup": 47,
+          "turn": 23,
+          "winRows": 23,
+          "lossRows": 21,
+          "winGames": 3,
+          "lossGames": 2,
+          "pairs": 21
+        },
+        {
+          "matchup": 47,
+          "turn": 24,
+          "winRows": 2,
+          "lossRows": 16,
+          "winGames": 1,
+          "lossGames": 2,
+          "pairs": 2
+        },
+        {
+          "matchup": 47,
+          "turn": 25,
+          "winRows": 10,
+          "lossRows": 2,
+          "winGames": 1,
+          "lossGames": 1,
+          "pairs": 2
+        },
+        {
+          "matchup": 68,
+          "turn": 1,
+          "winRows": 31,
+          "lossRows": 26,
+          "winGames": 13,
+          "lossGames": 11,
+          "pairs": 26
+        },
+        {
+          "matchup": 68,
+          "turn": 2,
+          "winRows": 26,
+          "lossRows": 22,
+          "winGames": 13,
+          "lossGames": 11,
+          "pairs": 22
+        },
+        {
+          "matchup": 68,
+          "turn": 3,
+          "winRows": 52,
+          "lossRows": 37,
+          "winGames": 13,
+          "lossGames": 11,
+          "pairs": 37
+        },
+        {
+          "matchup": 68,
+          "turn": 4,
+          "winRows": 37,
+          "lossRows": 33,
+          "winGames": 13,
+          "lossGames": 11,
+          "pairs": 33
+        },
+        {
+          "matchup": 68,
+          "turn": 5,
+          "winRows": 45,
+          "lossRows": 45,
+          "winGames": 13,
+          "lossGames": 11,
+          "pairs": 45
+        },
+        {
+          "matchup": 68,
+          "turn": 6,
+          "winRows": 28,
+          "lossRows": 50,
+          "winGames": 13,
+          "lossGames": 11,
+          "pairs": 28
+        },
+        {
+          "matchup": 68,
+          "turn": 7,
+          "winRows": 70,
+          "lossRows": 47,
+          "winGames": 13,
+          "lossGames": 11,
+          "pairs": 47
+        },
+        {
+          "matchup": 68,
+          "turn": 8,
+          "winRows": 45,
+          "lossRows": 66,
+          "winGames": 13,
+          "lossGames": 11,
+          "pairs": 45
+        },
+        {
+          "matchup": 68,
+          "turn": 9,
+          "winRows": 67,
+          "lossRows": 56,
+          "winGames": 13,
+          "lossGames": 11,
+          "pairs": 56
+        },
+        {
+          "matchup": 68,
+          "turn": 10,
+          "winRows": 68,
+          "lossRows": 87,
+          "winGames": 13,
+          "lossGames": 11,
+          "pairs": 68
+        },
+        {
+          "matchup": 68,
+          "turn": 11,
+          "winRows": 99,
+          "lossRows": 60,
+          "winGames": 13,
+          "lossGames": 11,
+          "pairs": 60
+        },
+        {
+          "matchup": 68,
+          "turn": 12,
+          "winRows": 98,
+          "lossRows": 88,
+          "winGames": 13,
+          "lossGames": 11,
+          "pairs": 88
+        },
+        {
+          "matchup": 68,
+          "turn": 13,
+          "winRows": 107,
+          "lossRows": 73,
+          "winGames": 13,
+          "lossGames": 10,
+          "pairs": 73
+        },
+        {
+          "matchup": 68,
+          "turn": 14,
+          "winRows": 102,
+          "lossRows": 100,
+          "winGames": 13,
+          "lossGames": 10,
+          "pairs": 100
+        },
+        {
+          "matchup": 68,
+          "turn": 15,
+          "winRows": 110,
+          "lossRows": 56,
+          "winGames": 13,
+          "lossGames": 10,
+          "pairs": 56
+        },
+        {
+          "matchup": 68,
+          "turn": 16,
+          "winRows": 93,
+          "lossRows": 98,
+          "winGames": 13,
+          "lossGames": 10,
+          "pairs": 93
+        },
+        {
+          "matchup": 68,
+          "turn": 17,
+          "winRows": 97,
+          "lossRows": 55,
+          "winGames": 13,
+          "lossGames": 10,
+          "pairs": 55
+        },
+        {
+          "matchup": 68,
+          "turn": 18,
+          "winRows": 86,
+          "lossRows": 81,
+          "winGames": 12,
+          "lossGames": 10,
+          "pairs": 81
+        },
+        {
+          "matchup": 68,
+          "turn": 19,
+          "winRows": 94,
+          "lossRows": 40,
+          "winGames": 12,
+          "lossGames": 6,
+          "pairs": 40
+        },
+        {
+          "matchup": 68,
+          "turn": 20,
+          "winRows": 74,
+          "lossRows": 41,
+          "winGames": 11,
+          "lossGames": 6,
+          "pairs": 41
+        },
+        {
+          "matchup": 68,
+          "turn": 21,
+          "winRows": 83,
+          "lossRows": 18,
+          "winGames": 11,
+          "lossGames": 4,
+          "pairs": 18
+        },
+        {
+          "matchup": 68,
+          "turn": 22,
+          "winRows": 46,
+          "lossRows": 35,
+          "winGames": 7,
+          "lossGames": 4,
+          "pairs": 35
+        },
+        {
+          "matchup": 68,
+          "turn": 23,
+          "winRows": 41,
+          "lossRows": 5,
+          "winGames": 7,
+          "lossGames": 2,
+          "pairs": 5
+        },
+        {
+          "matchup": 68,
+          "turn": 24,
+          "winRows": 27,
+          "lossRows": 17,
+          "winGames": 5,
+          "lossGames": 2,
+          "pairs": 17
+        },
+        {
+          "matchup": 68,
+          "turn": 25,
+          "winRows": 38,
+          "lossRows": 5,
+          "winGames": 5,
+          "lossGames": 1,
+          "pairs": 5
+        },
+        {
+          "matchup": 68,
+          "turn": 26,
+          "winRows": 22,
+          "lossRows": 15,
+          "winGames": 4,
+          "lossGames": 1,
+          "pairs": 15
+        },
+        {
+          "matchup": 68,
+          "turn": 27,
+          "winRows": 26,
+          "lossRows": 3,
+          "winGames": 4,
+          "lossGames": 1,
+          "pairs": 3
+        },
+        {
+          "matchup": 68,
+          "turn": 28,
+          "winRows": 8,
+          "lossRows": 7,
+          "winGames": 2,
+          "lossGames": 1,
+          "pairs": 7
+        },
+        {
+          "matchup": 68,
+          "turn": 29,
+          "winRows": 14,
+          "lossRows": 0,
+          "winGames": 2,
+          "lossGames": 0,
+          "pairs": 0
+        },
+        {
+          "matchup": 68,
+          "turn": 30,
+          "winRows": 5,
+          "lossRows": 0,
+          "winGames": 2,
+          "lossGames": 0,
+          "pairs": 0
+        },
+        {
+          "matchup": 68,
+          "turn": 31,
+          "winRows": 13,
+          "lossRows": 0,
+          "winGames": 2,
+          "lossGames": 0,
+          "pairs": 0
+        },
+        {
+          "matchup": 68,
+          "turn": 32,
+          "winRows": 2,
+          "lossRows": 0,
+          "winGames": 1,
+          "lossGames": 0,
+          "pairs": 0
+        },
+        {
+          "matchup": 68,
+          "turn": 33,
+          "winRows": 6,
+          "lossRows": 0,
+          "winGames": 1,
+          "lossGames": 0,
+          "pairs": 0
+        }
+      ],
+      "comparableCells": 123,
+      "deterministicPairs": 3747,
+      "pairedRows": 7494,
+      "unpairedRows": 4246
+    },
+    "training": {
+      "rows": 8457,
+      "distinctGames": 72,
+      "cells": [
+        {
+          "matchup": 1,
+          "turn": 1,
+          "winRows": 27,
+          "lossRows": 6,
+          "winGames": 15,
+          "lossGames": 3,
+          "pairs": 6
+        },
+        {
+          "matchup": 1,
+          "turn": 2,
+          "winRows": 28,
+          "lossRows": 5,
+          "winGames": 15,
+          "lossGames": 3,
+          "pairs": 5
+        },
+        {
+          "matchup": 1,
+          "turn": 3,
+          "winRows": 43,
+          "lossRows": 9,
+          "winGames": 15,
+          "lossGames": 3,
+          "pairs": 9
+        },
+        {
+          "matchup": 1,
+          "turn": 4,
+          "winRows": 35,
+          "lossRows": 10,
+          "winGames": 15,
+          "lossGames": 3,
+          "pairs": 10
+        },
+        {
+          "matchup": 1,
+          "turn": 5,
+          "winRows": 75,
+          "lossRows": 9,
+          "winGames": 15,
+          "lossGames": 3,
+          "pairs": 9
+        },
+        {
+          "matchup": 1,
+          "turn": 6,
+          "winRows": 45,
+          "lossRows": 6,
+          "winGames": 15,
+          "lossGames": 3,
+          "pairs": 6
+        },
+        {
+          "matchup": 1,
+          "turn": 7,
+          "winRows": 89,
+          "lossRows": 7,
+          "winGames": 15,
+          "lossGames": 3,
+          "pairs": 7
+        },
+        {
+          "matchup": 1,
+          "turn": 8,
+          "winRows": 48,
+          "lossRows": 10,
+          "winGames": 15,
+          "lossGames": 3,
+          "pairs": 10
+        },
+        {
+          "matchup": 1,
+          "turn": 9,
+          "winRows": 101,
+          "lossRows": 12,
+          "winGames": 15,
+          "lossGames": 3,
+          "pairs": 12
+        },
+        {
+          "matchup": 1,
+          "turn": 10,
+          "winRows": 53,
+          "lossRows": 8,
+          "winGames": 15,
+          "lossGames": 3,
+          "pairs": 8
+        },
+        {
+          "matchup": 1,
+          "turn": 11,
+          "winRows": 122,
+          "lossRows": 26,
+          "winGames": 15,
+          "lossGames": 3,
+          "pairs": 26
+        },
+        {
+          "matchup": 1,
+          "turn": 12,
+          "winRows": 48,
+          "lossRows": 7,
+          "winGames": 13,
+          "lossGames": 3,
+          "pairs": 7
+        },
+        {
+          "matchup": 1,
+          "turn": 13,
+          "winRows": 94,
+          "lossRows": 30,
+          "winGames": 13,
+          "lossGames": 3,
+          "pairs": 30
+        },
+        {
+          "matchup": 1,
+          "turn": 14,
+          "winRows": 35,
+          "lossRows": 13,
+          "winGames": 10,
+          "lossGames": 3,
+          "pairs": 13
+        },
+        {
+          "matchup": 1,
+          "turn": 15,
+          "winRows": 69,
+          "lossRows": 26,
+          "winGames": 10,
+          "lossGames": 3,
+          "pairs": 26
+        },
+        {
+          "matchup": 1,
+          "turn": 16,
+          "winRows": 44,
+          "lossRows": 15,
+          "winGames": 6,
+          "lossGames": 3,
+          "pairs": 15
+        },
+        {
+          "matchup": 1,
+          "turn": 17,
+          "winRows": 52,
+          "lossRows": 25,
+          "winGames": 6,
+          "lossGames": 3,
+          "pairs": 25
+        },
+        {
+          "matchup": 1,
+          "turn": 18,
+          "winRows": 22,
+          "lossRows": 20,
+          "winGames": 5,
+          "lossGames": 3,
+          "pairs": 20
+        },
+        {
+          "matchup": 1,
+          "turn": 19,
+          "winRows": 40,
+          "lossRows": 23,
+          "winGames": 5,
+          "lossGames": 3,
+          "pairs": 23
+        },
+        {
+          "matchup": 1,
+          "turn": 20,
+          "winRows": 32,
+          "lossRows": 27,
+          "winGames": 5,
+          "lossGames": 3,
+          "pairs": 27
+        },
+        {
+          "matchup": 1,
+          "turn": 21,
+          "winRows": 39,
+          "lossRows": 9,
+          "winGames": 5,
+          "lossGames": 3,
+          "pairs": 9
+        },
+        {
+          "matchup": 1,
+          "turn": 22,
+          "winRows": 45,
+          "lossRows": 31,
+          "winGames": 5,
+          "lossGames": 3,
+          "pairs": 31
+        },
+        {
+          "matchup": 1,
+          "turn": 23,
+          "winRows": 39,
+          "lossRows": 7,
+          "winGames": 5,
+          "lossGames": 3,
+          "pairs": 7
+        },
+        {
+          "matchup": 1,
+          "turn": 24,
+          "winRows": 37,
+          "lossRows": 29,
+          "winGames": 4,
+          "lossGames": 3,
+          "pairs": 29
+        },
+        {
+          "matchup": 1,
+          "turn": 25,
+          "winRows": 21,
+          "lossRows": 5,
+          "winGames": 4,
+          "lossGames": 3,
+          "pairs": 5
+        },
+        {
+          "matchup": 1,
+          "turn": 26,
+          "winRows": 7,
+          "lossRows": 35,
+          "winGames": 2,
+          "lossGames": 3,
+          "pairs": 7
+        },
+        {
+          "matchup": 1,
+          "turn": 27,
+          "winRows": 15,
+          "lossRows": 15,
+          "winGames": 2,
+          "lossGames": 3,
+          "pairs": 15
+        },
+        {
+          "matchup": 1,
+          "turn": 28,
+          "winRows": 14,
+          "lossRows": 22,
+          "winGames": 2,
+          "lossGames": 3,
+          "pairs": 14
+        },
+        {
+          "matchup": 1,
+          "turn": 29,
+          "winRows": 13,
+          "lossRows": 9,
+          "winGames": 2,
+          "lossGames": 2,
+          "pairs": 9
+        },
+        {
+          "matchup": 1,
+          "turn": 30,
+          "winRows": 5,
+          "lossRows": 12,
+          "winGames": 1,
+          "lossGames": 2,
+          "pairs": 5
+        },
+        {
+          "matchup": 1,
+          "turn": 31,
+          "winRows": 4,
+          "lossRows": 1,
+          "winGames": 1,
+          "lossGames": 1,
+          "pairs": 1
+        },
+        {
+          "matchup": 1,
+          "turn": 32,
+          "winRows": 0,
+          "lossRows": 6,
+          "winGames": 0,
+          "lossGames": 1,
+          "pairs": 0
+        },
+        {
+          "matchup": 22,
+          "turn": 1,
+          "winRows": 7,
+          "lossRows": 28,
+          "winGames": 3,
+          "lossGames": 15,
+          "pairs": 7
+        },
+        {
+          "matchup": 22,
+          "turn": 2,
+          "winRows": 6,
+          "lossRows": 30,
+          "winGames": 3,
+          "lossGames": 15,
+          "pairs": 6
+        },
+        {
+          "matchup": 22,
+          "turn": 3,
+          "winRows": 11,
+          "lossRows": 38,
+          "winGames": 3,
+          "lossGames": 15,
+          "pairs": 11
+        },
+        {
+          "matchup": 22,
+          "turn": 4,
+          "winRows": 9,
+          "lossRows": 43,
+          "winGames": 3,
+          "lossGames": 15,
+          "pairs": 9
+        },
+        {
+          "matchup": 22,
+          "turn": 5,
+          "winRows": 10,
+          "lossRows": 47,
+          "winGames": 3,
+          "lossGames": 15,
+          "pairs": 10
+        },
+        {
+          "matchup": 22,
+          "turn": 6,
+          "winRows": 7,
+          "lossRows": 57,
+          "winGames": 3,
+          "lossGames": 15,
+          "pairs": 7
+        },
+        {
+          "matchup": 22,
+          "turn": 7,
+          "winRows": 7,
+          "lossRows": 44,
+          "winGames": 3,
+          "lossGames": 15,
+          "pairs": 7
+        },
+        {
+          "matchup": 22,
+          "turn": 8,
+          "winRows": 12,
+          "lossRows": 57,
+          "winGames": 3,
+          "lossGames": 15,
+          "pairs": 12
+        },
+        {
+          "matchup": 22,
+          "turn": 9,
+          "winRows": 11,
+          "lossRows": 58,
+          "winGames": 3,
+          "lossGames": 15,
+          "pairs": 11
+        },
+        {
+          "matchup": 22,
+          "turn": 10,
+          "winRows": 11,
+          "lossRows": 89,
+          "winGames": 3,
+          "lossGames": 15,
+          "pairs": 11
+        },
+        {
+          "matchup": 22,
+          "turn": 11,
+          "winRows": 8,
+          "lossRows": 60,
+          "winGames": 3,
+          "lossGames": 15,
+          "pairs": 8
+        },
+        {
+          "matchup": 22,
+          "turn": 12,
+          "winRows": 19,
+          "lossRows": 99,
+          "winGames": 3,
+          "lossGames": 15,
+          "pairs": 19
+        },
+        {
+          "matchup": 22,
+          "turn": 13,
+          "winRows": 7,
+          "lossRows": 75,
+          "winGames": 3,
+          "lossGames": 15,
+          "pairs": 7
+        },
+        {
+          "matchup": 22,
+          "turn": 14,
+          "winRows": 19,
+          "lossRows": 153,
+          "winGames": 3,
+          "lossGames": 15,
+          "pairs": 19
+        },
+        {
+          "matchup": 22,
+          "turn": 15,
+          "winRows": 15,
+          "lossRows": 88,
+          "winGames": 3,
+          "lossGames": 15,
+          "pairs": 15
+        },
+        {
+          "matchup": 22,
+          "turn": 16,
+          "winRows": 23,
+          "lossRows": 143,
+          "winGames": 3,
+          "lossGames": 15,
+          "pairs": 23
+        },
+        {
+          "matchup": 22,
+          "turn": 17,
+          "winRows": 16,
+          "lossRows": 78,
+          "winGames": 3,
+          "lossGames": 13,
+          "pairs": 16
+        },
+        {
+          "matchup": 22,
+          "turn": 18,
+          "winRows": 17,
+          "lossRows": 105,
+          "winGames": 3,
+          "lossGames": 13,
+          "pairs": 17
+        },
+        {
+          "matchup": 22,
+          "turn": 19,
+          "winRows": 27,
+          "lossRows": 57,
+          "winGames": 3,
+          "lossGames": 10,
+          "pairs": 27
+        },
+        {
+          "matchup": 22,
+          "turn": 20,
+          "winRows": 14,
+          "lossRows": 90,
+          "winGames": 3,
+          "lossGames": 10,
+          "pairs": 14
+        },
+        {
+          "matchup": 22,
+          "turn": 21,
+          "winRows": 18,
+          "lossRows": 47,
+          "winGames": 3,
+          "lossGames": 9,
+          "pairs": 18
+        },
+        {
+          "matchup": 22,
+          "turn": 22,
+          "winRows": 15,
+          "lossRows": 72,
+          "winGames": 3,
+          "lossGames": 9,
+          "pairs": 15
+        },
+        {
+          "matchup": 22,
+          "turn": 23,
+          "winRows": 15,
+          "lossRows": 72,
+          "winGames": 3,
+          "lossGames": 6,
+          "pairs": 15
+        },
+        {
+          "matchup": 22,
+          "turn": 24,
+          "winRows": 17,
+          "lossRows": 49,
+          "winGames": 3,
+          "lossGames": 6,
+          "pairs": 17
+        },
+        {
+          "matchup": 22,
+          "turn": 25,
+          "winRows": 38,
+          "lossRows": 36,
+          "winGames": 3,
+          "lossGames": 5,
+          "pairs": 36
+        },
+        {
+          "matchup": 22,
+          "turn": 26,
+          "winRows": 19,
+          "lossRows": 22,
+          "winGames": 3,
+          "lossGames": 5,
+          "pairs": 19
+        },
+        {
+          "matchup": 22,
+          "turn": 27,
+          "winRows": 34,
+          "lossRows": 19,
+          "winGames": 3,
+          "lossGames": 3,
+          "pairs": 19
+        },
+        {
+          "matchup": 22,
+          "turn": 28,
+          "winRows": 19,
+          "lossRows": 23,
+          "winGames": 3,
+          "lossGames": 3,
+          "pairs": 19
+        },
+        {
+          "matchup": 22,
+          "turn": 29,
+          "winRows": 25,
+          "lossRows": 19,
+          "winGames": 3,
+          "lossGames": 3,
+          "pairs": 19
+        },
+        {
+          "matchup": 22,
+          "turn": 30,
+          "winRows": 21,
+          "lossRows": 21,
+          "winGames": 3,
+          "lossGames": 3,
+          "pairs": 21
+        },
+        {
+          "matchup": 22,
+          "turn": 31,
+          "winRows": 29,
+          "lossRows": 18,
+          "winGames": 3,
+          "lossGames": 3,
+          "pairs": 18
+        },
+        {
+          "matchup": 22,
+          "turn": 32,
+          "winRows": 11,
+          "lossRows": 8,
+          "winGames": 3,
+          "lossGames": 3,
+          "pairs": 8
+        },
+        {
+          "matchup": 22,
+          "turn": 33,
+          "winRows": 20,
+          "lossRows": 5,
+          "winGames": 3,
+          "lossGames": 1,
+          "pairs": 5
+        },
+        {
+          "matchup": 22,
+          "turn": 34,
+          "winRows": 4,
+          "lossRows": 2,
+          "winGames": 2,
+          "lossGames": 1,
+          "pairs": 2
+        },
+        {
+          "matchup": 22,
+          "turn": 35,
+          "winRows": 13,
+          "lossRows": 0,
+          "winGames": 2,
+          "lossGames": 0,
+          "pairs": 0
+        },
+        {
+          "matchup": 22,
+          "turn": 36,
+          "winRows": 4,
+          "lossRows": 0,
+          "winGames": 1,
+          "lossGames": 0,
+          "pairs": 0
+        },
+        {
+          "matchup": 22,
+          "turn": 37,
+          "winRows": 10,
+          "lossRows": 0,
+          "winGames": 1,
+          "lossGames": 0,
+          "pairs": 0
+        },
+        {
+          "matchup": 22,
+          "turn": 38,
+          "winRows": 4,
+          "lossRows": 0,
+          "winGames": 1,
+          "lossGames": 0,
+          "pairs": 0
+        },
+        {
+          "matchup": 22,
+          "turn": 39,
+          "winRows": 2,
+          "lossRows": 0,
+          "winGames": 1,
+          "lossGames": 0,
+          "pairs": 0
+        },
+        {
+          "matchup": 47,
+          "turn": 1,
+          "winRows": 24,
+          "lossRows": 11,
+          "winGames": 12,
+          "lossGames": 6,
+          "pairs": 11
+        },
+        {
+          "matchup": 47,
+          "turn": 2,
+          "winRows": 25,
+          "lossRows": 14,
+          "winGames": 12,
+          "lossGames": 6,
+          "pairs": 14
+        },
+        {
+          "matchup": 47,
+          "turn": 3,
+          "winRows": 35,
+          "lossRows": 16,
+          "winGames": 12,
+          "lossGames": 6,
+          "pairs": 16
+        },
+        {
+          "matchup": 47,
+          "turn": 4,
+          "winRows": 32,
+          "lossRows": 21,
+          "winGames": 12,
+          "lossGames": 6,
+          "pairs": 21
+        },
+        {
+          "matchup": 47,
+          "turn": 5,
+          "winRows": 53,
+          "lossRows": 17,
+          "winGames": 12,
+          "lossGames": 6,
+          "pairs": 17
+        },
+        {
+          "matchup": 47,
+          "turn": 6,
+          "winRows": 29,
+          "lossRows": 25,
+          "winGames": 12,
+          "lossGames": 6,
+          "pairs": 25
+        },
+        {
+          "matchup": 47,
+          "turn": 7,
+          "winRows": 62,
+          "lossRows": 19,
+          "winGames": 12,
+          "lossGames": 6,
+          "pairs": 19
+        },
+        {
+          "matchup": 47,
+          "turn": 8,
+          "winRows": 42,
+          "lossRows": 37,
+          "winGames": 12,
+          "lossGames": 6,
+          "pairs": 37
+        },
+        {
+          "matchup": 47,
+          "turn": 9,
+          "winRows": 80,
+          "lossRows": 23,
+          "winGames": 12,
+          "lossGames": 6,
+          "pairs": 23
+        },
+        {
+          "matchup": 47,
+          "turn": 10,
+          "winRows": 61,
+          "lossRows": 45,
+          "winGames": 12,
+          "lossGames": 6,
+          "pairs": 45
+        },
+        {
+          "matchup": 47,
+          "turn": 11,
+          "winRows": 75,
+          "lossRows": 37,
+          "winGames": 12,
+          "lossGames": 6,
+          "pairs": 37
+        },
+        {
+          "matchup": 47,
+          "turn": 12,
+          "winRows": 74,
+          "lossRows": 37,
+          "winGames": 11,
+          "lossGames": 6,
+          "pairs": 37
+        },
+        {
+          "matchup": 47,
+          "turn": 13,
+          "winRows": 92,
+          "lossRows": 43,
+          "winGames": 11,
+          "lossGames": 6,
+          "pairs": 43
+        },
+        {
+          "matchup": 47,
+          "turn": 14,
+          "winRows": 58,
+          "lossRows": 49,
+          "winGames": 9,
+          "lossGames": 6,
+          "pairs": 49
+        },
+        {
+          "matchup": 47,
+          "turn": 15,
+          "winRows": 95,
+          "lossRows": 47,
+          "winGames": 9,
+          "lossGames": 6,
+          "pairs": 47
+        },
+        {
+          "matchup": 47,
+          "turn": 16,
+          "winRows": 53,
+          "lossRows": 47,
+          "winGames": 8,
+          "lossGames": 6,
+          "pairs": 47
+        },
+        {
+          "matchup": 47,
+          "turn": 17,
+          "winRows": 83,
+          "lossRows": 43,
+          "winGames": 8,
+          "lossGames": 6,
+          "pairs": 43
+        },
+        {
+          "matchup": 47,
+          "turn": 18,
+          "winRows": 45,
+          "lossRows": 52,
+          "winGames": 8,
+          "lossGames": 6,
+          "pairs": 45
+        },
+        {
+          "matchup": 47,
+          "turn": 19,
+          "winRows": 80,
+          "lossRows": 33,
+          "winGames": 8,
+          "lossGames": 6,
+          "pairs": 33
+        },
+        {
+          "matchup": 47,
+          "turn": 20,
+          "winRows": 36,
+          "lossRows": 35,
+          "winGames": 6,
+          "lossGames": 6,
+          "pairs": 35
+        },
+        {
+          "matchup": 47,
+          "turn": 21,
+          "winRows": 42,
+          "lossRows": 23,
+          "winGames": 6,
+          "lossGames": 4,
+          "pairs": 23
+        },
+        {
+          "matchup": 47,
+          "turn": 22,
+          "winRows": 16,
+          "lossRows": 22,
+          "winGames": 3,
+          "lossGames": 4,
+          "pairs": 16
+        },
+        {
+          "matchup": 47,
+          "turn": 23,
+          "winRows": 23,
+          "lossRows": 21,
+          "winGames": 3,
+          "lossGames": 2,
+          "pairs": 21
+        },
+        {
+          "matchup": 47,
+          "turn": 24,
+          "winRows": 2,
+          "lossRows": 16,
+          "winGames": 1,
+          "lossGames": 2,
+          "pairs": 2
+        },
+        {
+          "matchup": 47,
+          "turn": 25,
+          "winRows": 10,
+          "lossRows": 2,
+          "winGames": 1,
+          "lossGames": 1,
+          "pairs": 2
+        },
+        {
+          "matchup": 68,
+          "turn": 1,
+          "winRows": 25,
+          "lossRows": 18,
+          "winGames": 10,
+          "lossGames": 8,
+          "pairs": 18
+        },
+        {
+          "matchup": 68,
+          "turn": 2,
+          "winRows": 20,
+          "lossRows": 16,
+          "winGames": 10,
+          "lossGames": 8,
+          "pairs": 16
+        },
+        {
+          "matchup": 68,
+          "turn": 3,
+          "winRows": 41,
+          "lossRows": 26,
+          "winGames": 10,
+          "lossGames": 8,
+          "pairs": 26
+        },
+        {
+          "matchup": 68,
+          "turn": 4,
+          "winRows": 28,
+          "lossRows": 24,
+          "winGames": 10,
+          "lossGames": 8,
+          "pairs": 24
+        },
+        {
+          "matchup": 68,
+          "turn": 5,
+          "winRows": 34,
+          "lossRows": 29,
+          "winGames": 10,
+          "lossGames": 8,
+          "pairs": 29
+        },
+        {
+          "matchup": 68,
+          "turn": 6,
+          "winRows": 20,
+          "lossRows": 43,
+          "winGames": 10,
+          "lossGames": 8,
+          "pairs": 20
+        },
+        {
+          "matchup": 68,
+          "turn": 7,
+          "winRows": 51,
+          "lossRows": 34,
+          "winGames": 10,
+          "lossGames": 8,
+          "pairs": 34
+        },
+        {
+          "matchup": 68,
+          "turn": 8,
+          "winRows": 31,
+          "lossRows": 51,
+          "winGames": 10,
+          "lossGames": 8,
+          "pairs": 31
+        },
+        {
+          "matchup": 68,
+          "turn": 9,
+          "winRows": 46,
+          "lossRows": 41,
+          "winGames": 10,
+          "lossGames": 8,
+          "pairs": 41
+        },
+        {
+          "matchup": 68,
+          "turn": 10,
+          "winRows": 49,
+          "lossRows": 67,
+          "winGames": 10,
+          "lossGames": 8,
+          "pairs": 49
+        },
+        {
+          "matchup": 68,
+          "turn": 11,
+          "winRows": 77,
+          "lossRows": 39,
+          "winGames": 10,
+          "lossGames": 8,
+          "pairs": 39
+        },
+        {
+          "matchup": 68,
+          "turn": 12,
+          "winRows": 67,
+          "lossRows": 62,
+          "winGames": 10,
+          "lossGames": 8,
+          "pairs": 62
+        },
+        {
+          "matchup": 68,
+          "turn": 13,
+          "winRows": 92,
+          "lossRows": 48,
+          "winGames": 10,
+          "lossGames": 7,
+          "pairs": 48
+        },
+        {
+          "matchup": 68,
+          "turn": 14,
+          "winRows": 78,
+          "lossRows": 69,
+          "winGames": 10,
+          "lossGames": 7,
+          "pairs": 69
+        },
+        {
+          "matchup": 68,
+          "turn": 15,
+          "winRows": 84,
+          "lossRows": 35,
+          "winGames": 10,
+          "lossGames": 7,
+          "pairs": 35
+        },
+        {
+          "matchup": 68,
+          "turn": 16,
+          "winRows": 65,
+          "lossRows": 71,
+          "winGames": 10,
+          "lossGames": 7,
+          "pairs": 65
+        },
+        {
+          "matchup": 68,
+          "turn": 17,
+          "winRows": 73,
+          "lossRows": 39,
+          "winGames": 10,
+          "lossGames": 7,
+          "pairs": 39
+        },
+        {
+          "matchup": 68,
+          "turn": 18,
+          "winRows": 76,
+          "lossRows": 65,
+          "winGames": 9,
+          "lossGames": 7,
+          "pairs": 65
+        },
+        {
+          "matchup": 68,
+          "turn": 19,
+          "winRows": 68,
+          "lossRows": 36,
+          "winGames": 9,
+          "lossGames": 5,
+          "pairs": 36
+        },
+        {
+          "matchup": 68,
+          "turn": 20,
+          "winRows": 54,
+          "lossRows": 38,
+          "winGames": 8,
+          "lossGames": 5,
+          "pairs": 38
+        },
+        {
+          "matchup": 68,
+          "turn": 21,
+          "winRows": 59,
+          "lossRows": 18,
+          "winGames": 8,
+          "lossGames": 4,
+          "pairs": 18
+        },
+        {
+          "matchup": 68,
+          "turn": 22,
+          "winRows": 29,
+          "lossRows": 35,
+          "winGames": 5,
+          "lossGames": 4,
+          "pairs": 29
+        },
+        {
+          "matchup": 68,
+          "turn": 23,
+          "winRows": 30,
+          "lossRows": 5,
+          "winGames": 5,
+          "lossGames": 2,
+          "pairs": 5
+        },
+        {
+          "matchup": 68,
+          "turn": 24,
+          "winRows": 15,
+          "lossRows": 17,
+          "winGames": 4,
+          "lossGames": 2,
+          "pairs": 15
+        },
+        {
+          "matchup": 68,
+          "turn": 25,
+          "winRows": 33,
+          "lossRows": 5,
+          "winGames": 4,
+          "lossGames": 1,
+          "pairs": 5
+        },
+        {
+          "matchup": 68,
+          "turn": 26,
+          "winRows": 13,
+          "lossRows": 15,
+          "winGames": 3,
+          "lossGames": 1,
+          "pairs": 13
+        },
+        {
+          "matchup": 68,
+          "turn": 27,
+          "winRows": 14,
+          "lossRows": 3,
+          "winGames": 3,
+          "lossGames": 1,
+          "pairs": 3
+        },
+        {
+          "matchup": 68,
+          "turn": 28,
+          "winRows": 2,
+          "lossRows": 7,
+          "winGames": 1,
+          "lossGames": 1,
+          "pairs": 2
+        },
+        {
+          "matchup": 68,
+          "turn": 29,
+          "winRows": 4,
+          "lossRows": 0,
+          "winGames": 1,
+          "lossGames": 0,
+          "pairs": 0
+        },
+        {
+          "matchup": 68,
+          "turn": 30,
+          "winRows": 2,
+          "lossRows": 0,
+          "winGames": 1,
+          "lossGames": 0,
+          "pairs": 0
+        },
+        {
+          "matchup": 68,
+          "turn": 31,
+          "winRows": 9,
+          "lossRows": 0,
+          "winGames": 1,
+          "lossGames": 0,
+          "pairs": 0
+        },
+        {
+          "matchup": 68,
+          "turn": 32,
+          "winRows": 2,
+          "lossRows": 0,
+          "winGames": 1,
+          "lossGames": 0,
+          "pairs": 0
+        },
+        {
+          "matchup": 68,
+          "turn": 33,
+          "winRows": 6,
+          "lossRows": 0,
+          "winGames": 1,
+          "lossGames": 0,
+          "pairs": 0
+        }
+      ],
+      "comparableCells": 118,
+      "deterministicPairs": 2495,
+      "pairedRows": 4990,
+      "unpairedRows": 3467
+    },
+    "validation": {
+      "rows": 3283,
+      "distinctGames": 24,
+      "cells": [
+        {
+          "matchup": 1,
+          "turn": 1,
+          "winRows": 6,
+          "lossRows": 6,
+          "winGames": 3,
+          "lossGames": 3,
+          "pairs": 6
+        },
+        {
+          "matchup": 1,
+          "turn": 2,
+          "winRows": 5,
+          "lossRows": 6,
+          "winGames": 3,
+          "lossGames": 3,
+          "pairs": 5
+        },
+        {
+          "matchup": 1,
+          "turn": 3,
+          "winRows": 8,
+          "lossRows": 9,
+          "winGames": 3,
+          "lossGames": 3,
+          "pairs": 8
+        },
+        {
+          "matchup": 1,
+          "turn": 4,
+          "winRows": 9,
+          "lossRows": 10,
+          "winGames": 3,
+          "lossGames": 3,
+          "pairs": 9
+        },
+        {
+          "matchup": 1,
+          "turn": 5,
+          "winRows": 6,
+          "lossRows": 8,
+          "winGames": 3,
+          "lossGames": 3,
+          "pairs": 6
+        },
+        {
+          "matchup": 1,
+          "turn": 6,
+          "winRows": 9,
+          "lossRows": 5,
+          "winGames": 3,
+          "lossGames": 3,
+          "pairs": 5
+        },
+        {
+          "matchup": 1,
+          "turn": 7,
+          "winRows": 9,
+          "lossRows": 7,
+          "winGames": 3,
+          "lossGames": 3,
+          "pairs": 7
+        },
+        {
+          "matchup": 1,
+          "turn": 8,
+          "winRows": 7,
+          "lossRows": 10,
+          "winGames": 3,
+          "lossGames": 3,
+          "pairs": 7
+        },
+        {
+          "matchup": 1,
+          "turn": 9,
+          "winRows": 10,
+          "lossRows": 10,
+          "winGames": 3,
+          "lossGames": 3,
+          "pairs": 10
+        },
+        {
+          "matchup": 1,
+          "turn": 10,
+          "winRows": 11,
+          "lossRows": 12,
+          "winGames": 3,
+          "lossGames": 3,
+          "pairs": 11
+        },
+        {
+          "matchup": 1,
+          "turn": 11,
+          "winRows": 21,
+          "lossRows": 19,
+          "winGames": 3,
+          "lossGames": 3,
+          "pairs": 19
+        },
+        {
+          "matchup": 1,
+          "turn": 12,
+          "winRows": 6,
+          "lossRows": 19,
+          "winGames": 3,
+          "lossGames": 3,
+          "pairs": 6
+        },
+        {
+          "matchup": 1,
+          "turn": 13,
+          "winRows": 29,
+          "lossRows": 20,
+          "winGames": 3,
+          "lossGames": 3,
+          "pairs": 20
+        },
+        {
+          "matchup": 1,
+          "turn": 14,
+          "winRows": 10,
+          "lossRows": 15,
+          "winGames": 3,
+          "lossGames": 3,
+          "pairs": 10
+        },
+        {
+          "matchup": 1,
+          "turn": 15,
+          "winRows": 21,
+          "lossRows": 27,
+          "winGames": 3,
+          "lossGames": 3,
+          "pairs": 21
+        },
+        {
+          "matchup": 1,
+          "turn": 16,
+          "winRows": 4,
+          "lossRows": 18,
+          "winGames": 1,
+          "lossGames": 3,
+          "pairs": 4
+        },
+        {
+          "matchup": 1,
+          "turn": 17,
+          "winRows": 10,
+          "lossRows": 24,
+          "winGames": 1,
+          "lossGames": 3,
+          "pairs": 10
+        },
+        {
+          "matchup": 1,
+          "turn": 18,
+          "winRows": 4,
+          "lossRows": 13,
+          "winGames": 1,
+          "lossGames": 3,
+          "pairs": 4
+        },
+        {
+          "matchup": 1,
+          "turn": 19,
+          "winRows": 5,
+          "lossRows": 19,
+          "winGames": 1,
+          "lossGames": 3,
+          "pairs": 5
+        },
+        {
+          "matchup": 1,
+          "turn": 20,
+          "winRows": 10,
+          "lossRows": 37,
+          "winGames": 1,
+          "lossGames": 3,
+          "pairs": 10
+        },
+        {
+          "matchup": 1,
+          "turn": 21,
+          "winRows": 8,
+          "lossRows": 14,
+          "winGames": 1,
+          "lossGames": 3,
+          "pairs": 8
+        },
+        {
+          "matchup": 1,
+          "turn": 22,
+          "winRows": 11,
+          "lossRows": 23,
+          "winGames": 1,
+          "lossGames": 3,
+          "pairs": 11
+        },
+        {
+          "matchup": 1,
+          "turn": 23,
+          "winRows": 3,
+          "lossRows": 17,
+          "winGames": 1,
+          "lossGames": 3,
+          "pairs": 3
+        },
+        {
+          "matchup": 1,
+          "turn": 24,
+          "winRows": 16,
+          "lossRows": 17,
+          "winGames": 1,
+          "lossGames": 3,
+          "pairs": 16
+        },
+        {
+          "matchup": 1,
+          "turn": 25,
+          "winRows": 2,
+          "lossRows": 13,
+          "winGames": 1,
+          "lossGames": 3,
+          "pairs": 2
+        },
+        {
+          "matchup": 1,
+          "turn": 26,
+          "winRows": 11,
+          "lossRows": 21,
+          "winGames": 1,
+          "lossGames": 3,
+          "pairs": 11
+        },
+        {
+          "matchup": 1,
+          "turn": 27,
+          "winRows": 9,
+          "lossRows": 11,
+          "winGames": 1,
+          "lossGames": 3,
+          "pairs": 9
+        },
+        {
+          "matchup": 1,
+          "turn": 28,
+          "winRows": 8,
+          "lossRows": 34,
+          "winGames": 1,
+          "lossGames": 3,
+          "pairs": 8
+        },
+        {
+          "matchup": 1,
+          "turn": 29,
+          "winRows": 9,
+          "lossRows": 13,
+          "winGames": 1,
+          "lossGames": 3,
+          "pairs": 9
+        },
+        {
+          "matchup": 1,
+          "turn": 30,
+          "winRows": 2,
+          "lossRows": 28,
+          "winGames": 1,
+          "lossGames": 3,
+          "pairs": 2
+        },
+        {
+          "matchup": 1,
+          "turn": 31,
+          "winRows": 0,
+          "lossRows": 7,
+          "winGames": 0,
+          "lossGames": 2,
+          "pairs": 0
+        },
+        {
+          "matchup": 1,
+          "turn": 32,
+          "winRows": 0,
+          "lossRows": 27,
+          "winGames": 0,
+          "lossGames": 2,
+          "pairs": 0
+        },
+        {
+          "matchup": 1,
+          "turn": 33,
+          "winRows": 0,
+          "lossRows": 3,
+          "winGames": 0,
+          "lossGames": 2,
+          "pairs": 0
+        },
+        {
+          "matchup": 1,
+          "turn": 34,
+          "winRows": 0,
+          "lossRows": 11,
+          "winGames": 0,
+          "lossGames": 2,
+          "pairs": 0
+        },
+        {
+          "matchup": 1,
+          "turn": 35,
+          "winRows": 0,
+          "lossRows": 1,
+          "winGames": 0,
+          "lossGames": 1,
+          "pairs": 0
+        },
+        {
+          "matchup": 1,
+          "turn": 36,
+          "winRows": 0,
+          "lossRows": 8,
+          "winGames": 0,
+          "lossGames": 1,
+          "pairs": 0
+        },
+        {
+          "matchup": 1,
+          "turn": 37,
+          "winRows": 0,
+          "lossRows": 5,
+          "winGames": 0,
+          "lossGames": 1,
+          "pairs": 0
+        },
+        {
+          "matchup": 1,
+          "turn": 38,
+          "winRows": 0,
+          "lossRows": 8,
+          "winGames": 0,
+          "lossGames": 1,
+          "pairs": 0
+        },
+        {
+          "matchup": 1,
+          "turn": 39,
+          "winRows": 0,
+          "lossRows": 3,
+          "winGames": 0,
+          "lossGames": 1,
+          "pairs": 0
+        },
+        {
+          "matchup": 1,
+          "turn": 40,
+          "winRows": 0,
+          "lossRows": 8,
+          "winGames": 0,
+          "lossGames": 1,
+          "pairs": 0
+        },
+        {
+          "matchup": 1,
+          "turn": 41,
+          "winRows": 0,
+          "lossRows": 2,
+          "winGames": 0,
+          "lossGames": 1,
+          "pairs": 0
+        },
+        {
+          "matchup": 1,
+          "turn": 42,
+          "winRows": 0,
+          "lossRows": 5,
+          "winGames": 0,
+          "lossGames": 1,
+          "pairs": 0
+        },
+        {
+          "matchup": 22,
+          "turn": 1,
+          "winRows": 2,
+          "lossRows": 7,
+          "winGames": 2,
+          "lossGames": 4,
+          "pairs": 2
+        },
+        {
+          "matchup": 22,
+          "turn": 2,
+          "winRows": 4,
+          "lossRows": 8,
+          "winGames": 2,
+          "lossGames": 4,
+          "pairs": 4
+        },
+        {
+          "matchup": 22,
+          "turn": 3,
+          "winRows": 4,
+          "lossRows": 16,
+          "winGames": 2,
+          "lossGames": 4,
+          "pairs": 4
+        },
+        {
+          "matchup": 22,
+          "turn": 4,
+          "winRows": 6,
+          "lossRows": 12,
+          "winGames": 2,
+          "lossGames": 4,
+          "pairs": 6
+        },
+        {
+          "matchup": 22,
+          "turn": 5,
+          "winRows": 5,
+          "lossRows": 10,
+          "winGames": 2,
+          "lossGames": 4,
+          "pairs": 5
+        },
+        {
+          "matchup": 22,
+          "turn": 6,
+          "winRows": 6,
+          "lossRows": 10,
+          "winGames": 2,
+          "lossGames": 4,
+          "pairs": 6
+        },
+        {
+          "matchup": 22,
+          "turn": 7,
+          "winRows": 3,
+          "lossRows": 13,
+          "winGames": 2,
+          "lossGames": 4,
+          "pairs": 3
+        },
+        {
+          "matchup": 22,
+          "turn": 8,
+          "winRows": 8,
+          "lossRows": 23,
+          "winGames": 2,
+          "lossGames": 4,
+          "pairs": 8
+        },
+        {
+          "matchup": 22,
+          "turn": 9,
+          "winRows": 4,
+          "lossRows": 15,
+          "winGames": 2,
+          "lossGames": 4,
+          "pairs": 4
+        },
+        {
+          "matchup": 22,
+          "turn": 10,
+          "winRows": 6,
+          "lossRows": 21,
+          "winGames": 2,
+          "lossGames": 4,
+          "pairs": 6
+        },
+        {
+          "matchup": 22,
+          "turn": 11,
+          "winRows": 6,
+          "lossRows": 15,
+          "winGames": 2,
+          "lossGames": 4,
+          "pairs": 6
+        },
+        {
+          "matchup": 22,
+          "turn": 12,
+          "winRows": 16,
+          "lossRows": 25,
+          "winGames": 2,
+          "lossGames": 4,
+          "pairs": 16
+        },
+        {
+          "matchup": 22,
+          "turn": 13,
+          "winRows": 11,
+          "lossRows": 26,
+          "winGames": 2,
+          "lossGames": 4,
+          "pairs": 11
+        },
+        {
+          "matchup": 22,
+          "turn": 14,
+          "winRows": 11,
+          "lossRows": 39,
+          "winGames": 2,
+          "lossGames": 4,
+          "pairs": 11
+        },
+        {
+          "matchup": 22,
+          "turn": 15,
+          "winRows": 11,
+          "lossRows": 20,
+          "winGames": 2,
+          "lossGames": 4,
+          "pairs": 11
+        },
+        {
+          "matchup": 22,
+          "turn": 16,
+          "winRows": 11,
+          "lossRows": 28,
+          "winGames": 2,
+          "lossGames": 4,
+          "pairs": 11
+        },
+        {
+          "matchup": 22,
+          "turn": 17,
+          "winRows": 14,
+          "lossRows": 20,
+          "winGames": 2,
+          "lossGames": 4,
+          "pairs": 14
+        },
+        {
+          "matchup": 22,
+          "turn": 18,
+          "winRows": 14,
+          "lossRows": 34,
+          "winGames": 2,
+          "lossGames": 4,
+          "pairs": 14
+        },
+        {
+          "matchup": 22,
+          "turn": 19,
+          "winRows": 13,
+          "lossRows": 49,
+          "winGames": 2,
+          "lossGames": 4,
+          "pairs": 13
+        },
+        {
+          "matchup": 22,
+          "turn": 20,
+          "winRows": 9,
+          "lossRows": 39,
+          "winGames": 2,
+          "lossGames": 4,
+          "pairs": 9
+        },
+        {
+          "matchup": 22,
+          "turn": 21,
+          "winRows": 22,
+          "lossRows": 30,
+          "winGames": 2,
+          "lossGames": 4,
+          "pairs": 22
+        },
+        {
+          "matchup": 22,
+          "turn": 22,
+          "winRows": 17,
+          "lossRows": 40,
+          "winGames": 2,
+          "lossGames": 4,
+          "pairs": 17
+        },
+        {
+          "matchup": 22,
+          "turn": 23,
+          "winRows": 13,
+          "lossRows": 25,
+          "winGames": 2,
+          "lossGames": 3,
+          "pairs": 13
+        },
+        {
+          "matchup": 22,
+          "turn": 24,
+          "winRows": 13,
+          "lossRows": 14,
+          "winGames": 2,
+          "lossGames": 3,
+          "pairs": 13
+        },
+        {
+          "matchup": 22,
+          "turn": 25,
+          "winRows": 13,
+          "lossRows": 10,
+          "winGames": 2,
+          "lossGames": 2,
+          "pairs": 10
+        },
+        {
+          "matchup": 22,
+          "turn": 26,
+          "winRows": 9,
+          "lossRows": 9,
+          "winGames": 2,
+          "lossGames": 2,
+          "pairs": 9
+        },
+        {
+          "matchup": 22,
+          "turn": 27,
+          "winRows": 16,
+          "lossRows": 18,
+          "winGames": 2,
+          "lossGames": 2,
+          "pairs": 16
+        },
+        {
+          "matchup": 22,
+          "turn": 28,
+          "winRows": 6,
+          "lossRows": 10,
+          "winGames": 2,
+          "lossGames": 2,
+          "pairs": 6
+        },
+        {
+          "matchup": 22,
+          "turn": 29,
+          "winRows": 26,
+          "lossRows": 11,
+          "winGames": 2,
+          "lossGames": 2,
+          "pairs": 11
+        },
+        {
+          "matchup": 22,
+          "turn": 30,
+          "winRows": 6,
+          "lossRows": 12,
+          "winGames": 2,
+          "lossGames": 2,
+          "pairs": 6
+        },
+        {
+          "matchup": 22,
+          "turn": 31,
+          "winRows": 21,
+          "lossRows": 20,
+          "winGames": 2,
+          "lossGames": 2,
+          "pairs": 20
+        },
+        {
+          "matchup": 22,
+          "turn": 32,
+          "winRows": 3,
+          "lossRows": 12,
+          "winGames": 1,
+          "lossGames": 2,
+          "pairs": 3
+        },
+        {
+          "matchup": 22,
+          "turn": 33,
+          "winRows": 8,
+          "lossRows": 9,
+          "winGames": 1,
+          "lossGames": 2,
+          "pairs": 8
+        },
+        {
+          "matchup": 22,
+          "turn": 34,
+          "winRows": 0,
+          "lossRows": 16,
+          "winGames": 0,
+          "lossGames": 2,
+          "pairs": 0
+        },
+        {
+          "matchup": 22,
+          "turn": 35,
+          "winRows": 0,
+          "lossRows": 5,
+          "winGames": 0,
+          "lossGames": 2,
+          "pairs": 0
+        },
+        {
+          "matchup": 22,
+          "turn": 36,
+          "winRows": 0,
+          "lossRows": 8,
+          "winGames": 0,
+          "lossGames": 2,
+          "pairs": 0
+        },
+        {
+          "matchup": 22,
+          "turn": 37,
+          "winRows": 0,
+          "lossRows": 2,
+          "winGames": 0,
+          "lossGames": 1,
+          "pairs": 0
+        },
+        {
+          "matchup": 22,
+          "turn": 38,
+          "winRows": 0,
+          "lossRows": 2,
+          "winGames": 0,
+          "lossGames": 1,
+          "pairs": 0
+        },
+        {
+          "matchup": 22,
+          "turn": 39,
+          "winRows": 0,
+          "lossRows": 1,
+          "winGames": 0,
+          "lossGames": 1,
+          "pairs": 0
+        },
+        {
+          "matchup": 22,
+          "turn": 40,
+          "winRows": 0,
+          "lossRows": 1,
+          "winGames": 0,
+          "lossGames": 1,
+          "pairs": 0
+        },
+        {
+          "matchup": 22,
+          "turn": 41,
+          "winRows": 0,
+          "lossRows": 1,
+          "winGames": 0,
+          "lossGames": 1,
+          "pairs": 0
+        },
+        {
+          "matchup": 22,
+          "turn": 42,
+          "winRows": 0,
+          "lossRows": 1,
+          "winGames": 0,
+          "lossGames": 1,
+          "pairs": 0
+        },
+        {
+          "matchup": 22,
+          "turn": 43,
+          "winRows": 0,
+          "lossRows": 1,
+          "winGames": 0,
+          "lossGames": 1,
+          "pairs": 0
+        },
+        {
+          "matchup": 22,
+          "turn": 44,
+          "winRows": 0,
+          "lossRows": 1,
+          "winGames": 0,
+          "lossGames": 1,
+          "pairs": 0
+        },
+        {
+          "matchup": 47,
+          "turn": 1,
+          "winRows": 7,
+          "lossRows": 2,
+          "winGames": 4,
+          "lossGames": 2,
+          "pairs": 2
+        },
+        {
+          "matchup": 47,
+          "turn": 2,
+          "winRows": 12,
+          "lossRows": 6,
+          "winGames": 4,
+          "lossGames": 2,
+          "pairs": 6
+        },
+        {
+          "matchup": 47,
+          "turn": 3,
+          "winRows": 12,
+          "lossRows": 5,
+          "winGames": 4,
+          "lossGames": 2,
+          "pairs": 5
+        },
+        {
+          "matchup": 47,
+          "turn": 4,
+          "winRows": 10,
+          "lossRows": 6,
+          "winGames": 4,
+          "lossGames": 2,
+          "pairs": 6
+        },
+        {
+          "matchup": 47,
+          "turn": 5,
+          "winRows": 15,
+          "lossRows": 6,
+          "winGames": 4,
+          "lossGames": 2,
+          "pairs": 6
+        },
+        {
+          "matchup": 47,
+          "turn": 6,
+          "winRows": 10,
+          "lossRows": 10,
+          "winGames": 4,
+          "lossGames": 2,
+          "pairs": 10
+        },
+        {
+          "matchup": 47,
+          "turn": 7,
+          "winRows": 21,
+          "lossRows": 7,
+          "winGames": 4,
+          "lossGames": 2,
+          "pairs": 7
+        },
+        {
+          "matchup": 47,
+          "turn": 8,
+          "winRows": 25,
+          "lossRows": 11,
+          "winGames": 4,
+          "lossGames": 2,
+          "pairs": 11
+        },
+        {
+          "matchup": 47,
+          "turn": 9,
+          "winRows": 36,
+          "lossRows": 7,
+          "winGames": 4,
+          "lossGames": 2,
+          "pairs": 7
+        },
+        {
+          "matchup": 47,
+          "turn": 10,
+          "winRows": 23,
+          "lossRows": 16,
+          "winGames": 4,
+          "lossGames": 2,
+          "pairs": 16
+        },
+        {
+          "matchup": 47,
+          "turn": 11,
+          "winRows": 35,
+          "lossRows": 12,
+          "winGames": 4,
+          "lossGames": 2,
+          "pairs": 12
+        },
+        {
+          "matchup": 47,
+          "turn": 12,
+          "winRows": 22,
+          "lossRows": 9,
+          "winGames": 4,
+          "lossGames": 2,
+          "pairs": 9
+        },
+        {
+          "matchup": 47,
+          "turn": 13,
+          "winRows": 40,
+          "lossRows": 24,
+          "winGames": 4,
+          "lossGames": 2,
+          "pairs": 24
+        },
+        {
+          "matchup": 47,
+          "turn": 14,
+          "winRows": 38,
+          "lossRows": 15,
+          "winGames": 4,
+          "lossGames": 2,
+          "pairs": 15
+        },
+        {
+          "matchup": 47,
+          "turn": 15,
+          "winRows": 43,
+          "lossRows": 15,
+          "winGames": 4,
+          "lossGames": 2,
+          "pairs": 15
+        },
+        {
+          "matchup": 47,
+          "turn": 16,
+          "winRows": 27,
+          "lossRows": 14,
+          "winGames": 4,
+          "lossGames": 2,
+          "pairs": 14
+        },
+        {
+          "matchup": 47,
+          "turn": 17,
+          "winRows": 18,
+          "lossRows": 7,
+          "winGames": 4,
+          "lossGames": 2,
+          "pairs": 7
+        },
+        {
+          "matchup": 47,
+          "turn": 18,
+          "winRows": 5,
+          "lossRows": 21,
+          "winGames": 1,
+          "lossGames": 2,
+          "pairs": 5
+        },
+        {
+          "matchup": 47,
+          "turn": 19,
+          "winRows": 9,
+          "lossRows": 5,
+          "winGames": 1,
+          "lossGames": 1,
+          "pairs": 5
+        },
+        {
+          "matchup": 47,
+          "turn": 20,
+          "winRows": 9,
+          "lossRows": 12,
+          "winGames": 1,
+          "lossGames": 1,
+          "pairs": 9
+        },
+        {
+          "matchup": 47,
+          "turn": 21,
+          "winRows": 5,
+          "lossRows": 0,
+          "winGames": 1,
+          "lossGames": 0,
+          "pairs": 0
+        },
+        {
+          "matchup": 68,
+          "turn": 1,
+          "winRows": 6,
+          "lossRows": 8,
+          "winGames": 3,
+          "lossGames": 3,
+          "pairs": 6
+        },
+        {
+          "matchup": 68,
+          "turn": 2,
+          "winRows": 6,
+          "lossRows": 6,
+          "winGames": 3,
+          "lossGames": 3,
+          "pairs": 6
+        },
+        {
+          "matchup": 68,
+          "turn": 3,
+          "winRows": 11,
+          "lossRows": 11,
+          "winGames": 3,
+          "lossGames": 3,
+          "pairs": 11
+        },
+        {
+          "matchup": 68,
+          "turn": 4,
+          "winRows": 9,
+          "lossRows": 9,
+          "winGames": 3,
+          "lossGames": 3,
+          "pairs": 9
+        },
+        {
+          "matchup": 68,
+          "turn": 5,
+          "winRows": 11,
+          "lossRows": 16,
+          "winGames": 3,
+          "lossGames": 3,
+          "pairs": 11
+        },
+        {
+          "matchup": 68,
+          "turn": 6,
+          "winRows": 8,
+          "lossRows": 7,
+          "winGames": 3,
+          "lossGames": 3,
+          "pairs": 7
+        },
+        {
+          "matchup": 68,
+          "turn": 7,
+          "winRows": 19,
+          "lossRows": 13,
+          "winGames": 3,
+          "lossGames": 3,
+          "pairs": 13
+        },
+        {
+          "matchup": 68,
+          "turn": 8,
+          "winRows": 14,
+          "lossRows": 15,
+          "winGames": 3,
+          "lossGames": 3,
+          "pairs": 14
+        },
+        {
+          "matchup": 68,
+          "turn": 9,
+          "winRows": 21,
+          "lossRows": 15,
+          "winGames": 3,
+          "lossGames": 3,
+          "pairs": 15
+        },
+        {
+          "matchup": 68,
+          "turn": 10,
+          "winRows": 19,
+          "lossRows": 20,
+          "winGames": 3,
+          "lossGames": 3,
+          "pairs": 19
+        },
+        {
+          "matchup": 68,
+          "turn": 11,
+          "winRows": 22,
+          "lossRows": 21,
+          "winGames": 3,
+          "lossGames": 3,
+          "pairs": 21
+        },
+        {
+          "matchup": 68,
+          "turn": 12,
+          "winRows": 31,
+          "lossRows": 26,
+          "winGames": 3,
+          "lossGames": 3,
+          "pairs": 26
+        },
+        {
+          "matchup": 68,
+          "turn": 13,
+          "winRows": 15,
+          "lossRows": 25,
+          "winGames": 3,
+          "lossGames": 3,
+          "pairs": 15
+        },
+        {
+          "matchup": 68,
+          "turn": 14,
+          "winRows": 24,
+          "lossRows": 31,
+          "winGames": 3,
+          "lossGames": 3,
+          "pairs": 24
+        },
+        {
+          "matchup": 68,
+          "turn": 15,
+          "winRows": 26,
+          "lossRows": 21,
+          "winGames": 3,
+          "lossGames": 3,
+          "pairs": 21
+        },
+        {
+          "matchup": 68,
+          "turn": 16,
+          "winRows": 28,
+          "lossRows": 27,
+          "winGames": 3,
+          "lossGames": 3,
+          "pairs": 27
+        },
+        {
+          "matchup": 68,
+          "turn": 17,
+          "winRows": 24,
+          "lossRows": 16,
+          "winGames": 3,
+          "lossGames": 3,
+          "pairs": 16
+        },
+        {
+          "matchup": 68,
+          "turn": 18,
+          "winRows": 10,
+          "lossRows": 16,
+          "winGames": 3,
+          "lossGames": 3,
+          "pairs": 10
+        },
+        {
+          "matchup": 68,
+          "turn": 19,
+          "winRows": 26,
+          "lossRows": 4,
+          "winGames": 3,
+          "lossGames": 1,
+          "pairs": 4
+        },
+        {
+          "matchup": 68,
+          "turn": 20,
+          "winRows": 20,
+          "lossRows": 3,
+          "winGames": 3,
+          "lossGames": 1,
+          "pairs": 3
+        },
+        {
+          "matchup": 68,
+          "turn": 21,
+          "winRows": 24,
+          "lossRows": 0,
+          "winGames": 3,
+          "lossGames": 0,
+          "pairs": 0
+        },
+        {
+          "matchup": 68,
+          "turn": 22,
+          "winRows": 17,
+          "lossRows": 0,
+          "winGames": 2,
+          "lossGames": 0,
+          "pairs": 0
+        },
+        {
+          "matchup": 68,
+          "turn": 23,
+          "winRows": 11,
+          "lossRows": 0,
+          "winGames": 2,
+          "lossGames": 0,
+          "pairs": 0
+        },
+        {
+          "matchup": 68,
+          "turn": 24,
+          "winRows": 12,
+          "lossRows": 0,
+          "winGames": 1,
+          "lossGames": 0,
+          "pairs": 0
+        },
+        {
+          "matchup": 68,
+          "turn": 25,
+          "winRows": 5,
+          "lossRows": 0,
+          "winGames": 1,
+          "lossGames": 0,
+          "pairs": 0
+        },
+        {
+          "matchup": 68,
+          "turn": 26,
+          "winRows": 9,
+          "lossRows": 0,
+          "winGames": 1,
+          "lossGames": 0,
+          "pairs": 0
+        },
+        {
+          "matchup": 68,
+          "turn": 27,
+          "winRows": 12,
+          "lossRows": 0,
+          "winGames": 1,
+          "lossGames": 0,
+          "pairs": 0
+        },
+        {
+          "matchup": 68,
+          "turn": 28,
+          "winRows": 6,
+          "lossRows": 0,
+          "winGames": 1,
+          "lossGames": 0,
+          "pairs": 0
+        },
+        {
+          "matchup": 68,
+          "turn": 29,
+          "winRows": 10,
+          "lossRows": 0,
+          "winGames": 1,
+          "lossGames": 0,
+          "pairs": 0
+        },
+        {
+          "matchup": 68,
+          "turn": 30,
+          "winRows": 3,
+          "lossRows": 0,
+          "winGames": 1,
+          "lossGames": 0,
+          "pairs": 0
+        },
+        {
+          "matchup": 68,
+          "turn": 31,
+          "winRows": 4,
+          "lossRows": 0,
+          "winGames": 1,
+          "lossGames": 0,
+          "pairs": 0
+        }
+      ],
+      "comparableCells": 103,
+      "deterministicPairs": 1049,
+      "pairedRows": 2098,
+      "unpairedRows": 1185
+    },
+    "lostPairsBySplit": 203,
+    "validationPairsOutsideTrainComparableCells": 0
+  },
+  "reasons": {},
+  "calls": {
+    "<local-ran:anyOrderPlayedThisTurn>": 28,
+    "<local-ran:ApplyTheBuff>": 149,
+    "<local-ran:RemoveTheBuff>": 137,
+    "<local-ran:updateCustomJsonIfNeeded>": 615,
+    "<local-ran:GetPlayFromHandDamage>": 65,
+    "<local-ran:didPlayBritishInfantryLastTurn>": 54,
+    "<local-ran:isSecondOrderThisTurn>": 30,
+    "<frontline-blocked-full>": 32
+  },
+  "limitations": [
+    "Execution health and observation coverage only; not game-rule or playing-strength certification.",
+    "Pairs count correlated observation rows, not independent games or training updates.",
+    "Fixed four-matchup pilot is not a representative meta sample. No favorable reseeding, rejected-game replacement or holdout search.",
+    "Raw binaries remain unpublished local evidence, bound by SHA-256. Quality manifests and compact row metadata are published.",
+    "This frozen split has not been wired into model training; existing random-split trainer must not be represented as using it."
+  ],
+  "base_commit": "404104120cf0caab27b47c7b795a9c567c077752",
+  "scope": "Bounded frozen repeated-matchup collection pilot; training contracts only",
+  "source_bindings": {
+    "tools/NNTrain/Program.cs": "faf03dd7a9e39091da293020127faef9d4c7a33b1c3f3241d794b353f765e83f",
+    "tools/NNTrain/DumpMatchup.cs": "59a75ce1201ce00fbae2dc2985f190f78fb54560d8ef54ba0050678c7f77d40c",
+    "tools/NNTrain/DumpMatchupSelfTest.cs": "6a64b85cefa0f071301db7cf7ed4cd99cbde72329953b70e75a152aec41d9c2c",
+    "out/audit/systematic-rules/repeat-pilot-analysis-20261101.py": "fe7f6c306eda5a0f866c392ed7e7834664873fbca00a5c226ade902f4c9eada6"
+  },
+  "artifacts": {
+    "out/audit/systematic-rules/repeat-pilot-batch-0-20261101.quality.json": "4d9a66c2e8a46fe199501770f8e8861e1c982a0a92697cf778b81ef22ac6c475",
+    "out/audit/systematic-rules/repeat-pilot-batch-0-20261101.decks.json": "dd0ed235e9ef77db820cc4178fd2835d748431d4766d84587f02005e0a362631",
+    "out/audit/systematic-rules/repeat-pilot-batch-1-20261101.quality.json": "8f22a6c79aee572ad16487c7f97012293752630150f9b2a97c957ab30c62ed97",
+    "out/audit/systematic-rules/repeat-pilot-batch-1-20261101.decks.json": "5e9e2a5c8c6fa68b14913ec56d076c8fedcbf5c5e6a3a0b72e153e596f60eeea",
+    "out/audit/systematic-rules/repeat-pilot-batch-2-20261101.quality.json": "4f004bad48f1fc3e79b6fffb4caf9f498a168de24339e9c1cfde0ba1d9128739",
+    "out/audit/systematic-rules/repeat-pilot-batch-2-20261101.decks.json": "df07e80f8696891cd2964d9e7719791dd964222539dbf80bcf67c83352c1f606",
+    "out/audit/systematic-rules/repeat-pilot-batch-3-20261101.quality.json": "0c427574c5ad41a698a78ee16bbca5f8634cb33a2ecdb28556de8712a80b42ad",
+    "out/audit/systematic-rules/repeat-pilot-batch-3-20261101.decks.json": "7283eda620f993ab3a190cf8f418b0698192a94d08a3a2b7bc65699309f1e565",
+    "out/audit/systematic-rules/repeat-pilot-rows-20261101.json": "21db5cf23373a9728820675749f2b6f61134f2e2eec05c4885b8d184d8a0b289",
+    "out/audit/systematic-rules/repeat-pilot-worker-20261101.json": "4f64cdd65727d6c1587b2f939465f1762f8e83510adb60dd2fa74ff5e09bf69c",
+    "out/audit/systematic-rules/repeat-pilot-plan-20261101.json": "6b5d02219cc0dcff212f4eb25764e922c5103cf3813c9b4ea52c1d393f10794a"
+  },
+  "logs": {
+    "out/audit/systematic-rules/repeat-pilot-matchup-20261101.txt": "6b306372a9ac172c82811a12efec74420d7a486407ae9307850d0e96aa000a55",
+    "out/audit/systematic-rules/repeat-pilot-coverage-20261101.txt": "4daa3a9265ef2866405e33b824b5d10a553f6ba0b7dcd30ebbef12a097e1c277",
+    "out/audit/systematic-rules/repeat-pilot-metric-20261101.txt": "e7aeb72200e69d20622dc6406cfd37359acb014e83b39d254dc91799bd220ae5",
+    "out/audit/systematic-rules/repeat-pilot-direction-20261101.txt": "91719a85b468cabcba82119b0b2406b8032ff33802e6e45beb3058487f85f13a",
+    "out/audit/systematic-rules/repeat-pilot-learning-20261101.txt": "d7faa75602026cd8ef5ae23fc2cd86ea53ef846efd6026b4622c07fb100e502f",
+    "out/audit/systematic-rules/repeat-pilot-preprocessing-20261101.txt": "8934378a4acf1cfa1894f2d55b9449f00375ef7100712e3a9930a87495bb0b73",
+    "out/audit/systematic-rules/repeat-pilot-evaluation-20261101.txt": "41052447d2274824e827bacd7587943101f8ad853fea695c45aa8f405f5816ad",
+    "out/audit/systematic-rules/repeat-pilot-admission-20261101.txt": "bf321d94caa01475eb8f83fb1f3ce2655d866d2d9857ee9c20354551169ea935",
+    "out/audit/systematic-rules/repeat-pilot-full-20261101.txt": "9f49dd4a37eb1d983b5d3bcdf306dd1a82ee2a6d7eb020020c485efaabc6f148",
+    "out/audit/systematic-rules/repeat-pilot-before-invalid-20261101.txt": "67ee457df95bd7e74fcafa70913859faa20ece1608ea6b5cff8f3f1ad307663e",
+    "out/audit/systematic-rules/repeat-pilot-after-invalid-20261101.txt": "664545857be9382de5c0e14551a9645c5f23829112136b3fdb932dfd5374b8e4",
+    "out/audit/systematic-rules/repeat-pilot-batch-0-20261101.txt": "4f69069cc4aea3df5dacf447ac3f74ce58ffb3a813683038973645685d83f918",
+    "out/audit/systematic-rules/repeat-pilot-batch-1-20261101.txt": "65001e4bb890f5823b8231e68d8dfb43bd984ec57d86e12ce57406d6229f74bf",
+    "out/audit/systematic-rules/repeat-pilot-batch-2-20261101.txt": "867e6bb1f37000f283d0377a4db6e24fba90b3cd59cd2b180b53de7e69df225e",
+    "out/audit/systematic-rules/repeat-pilot-batch-3-20261101.txt": "a78e7538ff0e64fb4c77b1bbdeaa1c9cd43451fdcb3eca3a17ab6bdd66f47d2f"
+  },
+  "regression": {
+    "before": "Old dump silently ignores invalid --matchup 0,0 and creates output.",
+    "after": "Invalid pair rejected before output open; existing output preserved. One default sentinel binary and deck manifest exactly match old producer; quality matches except NNTrain.dll hash.",
+    "checks": {
+      "matchup": 781,
+      "coverage": 171,
+      "metric": 182,
+      "direction": 158,
+      "learning": 46,
+      "preprocessing": 50,
+      "evaluation": 200,
+      "admission": 44,
+      "full": 1058,
+      "pilot_analysis_negative": 8
+    }
+  },
+  "worker": {
+    "job": "20261101-235937-repeat-pilot-6bde2701",
+    "status": "completed",
+    "verification": "Primary verified all per-batch counts/partitions, fault counters, input hashes, call names/game counts/occurrences and aggregate totals from original manifests. Worker scripts not integrated.",
+    "correction": "Worker informational_call_totals.games=274 sums per-call game incidences, NOT distinct games. Actual unique games with recorded informational calls: 75. The 274 figure is not adopted as game coverage."
+  },
+  "decision": "Do not scale collection yet: this pilot has sufficient nonzero holdout row-pair coverage for a bounded pipeline test. Next bind composite (batch,local-game) identities and this predeclared holdout to model Train/Verify, then run a small smoke training without seed/label search. Broaden matchups and evaluate independent seeds/policies before strength claims.",
+  "execution": {
+    "source": "Clean HEAD src/BotSim/NNTrain plus the three scoped producer sources; dirty action probes excluded.",
+    "sampling": "decision, every 1",
+    "all_batch_exit_codes": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "no_retry": true,
+    "holdout_frozen_before_outcomes": true,
+    "training_split_not_yet_integrated": true
+  }
+}

@@ -1,0 +1,2 @@
+Win parameter SHA256: 94adb7f41c3f602e40839e76b7a64e699c4c338cafcc03e2aa1b3e0dd501c274
+Pair direction: 158 checks passed (synthetic data; no strength claim)

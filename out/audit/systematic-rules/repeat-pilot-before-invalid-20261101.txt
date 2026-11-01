@@ -1,0 +1,13 @@
+卡库 2019 张，卡向量 1906 条，维度 745/局面
+蓝图 IR: 1709 张卡可解释，手写脚本 0 张
+
+自对弈 1 局；每局从 22 套元卡组里**随机抽 2 套不同的**（seed 派生的独立随机流）+ 左右随机互换，输出 D:\Codex Workshop\KLink-bot\out\audit\deepseek-repeat-pilot-20261101\before-invalid.bin
+
+完成 1 局（左胜 1 / 右胜 0 / 未分 0）
+样本 27 条，维度 745，用时 0.4s
+速度 2 局/秒
+候选表缓存 命中 0 / 未命中 0 / 不可缓存 6
+文件 0 MB
+卡组对位：1 种有序对位，每对位 1~1 局（理论 = 1/(22×21) = 0.0）
+对位清单 D:\Codex Workshop\KLink-bot\out\audit\deepseek-repeat-pilot-20261101\before-invalid.bin.decks.json（1 KB）
+训练准入：接受 1 / 拒绝 0，仅写入已接受对局；清单 D:\Codex Workshop\KLink-bot\out\audit\deepseek-repeat-pilot-20261101\before-invalid.bin.quality.json

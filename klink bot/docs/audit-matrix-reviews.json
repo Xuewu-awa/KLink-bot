@@ -8485,6 +8485,25 @@
         "Coverage validates Gate2 admission and row values/partition but does not add a complete binary-to-manifest semantic audit or verify game outcomes against the client. Output collision protection compares normalized path strings; filesystem aliases are not resolved.",
         "Previous authority bindings are retained. PvP denominator and overall remaining percentage remain unresolved."
       ]
+    },
+    {
+      "id": "TRAINING/NNTrain/frozen-repeat-pilot-20261101",
+      "status": "partial",
+      "report": "out/audit/systematic-rules/repeat-pilot-20261101.json",
+      "report_sha256": "6d75ce206f70ff5b18ea5285aeb28ec997a28d52771124584ca234c771b84388",
+      "source_bindings": {
+        "tools/NNTrain/Program.cs": "faf03dd7a9e39091da293020127faef9d4c7a33b1c3f3241d794b353f765e83f",
+        "tools/NNTrain/DumpMatchup.cs": "59a75ce1201ce00fbae2dc2985f190f78fb54560d8ef54ba0050678c7f77d40c",
+        "tools/NNTrain/DumpMatchupSelfTest.cs": "6a64b85cefa0f071301db7cf7ed4cd99cbde72329953b70e75a152aec41d9c2c",
+        "out/audit/systematic-rules/repeat-pilot-analysis-20261101.py": "fe7f6c306eda5a0f866c392ed7e7834664873fbca00a5c226ade902f4c9eada6"
+      },
+      "limitations": [
+        "Execution health and observation coverage only; not game-rule or playing-strength certification.",
+        "Pairs count correlated observation rows, not independent games or training updates.",
+        "Fixed four-matchup pilot is not a representative meta sample. No favorable reseeding, rejected-game replacement or holdout search.",
+        "Raw binaries remain unpublished local evidence, bound by SHA-256. Quality manifests and compact row metadata are published.",
+        "This frozen split has not been wired into model training; existing random-split trainer must not be represented as using it."
+      ]
     }
   ]
 }

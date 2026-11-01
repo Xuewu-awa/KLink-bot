@@ -1,0 +1,71 @@
+{
+  "spec": "repeated-matchup-pilot/v1",
+  "frozen_utc": "2026-11-01T15:55:25.601880+00:00",
+  "base_commit": "404104120cf0caab27b47c7b795a9c567c077752",
+  "selection": "First four deck indices, paired adjacent and reversed, chosen before new outcomes. Bounded diagnostic only, not a representative meta sample.",
+  "sampling": "decision",
+  "every": 1,
+  "games_per_matchup": 24,
+  "validation_game_ids": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "training_game_ids": [
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23
+  ],
+  "batches": [
+    {
+      "id": 0,
+      "left": 0,
+      "right": 1,
+      "seed": 110000
+    },
+    {
+      "id": 1,
+      "left": 1,
+      "right": 0,
+      "seed": 111000
+    },
+    {
+      "id": 2,
+      "left": 2,
+      "right": 3,
+      "seed": 112000
+    },
+    {
+      "id": 3,
+      "left": 3,
+      "right": 2,
+      "seed": 113000
+    }
+  ],
+  "rules": [
+    "Run each planned attempt once; no label/seed search or replacement of rejected games.",
+    "Keep Gate2 unchanged and preserve all rejected attempts. Exit 2 means completed with rejections, exit 1 is failure.",
+    "Holdout membership uses attempted local game IDs, frozen before outcomes; never split accepted games anew.",
+    "If either accepted partition is empty, report it explicitly; do not invent coverage or resample.",
+    "This plan is diagnostic only; any future training model must explicitly bind this holdout instead of using the existing random split.",
+    "If rejection dominates, prioritize common blockers before scaling; if coverage is sparse, design a future schedule without changing this one."
+  ]
+}

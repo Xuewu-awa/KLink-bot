@@ -69,6 +69,7 @@ internal static class Program
             if (cmd == "value-evaluation-selftest") return ValueEvaluationSelfTest.Run();
             if (cmd == "value-learning-selftest") return ValueLearningSelfTest.Run();
             if (cmd == "pair-coverage-selftest") return PairCoverageSelfTest.Run();
+            if (cmd == "dump-matchup-selftest") return DumpMatchupSelfTest.Run();
             if (cmd == "coverage") return Coverage(opts);
             if (cmd == "ranking-metric-selftest") return RankingMetricSelfTest.Run();
             if (cmd == "pair-direction-selftest") return PairDirectionSelfTest.Run();
@@ -148,6 +149,7 @@ internal static class Program
         if (KLink.Bot.Effects.Blueprint.KismetLibrary.Default is null)
             throw new InvalidOperationException("蓝图 IR 未加载，不能生成训练数据");
         var decks = MetaDecks.All;
+        var fixedPair = DumpMatchup.Parse(opts.GetValueOrDefault("matchup"),decks.Count);
         var expanded = decks.Select(d => ExpandDeck(db, d.Name)).ToArray();
         var quality = new QualityReport { Seed=seed, RequestedGames=games, Dim=Dim, DeckCount=decks.Count,
             SamplingMode=sampling==EpisodeSampling.Turn ? "turn-end/v1" : "policy-and-choice-before/v1" };
@@ -156,8 +158,9 @@ internal static class Program
             quality.InputsSha256[Path.GetFileName(file)] = TrainingAdmission.Hash(file);
         quality.InputsSha256["KLink.Bot.dll"] = TrainingAdmission.Hash(typeof(MatchEngine).Assembly.Location);
         quality.InputsSha256["NNTrain.dll"] = TrainingAdmission.Hash(typeof(Program).Assembly.Location);
-        Console.WriteLine($"自对弈 {games} 局；每局从 {decks.Count} 套元卡组里**随机抽 2 套不同的**"
-                          + "（seed 派生的独立随机流）+ 左右随机互换，输出 " + outPath);
+        Console.WriteLine(fixedPair.HasValue
+            ? $"自对弈 {games} 局；固定有序对位 {fixedPair.Value.Left},{fixedPair.Value.Right}，输出 {outPath}"
+            : $"自对弈 {games} 局；随机选择不同卡组并随机互换左右，输出 {outPath}");
 
         using var fs = new FileStream(outPath, FileMode.Create, FileAccess.ReadWrite,
                                       FileShare.Read, 1 << 22);
@@ -185,13 +188,7 @@ internal static class Program
             //
             // 随机流由 (seed, g) 派生，**与对局本身的洗牌流 `seed+g` 无关**：
             // 同样的命令行 ⇒ 同样的卡组分配 ⇒ 同样的数据（可复现）。
-            var pick = new DeterministicRandom(seed ^ (0x9E3779B97F4A7C15UL * ((ulong)g + 1)));
-            int di = pick.Next(decks.Count);
-            int dj = pick.Next(decks.Count - 1);
-            if (dj >= di) dj++;                       // 保证 dj ≠ di
-            bool swap = pick.Next(2) == 1;            // 左右随机互换
-            int leftIdx = swap ? dj : di;
-            int rightIdx = swap ? di : dj;
+            var (leftIdx,rightIdx) = DumpMatchup.Select(seed,g,decks.Count,fixedPair);
             pairs.Add((g, leftIdx, rightIdx));
 
             string da = decks[leftIdx].Name;
@@ -1051,7 +1048,7 @@ internal static class Program
             dump 拒绝异常/未支持/未结束对局；有拒绝或无样本时返回2。
             train/verify 要求匹配的 .quality.json；诊断通过不等于规则已认证。
 
-              NNTrain dump   --games 10000 --out nn-data.bin [--seed 1] [--every 1] [--sampling turn|decision]
+              NNTrain dump   --games 10000 --out nn-data.bin [--seed 1] [--every 1] [--sampling turn|decision] [--matchup L,R]
             sampling=turn保留回合末样本；decision在贪心步骤及选牌回答前采样，every按边界序号抽样。
             两者均为左方视角的胜负价值样本；decision还不是动作标签/掩码数据。
               NNTrain dump-actions --games 100 --seed 1 --out actions.jsonl.gz [--choose-one-policy native|last]
