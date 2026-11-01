@@ -1,0 +1,289 @@
+{
+  "inventory_scope": "text-only source inventory of the two copied files in this packet; no native KARDS semantics, no proposed implementation",
+  "read_only_sources": [
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\out\\audit\\deepseek-choice-mutation-20261101\\ChoicePolicyAdapter.cs",
+      "total_lines": 95,
+      "sha256": "FB29B28FC40D93DD3CC6A8D077C9DC5747AA982ABEDDBD1D6E78572FAB3D0A4E"
+    },
+    {
+      "path": "D:\\Codex Workshop\\KLink-bot\\out\\audit\\deepseek-choice-mutation-20261101\\SelfTest.ChoicePolicyAdapter.cs",
+      "total_lines": 121,
+      "sha256": "D2A8180E63A6C45337FD615D60CEE9B9C6F519B5AB66F4F028CFC06B0F8EE31B"
+    }
+  ],
+  "adapter_callback_routes": {
+    "route_count": 2,
+    "declared_callback_fields": [
+      {
+        "name": "_offered",
+        "declaration_line": 30,
+        "declaration_text": "    private readonly Func<CardInstance, IReadOnlyList<CardInstance>, CardInstance?> _offered;"
+      },
+      {
+        "name": "_hand",
+        "declaration_line": 31,
+        "declaration_text": "    private readonly Func<CardInstance, IReadOnlyList<CardInstance>, int?> _hand;"
+      }
+    ],
+    "routes": [
+      {
+        "route_id": "offered-card-route",
+        "kind": "PolicyChoiceKind.OfferedCard",
+        "kind_source": {
+          "line": 48,
+          "text": "        _offered = (source, cards) => cards[Decide(source, cards, PolicyChoiceKind.OfferedCard)];"
+        },
+        "callback_property_assigned": "engine.ChooseSpawnCard",
+        "registration": {
+          "line": 54,
+          "text": "        engine.ChooseSpawnCard = _offered;"
+        },
+        "result_expression": {
+          "line": 48,
+          "text": "        _offered = (source, cards) => cards[Decide(source, cards, PolicyChoiceKind.OfferedCard)];",
+          "note": "single-expression lambda; the Decide result is used directly as the cards index and the lambda returns the CardInstance at that index"
+        },
+        "result_expression_block": {
+          "line_start": 48,
+          "line_end": 48,
+          "lines": [
+            {
+              "line": 48,
+              "text": "        _offered = (source, cards) => cards[Decide(source, cards, PolicyChoiceKind.OfferedCard)];"
+            }
+          ]
+        },
+        "can_cancel": false,
+        "can_cancel_derivation": {
+          "line": 67,
+          "text": "                bool canCancel = kind == PolicyChoiceKind.HandTarget;",
+          "explanation_text_only": "canCancel is true only when kind is HandTarget, therefore false on the OfferedCard route"
+        },
+        "callback_invocation": {
+          "line": 75,
+          "text": "                int index = _choose(request);"
+        },
+        "shared_validation_applied": {
+          "lines": [
+            77,
+            78
+          ],
+          "texts": [
+            {
+              "line": 77,
+              "text": "                if (index < 0 ? index != -1 || !canCancel : index >= cards.Count)"
+            },
+            {
+              "line": 78,
+              "text": "                    throw new InvalidOperationException(\"Policy returned an index outside the current offer.\");"
+            }
+          ]
+        }
+      },
+      {
+        "route_id": "hand-target-route",
+        "kind": "PolicyChoiceKind.HandTarget",
+        "kind_source": {
+          "line": 51,
+          "text": "            int index = Decide(source, cards, PolicyChoiceKind.HandTarget);"
+        },
+        "callback_property_assigned": "engine.PickHandTargetId",
+        "registration": {
+          "line": 55,
+          "text": "        engine.PickHandTargetId = _hand;"
+        },
+        "result_expression": {
+          "line": 52,
+          "text": "            return index == -1 ? 0 : cards[index].CardId;",
+          "note": "returned from the block-bodied lambda declared on lines 49-53; the -1 reply maps to literal 0, otherwise the CardId of cards[index]"
+        },
+        "result_expression_block": {
+          "line_start": 49,
+          "line_end": 53,
+          "lines": [
+            {
+              "line": 49,
+              "text": "        _hand = (source, cards) =>"
+            },
+            {
+              "line": 50,
+              "text": "        {"
+            },
+            {
+              "line": 51,
+              "text": "            int index = Decide(source, cards, PolicyChoiceKind.HandTarget);"
+            },
+            {
+              "line": 52,
+              "text": "            return index == -1 ? 0 : cards[index].CardId;"
+            },
+            {
+              "line": 53,
+              "text": "        };"
+            }
+          ]
+        },
+        "can_cancel": true,
+        "can_cancel_derivation": {
+          "line": 67,
+          "text": "                bool canCancel = kind == PolicyChoiceKind.HandTarget;",
+          "explanation_text_only": "canCancel is true only when kind is HandTarget, therefore true on the HandTarget route"
+        },
+        "callback_invocation": {
+          "line": 75,
+          "text": "                int index = _choose(request);"
+        },
+        "shared_validation_applied": {
+          "lines": [
+            77,
+            78
+          ],
+          "texts": [
+            {
+              "line": 77,
+              "text": "                if (index < 0 ? index != -1 || !canCancel : index >= cards.Count)"
+            },
+            {
+              "line": 78,
+              "text": "                    throw new InvalidOperationException(\"Policy returned an index outside the current offer.\");"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "constructor_guard_on_preexisting_callbacks": {
+    "note": "these properties are only tested for null in the constructor; the two routes above are the only assignments in this file",
+    "conditions": [
+      {
+        "line": 43,
+        "text": "        if (engine.PendingSelectionCount != 0 || engine.ChooseSpawnCard is not null"
+      },
+      {
+        "line": 44,
+        "text": "            || engine.PickCardToDraw is not null || engine.PickHandTargetId is not null"
+      },
+      {
+        "line": 45,
+        "text": "            || engine.PickHandTarget is not null || engine.ChooseHandTarget is not null)"
+      },
+      {
+        "line": 46,
+        "text": "            throw new InvalidOperationException(\"Attach before choices begin, without existing choice handlers.\");"
+      }
+    ],
+    "guarded_but_never_mutated_in_this_file": [
+      "engine.PickCardToDraw",
+      "engine.PickHandTarget",
+      "engine.ChooseHandTarget"
+    ]
+  },
+  "dispose_callback_clears": {
+    "lines": [
+      {
+        "line": 91,
+        "text": "        if (_engine.ChooseSpawnCard == _offered) _engine.ChooseSpawnCard = null;"
+      },
+      {
+        "line": 92,
+        "text": "        if (_engine.PickHandTargetId == _hand) _engine.PickHandTargetId = null;"
+      }
+    ]
+  },
+  "test_methods": {
+    "file": "D:\\Codex Workshop\\KLink-bot\\out\\audit\\deepseek-choice-mutation-20261101\\SelfTest.ChoicePolicyAdapter.cs",
+    "enclosing_type_declaration": {
+      "line": 8,
+      "text": "internal static partial class SelfTest"
+    },
+    "methods": [
+      {
+        "name": "PolicyChoiceHand",
+        "declaration_line": 10,
+        "declaration_text": "    private static string? PolicyChoiceHand(CardDatabase db)",
+        "body_line_start": 10,
+        "body_line_end": 38,
+        "signature_line_number": 10,
+        "opening_brace_line": 11,
+        "closing_brace_line": 38
+      },
+      {
+        "name": "PolicyChoiceOffered",
+        "declaration_line": 40,
+        "declaration_text": "    private static string? PolicyChoiceOffered(CardDatabase db)",
+        "body_line_start": 40,
+        "body_line_end": 61,
+        "signature_line_number": 40,
+        "opening_brace_line": 41,
+        "closing_brace_line": 61
+      },
+      {
+        "name": "PolicyChoiceInvalidAndOwnership",
+        "declaration_line": 63,
+        "declaration_text": "    private static string? PolicyChoiceInvalidAndOwnership(CardDatabase db)",
+        "body_line_start": 63,
+        "body_line_end": 95,
+        "signature_line_number": 63,
+        "opening_brace_line": 64,
+        "closing_brace_line": 95
+      },
+      {
+        "name": "PolicyChoiceHiddenObservation",
+        "declaration_line": 97,
+        "declaration_text": "    private static string? PolicyChoiceHiddenObservation(CardDatabase db)",
+        "body_line_start": 97,
+        "body_line_end": 120,
+        "signature_line_number": 97,
+        "opening_brace_line": 98,
+        "closing_brace_line": 120
+      }
+    ],
+    "method_count": 4,
+    "method_name_list": [
+      "PolicyChoiceHand",
+      "PolicyChoiceOffered",
+      "PolicyChoiceInvalidAndOwnership",
+      "PolicyChoiceHiddenObservation"
+    ],
+    "registration_of_these_methods_in_this_file": "none present in the copied file; no self-test registry or filter invocation for these four methods appears between lines 1 and 121"
+  },
+  "old_decide_post_callback_checks": [
+    {
+      "line": 76,
+      "text": "                ObjectDisposedException.ThrowIf(_disposed, this);"
+    },
+    {
+      "line": 77,
+      "text": "                if (index < 0 ? index != -1 || !canCancel : index >= cards.Count)"
+    },
+    {
+      "line": 78,
+      "text": "                    throw new InvalidOperationException(\"Policy returned an index outside the current offer.\");"
+    },
+    {
+      "line": 79,
+      "text": "                CompletedChoices++;"
+    },
+    {
+      "line": 80,
+      "text": "                return index;"
+    }
+  ],
+  "old_decide_post_callback_checks_scope": {
+    "method": "Decide",
+    "method_declaration_line": 58,
+    "method_declaration_text": "    private int Decide(CardInstance source, IReadOnlyList<CardInstance> cards, PolicyChoiceKind kind)",
+    "preceding_statement": {
+      "line": 75,
+      "text": "                int index = _choose(request);"
+    },
+    "contiguous_line_range": "76-80",
+    "note": "these are the contiguous statements in Decide executed after the _choose callback returns and before the inner finally on line 82"
+  },
+  "unresolved": [
+    "Engine-side callback contracts (MatchEngine.ChooseSpawnCard / PickHandTargetId delegate signatures, invocation sites, PickCardToDraw / PickHandTarget / ChooseHandTarget handlers) are not in this packet and were not inspected.",
+    "The self-test registry or filter entry that invokes PolicyChoiceHand / PolicyChoiceOffered / PolicyChoiceInvalidAndOwnership / PolicyChoiceHiddenObservation is not present in the copied file.",
+    "No build, compile, or test execution was performed and none is claimed; this file reports source-text inventory only."
+  ]
+}

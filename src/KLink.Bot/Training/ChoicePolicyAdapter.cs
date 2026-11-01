@@ -1,5 +1,6 @@
 using KLink.Bot.Engine;
 using KLink.Bot.NN;
+using System.Text.Json;
 
 namespace KLink.Bot.Training;
 
@@ -67,13 +68,25 @@ public sealed class ChoicePolicyAdapter : IDisposable
                 bool canCancel = kind == PolicyChoiceKind.HandTarget;
                 if (source.Owner is not (Side.Left or Side.Right))
                     throw new InvalidOperationException("Choice actor must be a player side.");
-                var options = Array.AsReadOnly(cards.Select((c, i) =>
-                    new PolicyCardOption(i, c.CardId, c.Name, c.Attack, c.Defense, c.KreditCost)).ToArray());
-                var observation = Array.AsReadOnly(StateEncoder.Encode(_engine.State, _vectors, source.Owner));
-                var request = new PolicyChoiceRequest(CompletedChoices + 1, kind, source.Owner,
-                    _engine.State.Turn, source.CardId, source.Name, canCancel, options, observation);
+                var offered = cards.ToArray();
+                PolicyChoiceRequest Describe() => new(CompletedChoices + 1, kind, source.Owner,
+                    _engine.State.Turn, source.CardId, source.Name, canCancel,
+                    Array.AsReadOnly(offered.Select((c, i) =>
+                        new PolicyCardOption(i, c.CardId, c.Name, c.Attack, c.Defense, c.KreditCost)).ToArray()),
+                    Array.AsReadOnly(StateEncoder.Encode(_engine.State, _vectors, source.Owner)));
+                var request = Describe();
+                string boundary = DecisionBoundary(source, offered);
+                string described = JsonSerializer.Serialize(request);
+                var handlers = (_engine.ChooseSpawnCard, _engine.PickCardToDraw,
+                    _engine.PickHandTargetId, _engine.PickHandTarget, _engine.ChooseHandTarget);
                 int index = _choose(request);
                 ObjectDisposedException.ThrowIf(_disposed, this);
+                if (cards.Count != offered.Length || cards.Where((c, i) => !ReferenceEquals(c, offered[i])).Any()
+                    || handlers != (_engine.ChooseSpawnCard, _engine.PickCardToDraw,
+                        _engine.PickHandTargetId, _engine.PickHandTarget, _engine.ChooseHandTarget)
+                    || boundary != DecisionBoundary(source, offered)
+                    || described != JsonSerializer.Serialize(Describe()))
+                    throw new InvalidOperationException("Policy changed the engine or offer during a synchronous choice.");
                 if (index < 0 ? index != -1 || !canCancel : index >= cards.Count)
                     throw new InvalidOperationException("Policy returned an index outside the current offer.");
                 CompletedChoices++;
@@ -82,6 +95,29 @@ public sealed class ChoicePolicyAdapter : IDisposable
             finally { _deciding = false; }
         }
         catch { Faults++; throw; }
+    }
+
+    // Internal change detector, not complete isolation or a rollback mechanism.
+    // Include detached Forecast/templates: they need not occur in AllCards.
+    // Hidden battle snapshots are never exposed to the policy request.
+    // VM private state, transient changes and concurrency remain outside scope.
+    private string DecisionBoundary(CardInstance source, IReadOnlyList<CardInstance> offered)
+    {
+        var state = _engine.State;
+        object Card(CardInstance c) => new
+        {
+            Snapshot = c.Snapshot(), c.ChooseOne, CurrentTargetId = c.CurrentTarget?.CardId
+        };
+        return JsonSerializer.Serialize(new
+        {
+            Snapshot = state.SnapshotJson(), state.Random.State,
+            Trace = JsonSerializer.Serialize(state.ActionLog),
+            state.StopFurtherActions, state.StopAttack, state.IsFinished, state.Winner, state.WinnerReason,
+            state.ClientSide, _engine.PendingSelectionCount,
+            Choices = state.AllCards.Select(c => new { c.CardId, c.ChooseOne, CurrentTargetId = c.CurrentTarget?.CardId }).ToArray(),
+            Source = Card(source), Offered = offered.Select(Card).ToArray(),
+            _engine.Api.Vm.ProgramsExecuted, _engine.Api.Vm.FaultedPrograms, Faults
+        });
     }
 
     public void Dispose()

@@ -1,0 +1,46 @@
+{
+  "scope": "ChoicePolicyAdapter synchronous callback mutation guard",
+  "authority": "Repository implementation and executable regression only",
+  "base_commit": "60680f08e2a7e5315f9721f38309b0b987be3d57",
+  "defect": "Before fix, attack mutation in callback was accepted as a completed choice; failing regression reproduced with IR loaded.",
+  "fix": "Check offer reference/order, five choice handlers, full internal state and log/RNG, stop flags, ChooseOne/CurrentTarget IDs, detached source and candidates, VM counters, faults and regenerated copied request before accepting an index.",
+  "regression": {
+    "before_failed": 1,
+    "targeted_passed": 5,
+    "full_passed": 1058,
+    "mutation_cases": 80,
+    "pure_control_scenarios": 6,
+    "pure_control_choices": 12,
+    "logs": {
+      "out/audit/systematic-rules/choice-policy-mutation-before-20261101.txt": "280c357bb4410300ad82a4f4eef85a1e7cb6f830119b70f1aeb5e9dcc65db3b4",
+      "out/audit/systematic-rules/choice-policy-mutation-targeted-20261101.txt": "cb9ddcf7a49945639042b7e2219b485790b1b934ce90f167148f48d459627bc2",
+      "out/audit/systematic-rules/choice-policy-mutation-full-20261101.txt": "9f49dd4a37eb1d983b5d3bcdf306dd1a82ee2a6d7eb020020c485efaabc6f148"
+    }
+  },
+  "worker": {
+    "job": "20261101-171756-choice-mutation-5b79e3f9",
+    "result": "out/audit/systematic-rules/choice-policy-mutation-worker-20261101.json",
+    "result_sha256": "976f278913cc501a7819ec875899aa423a80e069d5430ae9633253bfd139b34e",
+    "verified_literal_citations": 40,
+    "verification": "Primary verified both SHA256/line counts and all supplied literal line/declaration citations; integration and tests performed by primary."
+  },
+  "validation_environment": {
+    "source": "Clean HEAD source snapshot plus three scoped files; unrelated dirty probe changes excluded.",
+    "runtime_data_sha256": {
+      "cards.live.json": "3550dc76eb0414c500166875f45909077aeeb3ea4d229b9b0ba9c66a81987c4b",
+      "card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b"
+    },
+    "runtime_data_note": "Exact working-tree runtime bytes retained for native-default hash guard; LF-normalized content independently matches HEAD. Git LF bytes are not claimed byte-identical runtime input."
+  },
+  "source_bindings": {
+    "src/KLink.Bot/Training/ChoicePolicyAdapter.cs": "52525eabc5475e41c5cf966109e31a23fc2881d3453e507af4c4a776484dc583",
+    "tools/BotSim/SelfTest.cs": "e2abb1950c1150d27681da86f43494b9be8bb01786e024400f7924c4db82c8f9",
+    "tools/BotSim/SelfTest.ChoicePolicyMutation.cs": "77d1b5a9075df33d109dfec7c497d594d4839a405d9f7234a4bb3e4537e6171a"
+  },
+  "remaining": [
+    "Software synchronous callback contract only; no native rule or card certification. Hidden snapshots remain internal.",
+    "Not a sandbox: snapshot omissions, VM private state, external callback side effects, transient mutate-and-restore and concurrent mutation remain outside complete detection.",
+    "No rollback: callback mutations persist, Faults increments and selection is rejected. Hosts must discard faulty episodes, including exceptions caught by the VM.",
+    "No throughput or playing-strength measurement."
+  ]
+}

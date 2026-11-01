@@ -8353,6 +8353,23 @@
         "Only MainActionPolicyAdapter is changed; ChoicePolicyAdapter purity guards remain a separate open task.",
         "No rollback: mutations persist, Faults increments, the returned root is not run. Hosts must discard the episode. No throughput or playing-strength claim."
       ]
+    },
+    {
+      "id": "TRAINING/ChoicePolicyAdapter/callback-mutation-20261101",
+      "status": "partial",
+      "report": "out/audit/systematic-rules/choice-policy-mutation-20261101.json",
+      "report_sha256": "8226cb9efc119a1e949138eada54b7f557f8cf6507cd73d22818360af719475a",
+      "source_bindings": {
+        "src/KLink.Bot/Training/ChoicePolicyAdapter.cs": "52525eabc5475e41c5cf966109e31a23fc2881d3453e507af4c4a776484dc583",
+        "tools/BotSim/SelfTest.cs": "e2abb1950c1150d27681da86f43494b9be8bb01786e024400f7924c4db82c8f9",
+        "tools/BotSim/SelfTest.ChoicePolicyMutation.cs": "77d1b5a9075df33d109dfec7c497d594d4839a405d9f7234a4bb3e4537e6171a"
+      },
+      "limitations": [
+        "Software synchronous callback contract only; no native rule or card certification. Hidden snapshots remain internal.",
+        "Not a sandbox: snapshot omissions, VM private state, external callback side effects, transient mutate-and-restore and concurrent mutation remain outside complete detection.",
+        "No rollback: callback mutations persist, Faults increments and selection is rejected. Hosts must discard faulty episodes, including exceptions caught by the VM.",
+        "No throughput or playing-strength measurement."
+      ]
     }
   ]
 }

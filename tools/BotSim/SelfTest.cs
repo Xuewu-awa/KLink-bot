@@ -81,6 +81,7 @@ internal static partial class SelfTest
         new("策略选择接口：手牌索引取消及快照", PolicyChoiceHand),
         new("策略选择接口：牌库和预报候选", PolicyChoiceOffered),
         new("策略选择接口：非法回答与回调所有权", PolicyChoiceInvalidAndOwnership),
+        new("策略选择接口：回调突变拒绝与纯选择对照", PolicyChoiceMutationBoundary),
         new("策略选择接口：观察隐藏身份与正向对照", PolicyChoiceHiddenObservation),
         new("训练入口批次：六张单位显式空事件", SixNativeEmptyPlayedEvents),
         new("训练阻塞批次：空文本返回文本值", EmptyTextReturnsText),

@@ -1,6 +1,6 @@
 {
   "date": "2026-11-01",
-  "batch": "main-policy-callback-mutation",
+  "batch": "choice-policy-callback-mutation",
   "counts": {
     "cards": 2019,
     "cards_with_own_ir": 1709,
@@ -12,7 +12,7 @@
     "program_containers": 2626,
     "dependency_edges": 18567,
     "dependency_symbols": 440,
-    "secondary_reports": 455,
+    "secondary_reports": 457,
     "explicit_partial_units": 39,
     "partial_units_matching_bound_inputs": 0,
     "planning_work_domains": 14,
@@ -24,22 +24,23 @@
   },
   "matrix_tests": 16,
   "csharp_tests": {
-    "targeted": 9,
-    "full": 1057,
-    "new_mutation_scenarios": 26,
-    "pure_controls": 2,
+    "targeted": 5,
+    "full": 1058,
+    "new_mutation_scenarios": 80,
+    "pure_control_scenarios": 6,
+    "pure_control_choices": 12,
     "before_regression_exit_code": 1,
     "after_exit_code": 0
   },
   "worker": {
-    "job_id": "20261101-170148-policy-mutation-a3f8e6d1",
+    "job_id": "20261101-171756-choice-mutation-5b79e3f9",
     "status": "completed",
-    "verification": "Old guard,8 population/record pairs,4 declaration lines and4 snapshot omissions independently verified."
+    "verification": "Both source hashes and line counts and every supplied literal citation independently verified."
   },
-  "input_scope": "Clean HEAD snapshot plus MainActionPolicyAdapter, SelfTest registration and new mutation test. Software contract registry separate from native-rule partial units; all old source/evidence bindings retained.",
-  "source_revision": "b9116919272f0793258d347fe1f1034ebeaacb9e",
+  "input_scope": "Clean HEAD snapshot plus ChoicePolicyAdapter, SelfTest registration and new mutation test. Software contract registry separate from native-rule partial units; all old source/evidence bindings retained.",
+  "source_revision": "60680f08e2a7e5315f9721f38309b0b987be3d57",
   "limitations": [
-    "Main-action callback only, not full isolation or card certification.",
+    "Choice callback only, not full isolation or card certification.",
     "SelfTest registration changed: earlier whole-file bindings are allowed to become stale; no old hashes refreshed.",
     "Historical inventory.json is an existing unpublished local input, hash retained in matrix; tracked inputs verified against Git index bytes."
   ]
