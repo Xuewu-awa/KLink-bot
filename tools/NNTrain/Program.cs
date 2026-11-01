@@ -80,6 +80,8 @@ internal static class Program
             if (cmd == "verify-actions") return ActionDatasetTool.VerifyCommand(opts);
             if (cmd == "build-afterstate-data") return AfterstateDatasetTool.Build(opts);
             if (cmd == "verify-afterstate-data") { AfterstateDatasetTool.Verify(opts.GetValueOrDefault("data","afterstate-win.jsonl.gz")); Console.WriteLine("Verified afterstate win data."); return 0; }
+            if (cmd == "train-afterstate-win") return AfterstateWinTraining.Train(opts);
+            if (cmd == "verify-afterstate-win") return AfterstateWinTraining.Verify(opts);
             string dataDir = FindDir("card-effects.json");
             var db = CardDatabase.Load(dataDir);
             var vecs = StateEncoder.LoadCardVectors(FindDir("card-vectors.json"));

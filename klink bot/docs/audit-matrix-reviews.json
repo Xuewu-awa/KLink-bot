@@ -8668,6 +8668,23 @@
         "Rows are grouped by game in training/validation split; 12/4 games are too small for calibration.",
         "Afterstates are left-perspective 745-dimensional observations after committed teacher actions; hidden VM equivalence and complete legal action masks remain unresolved."
       ]
+    },
+    {
+      "id": "TRAINING/NNTrain/afterstate-win-training-20261102",
+      "status": "partial",
+      "report": "out/audit/systematic-rules/afterstate-win-training-20261102.json",
+      "report_sha256": "b7293fab7fdfbd3394375bafd3dd676e28d443dc21b62f4f251f71a78e4bb7f7",
+      "source_bindings": {
+        "tools/NNTrain/AfterstateWinTraining.cs": "dcdbee73324e957d4ad9121a89b8fcbb679bf5526edd055cd26aceeb11ea8df8",
+        "tools/NNTrain/AfterstateDatasetTool.cs": "dcbb8ef04f6bc590930d87e38eee9b755a2588d414a72a29dd26a0b3fa2d9bb7",
+        "tools/NNTrain/Program.cs": "5bd4e32e97af97a80d7aac4e6c6cb51f9033c0f218afbdd405d07848aa7521ef"
+      },
+      "limitations": [
+        "Small 16-game sample; descriptive holdout only.",
+        "Targets inherit simulator outcomes and do not certify rules or strength.",
+        "Afterstate is left-perspective and candidate enumeration remains a structural superset.",
+        "No paired model-vs-Greedy gameplay evaluation was run for this new model."
+      ]
     }
   ]
 }
