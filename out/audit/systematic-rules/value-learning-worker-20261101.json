@@ -1,0 +1,132 @@
+{
+  "sources": [
+    {
+      "file": "D:\\Codex Workshop\\KLink-bot\\out\\audit\\deepseek-value-learning-20261101\\Program.cs",
+      "sha256": "2e6f95bcae72efaec5c519804cbb3b7f4229d213f5ae28bc9a18a9786b7b44c3",
+      "total_lines": 1003
+    }
+  ],
+  "citations": [
+    {
+      "file": "D:\\Codex Workshop\\KLink-bot\\out\\audit\\deepseek-value-learning-20261101\\Program.cs",
+      "line": 317,
+      "text": "int epochs = GetInt(opts, \"epochs\", 30);",
+      "purpose": "Train --epochs argument read from opts, default 30; drives the epoch loop bound at line 508."
+    },
+    {
+      "file": "D:\\Codex Workshop\\KLink-bot\\out\\audit\\deepseek-value-learning-20261101\\Program.cs",
+      "line": 321,
+      "text": "int evalEvery = Math.Max(1, GetInt(opts, \"eval-every\", 5));",
+      "purpose": "Train --eval-every argument, default 5, floored at 1; source comment on lines 318-320 calls it a log-only switch."
+    },
+    {
+      "file": "D:\\Codex Workshop\\KLink-bot\\out\\audit\\deepseek-value-learning-20261101\\Program.cs",
+      "line": 322,
+      "text": "int hidden = GetInt(opts, \"hidden\", 64);",
+      "purpose": "Train --hidden argument read from opts, default 64; used as hidden width of the MLP layer arrays."
+    },
+    {
+      "file": "D:\\Codex Workshop\\KLink-bot\\out\\audit\\deepseek-value-learning-20261101\\Program.cs",
+      "line": 323,
+      "text": "string modelPath = opts.GetValueOrDefault(\"out\", \"nn-model.bin\");",
+      "purpose": "Train --out model path, default nn-model.bin; the same variable is passed to model.Save."
+    },
+    {
+      "file": "D:\\Codex Workshop\\KLink-bot\\out\\audit\\deepseek-value-learning-20261101\\Program.cs",
+      "line": 324,
+      "text": "float lr = 0.05f;",
+      "purpose": "Learning rate is a hard-coded literal 0.05f, not an option; it feeds the per-epoch step scale."
+    },
+    {
+      "file": "D:\\Codex Workshop\\KLink-bot\\out\\audit\\deepseek-value-learning-20261101\\Program.cs",
+      "line": 486,
+      "text": "Dictionary<(int, int), (List<int> W, List<int> L)>? cells = null;",
+      "purpose": "Declaration of the pair-target training-unit map keyed by (pairId, turnBucket), nullable and filled only for target=pair."
+    },
+    {
+      "file": "D:\\Codex Workshop\\KLink-bot\\out\\audit\\deepseek-value-learning-20261101\\Program.cs",
+      "line": 491,
+      "text": "cells = new Dictionary<(int, int), (List<int> W, List<int> L)>();",
+      "purpose": "cells allocated inside the pairwise branch; the win list and loss list start empty per cell."
+    },
+    {
+      "file": "D:\\Codex Workshop\\KLink-bot\\out\\audit\\deepseek-value-learning-20261101\\Program.cs",
+      "line": 495,
+      "text": "var key = ((int)pair[r], turnBucket[r]);",
+      "purpose": "Training-unit key = (truncated pairId, turn bucket); turnBucket is built before standardization at line 343."
+    },
+    {
+      "file": "D:\\Codex Workshop\\KLink-bot\\out\\audit\\deepseek-value-learning-20261101\\Program.cs",
+      "line": 501,
+      "text": "(y[r] > 0.5f ? c.W : c.L).Add(r);",
+      "purpose": "Each training sample is appended to the cell's winning list (y[r] > 0.5) or losing list."
+    },
+    {
+      "file": "D:\\Codex Workshop\\KLink-bot\\out\\audit\\deepseek-value-learning-20261101\\Program.cs",
+      "line": 503,
+      "text": "int usable = cells.Values.Count(c => c.W.Count > 0 && c.L.Count > 0);",
+      "purpose": "Usable pair-cell count = cells where both the winning and losing lists are non-empty; computed at line 503 and only printed at lines 504-505."
+    },
+    {
+      "file": "D:\\Codex Workshop\\KLink-bot\\out\\audit\\deepseek-value-learning-20261101\\Program.cs",
+      "line": 512,
+      "text": "int used = 0;",
+      "purpose": "used counter reset to 0 at the start of every epoch; incremented only by completed pair samples."
+    },
+    {
+      "file": "D:\\Codex Workshop\\KLink-bot\\out\\audit\\deepseek-value-learning-20261101\\Program.cs",
+      "line": 539,
+      "text": "for (int k = 0; k + 1 < nTrain; k += 2)",
+      "purpose": "Pair sampling walks the shuffled training index array in steps of 2 (adjacent pairs) up to nTrain-1."
+    },
+    {
+      "file": "D:\\Codex Workshop\\KLink-bot\\out\\audit\\deepseek-value-learning-20261101\\Program.cs",
+      "line": 542,
+      "text": "var cell = cells![((int)pair[ri], turnBucket[ri])];",
+      "purpose": "Cell lookup for the sample at the even position; null-forgiving on cells because the pairwise branch guarantees allocation."
+    },
+    {
+      "file": "D:\\Codex Workshop\\KLink-bot\\out\\audit\\deepseek-value-learning-20261101\\Program.cs",
+      "line": 543,
+      "text": "var opp = y[ri] > 0.5f ? cell.L : cell.W;",
+      "purpose": "Partner pool is the opposite-label list of the same cell (L when y[ri] > 0.5, W otherwise)."
+    },
+    {
+      "file": "D:\\Codex Workshop\\KLink-bot\\out\\audit\\deepseek-value-learning-20261101\\Program.cs",
+      "line": 544,
+      "text": "if (opp.Count == 0) continue;",
+      "purpose": "Skip: when the opposite-label pool is empty the iteration continues without forward, loss, backward or used increment."
+    },
+    {
+      "file": "D:\\Codex Workshop\\KLink-bot\\out\\audit\\deepseek-value-learning-20261101\\Program.cs",
+      "line": 555,
+      "text": "used++;",
+      "purpose": "used incremented once per actually sampled pair (after loss and BackwardFrom calls at lines 551-554)."
+    },
+    {
+      "file": "D:\\Codex Workshop\\KLink-bot\\out\\audit\\deepseek-value-learning-20261101\\Program.cs",
+      "line": 559,
+      "text": "float sc = lr / Math.Max(1, used);",
+      "purpose": "Per-epoch step scale = lr divided by max(1, used); shared by all three weight updates."
+    },
+    {
+      "file": "D:\\Codex Workshop\\KLink-bot\\out\\audit\\deepseek-value-learning-20261101\\Program.cs",
+      "line": 560,
+      "text": "for (int i = 0; i < W1.Length; i++) W1[i] -= sc * g1[i];",
+      "purpose": "Weight update for W1 with the scaled gradient; the same pattern is applied to B1 (line 561) and W2 (line 562), and no bias B2 is present in the arrays."
+    },
+    {
+      "file": "D:\\Codex Workshop\\KLink-bot\\out\\audit\\deepseek-value-learning-20261101/Program.cs",
+      "line": 654,
+      "text": "savedEpochWeights = epochs,",
+      "purpose": "Model metadata records savedEpochWeights = epochs; this matches the line 622-623 comment that the final epoch's weights are stored rather than a best snapshot."
+    },
+    {
+      "file": "D:\\Codex Workshop\\KLink-bot\\out\\audit\\deepseek-value-learning-20261101\\Program.cs",
+      "line": 678,
+      "text": "model.Save(modelPath);",
+      "purpose": "Model save call, after ValueTrainingContract.Read(model).Validate() at line 677 and the NnModel assembly at lines 660-676."
+    }
+  ],
+  "unresolved": []
+}

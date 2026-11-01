@@ -20,7 +20,7 @@ internal static class ValuePreprocessingSelfTest
             try{Console.SetOut(capture);Assert(operation()==0,"trainer/verify exit");return capture.ToString();}
             finally{Console.SetOut(output);}
         }
-        void Save(int heldout=-1,int games=2,bool decision=false)
+        void Save(int heldout=-1,int games=4,bool decision=false)
         {
             int dim=StateEncoder.Dim;
             using(var writer=new BinaryWriter(File.Create(data)))
@@ -30,7 +30,7 @@ internal static class ValuePreprocessingSelfTest
                 {
                     var x=new float[dim];x[0]=.1f;x[1]=game==heldout ? -1001-row*2 : game*100+1+row*2;x[2]=7;
                     foreach(float value in x)writer.Write(value);
-                    writer.Write(game==heldout ? 1f-game : (float)game);writer.Write((float)game);writer.Write(1f);
+                    writer.Write(game==heldout ? 1f-game%2 : (float)(game%2));writer.Write((float)game);writer.Write(1f);
                 }
             }
             var q=new QualityReport{RequestedGames=games,AcceptedGames=games,Rows=games*2,Dim=dim,DeckCount=2,
@@ -49,16 +49,23 @@ internal static class ValuePreprocessingSelfTest
                 var opts=new Dictionary<string,string>{{"data",data},{"out",modelPath},{"model",modelPath},
                     {"epochs","2"},{"hidden","2"},{"split-seed",seed.ToString()},{"target",target}};
                 Save(decision:decision);Quiet(()=>Program.Train(opts));var first=NnModel.Load(modelPath);
-                Assert(first.Mean[1] is 2f or 102f,"held-out observations leaked into saved normalization mean");
-                Assert(Math.Abs(first.Std[1]-(1+1e-6f))<1e-7f,"normalization variance must use training rows only");
-                Assert(first.Mean[2]==7 && first.Std[2]==1e-6f,"constant training feature scaling");
-                int heldout=first.Mean[1]==2?1:0;
+                int heldout;
                 using(var meta=JsonDocument.Parse(first.MetaJson))
                 {
                     var root=meta.RootElement;
+                    var train=root.GetProperty("trainingGameIds").EnumerateArray().Select(x=>x.GetSingle()).ToArray();
+                    var val=root.GetProperty("validationGameIds").EnumerateArray().Select(x=>x.GetSingle()).ToArray();
+                    Assert(train.Length==3 && val.Length==1 && !train.Intersect(val).Any()
+                        && train.Concat(val).Order().SequenceEqual(new float[]{0,1,2,3}),"disjoint game metadata");
+                    heldout=(int)val.Single();
+                    var values=train.SelectMany(g=>new[]{g*100+1,g*100+3}).ToArray();
+                    float mean=values.Sum()/values.Length;
+                    float std=MathF.Sqrt(values.Sum(x=>(x-mean)*(x-mean))/values.Length)+1e-6f;
+                    Assert(first.Mean[1]==mean,"held-out observations leaked into saved normalization mean");
+                    Assert(Math.Abs(first.Std[1]-std)<1e-5f,"normalization variance must use training rows only");
+                    Assert(first.Mean[2]==7 && first.Std[2]==1e-6f,"constant training feature scaling");
                     Assert(root.GetProperty("normalizationSpec").GetString()=="training-split-only/v1","normalization metadata");
-                    Assert(root.GetProperty("validationGameIds").EnumerateArray().Select(x=>x.GetSingle()).SequenceEqual(new[]{(float)heldout})
-                        && root.GetProperty("trainingGameIds").EnumerateArray().Select(x=>x.GetSingle()).SequenceEqual(new[]{(float)(1-heldout)}),"disjoint game metadata");
+                    Assert(root.GetProperty("processedTrainingUnits").GetInt64()==(target=="win"?12:6),"normal fixture must execute rows/pairs");
                     string verification=Quiet(()=>Program.Verify(opts));
                     double accuracy=root.GetProperty("valAccuracy").GetDouble();
                     Assert(verification.Contains(target=="win"?$"验证集准确率 {accuracy:P2}":$"验证集 {accuracy:P2}"),"saved-model verification must reproduce validation metric");

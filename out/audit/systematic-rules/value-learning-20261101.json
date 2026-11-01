@@ -1,0 +1,72 @@
+{
+  "scope": "NNTrain nonempty training execution admission",
+  "authority": "Repository software and executable synthetic regression only",
+  "base_commit": "92282131f53a7c3f7ef5f00a67c9f47f5265ae5d",
+  "defect": "Train accepted epochs<=0 and pair data with no training-cell opposite labels, then saved initialized weights. A usable cell can also exist without any sampled pair reaching backprop.",
+  "fix": "Require positive epochs and hidden width; reject zero usable training cells; count actual processed rows/pairs over all epochs and reject a zero total before saving. Save processedTrainingUnits and trainingUnit diagnostics. Preserve existing output on these rejections.",
+  "regression": {
+    "before_exit_code": 1,
+    "after_exit_code": 0,
+    "learning_checks": 46,
+    "preprocessing_checks": 50,
+    "evaluation_checks": 200,
+    "admission_checks": 44,
+    "full_passed": 1058,
+    "negative_cases": [
+      "zero/negative epochs",
+      "zero/negative hidden",
+      "one label only",
+      "labels separated by matchup",
+      "labels separated by turn",
+      "opposite label in holdout only",
+      "usable cell but zero sampled pairs"
+    ],
+    "output_modes": [
+      "absent output",
+      "existing sentinel model"
+    ],
+    "positive_cases": [
+      "win processes 12 rows across two epochs",
+      "pair processes 6 pairs across two epochs",
+      "sparse fixture skips first epoch but processes pairs later",
+      "normalization stays unchanged after heldout feature/label perturbation"
+    ],
+    "logs": {
+      "out/audit/systematic-rules/value-learning-before-20261101.txt": "ea4637681c264ddba185ae42ac8523500f19e5d0bfd80a6b82d92b6ec3eeabf0",
+      "out/audit/systematic-rules/value-learning-after-20261101.txt": "d7faa75602026cd8ef5ae23fc2cd86ea53ef846efd6026b4622c07fb100e502f",
+      "out/audit/systematic-rules/value-learning-preprocessing-20261101.txt": "8934378a4acf1cfa1894f2d55b9449f00375ef7100712e3a9930a87495bb0b73",
+      "out/audit/systematic-rules/value-learning-evaluation-20261101.txt": "41052447d2274824e827bacd7587943101f8ad853fea695c45aa8f405f5816ad",
+      "out/audit/systematic-rules/value-learning-admission-20261101.txt": "bf321d94caa01475eb8f83fb1f3ce2655d866d2d9857ee9c20354551169ea935",
+      "out/audit/systematic-rules/value-learning-full-20261101.txt": "9f49dd4a37eb1d983b5d3bcdf306dd1a82ee2a6d7eb020020c485efaabc6f148"
+    }
+  },
+  "worker": {
+    "job": "20261101-180852-value-learning-d4a7de85",
+    "result": "out/audit/systematic-rules/value-learning-worker-20261101.json",
+    "result_sha256": "9e9188d5c0df6d0bf65834b5b47b54ac52e5e74a3812ac8885dd912c4741b589",
+    "verified_literal_citations": 20,
+    "verification": "Primary checked source against exact base Git blob and hash/line count, and all 20 citations ignoring indentation. Purpose prose is inventory only: used increments in both win and pair branches; step-2 anchor sampling chooses an opposite pool member, not the adjacent shuffled row."
+  },
+  "validation_environment": {
+    "source": "Clean HEAD src/BotSim/NNTrain plus three scoped files; unrelated dirty action-probe source excluded.",
+    "runtime_data_sha256": {
+      "cards.live.json": "3550dc76eb0414c500166875f45909077aeeb3ea4d229b9b0ba9c66a81987c4b",
+      "card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b"
+    },
+    "runtime_data_note": "Exact runtime bytes satisfy native-default proof; LF-normalized data matches HEAD. Matrix provenance uses exact Git bytes separately."
+  },
+  "source_bindings": {
+    "tools/NNTrain/Program.cs": "a5bb378c20fb7d0539511a0581a3f0158ab45d0a472cd0ce6fb647eb7d3cb8ac",
+    "tools/NNTrain/ValueLearningSelfTest.cs": "df02c99e5223fba2c1ac33dc0b3c9c2a768efbb801526a7268b53317be86afb8",
+    "tools/NNTrain/ValuePreprocessingSelfTest.cs": "452bd1895ae621fdc42d83034b5c6ecb6527953c7c79662122f67dde3ca2da4e"
+  },
+  "remaining": [
+    "Software trainer execution contract only; no card/native rule certification, strength or throughput claim.",
+    "A positive processedTrainingUnits count means rows or pairs reached loss/backprop processing, not proof of changed weights, nonzero gradients, useful signal or stronger play.",
+    "Pair validation with no held-out ranking pairs still reports the existing 0.5 fallback; no metric redesign in this batch.",
+    "Positive epochs/hidden are checked after existing integer parsing; malformed option strings still follow the existing fallback parser.",
+    "Models produced earlier are not retrospectively certified by the new metadata or guards. Existing inference admission is unchanged.",
+    "Pair gradient direction for loser anchors is a separate open review: the current code uses sigmoid(si-sj) toward 1 for either anchor label. This batch changes execution admission only; no pair-learning correctness claim.",
+    "Metadata is unsigned; processed-unit counts are diagnostic, not a tamper-proof attestation. No old rule-evidence fingerprints are refreshed."
+  ]
+}

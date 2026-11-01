@@ -67,6 +67,7 @@ internal static class Program
             if (cmd == "admission-selftest") return AdmissionSelfTest.Run();
             if (cmd == "value-preprocessing-selftest") return ValuePreprocessingSelfTest.Run();
             if (cmd == "value-evaluation-selftest") return ValueEvaluationSelfTest.Run();
+            if (cmd == "value-learning-selftest") return ValueLearningSelfTest.Run();
             if (cmd == "verify-actions") return ActionDatasetTool.VerifyCommand(opts);
             string dataDir = FindDir("card-effects.json");
             var db = CardDatabase.Load(dataDir);
@@ -315,11 +316,13 @@ internal static class Program
             || simulatorHash != ValueTrainingContract.CurrentSimulatorHash())
             throw new InvalidDataException("Training data simulator differs from this runtime; regenerate data with current dump.");
         int epochs = GetInt(opts, "epochs", 30);
+        if (epochs < 1) throw new InvalidDataException("--epochs must be positive; no untrained model will be saved.");
         // ⭐ 报告节奏（**纯日志开关，不参与任何训练算式**）。
         //    默认 5 = 历史行为（第五轮之前是 `ep % 5 == 0 || ep == epochs`，写死的）。
         //    第五轮的收敛实验需要**逐 epoch** 的曲线，用 `--eval-every 1` 打开。
         int evalEvery = Math.Max(1, GetInt(opts, "eval-every", 5));
         int hidden = GetInt(opts, "hidden", 64);
+        if (hidden < 1) throw new InvalidDataException("--hidden must be positive.");
         string modelPath = opts.GetValueOrDefault("out", "nn-model.bin");
         float lr = 0.05f;
         string target = opts.GetValueOrDefault("target", "win").ToLowerInvariant();
@@ -501,10 +504,13 @@ internal static class Program
                 (y[r] > 0.5f ? c.W : c.L).Add(r);
             }
             int usable = cells.Values.Count(c => c.W.Count > 0 && c.L.Count > 0);
+            if (usable == 0)
+                throw new InvalidDataException("No usable training pairs: need opposite labels in the same matchup and turn bucket within training games.");
             Console.WriteLine($"成对排序单元（对位 × 回合）：{cells.Count:N0} 个，"
                               + $"其中两侧都非空、能出对的 {usable:N0} 个\n");
         }
 
+        long processedTrainingUnits = 0;
         for (int ep = 1; ep <= epochs; ep++)
         {
             Array.Clear(g1); Array.Clear(gb1); Array.Clear(g2);
@@ -556,6 +562,7 @@ internal static class Program
                 }
             }
 
+            processedTrainingUnits += used;
             float sc = lr / Math.Max(1, used);
             for (int i = 0; i < W1.Length; i++) W1[i] -= sc * g1[i];
             for (int j = 0; j < hidden; j++) B1[j] -= sc * gb1[j];
@@ -609,6 +616,9 @@ internal static class Program
             }
         }
 
+        if (processedTrainingUnits == 0)
+            throw new InvalidDataException("No training rows or pairs were processed; no untrained model will be saved.");
+
         Console.WriteLine();
         Console.WriteLine(pairwise
             ? $"最佳验证对位内排序准确率 {bestAcc:P2}（随机 = 50%）"
@@ -652,6 +662,8 @@ internal static class Program
             valAccuracy = lastAcc,
             bestValAccuracy = bestAcc,
             savedEpochWeights = epochs,
+            processedTrainingUnits,
+            trainingUnit = pairwise ? "pair" : "row",
             trainedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
         };
         string metaJson = JsonSerializer.Serialize(meta,
