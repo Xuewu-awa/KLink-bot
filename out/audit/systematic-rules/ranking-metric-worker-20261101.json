@@ -1,0 +1,1014 @@
+{
+  "source_file": "input-Program.cs",
+  "source_sha256": "b5518b6a63f5246365ae1d370b47ecf24eed0cb7f4447e3fc2ef4e27f49ad380",
+  "line_count": 1019,
+  "encoding": "UTF-8 without BOM; LF line endings; final newline present",
+  "scope_note": "Software inventory of input-Program.cs only. Not game-rule authority. Derived from the file text; no repository files outside the allowed audit directory were modified.",
+  "coverage_summary": {
+    "explicit_zero_denominator_fallbacks": [
+      609,
+      611,
+      842,
+      844,
+      925
+    ],
+    "zero_denominator_guards": [
+      324,
+      355,
+      356,
+      362,
+      508,
+      509,
+      569,
+      617,
+      622,
+      623,
+      739,
+      740,
+      922
+    ],
+    "zero_count_guards": [
+      551
+    ],
+    "unguarded_denominators": [
+      249,
+      261,
+      377,
+      384,
+      593,
+      602,
+      784,
+      788,
+      789
+    ],
+    "note": "Fallbacks default to chance 0.5 for pair-ranking accuracy, or 0 for the bucket total percent. Guards use Math.Max(1, ...), skip zero buckets, or fail fast. Unguarded sites are listed for audit and are not fallbacks."
+  },
+  "citations": [
+    {
+      "line": 149,
+      "text": "        var quality = new QualityReport { Seed=seed, RequestedGames=games, Dim=Dim, DeckCount=decks.Count,",
+      "purpose": "QualityReport manifest: Seed, RequestedGames, Dim, DeckCount.",
+      "category": "metric_metadata"
+    },
+    {
+      "line": 150,
+      "text": "            SamplingMode=sampling==EpisodeSampling.Turn ? \"turn-end/v1\" : \"policy-and-choice-before/v1\" };",
+      "purpose": "QualityReport manifest: SamplingMode label (turn-end/v1 or policy-and-choice-before/v1).",
+      "category": "metric_metadata"
+    },
+    {
+      "line": 154,
+      "text": "        quality.InputsSha256[\"KLink.Bot.dll\"] = TrainingAdmission.Hash(typeof(MatchEngine).Assembly.Location);",
+      "purpose": "QualityReport.InputsSha256 records simulator assembly hash used for train/verify binding.",
+      "category": "metric_metadata"
+    },
+    {
+      "line": 167,
+      "text": "        int leftWins = 0, rightWins = 0, unfinished = 0;",
+      "purpose": "Initializes dump outcome counters leftWins/rightWins/unfinished.",
+      "category": "metric_computation"
+    },
+    {
+      "line": 211,
+      "text": "            var episode = new QualityGame { Game=g, Seed=seed+(ulong)g, LeftDeck=da, RightDeck=dbName,",
+      "purpose": "Per-game QualityGame manifest: game index, seed, left/right deck names.",
+      "category": "metric_metadata"
+    },
+    {
+      "line": 212,
+      "text": "                Accepted=reasons.Length==0, Reasons=reasons, Turns=engine.State.Turn,",
+      "purpose": "Per-game manifest: acceptance flag, rejection reasons, turn count.",
+      "category": "metric_metadata"
+    },
+    {
+      "line": 213,
+      "text": "                ObservedSamples=snapshots.Count, WrittenSamples=reasons.Length==0 ? snapshots.Count : 0,",
+      "purpose": "Per-game manifest: observed samples vs written samples.",
+      "category": "metric_metadata"
+    },
+    {
+      "line": 224,
+      "text": "            quality.Games.Add(episode);",
+      "purpose": "Appends per-game QualityGame record to the quality report.",
+      "category": "metric_metadata"
+    },
+    {
+      "line": 225,
+      "text": "            if (!episode.Accepted) { quality.RejectedGames++; continue; }",
+      "purpose": "Counts rejected games and skips writing their rows.",
+      "category": "metric_metadata"
+    },
+    {
+      "line": 226,
+      "text": "            quality.AcceptedGames++;",
+      "purpose": "Counts accepted games.",
+      "category": "metric_metadata"
+    },
+    {
+      "line": 227,
+      "text": "            float label = engine.State.Winner == Side.Left ? 1f : 0f;",
+      "purpose": "Derives binary outcome label (1 = left perspective wins).",
+      "category": "metric_computation"
+    },
+    {
+      "line": 228,
+      "text": "            if (label == 1f) leftWins++; else rightWins++;",
+      "purpose": "Accumulates leftWins/rightWins counters.",
+      "category": "metric_computation"
+    },
+    {
+      "line": 247,
+      "text": "        Console.WriteLine($\"\\n完成 {games} 局（左胜 {leftWins} / 右胜 {rightWins} / 未分 {unfinished}）\");",
+      "purpose": "Prints dump outcome counts: left wins, right wins, unfinished.",
+      "category": "metric_output"
+    },
+    {
+      "line": 248,
+      "text": "        Console.WriteLine($\"样本 {rows:N0} 条，维度 {Dim}，用时 {sw.Elapsed.TotalSeconds:F1}s\");",
+      "purpose": "Prints written sample rows, dimension and elapsed time.",
+      "category": "metric_output"
+    },
+    {
+      "line": 249,
+      "text": "        Console.WriteLine($\"速度 {games / sw.Elapsed.TotalSeconds:F0} 局/秒\");",
+      "purpose": "Speed metric games / elapsed seconds; no zero guard (double division yields Infinity at 0).",
+      "category": "unguarded_denominator"
+    },
+    {
+      "line": 251,
+      "text": "        Console.WriteLine($\"候选表缓存 命中 {KLink.Bot.Effects.CardApi.GcsCacheHits:N0} \"",
+      "purpose": "Prints candidate-table cache hit/miss/bypass diagnostic counters.",
+      "category": "metric_output"
+    },
+    {
+      "line": 257,
+      "text": "        var pairCount = pairs.GroupBy(p => (p.L, p.R)).ToDictionary(k => k.Key, v => v.Count());",
+      "purpose": "Groups games by ordered matchup (left deck, right deck) for distribution metric.",
+      "category": "metric_computation"
+    },
+    {
+      "line": 258,
+      "text": "        Console.WriteLine($\"卡组对位：{pairCount.Count} 种有序对位，每对位 \"",
+      "purpose": "Prints ordered-matchup count and per-matchup game-count range.",
+      "category": "metric_output"
+    },
+    {
+      "line": 261,
+      "text": "                          + $\"{games / (double)(decks.Count * (decks.Count - 1)):F1}）\");",
+      "purpose": "Theoretical games per ordered matchup; denominator decks.Count*(decks.Count-1) has no zero guard.",
+      "category": "unguarded_denominator"
+    },
+    {
+      "line": 286,
+      "text": "        quality.Rows=rows; quality.DataSha256=TrainingAdmission.Hash(outPath);",
+      "purpose": "Stores total written rows and dataset SHA-256 into quality report.",
+      "category": "metric_metadata"
+    },
+    {
+      "line": 287,
+      "text": "        string qualityPath=outPath+\".quality.json\";",
+      "purpose": "Defines the <out>.quality.json metadata path.",
+      "category": "metric_metadata"
+    },
+    {
+      "line": 288,
+      "text": "        File.WriteAllText(qualityPath,JsonSerializer.Serialize(quality,TrainingAdmission.Json),new UTF8Encoding(false));",
+      "purpose": "Writes quality report JSON (admission and provenance metadata) to disk.",
+      "category": "metric_output"
+    },
+    {
+      "line": 289,
+      "text": "        Console.WriteLine($\"训练准入：接受 {quality.AcceptedGames} / 拒绝 {quality.RejectedGames}，仅写入已接受对局；清单 {qualityPath}\");",
+      "purpose": "Prints admission summary: accepted/rejected games and manifest path.",
+      "category": "metric_output"
+    },
+    {
+      "line": 290,
+      "text": "        foreach (var reason in quality.Games.SelectMany(g=>g.Reasons).GroupBy(x=>x).OrderByDescending(g=>g.Count()).ThenBy(g=>g.Key,StringComparer.Ordinal).Take(10))",
+      "purpose": "Groups rejection reasons for top-10 histogram output.",
+      "category": "metric_computation"
+    },
+    {
+      "line": 291,
+      "text": "            Console.WriteLine($\"  {reason.Key}: {reason.Count()} 局\");",
+      "purpose": "Prints each top-10 rejection reason with game count.",
+      "category": "metric_output"
+    },
+    {
+      "line": 292,
+      "text": "        return quality.RejectedGames>0 || rows==0 ? 2 : 0;",
+      "purpose": "Exit code 2 when any game rejected or zero rows written.",
+      "category": "metric_output"
+    },
+    {
+      "line": 314,
+      "text": "        var quality = TrainingAdmission.VerifyDataset(path);",
+      "purpose": "Loads dataset quality metadata (gate, hashes, sampling/observation spec) before training.",
+      "category": "metric_metadata"
+    },
+    {
+      "line": 324,
+      "text": "        int evalEvery = Math.Max(1, GetInt(opts, \"eval-every\", 5));",
+      "purpose": "Guards eval-every option with Math.Max(1, ...) so ep % evalEvery cannot divide by zero.",
+      "category": "zero_denominator_guard"
+    },
+    {
+      "line": 337,
+      "text": "        Console.WriteLine($\"样本 {n:N0}，维度 {Dim}，对局 {gids.Distinct().Count():N0}，\"",
+      "purpose": "Prints training sample count, dimension and distinct game count.",
+      "category": "metric_output"
+    },
+    {
+      "line": 338,
+      "text": "                          + $\"卡组 {deckCount} 套，对位编号 {pair.Distinct().Count():N0} 种\");",
+      "purpose": "Prints deck count and distinct matchup-pair count.",
+      "category": "metric_output"
+    },
+    {
+      "line": 339,
+      "text": "        Console.WriteLine($\"训练目标: {(pairwise",
+      "purpose": "Starts target description output for the selected --target.",
+      "category": "metric_output"
+    },
+    {
+      "line": 340,
+      "text": "            ? \"pair = 对位内成对排序（同一对位 + 同一回合，赢局局面 vs 输局局面）\"",
+      "purpose": "Prints pair-objective description.",
+      "category": "metric_output"
+    },
+    {
+      "line": 341,
+      "text": "            : \"win  = 视角方最终是否获胜（BCE）\")}\");",
+      "purpose": "Prints win-objective description (BCE).",
+      "category": "metric_output"
+    },
+    {
+      "line": 347,
+      "text": "        var turnBucket = BuildTurnBuckets(X, n);",
+      "purpose": "Builds per-sample turn bucket array; stratified diagnostic only, not a training term.",
+      "category": "metric_computation"
+    },
+    {
+      "line": 355,
+      "text": "        if (gids.Distinct().Take(2).Count() < 2)",
+      "purpose": "Requires at least two admitted games before the game-disjoint split, preventing empty partitions.",
+      "category": "zero_denominator_guard"
+    },
+    {
+      "line": 356,
+      "text": "            throw new InvalidDataException(\"At least two admitted games required for game-disjoint evaluation.\");",
+      "purpose": "Throws on fewer than two admitted games; no metric fallback for a degenerate split.",
+      "category": "zero_denominator_guard"
+    },
+    {
+      "line": 362,
+      "text": "        int nValGames = Math.Max(1, (int)(gameIds.Length * 0.15));",
+      "purpose": "Ensures at least one validation game (Math.Max(1, 15%)), preventing zero validation-row denominators at lines 593/784.",
+      "category": "zero_denominator_guard"
+    },
+    {
+      "line": 369,
+      "text": "        Console.WriteLine($\"训练 {nTrain:N0} / 验证 {n - nTrain:N0}  （按对局切分，验证集 {nValGames} 局）\\n\");",
+      "purpose": "Prints train/validation rows, game-disjoint split and validation game count.",
+      "category": "metric_output"
+    },
+    {
+      "line": 377,
+      "text": "        for (int d = 0; d < Dim; d++) mean[d] /= nTrain;",
+      "purpose": "Normalization mean divide by nTrain; no zero guard and no epsilon.",
+      "category": "unguarded_denominator"
+    },
+    {
+      "line": 384,
+      "text": "        for (int d = 0; d < Dim; d++) std[d] = MathF.Sqrt(std[d] / nTrain) + 1e-6f;",
+      "purpose": "Normalization std divide by nTrain; only +1e-6 after sqrt, no zero guard.",
+      "category": "unguarded_denominator"
+    },
+    {
+      "line": 507,
+      "text": "            int usable = cells.Values.Count(c => c.W.Count > 0 && c.L.Count > 0);",
+      "purpose": "Counts pair cells with both winner and loser samples (usable pair denominator).",
+      "category": "metric_computation"
+    },
+    {
+      "line": 508,
+      "text": "            if (usable == 0)",
+      "purpose": "Fail-fast when usable pair-cell count is zero.",
+      "category": "zero_denominator_guard"
+    },
+    {
+      "line": 509,
+      "text": "                throw new InvalidDataException(\"No usable training pairs: need opposite labels in the same matchup and turn bucket within training games.\");",
+      "purpose": "Throws InvalidDataException when no usable training pairs exist.",
+      "category": "zero_denominator_guard"
+    },
+    {
+      "line": 510,
+      "text": "            Console.WriteLine($\"成对排序单元（对位 × 回合）：{cells.Count:N0} 个，\"",
+      "purpose": "Prints pair-ranking cell count (matchup x turn).",
+      "category": "metric_output"
+    },
+    {
+      "line": 511,
+      "text": "                              + $\"其中两侧都非空、能出对的 {usable:N0} 个\\n\");",
+      "purpose": "Prints count of cells with both sides non-empty.",
+      "category": "metric_output"
+    },
+    {
+      "line": 551,
+      "text": "                    if (opp.Count == 0) continue;",
+      "purpose": "Skips pair-sampling anchors with no opposite-label partner; prevents empty-list sampling (zero-count guard, not a metric denominator).",
+      "category": "zero_count_guard"
+    },
+    {
+      "line": 568,
+      "text": "            processedTrainingUnits += used;",
+      "purpose": "Accumulates processed training units per epoch.",
+      "category": "metric_computation"
+    },
+    {
+      "line": 569,
+      "text": "            float sc = lr / Math.Max(1, used);",
+      "purpose": "Learning-rate scale lr / Math.Max(1, used) guards used == 0.",
+      "category": "zero_denominator_guard"
+    },
+    {
+      "line": 593,
+      "text": "                    acc = (double)correct / (n - nTrain);",
+      "purpose": "Win-target validation accuracy correct / (n - nTrain); no zero guard.",
+      "category": "unguarded_denominator"
+    },
+    {
+      "line": 602,
+      "text": "                    trainAcc = (double)trCorrect / nTrain;",
+      "purpose": "Win-target training accuracy trCorrect / nTrain; no zero guard.",
+      "category": "unguarded_denominator"
+    },
+    {
+      "line": 603,
+      "text": "                    metricName = \"验证准确率\";",
+      "purpose": "Sets win-target metric label (validation accuracy).",
+      "category": "metric_output"
+    },
+    {
+      "line": 604,
+      "text": "                    if (ep == epochs) PrintBuckets(\"\\n验证集分档准确率（模型）\", byTurn);",
+      "purpose": "Prints final-epoch win-target per-turn validation accuracy table.",
+      "category": "metric_output"
+    },
+    {
+      "line": 609,
+      "text": "                    acc = tot == 0 ? 0.5 : (double)ok / tot;",
+      "purpose": "Pair validation accuracy falls back to 0.5 (chance) when tot == 0.",
+      "category": "zero_denominator_fallback"
+    },
+    {
+      "line": 611,
+      "text": "                    trainAcc = totTr == 0 ? 0.5 : (double)okTr / totTr;",
+      "purpose": "Pair training accuracy falls back to 0.5 when totTr == 0.",
+      "category": "zero_denominator_fallback"
+    },
+    {
+      "line": 612,
+      "text": "                    metricName = $\"验证对位内排序准确率（{tot:N0} 对）\";",
+      "purpose": "Sets pair-ranking metric label including pair count.",
+      "category": "metric_output"
+    },
+    {
+      "line": 613,
+      "text": "                    if (ep == epochs) PrintBuckets(\"\\n验证集分档【对位内排序】准确率（模型）\", byTurn);",
+      "purpose": "Prints final-epoch pair-ranking per-turn validation table.",
+      "category": "metric_output"
+    },
+    {
+      "line": 615,
+      "text": "                bestAcc = Math.Max(bestAcc, (float)acc);",
+      "purpose": "Tracks best validation accuracy across epochs.",
+      "category": "metric_computation"
+    },
+    {
+      "line": 616,
+      "text": "                lastAcc = (float)acc;",
+      "purpose": "Tracks last-epoch validation accuracy for metadata.",
+      "category": "metric_computation"
+    },
+    {
+      "line": 617,
+      "text": "                Console.WriteLine($\"  epoch {ep,3}  loss {loss / Math.Max(1, used):F6}  {metricName} {acc:P2}\"",
+      "purpose": "Per-epoch average loss uses loss / Math.Max(1, used) guard; prints loss and validation accuracy.",
+      "category": "zero_denominator_guard"
+    },
+    {
+      "line": 618,
+      "text": "                                  + $\"  训练准确率 {trainAcc:P2}\");",
+      "purpose": "Prints per-epoch training accuracy on the same output line.",
+      "category": "metric_output"
+    },
+    {
+      "line": 622,
+      "text": "        if (processedTrainingUnits == 0)",
+      "purpose": "Fail-fast when processedTrainingUnits == 0.",
+      "category": "zero_denominator_guard"
+    },
+    {
+      "line": 623,
+      "text": "            throw new InvalidDataException(\"No training rows or pairs were processed; no untrained model will be saved.\");",
+      "purpose": "Throws before saving an untrained model.",
+      "category": "zero_denominator_guard"
+    },
+    {
+      "line": 627,
+      "text": "            ? $\"最佳验证对位内排序准确率 {bestAcc:P2}（随机 = 50%）\"",
+      "purpose": "Prints best pair-ranking validation accuracy and 50% chance baseline.",
+      "category": "metric_output"
+    },
+    {
+      "line": 628,
+      "text": "            : $\"最佳验证准确率 {bestAcc:P2}\");",
+      "purpose": "Prints best win-target validation accuracy.",
+      "category": "metric_output"
+    },
+    {
+      "line": 629,
+      "text": "        Console.WriteLine(bestAcc > 0.55",
+      "purpose": "Starts pass/fail verdict on best accuracy (0.55 threshold).",
+      "category": "metric_output"
+    },
+    {
+      "line": 630,
+      "text": "            ? \"✅ 明显高于 50% —— 编码里有信号，向量方案成立\"",
+      "purpose": "Prints signal-present verdict.",
+      "category": "metric_output"
+    },
+    {
+      "line": 631,
+      "text": "            : \"⚠ 接近 50% —— 编码可能没信号，或者需要更多数据/特征\");",
+      "purpose": "Prints near-chance warning verdict.",
+      "category": "metric_output"
+    },
+    {
+      "line": 636,
+      "text": "        //    所以元数据里 valAccuracy = 最后一轮的数字，bestValAccuracy = 历史最好。",
+      "purpose": "Comment defining valAccuracy (last epoch) vs bestValAccuracy (historical best).",
+      "category": "metric_metadata"
+    },
+    {
+      "line": 641,
+      "text": "            encoderSpec = StateEncoder.Spec,",
+      "purpose": "Model metadata: encoderSpec.",
+      "category": "metric_metadata"
+    },
+    {
+      "line": 642,
+      "text": "            trainingContract = new ValueTrainingContract",
+      "purpose": "Model metadata: trainingContract block start.",
+      "category": "metric_metadata"
+    },
+    {
+      "line": 646,
+      "text": "                Target=target, DatasetSha256=quality.DataSha256,",
+      "purpose": "Model metadata: target and dataset SHA-256.",
+      "category": "metric_metadata"
+    },
+    {
+      "line": 647,
+      "text": "                SimulatorSha256=simulatorHash,",
+      "purpose": "Model metadata: simulator SHA-256.",
+      "category": "metric_metadata"
+    },
+    {
+      "line": 648,
+      "text": "                InputsSha256=ValueTrainingContract.SelectInputs(quality.InputsSha256)",
+      "purpose": "Model metadata: selected input SHA-256 map.",
+      "category": "metric_metadata"
+    },
+    {
+      "line": 651,
+      "text": "            samples = n,",
+      "purpose": "Model metadata: total sample count.",
+      "category": "metric_metadata"
+    },
+    {
+      "line": 652,
+      "text": "            trainSamples = nTrain,",
+      "purpose": "Model metadata: training sample count.",
+      "category": "metric_metadata"
+    },
+    {
+      "line": 653,
+      "text": "            valSamples = n - nTrain,",
+      "purpose": "Model metadata: validation sample count.",
+      "category": "metric_metadata"
+    },
+    {
+      "line": 654,
+      "text": "            valGames = nValGames,",
+      "purpose": "Model metadata: validation game count.",
+      "category": "metric_metadata"
+    },
+    {
+      "line": 655,
+      "text": "            games = gids.Distinct().Count(),",
+      "purpose": "Model metadata: distinct game count.",
+      "category": "metric_metadata"
+    },
+    {
+      "line": 656,
+      "text": "            epochs,",
+      "purpose": "Model metadata: epochs.",
+      "category": "metric_metadata"
+    },
+    {
+      "line": 657,
+      "text": "            hidden,",
+      "purpose": "Model metadata: hidden width.",
+      "category": "metric_metadata"
+    },
+    {
+      "line": 658,
+      "text": "            lr,",
+      "purpose": "Model metadata: learning rate.",
+      "category": "metric_metadata"
+    },
+    {
+      "line": 659,
+      "text": "            weightInitSeed = 42,",
+      "purpose": "Model metadata: weight init seed (42).",
+      "category": "metric_metadata"
+    },
+    {
+      "line": 660,
+      "text": "            splitSeed,",
+      "purpose": "Model metadata: split seed (-1 means random split).",
+      "category": "metric_metadata"
+    },
+    {
+      "line": 661,
+      "text": "            normalizationSpec = \"training-split-only/v1\",",
+      "purpose": "Model metadata: normalization spec training-split-only/v1.",
+      "category": "metric_metadata"
+    },
+    {
+      "line": 662,
+      "text": "            trainingGameIds = gids.Distinct().Where(g => !valGames.Contains(g)).Order().ToArray(),",
+      "purpose": "Model metadata: training game IDs.",
+      "category": "metric_metadata"
+    },
+    {
+      "line": 663,
+      "text": "            validationGameIds = valGames.Order().ToArray(),",
+      "purpose": "Model metadata: validation game IDs.",
+      "category": "metric_metadata"
+    },
+    {
+      "line": 664,
+      "text": "            target,",
+      "purpose": "Model metadata: target name.",
+      "category": "metric_metadata"
+    },
+    {
+      "line": 665,
+      "text": "            valAccuracy = lastAcc,",
+      "purpose": "Model metadata: valAccuracy = last epoch accuracy.",
+      "category": "metric_metadata"
+    },
+    {
+      "line": 666,
+      "text": "            bestValAccuracy = bestAcc,",
+      "purpose": "Model metadata: bestValAccuracy = best epoch accuracy.",
+      "category": "metric_metadata"
+    },
+    {
+      "line": 667,
+      "text": "            savedEpochWeights = epochs,",
+      "purpose": "Model metadata: savedEpochWeights = epochs (last-epoch weights saved).",
+      "category": "metric_metadata"
+    },
+    {
+      "line": 668,
+      "text": "            processedTrainingUnits,",
+      "purpose": "Model metadata: processedTrainingUnits count.",
+      "category": "metric_metadata"
+    },
+    {
+      "line": 669,
+      "text": "            trainingUnit = pairwise ? \"pair\" : \"row\",",
+      "purpose": "Model metadata: trainingUnit pair or row.",
+      "category": "metric_metadata"
+    },
+    {
+      "line": 670,
+      "text": "            pairObjective = pairwise ? \"winner-minus-loser/v1\" : null,",
+      "purpose": "Model metadata: pairObjective identifier or null.",
+      "category": "metric_metadata"
+    },
+    {
+      "line": 671,
+      "text": "            trainedAt = DateTime.Now.ToString(\"yyyy-MM-dd HH:mm:ss\"),",
+      "purpose": "Model metadata: trainedAt local timestamp.",
+      "category": "metric_metadata"
+    },
+    {
+      "line": 673,
+      "text": "        string metaJson = JsonSerializer.Serialize(meta,",
+      "purpose": "Serializes model metadata object to JSON.",
+      "category": "metric_metadata"
+    },
+    {
+      "line": 684,
+      "text": "            EncoderSpec = StateEncoder.Spec,",
+      "purpose": "NnModel field: EncoderSpec from StateEncoder.Spec.",
+      "category": "metric_metadata"
+    },
+    {
+      "line": 685,
+      "text": "            MetaJson = metaJson,",
+      "purpose": "NnModel field: MetaJson carrying the metadata JSON.",
+      "category": "metric_metadata"
+    },
+    {
+      "line": 693,
+      "text": "        ValueTrainingContract.Read(model).Validate();",
+      "purpose": "Validates training contract read back from the model metadata.",
+      "category": "metric_metadata"
+    },
+    {
+      "line": 694,
+      "text": "        model.Save(modelPath);",
+      "purpose": "Saves model file (weights, normalization params, metadata).",
+      "category": "metric_output"
+    },
+    {
+      "line": 697,
+      "text": "        Console.WriteLine($\"模型已存: {modelPath}  ({new FileInfo(modelPath).Length / 1024.0:F0} KB)\");",
+      "purpose": "Prints saved model path and size.",
+      "category": "metric_output"
+    },
+    {
+      "line": 698,
+      "text": "        Console.WriteLine($\"  结构 {Dim}→{hidden}→1，含 mean/std 归一化参数 + 编码规格\");        Console.WriteLine($\"  复现命令: NNTrain train --data {Path.GetFileName(path)} --epochs {epochs} \"",
+      "purpose": "Prints model structure summary; also begins reproduce-command print (two statements on this line).",
+      "category": "metric_output"
+    },
+    {
+      "line": 699,
+      "text": "                          + $\"--hidden {hidden} --split-seed {splitSeed} --out {Path.GetFileName(modelPath)}\");",
+      "purpose": "Prints rest of reproduce command (hidden, split-seed, out).",
+      "category": "metric_output"
+    },
+    {
+      "line": 718,
+      "text": "        var quality = TrainingAdmission.VerifyDataset(path);",
+      "purpose": "Loads dataset quality metadata before verification.",
+      "category": "metric_metadata"
+    },
+    {
+      "line": 719,
+      "text": "        if (quality.GateVersion != 2) throw new InvalidDataException(\"Bound models require a Gate2 dataset; regenerate it with current dump.\");",
+      "purpose": "Requires Gate2 dataset metadata; rejects older datasets.",
+      "category": "metric_metadata"
+    },
+    {
+      "line": 729,
+      "text": "        var model = NnModel.Load(modelPath);",
+      "purpose": "Loads saved NnModel with its metadata.",
+      "category": "metric_metadata"
+    },
+    {
+      "line": 730,
+      "text": "        ValueTrainingContract.Read(model).RequireDataset(quality.SamplingMode, quality.ObservationSpec,",
+      "purpose": "Starts contract binding check of model metadata vs dataset spec.",
+      "category": "metric_metadata"
+    },
+    {
+      "line": 731,
+      "text": "            quality.ObservationPerspective, quality.ChoicePolicy, quality.InputsSha256.GetValueOrDefault(\"KLink.Bot.dll\", \"\"), quality.InputsSha256);",
+      "purpose": "Continues contract check: requires simulator hash and input hashes to match.",
+      "category": "metric_metadata"
+    },
+    {
+      "line": 732,
+      "text": "        Console.WriteLine($\"模型: {model.Describe()}\");",
+      "purpose": "Prints model description.",
+      "category": "metric_output"
+    },
+    {
+      "line": 733,
+      "text": "        Console.WriteLine($\"编码规格: {model.EncoderSpec}\");",
+      "purpose": "Prints model encoder spec.",
+      "category": "metric_output"
+    },
+    {
+      "line": 737,
+      "text": "        Console.WriteLine($\"样本 {n:N0}，维度 {Dim}，卡组 {deckCount} 套\");",
+      "purpose": "Prints verification sample count, dimension and deck count.",
+      "category": "metric_output"
+    },
+    {
+      "line": 739,
+      "text": "        if (gids.Distinct().Take(2).Count() < 2)",
+      "purpose": "Verify requires at least two admitted games before the evaluation split.",
+      "category": "zero_denominator_guard"
+    },
+    {
+      "line": 740,
+      "text": "            throw new InvalidDataException(\"At least two admitted games required for game-disjoint evaluation.\");",
+      "purpose": "Verify throws on fewer than two admitted games; no fallback for a degenerate split.",
+      "category": "zero_denominator_guard"
+    },
+    {
+      "line": 741,
+      "text": "        var valGames = ValueEvaluationSplit.Read(model, quality.DataSha256, gids,",
+      "purpose": "Reads saved validation split from model metadata; no local zero-check on the returned game count before the n-nTrain denominator at line 784.",
+      "category": "metric_metadata"
+    },
+    {
+      "line": 743,
+      "text": "        int nValGames = valGames.Count;",
+      "purpose": "Stores validation game count without a non-empty assertion.",
+      "category": "metric_output"
+    },
+    {
+      "line": 744,
+      "text": "        Console.WriteLine(\"验证对局 ID: \" + string.Join(\",\", valGames.Order()));",
+      "purpose": "Prints validation game IDs.",
+      "category": "metric_output"
+    },
+    {
+      "line": 752,
+      "text": "        int correct = 0, correctTrain = 0, correctAll = 0;",
+      "purpose": "Initializes correct/correctTrain/correctAll counters.",
+      "category": "metric_computation"
+    },
+    {
+      "line": 754,
+      "text": "        var bucketAll = new SortedDictionary<int, int[]>();",
+      "purpose": "Initializes all-sample turn bucket table.",
+      "category": "metric_computation"
+    },
+    {
+      "line": 755,
+      "text": "        var bucketVal = new SortedDictionary<int, int[]>();",
+      "purpose": "Initializes validation turn bucket table.",
+      "category": "metric_computation"
+    },
+    {
+      "line": 772,
+      "text": "            int turn = (int)MathF.Round(X[r * Dim + StateEncoder.OffGlobal] * StateEncoder.TurnScale);",
+      "purpose": "Derives turn bucket from encoded global turn field (diagnostic only).",
+      "category": "metric_computation"
+    },
+    {
+      "line": 773,
+      "text": "            NewSlot(bucketAll, turn)[1]++;",
+      "purpose": "Increments all-sample bucket denominator.",
+      "category": "metric_computation"
+    },
+    {
+      "line": 774,
+      "text": "            if (k >= nTrain) NewSlot(bucketVal, turn)[1]++;",
+      "purpose": "Increments validation bucket denominator.",
+      "category": "metric_computation"
+    },
+    {
+      "line": 777,
+      "text": "                correctAll++;",
+      "purpose": "Increments all-sample correct counter.",
+      "category": "metric_computation"
+    },
+    {
+      "line": 778,
+      "text": "                NewSlot(bucketAll, turn)[0]++;",
+      "purpose": "Increments all-sample bucket correct count.",
+      "category": "metric_computation"
+    },
+    {
+      "line": 779,
+      "text": "                if (k >= nTrain) { correct++; NewSlot(bucketVal, turn)[0]++; }",
+      "purpose": "Increments validation correct counters.",
+      "category": "metric_computation"
+    },
+    {
+      "line": 780,
+      "text": "                else correctTrain++;",
+      "purpose": "Increments training correct counter.",
+      "category": "metric_computation"
+    },
+    {
+      "line": 784,
+      "text": "        double valAcc = (double)correct / (n - nTrain);",
+      "purpose": "Caliber A validation accuracy correct / (n - nTrain); no zero guard.",
+      "category": "unguarded_denominator"
+    },
+    {
+      "line": 786,
+      "text": "        Console.WriteLine($\"【口径 A·原始胜负】用 sign(logit) 猜「视角方（左方）是否获胜」\");",
+      "purpose": "Prints caliber A header (raw win/loss via sign(logit)).",
+      "category": "metric_output"
+    },
+    {
+      "line": 787,
+      "text": "        Console.WriteLine($\"  验证集准确率 {valAcc:P2}   ({correct:N0}/{n - nTrain:N0}，验证集 {nValGames} 局)\");",
+      "purpose": "Prints caliber A validation accuracy, fraction and game count.",
+      "category": "metric_output"
+    },
+    {
+      "line": 788,
+      "text": "        Console.WriteLine($\"  训练集准确率 {(double)correctTrain / nTrain:P2}   ({correctTrain:N0}/{nTrain:N0})\");",
+      "purpose": "Caliber A training accuracy divides by nTrain without zero guard.",
+      "category": "unguarded_denominator"
+    },
+    {
+      "line": 789,
+      "text": "        Console.WriteLine($\"  全体准确率   {(double)correctAll / n:P2}   ({correctAll:N0}/{n:N0})\");",
+      "purpose": "Caliber A overall accuracy divides by n without zero guard.",
+      "category": "unguarded_denominator"
+    },
+    {
+      "line": 796,
+      "text": "        var score = new float[n];",
+      "purpose": "Allocates score array for caliber B pair ranking.",
+      "category": "metric_computation"
+    },
+    {
+      "line": 800,
+      "text": "            model.NormalizeInto(X.AsSpan(r * Dim, Dim), z);",
+      "purpose": "Normalizes each sample with the frozen model scaler.",
+      "category": "metric_computation"
+    },
+    {
+      "line": 801,
+      "text": "            score[k] = model.ForwardLogitNormalized(z);",
+      "purpose": "Computes model logit score for each sample.",
+      "category": "metric_computation"
+    },
+    {
+      "line": 838,
+      "text": "        var (okT, totT, _) = Rank(0, nTrain);",
+      "purpose": "Computes pair-ranking accuracy on training rows.",
+      "category": "metric_computation"
+    },
+    {
+      "line": 839,
+      "text": "        var (okV, totV, bucketPairVal) = Rank(nTrain, n);",
+      "purpose": "Computes pair-ranking accuracy and buckets on validation rows.",
+      "category": "metric_computation"
+    },
+    {
+      "line": 841,
+      "text": "        Console.WriteLine(\"【口径 B·对位内成对排序】同一（对位 × 回合）内：赢局局面 vs 输局局面，谁的分高（随机 = 50%）\");",
+      "purpose": "Prints caliber B header (within-matchup pair ranking, chance 50%).",
+      "category": "metric_output"
+    },
+    {
+      "line": 842,
+      "text": "        Console.WriteLine($\"  验证集 {(totV == 0 ? 0.5 : (double)okV / totV):P2}   \"",
+      "purpose": "Caliber B validation accuracy falls back to 0.5 when totV == 0.",
+      "category": "zero_denominator_fallback"
+    },
+    {
+      "line": 843,
+      "text": "                          + $\"({okV:N0}/{totV:N0} 对，验证集 {nValGames} 局)\");",
+      "purpose": "Prints validation pair counts and game count.",
+      "category": "metric_output"
+    },
+    {
+      "line": 844,
+      "text": "        Console.WriteLine($\"  训练集 {(totT == 0 ? 0.5 : (double)okT / totT):P2}   ({okT:N0}/{totT:N0} 对)\");",
+      "purpose": "Caliber B training accuracy falls back to 0.5 when totT == 0.",
+      "category": "zero_denominator_fallback"
+    },
+    {
+      "line": 846,
+      "text": "        PrintBuckets(\"\\n【全体样本】模型分档准确率（口径 A）\", bucketAll);",
+      "purpose": "Prints all-sample per-turn accuracy table.",
+      "category": "metric_output"
+    },
+    {
+      "line": 847,
+      "text": "        PrintBuckets($\"\\n【验证集 {nValGames} 局】模型分档准确率（口径 A，对上表基线用）\", bucketVal);",
+      "purpose": "Prints validation per-turn accuracy table (caliber A).",
+      "category": "metric_output"
+    },
+    {
+      "line": 848,
+      "text": "        PrintBuckets($\"\\n【验证集 {nValGames} 局】模型分档【对位内排序】准确率（口径 B）\", bucketPairVal);",
+      "purpose": "Prints validation per-turn pair-ranking table (caliber B).",
+      "category": "metric_output"
+    },
+    {
+      "line": 902,
+      "text": "    private static int[] BuildTurnBuckets(float[] X, int n)",
+      "purpose": "BuildTurnBuckets definition computes turn index from encoded field 0.",
+      "category": "metric_computation"
+    },
+    {
+      "line": 907,
+      "text": "            b[i] = (int)MathF.Round(X[i * Dim + StateEncoder.OffGlobal] * StateEncoder.TurnScale);",
+      "purpose": "Rounds X[OffGlobal] * TurnScale to an integer turn bucket.",
+      "category": "metric_computation"
+    },
+    {
+      "line": 913,
+      "text": "    private static void PrintBuckets(string title, SortedDictionary<int, int[]> byTurn)",
+      "purpose": "PrintBuckets prints a stratified accuracy table.",
+      "category": "metric_output"
+    },
+    {
+      "line": 916,
+      "text": "        foreach (var kv in byTurn) { tc += kv.Value[0]; tn += kv.Value[1]; }",
+      "purpose": "Accumulates bucket correct and total counts tc/tn.",
+      "category": "metric_computation"
+    },
+    {
+      "line": 917,
+      "text": "        Console.WriteLine(title + \"  （分档 = 全局回合号 Turn，编码字段 0）\");",
+      "purpose": "Prints bucket table title and bucket definition.",
+      "category": "metric_output"
+    },
+    {
+      "line": 918,
+      "text": "        Console.WriteLine($\"    {\"turn\",5} {\"样本\",9} {\"准确率\",9} {\"占比\",7}\");",
+      "purpose": "Prints bucket table column headers.",
+      "category": "metric_output"
+    },
+    {
+      "line": 922,
+      "text": "            if (t == 0) continue;",
+      "purpose": "Skips buckets with zero samples before per-bucket division.",
+      "category": "zero_denominator_guard"
+    },
+    {
+      "line": 923,
+      "text": "            Console.WriteLine($\"    {kv.Key,5} {t,9:N0} {100.0 * c / t,8:F2}% {100.0 * t / tn,6:F1}%\");",
+      "purpose": "Prints bucket count, accuracy (guarded by line 922) and share.",
+      "category": "metric_output"
+    },
+    {
+      "line": 925,
+      "text": "        Console.WriteLine($\"    {\"合计\",5} {tn,9:N0} {(tn == 0 ? 0 : 100.0 * tc / tn),8:F2}%\");",
+      "purpose": "Prints total row with fallback 0 when tn == 0.",
+      "category": "zero_denominator_fallback"
+    },
+    {
+      "line": 995,
+      "text": "            判据：验证准确率明显 > 50% = 编码有信号；≈50% = 编码是垃圾。",
+      "purpose": "Help states the 50% accuracy criterion for encoder signal.",
+      "category": "metric_documentation"
+    },
+    {
+      "line": 1004,
+      "text": "            --target win   标签 = 视角方最终是否获胜（BCE）。**含静态先验。**",
+      "purpose": "Help documents win target semantics (includes static prior).",
+      "category": "metric_documentation"
+    },
+    {
+      "line": 1005,
+      "text": "            --target pair  标签 = 同一（对位 × 回合）内「赢局局面 应高于 输局局面」的成对排序。",
+      "purpose": "Help documents pair target semantics.",
+      "category": "metric_documentation"
+    },
+    {
+      "line": 1006,
+      "text": "                           对位先验在每一对里是同一常数、相减即抵消 ⇒ 梯度只来自局面差异。",
+      "purpose": "Help explains prior cancellation for the pair objective.",
+      "category": "metric_documentation"
+    },
+    {
+      "line": 1007,
+      "text": "                           verify 会同时报两个口径：",
+      "purpose": "Help states verify reports two calibers.",
+      "category": "metric_documentation"
+    },
+    {
+      "line": 1008,
+      "text": "                             A 原始胜负（sign(logit) 猜谁赢；跨对位可比历史数字）",
+      "purpose": "Help describes caliber A raw win/loss.",
+      "category": "metric_documentation"
+    },
+    {
+      "line": 1009,
+      "text": "                             B 对位内成对排序（随机 = 50%，与卡池平衡程度无关）",
+      "purpose": "Help describes caliber B and the 50% chance baseline.",
+      "category": "metric_documentation"
+    },
+    {
+      "line": 1011,
+      "text": "            train 不给 --split-seed 时每次切分可能不同。verify 使用模型保存的切分，",
+      "purpose": "Help notes train split varies without --split-seed.",
+      "category": "metric_documentation"
+    },
+    {
+      "line": 1012,
+      "text": "            要求原始训练数据集；可省略种子，显式传入时必须与模型记录一致。",
+      "purpose": "Help states verify uses the model-saved split and dataset binding.",
+      "category": "metric_documentation"
+    },
+    {
+      "line": 1013,
+      "text": "            无完整切分元数据的旧模型需要重新训练后才能复验。",
+      "purpose": "Help notes old models lacking split metadata must be retrained.",
+      "category": "metric_documentation"
+    }
+  ]
+}

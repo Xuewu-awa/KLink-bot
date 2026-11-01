@@ -1,0 +1,78 @@
+{
+  "scope": "NNTrain unavailable ranking metrics",
+  "authority": "Repository software and executable synthetic training/evaluation regressions only",
+  "base_commit": "2597ed5b7028de17b2eff955ce6fb4afc74713fb",
+  "defect": "Train and Verify converted zero comparable ranking pairs to 0.5, saved it as accuracy and inferred encoder signal from it; empty bucket totals reported 0 percent.",
+  "fix": "Use nullable last/best validation accuracy, explicit metric kind/status and correct/total counts. Display unavailable in training, model Describe, Verify and empty bucket totals; avoid signal inference when unavailable. Preserve measured 0/50/100 percent and compute Verify metrics from actual data.",
+  "metadata": {
+    "valAccuracy": "number or null",
+    "bestValAccuracy": "number or null",
+    "validationMetric": [
+      "pair-ranking/v1",
+      "win-accuracy/v1"
+    ],
+    "validationMetricStatus": [
+      "available",
+      "no-comparable-pairs"
+    ],
+    "validationMetricCorrect": "last evaluated correct pair/row count",
+    "validationMetricTotal": "last evaluated comparable pair/row count"
+  },
+  "reviewed_prior_scope": {
+    "report": "out/audit/systematic-rules/pair-direction-20261101.json",
+    "disposition": "Closes the explicitly remaining zero-pair 0.5 fallback in the scoped trainer/verifier/display paths. Retains historical report and original bindings unchanged."
+  },
+  "regression": {
+    "before_exit_code": 1,
+    "after_exit_code": 0,
+    "ranking_metric_checks": 182,
+    "pair_direction_checks": 158,
+    "learning_checks": 46,
+    "preprocessing_checks": 50,
+    "evaluation_checks": 200,
+    "admission_checks": 44,
+    "full_passed": 1058,
+    "logs": {
+      "out/audit/systematic-rules/ranking-metric-before-20261101.txt": "71a55d170d1fe1a62361bf50eea68ca8691d696d6b4ff1ab24ad2d67810494f9",
+      "out/audit/systematic-rules/ranking-metric-after-20261101.txt": "e7aeb72200e69d20622dc6406cfd37359acb014e83b39d254dc91799bd220ae5",
+      "out/audit/systematic-rules/ranking-metric-direction-20261101.txt": "91719a85b468cabcba82119b0b2406b8032ff33802e6e45beb3058487f85f13a",
+      "out/audit/systematic-rules/ranking-metric-learning-20261101.txt": "d7faa75602026cd8ef5ae23fc2cd86ea53ef846efd6026b4622c07fb100e502f",
+      "out/audit/systematic-rules/ranking-metric-preprocessing-20261101.txt": "8934378a4acf1cfa1894f2d55b9449f00375ef7100712e3a9930a87495bb0b73",
+      "out/audit/systematic-rules/ranking-metric-evaluation-20261101.txt": "41052447d2274824e827bacd7587943101f8ad853fea695c45aa8f405f5816ad",
+      "out/audit/systematic-rules/ranking-metric-admission-20261101.txt": "bf321d94caa01475eb8f83fb1f3ce2655d866d2d9857ee9c20354551169ea935",
+      "out/audit/systematic-rules/ranking-metric-full-20261101.txt": "9f49dd4a37eb1d983b5d3bcdf306dd1a82ee2a6d7eb020020c485efaabc6f148"
+    },
+    "before_scope": "Initial 158-check regression against HEAD production code plus command dispatch; after reproduction, added 24 assertions checking actual trained metric reproduction and ranking description label. All final 182 checks pass.",
+    "controlled_scores": "Two ReLU units represent x[1] for 50%, abs(x[1]) for 100%, or a constant for 0% (ties count as incorrect, matching existing ranking semantics). Winner rows x[1]=2,-2; losing rows 0,0; labels constant per game. Both supported sampling modes exercised.",
+    "metadata_mutation": "Verify run with saved validation counts=99/99 and accuracy=1 still reports actual 0/0, 0/2, 1/2, 2/2. Legacy models with missing new metric fields also recompute."
+  },
+  "worker": {
+    "job": "20261101-185421-ranking-metric-2c07859d",
+    "result": "out/audit/systematic-rules/ranking-metric-worker-20261101.json",
+    "result_sha256": "88b30db2707fb21ee3d41e045302e8de76587cca4edc44a7926993f8ded8eb92",
+    "verified_literal_citations": 161,
+    "verification": "Primary verified source hash, line count, normalized exact HEAD Git blob and all 161 literal citations. Inventory purpose prose is not semantic proof."
+  },
+  "validation_environment": {
+    "source": "Clean HEAD src/BotSim/NNTrain plus five scoped sources; unrelated dirty action-probe changes excluded.",
+    "runtime_data_sha256": {
+      "cards.live.json": "3550dc76eb0414c500166875f45909077aeeb3ea4d229b9b0ba9c66a81987c4b",
+      "card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b"
+    },
+    "runtime_data_note": "Exact runtime bytes satisfy native-default proof and normalized content matches HEAD. Matrix uses exact Git input bytes separately."
+  },
+  "source_bindings": {
+    "tools/NNTrain/Program.cs": "03ffda5d9a7f0b4d6aca19c04948499708c2fb5bc50a4ee8169e4defc2d13cc6",
+    "tools/NNTrain/RankingMetricSelfTest.cs": "34b3c77fd45ab0e99e46dcd3b98af700983ca9f0a17976c915ef7205c5513fae",
+    "tools/NNTrain/ValueEvaluationSelfTest.cs": "9309058e6ab5898cebdd37afda7a01d8dc1e4eef1f3c769080fd84365e249953",
+    "tools/NNTrain/ValuePreprocessingSelfTest.cs": "79529e81c49e2a5dc3d62e3e5bad4a9c98cca711e677462b7447e67cec0cafa3",
+    "src/KLink.Bot/NN/NnModel.cs": "ea92c551c08de60c095647e63f75dae38c39133380e8f3093615f8c6abcf0019"
+  },
+  "remaining": [
+    "Software training metric semantics only; no native/card rule certification or playing-strength claim.",
+    "The held-out ranking fixture has two games and two observations each; tests establish zero denominators for single-label, separated matchup and separated turn cells, plus controlled 0/50/100 percent with two valid pairs. They do not establish arbitrary ranking sampling or statistical significance.",
+    "Legacy numeric metadata is still displayed as saved; Verify recomputes actual counts rather than trusting the saved metric, even for legacy or tampered fields. A historical 0.5 value alone cannot reveal whether it was measured.",
+    "Existing model/dataset admission and simulator fingerprints remain enforced. No old model weights or data contracts are silently repaired. Pair-direction fixes from the prior batch still require retraining old weights.",
+    "No prior evidence fingerprint refreshed; authoritative PvP denominator and overall completion remain unresolved."
+  ]
+}

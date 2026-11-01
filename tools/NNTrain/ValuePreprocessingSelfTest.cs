@@ -67,8 +67,9 @@ internal static class ValuePreprocessingSelfTest
                     Assert(root.GetProperty("normalizationSpec").GetString()=="training-split-only/v1","normalization metadata");
                     Assert(root.GetProperty("processedTrainingUnits").GetInt64()==(target=="win"?12:6),"normal fixture must execute rows/pairs");
                     string verification=Quiet(()=>Program.Verify(opts));
-                    double accuracy=root.GetProperty("valAccuracy").GetDouble();
-                    Assert(verification.Contains(target=="win"?$"验证集准确率 {accuracy:P2}":$"验证集 {accuracy:P2}"),"saved-model verification must reproduce validation metric");
+                    var metric=root.GetProperty("valAccuracy");
+                    Assert(target=="win" ? verification.Contains($"验证集准确率 {metric.GetDouble():P2}")
+                        : metric.ValueKind==JsonValueKind.Null && verification.Contains("验证集 不可评估"),"saved-model verification must reproduce validation metric");
                 }
                 // Only validation observations/labels change. Training parameters must be identical.
                 Save(heldout,decision:decision);Quiet(()=>Program.Train(opts));var second=NnModel.Load(modelPath);

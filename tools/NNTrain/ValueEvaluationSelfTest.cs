@@ -71,8 +71,8 @@ internal static class ValueEvaluationSelfTest
                 for(int repeat=0;repeat<3;repeat++)Assert(Quiet(()=>Program.Verify(omitted))==exact,"omitted seed changed saved evaluation split");
                 string ids=string.Join(",",original["validationGameIds"]!.AsArray().Select(x=>x!.GetValue<float>()));
                 Assert(exact.Contains("验证对局 ID: "+ids),"verifier did not report saved validation games");
-                double accuracy=original["valAccuracy"]!.GetValue<double>();
-                Assert(exact.Contains(target=="win"?$"验证集准确率 {accuracy:P2}":$"验证集 {accuracy:P2}"),"saved metric differs from exact held-out verification");
+                double? accuracy=original["valAccuracy"]?.GetValue<double>();
+                Assert(exact.Contains(target=="win"?$"验证集准确率 {accuracy:P2}":"验证集 不可评估") && (target=="win" || accuracy is null),"saved metric differs from exact held-out verification");
                 foreach(string mutation in new[]{"missing","null","empty","overlap","duplicate","unknown","omitted-game","type","nonfinite","seed-missing","seed-type","fractional"})
                 {
                     var meta=(JsonObject)original.DeepClone();

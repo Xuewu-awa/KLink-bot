@@ -68,6 +68,7 @@ internal static class Program
             if (cmd == "value-preprocessing-selftest") return ValuePreprocessingSelfTest.Run();
             if (cmd == "value-evaluation-selftest") return ValueEvaluationSelfTest.Run();
             if (cmd == "value-learning-selftest") return ValueLearningSelfTest.Run();
+            if (cmd == "ranking-metric-selftest") return RankingMetricSelfTest.Run();
             if (cmd == "pair-direction-selftest") return PairDirectionSelfTest.Run();
             if (cmd == "verify-actions") return ActionDatasetTool.VerifyCommand(opts);
             string dataDir = FindDir("card-effects.json");
@@ -415,8 +416,9 @@ internal static class Program
         var g1 = new float[hidden * Dim];
         var gb1 = new float[hidden];
         var g2 = new float[hidden];
-        float bestAcc = 0;
-        float lastAcc = 0;
+        double? bestAcc = null;
+        double? lastAcc = null;
+        int lastCorrect = 0, lastTotal = 0;
 
         // ---------- 前向 / 反传（两种目标共用，保证与 NnModel 的算式逐字一致）----------
         float ForwardLogit(int r, float[] hh)
@@ -573,8 +575,8 @@ internal static class Program
 
             if (ep % evalEvery == 0 || ep == epochs)
             {
-                double acc;
-                double trainAcc;
+                double? acc;
+                double? trainAcc;
                 string metricName;
                 if (!pairwise)
                 {
@@ -590,7 +592,8 @@ internal static class Program
                         bs[1]++;
                         if (ok) bs[0]++;
                     }
-                    acc = (double)correct / (n - nTrain);
+                    lastCorrect = correct; lastTotal = n - nTrain;
+                    acc = (double)correct / lastTotal;
                     // ⭐ 训练集准确率（**纯统计**，与前向/反传共用同一个 ForwardLogit）——
                     //    它和留出准确率的差距就是过拟合/欠拟合的直接读数。
                     int trCorrect = 0;
@@ -606,16 +609,17 @@ internal static class Program
                 else
                 {
                     var (ok, tot, byTurn) = PairRank(nTrain, n);
-                    acc = tot == 0 ? 0.5 : (double)ok / tot;
+                    lastCorrect = ok; lastTotal = tot;
+                    acc = tot == 0 ? null : (double)ok / tot;
                     var (okTr, totTr, _) = PairRank(0, nTrain);
-                    trainAcc = totTr == 0 ? 0.5 : (double)okTr / totTr;
+                    trainAcc = totTr == 0 ? null : (double)okTr / totTr;
                     metricName = $"验证对位内排序准确率（{tot:N0} 对）";
                     if (ep == epochs) PrintBuckets("\n验证集分档【对位内排序】准确率（模型）", byTurn);
                 }
-                bestAcc = Math.Max(bestAcc, (float)acc);
-                lastAcc = (float)acc;
-                Console.WriteLine($"  epoch {ep,3}  loss {loss / Math.Max(1, used):F6}  {metricName} {acc:P2}"
-                                  + $"  训练准确率 {trainAcc:P2}");
+                if (acc.HasValue) bestAcc = Math.Max(bestAcc ?? acc.Value, acc.Value);
+                lastAcc = acc;
+                Console.WriteLine($"  epoch {ep,3}  loss {loss / Math.Max(1, used):F6}  {metricName} {FormatAccuracy(acc)}"
+                                  + $"  训练准确率 {FormatAccuracy(trainAcc)}");
             }
         }
 
@@ -624,9 +628,11 @@ internal static class Program
 
         Console.WriteLine();
         Console.WriteLine(pairwise
-            ? $"最佳验证对位内排序准确率 {bestAcc:P2}（随机 = 50%）"
-            : $"最佳验证准确率 {bestAcc:P2}");
-        Console.WriteLine(bestAcc > 0.55
+            ? $"最佳验证对位内排序准确率 {FormatAccuracy(bestAcc)}（随机 = 50%）"
+            : $"最佳验证准确率 {FormatAccuracy(bestAcc)}");
+        Console.WriteLine(!bestAcc.HasValue
+            ? "验证集无可比较排序对，不能据此判断编码信号；请增加覆盖同一对位和回合的胜负对局。"
+            : bestAcc > 0.55
             ? "✅ 明显高于 50% —— 编码里有信号，向量方案成立"
             : "⚠ 接近 50% —— 编码可能没信号，或者需要更多数据/特征");
 
@@ -664,6 +670,10 @@ internal static class Program
             target,
             valAccuracy = lastAcc,
             bestValAccuracy = bestAcc,
+            validationMetric = pairwise ? "pair-ranking/v1" : "win-accuracy/v1",
+            validationMetricStatus = lastAcc.HasValue ? "available" : "no-comparable-pairs",
+            validationMetricCorrect = lastCorrect,
+            validationMetricTotal = lastTotal,
             savedEpochWeights = epochs,
             processedTrainingUnits,
             trainingUnit = pairwise ? "pair" : "row",
@@ -839,9 +849,9 @@ internal static class Program
         var (okV, totV, bucketPairVal) = Rank(nTrain, n);
         Console.WriteLine();
         Console.WriteLine("【口径 B·对位内成对排序】同一（对位 × 回合）内：赢局局面 vs 输局局面，谁的分高（随机 = 50%）");
-        Console.WriteLine($"  验证集 {(totV == 0 ? 0.5 : (double)okV / totV):P2}   "
+        Console.WriteLine($"  验证集 {FormatAccuracy(totV == 0 ? null : (double)okV / totV)}   "
                           + $"({okV:N0}/{totV:N0} 对，验证集 {nValGames} 局)");
-        Console.WriteLine($"  训练集 {(totT == 0 ? 0.5 : (double)okT / totT):P2}   ({okT:N0}/{totT:N0} 对)");
+        Console.WriteLine($"  训练集 {FormatAccuracy(totT == 0 ? null : (double)okT / totT)}   ({okT:N0}/{totT:N0} 对)");
         Console.WriteLine();
         PrintBuckets("\n【全体样本】模型分档准确率（口径 A）", bucketAll);
         PrintBuckets($"\n【验证集 {nValGames} 局】模型分档准确率（口径 A，对上表基线用）", bucketVal);
@@ -909,6 +919,8 @@ internal static class Program
         return b;
     }
 
+    private static string FormatAccuracy(double? accuracy) => accuracy.HasValue ? $"{accuracy.Value:P2}" : "不可评估";
+
     /// <summary>打印分档准确率表。</summary>
     private static void PrintBuckets(string title, SortedDictionary<int, int[]> byTurn)
     {
@@ -922,7 +934,7 @@ internal static class Program
             if (t == 0) continue;
             Console.WriteLine($"    {kv.Key,5} {t,9:N0} {100.0 * c / t,8:F2}% {100.0 * t / tn,6:F1}%");
         }
-        Console.WriteLine($"    {"合计",5} {tn,9:N0} {(tn == 0 ? 0 : 100.0 * tc / tn),8:F2}%");
+        Console.WriteLine($"    {"合计",5} {tn,9:N0} {FormatAccuracy(tn == 0 ? null : (double)tc / tn),9}");
     }
 
     private static int[] NewSlot(SortedDictionary<int, int[]> d, int key)
@@ -1011,6 +1023,8 @@ internal static class Program
             train 不给 --split-seed 时每次切分可能不同。verify 使用模型保存的切分，
             要求原始训练数据集；可省略种子，显式传入时必须与模型记录一致。
             无完整切分元数据的旧模型需要重新训练后才能复验。
+            同一对位和回合内没有胜负排序对时显示“不可评估”；保存的准确率为 null，
+            validationMetricStatus 为 no-comparable-pairs，并保存正确数与总对数。
 
             状态编码在 src/KLink.Bot/NN/StateEncoder.cs —— 训练与推理共用一份。
             """);

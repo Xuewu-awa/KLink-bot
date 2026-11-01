@@ -228,7 +228,13 @@ public sealed class NnModel
             {
                 using var doc = JsonDocument.Parse(MetaJson);
                 var root = doc.RootElement;
-                if (root.TryGetProperty("valAccuracy", out var acc)) sb.Append($"  验证准确率 {acc.GetDouble():P1}");
+                if (root.TryGetProperty("valAccuracy", out var acc))
+                {
+                    string label = root.TryGetProperty("validationMetric", out var metric)
+                        && metric.GetString() == "pair-ranking/v1" ? "验证排序准确率" : "验证准确率";
+                    if (acc.ValueKind == JsonValueKind.Null) sb.Append($"  {label} 不可评估");
+                    else if (acc.ValueKind == JsonValueKind.Number) sb.Append($"  {label} {acc.GetDouble():P1}");
+                }
                 if (root.TryGetProperty("epochs", out var ep)) sb.Append($"  epochs {ep.GetInt32()}");
                 if (root.TryGetProperty("data", out var data)) sb.Append($"  数据 {data.GetString()}");
                 if (root.TryGetProperty("trainedAt", out var at)) sb.Append($"  训练于 {at.GetString()}");
