@@ -1,0 +1,51 @@
+{
+  "spec": "action-afterstate-contract/v1",
+  "scope": "Versioned action labels with post-root left-perspective observations; collection and validation only",
+  "dataset": {
+    "path": "out/audit/systematic-rules/afterstate-contract-20261102.jsonl.gz",
+    "qualityPath": "out/audit/systematic-rules/afterstate-contract-20261102.jsonl.gz.quality.json",
+    "sha256": "300c87f838d07d5de2269f7c85ada85b6bb6dbc09ddafaf3c7e4450ee7356921",
+    "qualitySha256": "8a96a9d296d76ebe13e4b13c38add4fd512dab8310b5388201c1e99d17b33dff",
+    "schemaVersion": 5,
+    "seed": 440000,
+    "games": 4,
+    "acceptedGames": 4,
+    "rows": 388,
+    "beforeObservationDim": 745,
+    "afterObservationDim": 745,
+    "finiteAfterstates": true,
+    "distinctAfterstates": 388
+  },
+  "runtime": {
+    "KLink.Bot.dll": "9d1a6ccadf3b6c1393b67b7a96ac4464e469fb742e864f5e029652d8f39aadb3",
+    "NNTrain.dll": "0d19f7c748543cc05a4ced2d93e97e1011edf18008dd038696c2fc4fb44197ee"
+  },
+  "tests": {
+    "actionDatasetSelfTest": 54,
+    "compressedRowsVerified": 388,
+    "compressedGamesVerified": 4,
+    "fullBotSim": 1058
+  },
+  "deepseekReview": {
+    "job": "20261102-015651-afterstate-contract-review-829a8128",
+    "status": "timed_out",
+    "acceptedFindings": 0
+  },
+  "limitations": [
+    "Collection and validation only; no model training, promotion or strength claim.",
+    "Afterstate uses left perspective and does not prove hidden VM equivalence.",
+    "Candidates remain a structural superset rather than a certified legal mask.",
+    "The 4-game smoke batch is too small for calibration or gameplay conclusions."
+  ],
+  "sourceBindings": {
+    "src/KLink.Bot/Training/OracleActionEpisodeRunner.cs": "9d159ad79cbf69db0fb5fec92ab646d213f0a880ac899dd754dd44ff437fdb63",
+    "tools/NNTrain/ActionDatasetTool.cs": "9575f848673344ed2aad3f0370aff1e1a0c1c3a5459b7250e95d21053cb36532",
+    "tools/NNTrain/ActionDatasetSelfTest.cs": "41488a0e043ae356b2c8da8ef4d37ee500758458d941441393b0f80bbd0dde96"
+  },
+  "artifactHashes": {
+    "out/audit/systematic-rules/afterstate-contract-20261102.md": "160a08c42861ac3a924d1949bc3af9211397051d379d0041fddeca6702c0067f",
+    "out/audit/systematic-rules/afterstate-contract-20261102.jsonl.gz": "300c87f838d07d5de2269f7c85ada85b6bb6dbc09ddafaf3c7e4450ee7356921",
+    "out/audit/systematic-rules/afterstate-contract-20261102.jsonl.gz.quality.json": "8a96a9d296d76ebe13e4b13c38add4fd512dab8310b5388201c1e99d17b33dff",
+    "out/audit/systematic-rules/afterstate-contract-full-20261102.txt": "b52f3d77781c4b93172989bb134585151dd40af35f76f30085711611505f44c6"
+  }
+}

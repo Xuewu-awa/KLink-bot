@@ -35,12 +35,12 @@ internal static class ActionDatasetSelfTest
         string path=Path.Combine(dir,"data.jsonl.gz");
         var hashes=new[]{"cards.json","card-ir.json","card-effects.json","card-vectors.json","KLink.Bot.dll","NNTrain.dll"}
             .ToDictionary(k=>k,_=>new string('0',64));
-        var header=new ActionDatasetHeader(4,"KLink.MainActionLabels",StateEncoder.Spec,MainActionFeatures.Spec,"actor",
+        var header=new ActionDatasetHeader(5,"KLink.MainActionLabels",StateEncoder.Spec,MainActionFeatures.Spec,"actor",
             OracleActionEpisodeRunner.TeacherContract,"structural-superset",1,2,hashes);
         float[] Features(params float[] prefix)=>prefix.Concat(new float[MainActionFeatures.Dim-prefix.Length]).ToArray();
         var option=new MainActionOption(0,new(MainActionKind.EndTurn),Array.AsReadOnly(Features(0,0,0,1)));
         float[] ChangedFeature(int index,float value){var f=option.Features.ToArray();f[index]=value;return f;}
-        var good=new ActionDatasetRow(0,0,Side.Left,1,new float[StateEncoder.Dim],[option],0,["legal-mask/unverified"]);
+        var good=new ActionDatasetRow(0,0,Side.Left,1,new float[StateEncoder.Dim],[option],0,["legal-mask/unverified"],new float[StateEncoder.Dim]);
         ActionDatasetQuality Quality()=>new(){Header=header,AcceptedGames=1,RejectedGames=1,Rows=1,Games=[
             new(){Game=0,Seed=1,Accepted=true,Finished=true,Winner=Side.Left,BufferedRows=1,WrittenRows=1,ComparedSteps=1,AppliedActions=1,PlanningDecisions=1},
             new(){Game=1,Seed=2,Accepted=false,BufferedRows=5,Reasons=["forced_late_failure"]}]};
@@ -73,6 +73,7 @@ internal static class ActionDatasetSelfTest
                 ("invalid actor",r=>r with {Actor=Side.NotAvailable}),
                 ("invalid turn",r=>r with {Turn=0}),
                 ("wrong observation width",r=>r with {Observation=[]}),
+                ("missing afterstate observation",r=>r with {AfterObservation=null}),
                 ("invalid label",r=>r with {ChosenIndex=1}),
                 ("missing explicit mask gap",r=>r with {CoverageGaps=[]}),
                 ("duplicate candidate",r=>r with {Candidates=[option,option with {Index=1}]}),

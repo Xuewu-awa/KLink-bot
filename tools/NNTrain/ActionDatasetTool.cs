@@ -13,7 +13,7 @@ namespace KLink.Bot.NNTrain;
 internal sealed record ActionDatasetHeader(int Version,string Kind,string ObservationSpec,string ActionSpec,
     string Perspective,string Teacher,string Candidates,ulong Seed,int RequestedGames,Dictionary<string,string> InputsSha256);
 internal sealed record ActionDatasetRow(int Game,int Step,Side Actor,int Turn,float[] Observation,
-    MainActionOption[] Candidates,int ChosenIndex,string[] CoverageGaps);
+    MainActionOption[] Candidates,int ChosenIndex,string[] CoverageGaps,float[]? AfterObservation=null);
 // Optional diagnostics only: phase is ownership, not a rule/display classification.
 internal sealed record ActionCallProvenance(string Phase,IReadOnlyList<OracleMissingCallCount> Sites,
     long SitesOmitted,long CaptureFailures);
@@ -78,6 +78,10 @@ internal static class ActionDatasetTool
         if(result.PlanningDecisions!=result.Labels.Count
             || result.PlanningPrefixRoots!=(long)result.Labels.Count*(result.Labels.Count-1)/2)
             reasons.Add("unverified_planning_count");
+        if(result.Labels.Any(label=>label.AfterObservation is null
+            || label.AfterObservation.Length!=StateEncoder.Dim
+            || !label.AfterObservation.All(float.IsFinite)))
+            reasons.Add("missing_afterstate_observation");
         if(result.MainFaults!=0)reasons.Add("main_action_fault");
         if(result.MainRejections!=0)reasons.Add("main_action_rejected");
         if(result.AppliedActions!=result.ComparedSteps || result.ComparedSteps!=result.Labels.Count)reasons.Add("unverified_root_count");
@@ -99,7 +103,7 @@ internal static class ActionDatasetTool
             return result;
         }).ToArray();
         var inputs=CurrentInputs(dataDir,vectorPath);
-        var header=new ActionDatasetHeader(4,"KLink.MainActionLabels",StateEncoder.Spec,MainActionFeatures.Spec,
+        var header=new ActionDatasetHeader(5,"KLink.MainActionLabels",StateEncoder.Spec,MainActionFeatures.Spec,
             "actor",OracleActionEpisodeRunner.ContractFor(choicePolicy),"structural-superset",seed,games,inputs);
         var quality=new ActionDatasetQuality {Header=header};
         using(var file=File.Create(path))
@@ -157,7 +161,7 @@ internal static class ActionDatasetTool
         {
             var request=label.Request;
             var row=new ActionDatasetRow(game,label.Step,request.Actor,request.Turn,request.Observation.ToArray(),
-                request.Candidates.ToArray(),label.ChosenIndex,request.CoverageGaps.ToArray());
+                request.Candidates.ToArray(),label.ChosenIndex,request.CoverageGaps.ToArray(),label.AfterObservation);
             writer.WriteLine(JsonSerializer.Serialize(row,Json));
         }
         return result.Labels.Count;
@@ -170,7 +174,7 @@ internal static class ActionDatasetTool
             var q=JsonSerializer.Deserialize<ActionDatasetQuality>(File.ReadAllText(path+".quality.json"),Json)
                 ?? throw new InvalidDataException("Missing action quality manifest.");
             var h=q.Header;
-            if(h is null || h.Version!=4 || h.Kind!="KLink.MainActionLabels" || h.Perspective!="actor"
+            if(h is null || h.Version!=5 || h.Kind!="KLink.MainActionLabels" || h.Perspective!="actor"
                 || h.ObservationSpec!=StateEncoder.Spec || h.ActionSpec!=MainActionFeatures.Spec
                 || h.Teacher is not (OracleActionEpisodeRunner.TeacherContract or OracleActionEpisodeRunner.LastChoiceTeacherContract)
                 || h.Candidates!="structural-superset"
@@ -208,6 +212,7 @@ internal static class ActionDatasetTool
                 if(!steps.ContainsKey(row.Game) || row.Game<last || !q.Games.Single(g=>g.Game==row.Game).Accepted
                     || row.Step!=steps[row.Game]++ || row.Actor is not (Side.Left or Side.Right) || row.Turn<=0
                     || row.Observation is null || row.Observation.Length!=StateEncoder.Dim || !row.Observation.All(float.IsFinite)
+                    || row.AfterObservation is null || row.AfterObservation.Length!=StateEncoder.Dim || !row.AfterObservation.All(float.IsFinite)
                     || row.Candidates is null || row.Candidates.Length is <1 or >OracleActionEpisodeRunner.MaxCandidatesPerRow
                     || row.ChosenIndex<0 || row.ChosenIndex>=row.Candidates.Length
                     || row.CoverageGaps is null || !row.CoverageGaps.Contains("legal-mask/unverified"))

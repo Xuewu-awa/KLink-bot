@@ -7,7 +7,8 @@ using KLink.Bot.NN;
 
 namespace KLink.Bot.Training;
 
-public sealed record OracleActionLabel(int Step, MainActionRequest Request, int ChosenIndex);
+public sealed record OracleActionLabel(int Step, MainActionRequest Request, int ChosenIndex,
+    float[]? AfterObservation = null);
 public sealed record OracleMissingCallCount(KismetMissingCallSite Site, long Count);
 public sealed record OracleActionEpisodeResult(MatchEngine Teacher, MatchEngine Replay,
     IReadOnlyList<OracleActionLabel> Labels, IReadOnlyList<string> Errors, long ChoiceFaults,
@@ -37,8 +38,8 @@ public enum OracleChooseOnePolicy { Native, Last }
 /// </summary>
 public static class OracleActionEpisodeRunner
 {
-    public const string TeacherContract = "greedy-isolated-prefix/v3+choose-one-explicit/v1+first-index/v1";
-    public const string LastChoiceTeacherContract = "greedy-isolated-prefix/v3+choose-one-last/v1+first-index/v1";
+    public const string TeacherContract = "greedy-isolated-prefix/v3+choose-one-explicit/v1+first-index/v1+afterstate-left/v1";
+    public const string LastChoiceTeacherContract = "greedy-isolated-prefix/v3+choose-one-last/v1+first-index/v1+afterstate-left/v1";
     public static string ContractFor(OracleChooseOnePolicy policy) => policy switch
     {
         OracleChooseOnePolicy.Native => TeacherContract,
@@ -210,7 +211,9 @@ public static class OracleActionEpisodeRunner
                     if(!SameClock(teacher,replay) || !SameTrace(t,r)){errors.Add("root_trace_mismatch");break;}
                     if(!SameSnapshot()){errors.Add("root_snapshot_mismatch");break;}
                     compared++;options+=request.Candidates.Count;
-                    labels.Add(new(labels.Count,request,index));
+                    var afterObservation=StateEncoder.Encode(teacher.State,vectors,Side.Left);
+                    if(!afterObservation.All(float.IsFinite)){errors.Add("nonfinite_afterstate_observation");break;}
+                    labels.Add(new(labels.Count,request,index,afterObservation));
                     if(teacherChoice.Faults+replayChoice.Faults+main.Faults+teacherView.Faults!=0 || teacher.Api.Vm.FaultedPrograms+replay.Api.Vm.FaultedPrograms!=0)
                     {errors.Add("execution_fault");break;}
                     if(command.Kind==MainActionKind.EndTurn)break;

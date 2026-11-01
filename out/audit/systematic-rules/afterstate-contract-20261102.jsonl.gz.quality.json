@@ -1,0 +1,230 @@
+{
+  "header": {
+    "version": 5,
+    "kind": "KLink.MainActionLabels",
+    "observationSpec": "v2/dim=745;order=global3,perspective371,opposite371;global=turn/30,activeIsPerspective,cardsPlayedThisTurn/10;perSideGlobal=hqDef/20,kredits/12,maxKredits/12,handCount/10,deckCount/40,boardCount/10;zones=Hand,BoardFrontline,OwnHalf,Discard,Deck;zone=mean(cardVec90)\u002Bcount/10;deckZone=count/10only,noCardVec;oppHandZone=count/10only,noCardVec(hiddenInfo\u002BdeckFingerprint);cardVec=s[9]\u002Bk[0..80];label=P(perspective wins)",
+    "actionSpec": "main-action/v3;dim=200;scalar18=play,attack,move,end,sourceAtk20,sourceDef20,kredit12,operation12,targetAtk20,targetDef20,targetRelation,targetHQ,slotByCapacity,sourceBoard,sourceHand,sourceOrder,chooseOneIndexPlusOne,chooseOneOptionCount;sourceOwnVectorPresent,sourceOwnCardVec90;targetOwnVectorPresent,targetOwnCardVec90;vectors=StateEncoder.CardVecs.ByName[Definition.Name];missingOrNonOwn=zero;ownHandOrBoardOnly",
+    "perspective": "actor",
+    "teacher": "greedy-isolated-prefix/v3\u002Bchoose-one-explicit/v1\u002Bfirst-index/v1\u002Bafterstate-left/v1",
+    "candidates": "structural-superset",
+    "seed": 440000,
+    "requestedGames": 4,
+    "inputsSha256": {
+      "card-effects.json": "fc335d228779a2859627ee706d85949149ca595d0cfdfbc4971541831e5a8df0",
+      "card-ir-native-defaults.json": "a4f2812716f03ded180f45603ac7b715e890c54b1bc5b4b75fe2b1ec0975d711",
+      "card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b",
+      "card-vectors.json": "b15b93cb02e7e8a712561a2da52127a5867084ecb878a6ad58539b56b1109ab9",
+      "cards.json": "3550dc76eb0414c500166875f45909077aeeb3ea4d229b9b0ba9c66a81987c4b",
+      "deck_code_ids.json": "261cfd518c1a1ce40488f141e8dbd617ff19abe0734c49319ebcd6ac5dcb257e",
+      "event-contracts.json": "e4806dd48efbfc799a27c14b3660ad76ee03cd3f13e3e4320b213c5928efb112",
+      "live-actions.json": "db413a4644afe75806e66c47e200d93c5d93e91ca03e23fca38465b7dcb4dab3",
+      "KLink.Bot.dll": "9d1a6ccadf3b6c1393b67b7a96ac4464e469fb742e864f5e029652d8f39aadb3",
+      "NNTrain.dll": "0d19f7c748543cc05a4ced2d93e97e1011edf18008dd038696c2fc4fb44197ee"
+    }
+  },
+  "dataSha256": "300c87f838d07d5de2269f7c85ada85b6bb6dbc09ddafaf3c7e4450ee7356921",
+  "acceptedGames": 4,
+  "rejectedGames": 0,
+  "rows": 388,
+  "games": [
+    {
+      "game": 0,
+      "seed": 440000,
+      "leftDeck": "\u7F8E\u6FB3\u8DF3",
+      "rightDeck": "\u82F1\u82AC",
+      "accepted": true,
+      "finished": true,
+      "winner": 2,
+      "bufferedRows": 86,
+      "writtenRows": 86,
+      "comparedSteps": 86,
+      "planningPrefixRoots": 3655,
+      "planningDecisions": 86,
+      "mainFaults": 0,
+      "mainRejections": 0,
+      "appliedActions": 86,
+      "choiceFaults": 0,
+      "pendingChoices": 0,
+      "vmFaults": 0,
+      "unsupported": {},
+      "calls": {
+        "\u003Clocal-ran:updateCustomJsonIfNeeded\u003E": 155,
+        "\u003Clocal-ran:getPossibleCardsFromStaticCards\u003E": 47,
+        "\u003Clocal-ran:findPairOfUnits\u003E": 94,
+        "\u003Clocal-ran:getTwoCardsFromPossibleCards\u003E": 47,
+        "\u003Clocal-ran:GetPlayFromHandDamage\u003E": 54,
+        "\u003Clocal-ran:isSecondOrderThisTurn\u003E": 28,
+        "\u003Clocal-ran:didPlayBritishInfantryLastTurn\u003E": 35
+      },
+      "missingCallProvenance": [
+        {
+          "phase": "teacher",
+          "sites": [],
+          "sitesOmitted": 0,
+          "captureFailures": 0
+        },
+        {
+          "phase": "replay",
+          "sites": [],
+          "sitesOmitted": 0,
+          "captureFailures": 0
+        },
+        {
+          "phase": "planning",
+          "sites": [],
+          "sitesOmitted": 0,
+          "captureFailures": 0
+        }
+      ],
+      "reasons": [],
+      "snapshotDifference": null
+    },
+    {
+      "game": 1,
+      "seed": 440001,
+      "leftDeck": "\u65E5\u6CD5",
+      "rightDeck": "\u65E5\u6CE2\u70B8\u69FD",
+      "accepted": true,
+      "finished": true,
+      "winner": 1,
+      "bufferedRows": 56,
+      "writtenRows": 56,
+      "comparedSteps": 56,
+      "planningPrefixRoots": 1540,
+      "planningDecisions": 56,
+      "mainFaults": 0,
+      "mainRejections": 0,
+      "appliedActions": 56,
+      "choiceFaults": 0,
+      "pendingChoices": 0,
+      "vmFaults": 0,
+      "unsupported": {},
+      "calls": {
+        "\u003Clocal-ran:GetPlayFromHandDamage\u003E": 31
+      },
+      "missingCallProvenance": [
+        {
+          "phase": "teacher",
+          "sites": [],
+          "sitesOmitted": 0,
+          "captureFailures": 0
+        },
+        {
+          "phase": "replay",
+          "sites": [],
+          "sitesOmitted": 0,
+          "captureFailures": 0
+        },
+        {
+          "phase": "planning",
+          "sites": [],
+          "sitesOmitted": 0,
+          "captureFailures": 0
+        }
+      ],
+      "reasons": [],
+      "snapshotDifference": null
+    },
+    {
+      "game": 2,
+      "seed": 440002,
+      "leftDeck": "\u65E5\u7F8E",
+      "rightDeck": "\u7F8E\u6FB3\u8DF3",
+      "accepted": true,
+      "finished": true,
+      "winner": 2,
+      "bufferedRows": 105,
+      "writtenRows": 105,
+      "comparedSteps": 105,
+      "planningPrefixRoots": 5460,
+      "planningDecisions": 105,
+      "mainFaults": 0,
+      "mainRejections": 0,
+      "appliedActions": 105,
+      "choiceFaults": 0,
+      "pendingChoices": 0,
+      "vmFaults": 0,
+      "unsupported": {},
+      "calls": {
+        "\u003Clocal-ran:GetPlayFromHandDamage\u003E": 232,
+        "\u003Clocal-ran:getPossibleCardsFromStaticCards\u003E": 84,
+        "\u003Clocal-ran:findPairOfUnits\u003E": 84,
+        "\u003Clocal-ran:getTwoCardsFromPossibleCards\u003E": 84
+      },
+      "missingCallProvenance": [
+        {
+          "phase": "teacher",
+          "sites": [],
+          "sitesOmitted": 0,
+          "captureFailures": 0
+        },
+        {
+          "phase": "replay",
+          "sites": [],
+          "sitesOmitted": 0,
+          "captureFailures": 0
+        },
+        {
+          "phase": "planning",
+          "sites": [],
+          "sitesOmitted": 0,
+          "captureFailures": 0
+        }
+      ],
+      "reasons": [],
+      "snapshotDifference": null
+    },
+    {
+      "game": 3,
+      "seed": 440003,
+      "leftDeck": "\u82F1\u65E5",
+      "rightDeck": "\u5FB7\u7F8E",
+      "accepted": true,
+      "finished": true,
+      "winner": 2,
+      "bufferedRows": 141,
+      "writtenRows": 141,
+      "comparedSteps": 141,
+      "planningPrefixRoots": 9870,
+      "planningDecisions": 141,
+      "mainFaults": 0,
+      "mainRejections": 0,
+      "appliedActions": 141,
+      "choiceFaults": 0,
+      "pendingChoices": 0,
+      "vmFaults": 0,
+      "unsupported": {},
+      "calls": {
+        "\u003Clocal-ran:GetPlayFromHandDamage\u003E": 209,
+        "\u003Clocal-ran:isSecondOrderThisTurn\u003E": 107,
+        "\u003Clocal-ran:didPlayBritishInfantryLastTurn\u003E": 178,
+        "\u003Clocal-ran:doIControl3opCostUnit\u003E": 32,
+        "\u003Clocal-ran:anyOrderPlayedThisTurn\u003E": 15,
+        "\u003Clocal-ran:ApplyTheBuff\u003E": 15,
+        "\u003Clocal-ran:RemoveTheBuff\u003E": 5
+      },
+      "missingCallProvenance": [
+        {
+          "phase": "teacher",
+          "sites": [],
+          "sitesOmitted": 0,
+          "captureFailures": 0
+        },
+        {
+          "phase": "replay",
+          "sites": [],
+          "sitesOmitted": 0,
+          "captureFailures": 0
+        },
+        {
+          "phase": "planning",
+          "sites": [],
+          "sitesOmitted": 0,
+          "captureFailures": 0
+        }
+      ],
+      "reasons": [],
+      "snapshotDifference": null
+    }
+  ]
+}

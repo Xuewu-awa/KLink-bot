@@ -8078,6 +8078,50 @@
       }
     },
     {
+      "id": "MATRIX-006/dispatch-scope-reviewed-20261031",
+      "symbol": "DispatchGapScopeReview",
+      "modes": [
+        null
+      ],
+      "status": "partial",
+      "validated_scope": "对 45 个静态派发表缺口函数及 465 个机械命中条目完成逐函数/逐卡范围分类。战役、教程、场景、Brawl 和 USunlock 从无头 PvP 队列排除；4 个无后缀资产仅列为 PvP 候选。候选可达性、Blueprint 语义、继承的 /Script/kards 原生闭包仍开放。HasCampaignUpgrade 的命中全部为 _cam1 战役变体；ShowTutorialMessage 命中为 5 个 _tut 与 7 个 USunlock；GetClientSide 已在 CardApiDispatch.cs 实现，不属于该缺口。",
+      "report": "out/audit/systematic-rules/dispatch-scope-reviewed-20261031.json",
+      "report_sha256": "d4c1afbcc809857628b88decf701045d18a5a820db22581cc747e4c7d826fd18",
+      "source_bindings": {
+        "klink bot/tools/audit-dispatch-scope-report.py": "9c4d9949cce66d94d843977babaf7875ea9907ecd097dcac5720589362dfecd8",
+        "out/audit/systematic-rules/dispatch-gap-pvp-classification-20261031.json": "7c1172e855711f692be4682736eb798e43df3b703a2e136e7b929692911a705b",
+        "out/audit/deepseek-dispatch-scope-packet-20261031/packet/worker-classification.json": "cf511953c05bd678469107b171f9738a70ef2644e8abfcfac9fce0805326ca82",
+        "src/KLink.Bot/Effects/CardApiDispatch.cs": "8f055397bfdbd45d4d2fdebded5e0482d5fa3d96862478b94fcdf0926191cf67",
+        "klink bot/docs/card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b"
+      },
+      "limitations": [
+        "机械后缀/路径分类不证明 PvP 可达性。",
+        "不证明未映射函数拥有原生实现或语义闭合。",
+        "math:PrintString 有 2 个静态缺口调用点但没有机械命中，保留为索引异常。"
+      ]
+    },
+    {
+      "id": "MATRIX-007/six-no-ir-cdo-20261031",
+      "symbol": "SixNoIrCardCDOClassification",
+      "modes": [
+        null
+      ],
+      "status": "partial",
+      "validated_scope": "六张无 card-ir 条目的卡完成 CDO/资产字段对照；6 个类导出均无自定义函数或事件导出，静态字段与 cards.json 无不一致，内建关键词表有对应条目。结论仅为 data-only-or-native-keyword 候选，不认证整卡逻辑或 /Script/kards 原生继承闭包。",
+      "report": "out/audit/systematic-rules/six-no-ir-card-cdo-classification-20261031.json",
+      "report_sha256": "60949202a5589ef1185c83f8a4e004c4c40a624a95860a467c1d2c7fd2aed7ea",
+      "source_bindings": {
+        "klink bot/tools/audit-six-no-ir-cdo.py": "7816fa1c896d34ea3b9217b54f1d47ec6a51f4f4ce333e476eb42e3289008a96",
+        "klink bot/docs/cards.json": "835ec5d6f8aa267e2324e0eb3bb78a38280994e064485b2a31a95cc296939451",
+        "klink bot/docs/card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b",
+        "src/KLink.Bot/Cards/CardInnateTable.cs": "9d4e25a3271a523c460cb50ece359ae7bb98379d7ccdff9412a3bdf48c2610d6"
+      },
+      "limitations": [
+        "无自定义 Blueprint 函数体不等于继承原生规则已完成认证。",
+        "静态 CDO 字段一致不等于所有触发时机和交互路径一致。"
+      ]
+    },
+    {
       "id": "RULE-550/SpawnCardInHand/initial-slot",
       "symbol": "SpawnCardInHand",
       "modes": [
@@ -8588,6 +8632,23 @@
         "Same pre-decision Greedy training distribution vs model afterstates shift remains; enumerator is not certified complete; production NnPolicy.Choose unchanged. No new rule/card certification or overall progress percentage.",
         "Budget includes verification/replay and is checked only between synchronous calls; over-budget games are inadmissible. The new fixed 180-second evaluation budget differs from earlier 60-second pilot; earlier pilot outcomes are not pooled into strength estimates.",
         "Exact runtime engine preserved with build PathMap to the prior snapshot and pinned source revision metadata. Build used clean HEAD source plus two tool overlays, excluding unrelated dirty probes. Old and new binaries and raw traces retained locally, SHA256-bound publicly; verification script requires those local artifacts."
+      ]
+    },
+    {
+      "id": "TRAINING/NNTrain/action-afterstate-contract-20261102",
+      "status": "partial",
+      "report": "out/audit/systematic-rules/afterstate-contract-20261102.json",
+      "report_sha256": "9cc0f3b6d540d397fee04c648651f62f5d272a3119e43338a3e6b19d727fff62",
+      "source_bindings": {
+        "src/KLink.Bot/Training/OracleActionEpisodeRunner.cs": "9d159ad79cbf69db0fb5fec92ab646d213f0a880ac899dd754dd44ff437fdb63",
+        "tools/NNTrain/ActionDatasetTool.cs": "9575f848673344ed2aad3f0370aff1e1a0c1c3a5459b7250e95d21053cb36532",
+        "tools/NNTrain/ActionDatasetSelfTest.cs": "41488a0e043ae356b2c8da8ef4d37ee500758458d941441393b0f80bbd0dde96"
+      },
+      "limitations": [
+        "Collection and validation only; no model training, promotion or strength claim.",
+        "Afterstate uses left perspective and does not prove hidden VM equivalence.",
+        "Candidates remain a structural superset rather than a certified legal mask.",
+        "The 4-game smoke batch is too small for calibration or gameplay conclusions."
       ]
     }
   ]
