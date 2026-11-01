@@ -1,0 +1,203 @@
+{
+  "inputs": {
+    "packet_dir": "D:\\Codex Workshop\\KLink-bot\\out\\audit\\deepseek-policy-mutation-20261101",
+    "files": [
+      {
+        "name": "CardInstance.cs",
+        "line_count": 1403
+      },
+      {
+        "name": "GameState.cs",
+        "line_count": 1261
+      },
+      {
+        "name": "MainActionPolicyAdapter.cs",
+        "line_count": 169
+      }
+    ],
+    "scope": "Mechanical inventory of the copied C# text only. Line numbers refer to these packet copies."
+  },
+  "old_guard_fields": {
+    "definition": "The pre-mutation guard in MainActionPolicyAdapter.ChooseAndApply that re-checks engine state after the policy callback returns, before any root action is dispatched.",
+    "file": "MainActionPolicyAdapter.cs",
+    "function": "MainActionPolicyAdapter.ChooseAndApply(Side actor, Func<MainActionRequest,int> choose)",
+    "guard_line": 126,
+    "throw_line": 127,
+    "comparison_count": 3,
+    "guard_text_exact": "if(state.Turn!=request.Turn || state.ActionLog.Count!=actions || state.Random.State!=random)",
+    "exception_text_exact": "throw new InvalidOperationException(\"Policy changed the engine during a synchronous decision.\");",
+    "comparisons": [
+      {
+        "order": 1,
+        "line": 126,
+        "expression_exact": "state.Turn!=request.Turn",
+        "left": "state.Turn",
+        "left_declaration": "GameState.cs:193 (public int Turn { get; set; } = 1;)",
+        "operator": "!=",
+        "right": "request.Turn",
+        "right_declaration": "MainActionPolicyAdapter.cs:10 (MainActionRequest(Side Actor, int Turn, ...))",
+        "baseline_source": "MainActionPolicyAdapter.cs:123 (var request=DescribeCandidates(actor))"
+      },
+      {
+        "order": 2,
+        "line": 126,
+        "expression_exact": "state.ActionLog.Count!=actions",
+        "left": "state.ActionLog.Count",
+        "left_declaration": "GameState.cs:440 (public List<GameAction> ActionLog { get; } = new();)",
+        "operator": "!=",
+        "right": "actions",
+        "right_declaration": "MainActionPolicyAdapter.cs:124 (int actions=state.ActionLog.Count;)",
+        "baseline_source": "MainActionPolicyAdapter.cs:124"
+      },
+      {
+        "order": 3,
+        "line": 126,
+        "expression_exact": "state.Random.State!=random",
+        "left": "state.Random.State",
+        "left_declaration": "GameState.cs:97 (public UeRandomStream Random { get; }); UeRandomStream itself is not in this packet",
+        "operator": "!=",
+        "right": "random",
+        "right_declaration": "MainActionPolicyAdapter.cs:124 (ulong random=state.Random.State;)",
+        "baseline_source": "MainActionPolicyAdapter.cs:124"
+      }
+    ],
+    "note": "Captured at MainActionPolicyAdapter.cs:123-124, before choose(request) is invoked on line 125. Only these three comparisons form this guard; no other mutation-state check appears between the callback and ApplyRoot on line 130."
+  },
+  "snapshot_covered_examples": [
+    {
+      "member": "StartingSide",
+      "owner_kind": "GameState -> MatchSnapshot",
+      "population_file": "GameState.cs",
+      "population_line": 1138,
+      "population_line_exact": "            StartingSide = StartingSide,",
+      "record_file": "GameState.cs",
+      "record_line": 1209,
+      "record_line_exact": "    public Side StartingSide { get; init; }",
+      "source_member_declaration": "GameState.cs:195 (public Side StartingSide { get; set; } = Side.Left;)"
+    },
+    {
+      "member": "ActiveBondFactions",
+      "owner_kind": "GameState -> MatchSnapshot",
+      "population_file": "GameState.cs",
+      "population_line": 1154,
+      "population_line_exact": "            ActiveBondFactions = ActiveBondFactions.OrderBy(x => x, StringComparer.Ordinal).ToArray(),",
+      "record_file": "GameState.cs",
+      "record_line": 1225,
+      "record_line_exact": "    public string[] ActiveBondFactions { get; init; } = Array.Empty<string>();",
+      "source_member_declaration": "GameState.cs:351 (public HashSet<string> ActiveBondFactions { get; })"
+    },
+    {
+      "member": "BattleCardOrder",
+      "owner_kind": "GameState -> MatchSnapshot",
+      "population_file": "GameState.cs",
+      "population_line": 1155,
+      "population_line_exact": "            BattleCardOrder = _battleCardOrder.Select(c => c.CardId).ToArray(),",
+      "record_file": "GameState.cs",
+      "record_line": 1226,
+      "record_line_exact": "    public int[] BattleCardOrder { get; init; } = [];",
+      "source_member_declaration": "GameState.cs:37 (private readonly List<CardInstance> _battleCardOrder = new();)"
+    },
+    {
+      "member": "Restrictions",
+      "owner_kind": "GameState -> MatchSnapshot",
+      "population_file": "GameState.cs",
+      "population_line": 1161,
+      "population_line_exact": "            Restrictions = GameplayRestrictions.Select(x => new GameplayRestrictionSnapshot(",
+      "populated_through_line": 1162,
+      "record_file": "GameState.cs",
+      "record_line": 1232,
+      "record_line_exact": "    public GameplayRestrictionSnapshot[] Restrictions { get; init; } = Array.Empty<GameplayRestrictionSnapshot>();",
+      "source_member_declaration": "GameState.cs:110 (public List<GameplayRestriction> GameplayRestrictions { get; } = new();)"
+    },
+    {
+      "member": "AttacksThisTurn",
+      "owner_kind": "CardInstance -> CardSnapshot",
+      "population_file": "CardInstance.cs",
+      "population_line": 992,
+      "population_line_exact": "        AttacksThisTurn,",
+      "record_file": "CardInstance.cs",
+      "record_line": 1297,
+      "record_line_exact": "    int AttacksThisTurn,",
+      "source_member_declaration": "CardInstance.cs:288 (public int AttacksThisTurn { get; set; })"
+    },
+    {
+      "member": "Keywords",
+      "owner_kind": "CardInstance -> CardSnapshot",
+      "population_file": "CardInstance.cs",
+      "population_line": 993,
+      "population_line_exact": "        Keywords.Concat(HasFury ? new[] { Keyword.Fury } : Array.Empty<string>())",
+      "populated_through_line": 997,
+      "record_file": "CardInstance.cs",
+      "record_line": 1298,
+      "record_line_exact": "    string[] Keywords,",
+      "source_member_declaration": "CardInstance.cs:626 (public HashSet<string> Keywords { get; })"
+    },
+    {
+      "member": "HasEverAttacked",
+      "owner_kind": "CardInstance -> CardSnapshot",
+      "population_file": "CardInstance.cs",
+      "population_line": 1018,
+      "population_line_exact": "            HasEverAttacked = HasEverAttacked,",
+      "record_file": "CardInstance.cs",
+      "record_line": 1316,
+      "record_line_exact": "    public bool HasEverAttacked { get; init; }",
+      "source_member_declaration": "CardInstance.cs:167 (public bool HasEverAttacked { get; set; })"
+    },
+    {
+      "member": "BlueprintVariables",
+      "owner_kind": "CardInstance -> CardSnapshot",
+      "population_file": "CardInstance.cs",
+      "population_line": 1110,
+      "population_line_exact": "            BlueprintVariables = BlueprintVariables.OrderBy(kv => kv.Key, StringComparer.Ordinal)",
+      "populated_through_line": 1111,
+      "record_file": "CardInstance.cs",
+      "record_line": 1364,
+      "record_line_exact": "    public Dictionary<string, object?> BlueprintVariables { get; init; } = new(StringComparer.Ordinal);",
+      "source_member_declaration": "CardInstance.cs:676 (public Dictionary<string, object?> BlueprintVariables { get; })"
+    }
+  ],
+  "snapshot_omissions": [
+    {
+      "field": "CardInstance.ChooseOne",
+      "declaration_file": "CardInstance.cs",
+      "declaration_line": 360,
+      "declaration_text_exact": "    public int ChooseOne { get; set; }",
+      "serialized": false,
+      "evidence": "Not assigned in CardInstance.Snapshot() (CardInstance.cs:988-1117) and not a member of CardSnapshot (positional parameters CardInstance.cs:1280-1300; init properties CardInstance.cs:1302-1364). It is a separate public native chooseOneIndex slot, explicitly distinct from the derived Blueprint ChooseOne fields that live in BlueprintVariables (comment at CardInstance.cs:358-359)."
+    },
+    {
+      "field": "CardInstance.CurrentTarget",
+      "declaration_file": "CardInstance.cs",
+      "declaration_line": 59,
+      "declaration_text_exact": "    public CardInstance? CurrentTarget { get; set; }",
+      "serialized": false,
+      "evidence": "No CurrentTarget assignment in CardInstance.Snapshot() (988-1117) and no CardSnapshot member for it (1280-1365). Its doc comment (54-58) says the queued OnPlayedFromHand path reads this value instead of re-deriving the target, i.e. it is live state that the snapshot body does not copy."
+    },
+    {
+      "field": "GameState.Seed",
+      "declaration_file": "GameState.cs",
+      "declaration_line": 98,
+      "declaration_text_exact": "    public ulong Seed { get; }",
+      "serialized": false,
+      "evidence": "MatchSnapshot (GameState.cs:1197-1234) has no Seed member and GameState.Snapshot() (1129-1165) makes no Seed assignment. The guard at MainActionPolicyAdapter.cs:126 instead compares the live Random.State, which is likewise not serialized by Snapshot."
+    },
+    {
+      "field": "GameState.ClientSide",
+      "declaration_file": "GameState.cs",
+      "declaration_line": 203,
+      "declaration_text_exact": "    public Side ClientSide { get; private set; } = Side.Left;",
+      "serialized": false,
+      "evidence": "MatchSnapshot (1197-1234) carries StartingSide but no ClientSide/OpponentSide member, and Snapshot() (1129-1165) assigns no ClientSide value; SetupSidesInBattle (GameState.cs:213-226) writes it outside the snapshot contract."
+    }
+  ],
+  "limitations": [
+    "Scope is strictly the three copied files; MatchEngine, UeRandomStream (the type behind Random.State and ConsumedCount), StateEncoder, CardDefinition, CardCustomJson and all callers/callees were not provided, so the full callback contract and any other mutation check outside MainActionPolicyAdapter.cs:126 are unverified.",
+    "Text inspection only: nothing was compiled, built or executed and no test was run, so no statement here is backed by runtime evidence.",
+    "The 'three comparisons' are counted by their != operators on line 126. Adjacent guards exist but are not this guard: RequireReady (MainActionPolicyAdapter.cs:84-85: actor pattern plus IsFinished, ActiveSide, PendingSelectionCount) and ApplyRoot (line 142: IsFinished, ActiveSide, PendingSelectionCount). Which of these the caller regards as authoritative cannot be decided from the packet.",
+    "Guard coverage gaps are recorded as observations only, not defects: the three comparisons do not cover PendingSelectionCount, Api.Vm.FaultedPrograms, GameplayRestrictions, GameplaySideEffects, TriggerQueue, CardsPlayedThisTurn, CardReservationPolicy/CardBlacklist, ClientIdTurnOverride, HQ bindings or per-card mutations. Treating line 126 as complete isolation is not established by this packet.",
+    "Serialization inventory is judged only against the member lists visible in these files; whether an omitted field is derivable, intentionally diagnostic, or a contract defect is not decided here.",
+    "CardInstance.ChooseOne and CurrentTarget omissions are inventory facts only; they do not imply that choose-one input or target binding is unsupported, since ApplyRoot writes source.ChooseOne at MainActionPolicyAdapter.cs:158 before dispatch.",
+    "Snapshot completeness for nested structures is only partial-read: the by-source dictionaries copied in CardInstance.cs:1025-1094 flatten CardBuff entries into 'source/temporary' string keys, and CardBuff fields such as Duration (1221), Temporary (1228), KreditCostSetsAbsoluteValue (1219), OperationCostSetsAbsoluteValue (1188) and HasNonOrdinaryDefenseEntry (1162) have no direct counterpart in CardSnapshot.",
+    "Line numbers are valid only for these packet copies; repository versions may differ. No native/KARDS rule, and no game-rule correctness, was assessed."
+  ]
+}

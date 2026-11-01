@@ -1,6 +1,6 @@
 {
   "date": "2026-11-01",
-  "batch": "salvage-creation-chain",
+  "batch": "main-policy-callback-mutation",
   "counts": {
     "cards": 2019,
     "cards_with_own_ir": 1709,
@@ -12,9 +12,9 @@
     "program_containers": 2626,
     "dependency_edges": 18567,
     "dependency_symbols": 440,
-    "secondary_reports": 453,
+    "secondary_reports": 455,
     "explicit_partial_units": 39,
-    "partial_units_matching_bound_inputs": 1,
+    "partial_units_matching_bound_inputs": 0,
     "planning_work_domains": 14,
     "planning_acceptance_criteria": 42,
     "authoritative_current_pvp_denominator_available": false,
@@ -23,20 +23,24 @@
     "total_work_remaining_percent": null
   },
   "matrix_tests": 16,
-  "production_changes": true,
   "csharp_tests": {
-    "targeted": 4,
-    "full": 1056,
-    "new_scenarios": 724,
+    "targeted": 9,
+    "full": 1057,
+    "new_mutation_scenarios": 26,
+    "pure_controls": 2,
     "before_regression_exit_code": 1,
     "after_exit_code": 0
   },
   "worker": {
-    "job_id": "20261101-023232-salvage-e5b52e9a",
+    "job_id": "20261101-170148-policy-mutation-a3f8e6d1",
     "status": "completed",
-    "independently_checked": "31 flow instructions and11 evidence statements structurally matched originals.23 full functions and2 routing slices verified; primary interpreted execution order.",
-    "boundary_deviation": "Worker reported two out-of-packet Temp scripts; not integrated or published."
+    "verification": "Old guard,8 population/record pairs,4 declaration lines and4 snapshot omissions independently verified."
   },
-  "input_scope": "HEAD plus SalvageMultipleUnits creation-chain fix, scoped expectation updates and isolated regression. Clean snapshot verified; old fingerprints preserved.",
-  "generation_git_head": "812123a8c92d041f672b8f8e1436f9150fafa15e"
+  "input_scope": "Clean HEAD snapshot plus MainActionPolicyAdapter, SelfTest registration and new mutation test. Software contract registry separate from native-rule partial units; all old source/evidence bindings retained.",
+  "source_revision": "b9116919272f0793258d347fe1f1034ebeaacb9e",
+  "limitations": [
+    "Main-action callback only, not full isolation or card certification.",
+    "SelfTest registration changed: earlier whole-file bindings are allowed to become stale; no old hashes refreshed.",
+    "Historical inventory.json is an existing unpublished local input, hash retained in matrix; tracked inputs verified against Git index bytes."
+  ]
 }

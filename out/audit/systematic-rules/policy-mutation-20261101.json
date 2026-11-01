@@ -1,0 +1,39 @@
+{
+  "scope": "Synchronous main-action callback mutation detection",
+  "authority": "Repository API implementation and executable regression; not KARDS rule evidence",
+  "base_commit": "b9116919272f0793258d347fe1f1034ebeaacb9e",
+  "defect": "Old Turn/log-count/RNG guard allowed direct attack mutation followed by EndTurn. Reproduced before fix.",
+  "fix": "Compare serialized internal snapshot, entire trace, RNG, stop flags, native per-card ChooseOne, VM counters and adapter faults; recompute copied decision request before ApplyRoot.",
+  "regression": {
+    "before_failed": 1,
+    "targeted_passed": 9,
+    "full_passed": 1057,
+    "mutations": 26,
+    "pure_controls": 2,
+    "logs": {
+      "out/audit/systematic-rules/policy-mutation-before-20261101.txt": "0faee1cbf2240ae0eee5b244d4e561098fa80f172e6fb562297956b4a7a74a39",
+      "out/audit/systematic-rules/policy-mutation-targeted-20261101.txt": "3b2a686db804e49380ecdd29a605969fd35df5880190ada4ed222ef743f4b065",
+      "out/audit/systematic-rules/policy-mutation-full-20261101.txt": "8817ea3eec73bf6674ca883a3b2b567b205cb1dcc529871784bfc899f67c0c1b"
+    }
+  },
+  "worker": {
+    "job": "20261101-170148-policy-mutation-a3f8e6d1",
+    "status": "completed",
+    "result": "out/audit/systematic-rules/policy-mutation-worker-20261101.json",
+    "result_sha256": "ab1f9a1511bbee5596e93b6676067d26b7dd1819a1e2df0165fbbe78e0f0b55d",
+    "verification": "Primary checked old guard text, all8 snapshot population and8 record lines,4 declaration lines, and4 omission claims against constructor/record bodies. Semantic integration and tests by primary."
+  },
+  "validation_environment": "Clean HEAD source snapshot plus three scoped files; unrelated dirty IsolatedActionProbe/ActionProbeSmoke changes excluded.",
+  "source_bindings": {
+    "src/KLink.Bot/Training/MainActionPolicyAdapter.cs": "5470e6c29235d862548c3a268e0d4fc9f37b522f7187991b6a0623d02a8ea2e2",
+    "tools/BotSim/SelfTest.cs": "ec7085059fe013a95133c040e704767b6d430b7c6dfc44dfca6e326ddba37068",
+    "tools/BotSim/SelfTest.MainPolicyMutation.cs": "08cc6d5636c6df82dda8fa82c687d256193b7c3ed97f2c4187f1dd10a6e261c1"
+  },
+  "remaining": [
+    "Software host contract only; no new native rule or card certification. The internal snapshot is not policy input.",
+    "Snapshot omissions, VM private state, external handlers, transient mutate-and-restore and concurrent writers are not fully detected. This is not a sandbox.",
+    "ChooseOne and stop flags are captured explicitly; CurrentTarget and ClientSide snapshot omissions remain outside the new validated cases.",
+    "Only MainActionPolicyAdapter is changed; ChoicePolicyAdapter purity guards remain a separate open task.",
+    "No rollback: mutations persist, Faults increments, the returned root is not run. Hosts must discard the episode. No throughput or playing-strength claim."
+  ]
+}

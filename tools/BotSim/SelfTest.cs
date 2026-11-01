@@ -71,6 +71,7 @@ internal static partial class SelfTest
         new("主动作与模型契约：隐藏手牌与双侧牌库不变性", MainActionHiddenInputs),
         new("主动作与模型契约：己方卡向量与敌方保守边界", MainActionCardVectors),
         new("主动作与模型契约：显式拒绝与错误", MainActionRejectionIsExplicit),
+        new("主动作与模型契约：回调突变拒绝与纯策略轨迹", MainPolicyMutationBoundary),
         new("主动作与模型契约：四类根动作复现", MainActionsMirrorGreedy),
         new("主动作与模型契约：模型分布与输入绑定", ValueModelDistributionChecks),
         new("主动作与模型契约：模型头部规格拒绝", ValueModelHeaderChecks),

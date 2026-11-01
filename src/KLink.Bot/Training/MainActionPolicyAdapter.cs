@@ -1,5 +1,6 @@
 using KLink.Bot.Engine;
 using KLink.Bot.NN;
+using System.Text.Json;
 
 namespace KLink.Bot.Training;
 
@@ -121,9 +122,10 @@ public sealed class MainActionPolicyAdapter
             try
             {
                 var request=DescribeCandidates(actor);var state=_engine.State;
-                int actions=state.ActionLog.Count;ulong random=state.Random.State;
+                string boundary=DecisionBoundary();
+                string offered=JsonSerializer.Serialize(request);
                 int index=choose(request);RequireReady(actor);
-                if(state.Turn!=request.Turn || state.ActionLog.Count!=actions || state.Random.State!=random)
+                if(boundary!=DecisionBoundary() || offered!=JsonSerializer.Serialize(DescribeCandidates(actor)))
                     throw new InvalidOperationException("Policy changed the engine during a synchronous decision.");
                 if(index<0 || index>=request.Candidates.Count)throw new InvalidOperationException("Main policy index outside offer.");
                 var command=request.Candidates[index].Command;
@@ -134,6 +136,25 @@ public sealed class MainActionPolicyAdapter
             finally{_choosing=false;}
         }
         catch{Faults++;throw;}
+    }
+
+    // A conservative change detector, not a sandbox or a complete VM clone.
+    // The full snapshot stays internal: hidden cards never enter policy input.
+    // Mutations are not rolled back; hosts must discard episodes with faults.
+    // Snapshot omissions, transient mutate-and-restore operations, external
+    // callbacks and concurrent writers are outside this synchronous contract.
+    private string DecisionBoundary()
+    {
+        var state=_engine.State;
+        return JsonSerializer.Serialize(new
+        {
+            Snapshot=state.SnapshotJson(), state.Random.State,
+            Trace=JsonSerializer.Serialize(state.ActionLog),
+            state.StopFurtherActions, state.StopAttack,
+            Choices=state.AllCards.Select(c=>new {c.CardId,c.ChooseOne}).ToArray(),
+            _engine.Api.Vm.ProgramsExecuted, _engine.Api.Vm.FaultedPrograms,
+            Faults
+        });
     }
     // Shared root dispatch for live execution and deterministic prefix rebuilds.
     // No candidate probes, retry or rollback are performed here.
