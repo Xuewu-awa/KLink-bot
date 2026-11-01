@@ -1,0 +1,88 @@
+{
+  "spec": "afterstate-win-dataset-expansion/v1",
+  "scope": "Collection, conversion and game-disjoint split only; no model training or promotion",
+  "actionDataset": {
+    "schemaVersion": 5,
+    "sha256": "13be691b02d7cbce6e83b2c344c3e8dfa4dd922435453d644d6d214afa91da5d",
+    "qualitySha256": "10d5a2e54c7c54858d55744bea8a1bc5fbce0a081ab63fb612e79d2def460bac",
+    "games": 16,
+    "rows": 1984
+  },
+  "afterstateWin": {
+    "schemaVersion": 1,
+    "sha256": "355ebd71834cbe39521da98d57856bf3e5ef8d2e4f778f1c8b239e6f6abbd8c8",
+    "qualitySha256": "97c21e25460e31ca56627fb6b6d9e822c48b57f715cf8762280aaa73b3121342",
+    "games": 16,
+    "rows": 1984,
+    "observationDim": 745,
+    "target": "left-wins"
+  },
+  "split": {
+    "schemaVersion": 1,
+    "datasetSha256": "355ebd71834cbe39521da98d57856bf3e5ef8d2e4f778f1c8b239e6f6abbd8c8",
+    "splitSeed": 440042,
+    "trainingGames": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      8,
+      9,
+      11,
+      12,
+      13,
+      14
+    ],
+    "validationGames": [
+      0,
+      7,
+      10,
+      15
+    ],
+    "trainingRows": 1595,
+    "validationRows": 389,
+    "trainingTargets": {
+      "0": 893,
+      "1": 702
+    },
+    "validationTargets": {
+      "0": 257,
+      "1": 132
+    },
+    "scope": "Planning split only; no model training or strength claim."
+  },
+  "runtime": {
+    "KLink.Bot.dll": "0dfe761b9b55ce3dd9720f8d4e530a93cbd76ac14f1a3aa162c95a2839cfb3ac",
+    "NNTrain.dll": "2a97e3914e8829a4619d6aec6a06c7c90061c2db4c38cfc86a861282a6bed6a2"
+  },
+  "tests": {
+    "actionDataset": 54,
+    "afterstateRows": 1984,
+    "afterstateGames": 16,
+    "fullBotSim": 1058
+  },
+  "limitations": [
+    "No model was trained or promoted; this is a data pipeline milestone.",
+    "Targets inherit the simulator winner and are not proof of rule fidelity or strength.",
+    "Rows are grouped by game in training/validation split; 12/4 games are too small for calibration.",
+    "Afterstates are left-perspective 745-dimensional observations after committed teacher actions; hidden VM equivalence and complete legal action masks remain unresolved."
+  ],
+  "reportSha256": "",
+  "artifactHashes": {
+    "out/audit/systematic-rules/afterstate-win-expansion-20261102.md": "121385b4e42abb0d7cb805ecc9b635aad8160a0b2b2acc367d0115a0dd6f455f",
+    "out/audit/systematic-rules/afterstate-win-contract-20261102.action.jsonl.gz": "13be691b02d7cbce6e83b2c344c3e8dfa4dd922435453d644d6d214afa91da5d",
+    "out/audit/systematic-rules/afterstate-win-contract-20261102.action.jsonl.gz.quality.json": "10d5a2e54c7c54858d55744bea8a1bc5fbce0a081ab63fb612e79d2def460bac",
+    "out/audit/systematic-rules/afterstate-win-contract-20261102.jsonl.gz": "355ebd71834cbe39521da98d57856bf3e5ef8d2e4f778f1c8b239e6f6abbd8c8",
+    "out/audit/systematic-rules/afterstate-win-contract-20261102.jsonl.gz.quality.json": "97c21e25460e31ca56627fb6b6d9e822c48b57f715cf8762280aaa73b3121342",
+    "out/audit/systematic-rules/afterstate-win-contract-20261102.split.json": "8757843e5af5ae919eea5b8c8517399c677247d2613a435a101ab5673bb6f6e4",
+    "out/audit/systematic-rules/afterstate-contract-full-20261102.txt": "b52f3d77781c4b93172989bb134585151dd40af35f76f30085711611505f44c6"
+  },
+  "sourceBindings": {
+    "src/KLink.Bot/Training/OracleActionEpisodeRunner.cs": "9d159ad79cbf69db0fb5fec92ab646d213f0a880ac899dd754dd44ff437fdb63",
+    "tools/NNTrain/ActionDatasetTool.cs": "9575f848673344ed2aad3f0370aff1e1a0c1c3a5459b7250e95d21053cb36532",
+    "tools/NNTrain/AfterstateDatasetTool.cs": "dcbb8ef04f6bc590930d87e38eee9b755a2588d414a72a29dd26a0b3fa2d9bb7",
+    "tools/NNTrain/ActionDatasetSelfTest.cs": "41488a0e043ae356b2c8da8ef4d37ee500758458d941441393b0f80bbd0dde96"
+  }
+}

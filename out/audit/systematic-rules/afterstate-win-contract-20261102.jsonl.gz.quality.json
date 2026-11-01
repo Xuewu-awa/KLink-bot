@@ -1,0 +1,140 @@
+{
+  "header": {
+    "version": 1,
+    "kind": "KLink.AfterstateWin",
+    "observationSpec": "v2/dim=745;order=global3,perspective371,opposite371;global=turn/30,activeIsPerspective,cardsPlayedThisTurn/10;perSideGlobal=hqDef/20,kredits/12,maxKredits/12,handCount/10,deckCount/40,boardCount/10;zones=Hand,BoardFrontline,OwnHalf,Discard,Deck;zone=mean(cardVec90)\u002Bcount/10;deckZone=count/10only,noCardVec;oppHandZone=count/10only,noCardVec(hiddenInfo\u002BdeckFingerprint);cardVec=s[9]\u002Bk[0..80];label=P(perspective wins)",
+    "perspective": "left",
+    "target": "win",
+    "sourceActionDataSha256": "13be691b02d7cbce6e83b2c344c3e8dfa4dd922435453d644d6d214afa91da5d",
+    "sourceActionSchema": 5,
+    "inputsSha256": {
+      "card-effects.json": "fc335d228779a2859627ee706d85949149ca595d0cfdfbc4971541831e5a8df0",
+      "card-ir-native-defaults.json": "a4f2812716f03ded180f45603ac7b715e890c54b1bc5b4b75fe2b1ec0975d711",
+      "card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b",
+      "card-vectors.json": "b15b93cb02e7e8a712561a2da52127a5867084ecb878a6ad58539b56b1109ab9",
+      "cards.json": "3550dc76eb0414c500166875f45909077aeeb3ea4d229b9b0ba9c66a81987c4b",
+      "deck_code_ids.json": "261cfd518c1a1ce40488f141e8dbd617ff19abe0734c49319ebcd6ac5dcb257e",
+      "event-contracts.json": "e4806dd48efbfc799a27c14b3660ad76ee03cd3f13e3e4320b213c5928efb112",
+      "live-actions.json": "db413a4644afe75806e66c47e200d93c5d93e91ca03e23fca38465b7dcb4dab3",
+      "KLink.Bot.dll": "0dfe761b9b55ce3dd9720f8d4e530a93cbd76ac14f1a3aa162c95a2839cfb3ac",
+      "NNTrain.dll": "2a97e3914e8829a4619d6aec6a06c7c90061c2db4c38cfc86a861282a6bed6a2"
+    }
+  },
+  "dataSha256": "355ebd71834cbe39521da98d57856bf3e5ef8d2e4f778f1c8b239e6f6abbd8c8",
+  "acceptedGames": 16,
+  "rows": 1984,
+  "games": [
+    {
+      "game": 0,
+      "seed": 450000,
+      "accepted": true,
+      "winner": 2,
+      "rows": 62
+    },
+    {
+      "game": 1,
+      "seed": 450001,
+      "accepted": true,
+      "winner": 1,
+      "rows": 141
+    },
+    {
+      "game": 2,
+      "seed": 450002,
+      "accepted": true,
+      "winner": 1,
+      "rows": 143
+    },
+    {
+      "game": 3,
+      "seed": 450003,
+      "accepted": true,
+      "winner": 1,
+      "rows": 62
+    },
+    {
+      "game": 4,
+      "seed": 450004,
+      "accepted": true,
+      "winner": 2,
+      "rows": 95
+    },
+    {
+      "game": 5,
+      "seed": 450005,
+      "accepted": true,
+      "winner": 1,
+      "rows": 67
+    },
+    {
+      "game": 6,
+      "seed": 450006,
+      "accepted": true,
+      "winner": 1,
+      "rows": 78
+    },
+    {
+      "game": 7,
+      "seed": 450007,
+      "accepted": true,
+      "winner": 2,
+      "rows": 64
+    },
+    {
+      "game": 8,
+      "seed": 450008,
+      "accepted": true,
+      "winner": 2,
+      "rows": 149
+    },
+    {
+      "game": 9,
+      "seed": 450009,
+      "accepted": true,
+      "winner": 2,
+      "rows": 200
+    },
+    {
+      "game": 10,
+      "seed": 450010,
+      "accepted": true,
+      "winner": 1,
+      "rows": 132
+    },
+    {
+      "game": 11,
+      "seed": 450011,
+      "accepted": true,
+      "winner": 2,
+      "rows": 105
+    },
+    {
+      "game": 12,
+      "seed": 450012,
+      "accepted": true,
+      "winner": 2,
+      "rows": 162
+    },
+    {
+      "game": 13,
+      "seed": 450013,
+      "accepted": true,
+      "winner": 2,
+      "rows": 182
+    },
+    {
+      "game": 14,
+      "seed": 450014,
+      "accepted": true,
+      "winner": 1,
+      "rows": 211
+    },
+    {
+      "game": 15,
+      "seed": 450015,
+      "accepted": true,
+      "winner": 2,
+      "rows": 131
+    }
+  ]
+}

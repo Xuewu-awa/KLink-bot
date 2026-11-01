@@ -8650,6 +8650,24 @@
         "Candidates remain a structural superset rather than a certified legal mask.",
         "The 4-game smoke batch is too small for calibration or gameplay conclusions."
       ]
+    },
+    {
+      "id": "TRAINING/NNTrain/afterstate-win-expansion-20261102",
+      "status": "partial",
+      "report": "out/audit/systematic-rules/afterstate-win-expansion-20261102.json",
+      "report_sha256": "99befa5e433875a2027fb2da257947fc6f5bf3b6f9d9692323ec5c83522f23f9",
+      "source_bindings": {
+        "src/KLink.Bot/Training/OracleActionEpisodeRunner.cs": "9d159ad79cbf69db0fb5fec92ab646d213f0a880ac899dd754dd44ff437fdb63",
+        "tools/NNTrain/ActionDatasetTool.cs": "9575f848673344ed2aad3f0370aff1e1a0c1c3a5459b7250e95d21053cb36532",
+        "tools/NNTrain/AfterstateDatasetTool.cs": "dcbb8ef04f6bc590930d87e38eee9b755a2588d414a72a29dd26a0b3fa2d9bb7",
+        "tools/NNTrain/ActionDatasetSelfTest.cs": "41488a0e043ae356b2c8da8ef4d37ee500758458d941441393b0f80bbd0dde96"
+      },
+      "limitations": [
+        "No model was trained or promoted; this is a data pipeline milestone.",
+        "Targets inherit the simulator winner and are not proof of rule fidelity or strength.",
+        "Rows are grouped by game in training/validation split; 12/4 games are too small for calibration.",
+        "Afterstates are left-perspective 745-dimensional observations after committed teacher actions; hidden VM equivalence and complete legal action masks remain unresolved."
+      ]
     }
   ]
 }

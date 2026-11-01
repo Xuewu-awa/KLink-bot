@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "datasetSha256": "355ebd71834cbe39521da98d57856bf3e5ef8d2e4f778f1c8b239e6f6abbd8c8",
+  "splitSeed": 440042,
+  "trainingGames": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    8,
+    9,
+    11,
+    12,
+    13,
+    14
+  ],
+  "validationGames": [
+    0,
+    7,
+    10,
+    15
+  ],
+  "trainingRows": 1595,
+  "validationRows": 389,
+  "trainingTargets": {
+    "0": 893,
+    "1": 702
+  },
+  "validationTargets": {
+    "0": 257,
+    "1": 132
+  },
+  "scope": "Planning split only; no model training or strength claim."
+}
