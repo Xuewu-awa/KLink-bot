@@ -51,3 +51,7 @@
 *.exe   binary
 *.png   binary
 *.jpg   binary
+
+# Frozen experiment plans: preserve exact pre-execution bytes for SHA256 bindings.
+out/audit/systematic-rules/policy-eval-plan-20261102.json -text
+out/audit/systematic-rules/policy-eval-isolated-plan-20261102.json -text

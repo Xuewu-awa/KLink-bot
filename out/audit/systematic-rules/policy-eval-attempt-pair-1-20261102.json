@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "planSha256": "f826345d510ffd7ad704e73fbf0922b21ae2edd3855594a72c00b2fae65254b6",
+  "modelSha256": "7ff70b1fd65be589ea7b86b6338bda3713feb0aaaff83cc1d7bb1200387e336f",
+  "trainingDataSha256": "5fa97eab224e92984359fe758a8c4ea90bf5d2a51f38093848f17fbf85af1ba8",
+  "simulatorSha256": "7cba599e45879a8af7eecefa41bafa8256bc37d602dbb29fcd78031b12c5dfb9",
+  "inputs": {
+    "cards.json": "3550dc76eb0414c500166875f45909077aeeb3ea4d229b9b0ba9c66a81987c4b",
+    "card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b",
+    "card-effects.json": "fc335d228779a2859627ee706d85949149ca595d0cfdfbc4971541831e5a8df0",
+    "card-vectors.json": "b15b93cb02e7e8a712561a2da52127a5867084ecb878a6ad58539b56b1109ab9",
+    "event-contracts.json": "e4806dd48efbfc799a27c14b3660ad76ee03cd3f13e3e4320b213c5928efb112",
+    "card-ir-native-defaults.json": "a4f2812716f03ded180f45603ac7b715e890c54b1bc5b4b75fe2b1ec0975d711"
+  },
+  "toolSha256": "e9acca488903a14af5ccf1de725641cccbb1320963105665aec0608ada3d2898",
+  "matchup": [
+    0,
+    1
+  ],
+  "seed": 310001,
+  "maxSteps": 1000,
+  "maxSeconds": 60,
+  "scope": "Left-only win model; existing NnPolicy candidate enumeration; one-ply afterstates; first-index choices. No complete legal mask, calibrated probability, PvP certification or strength claim.",
+  "comparable": false,
+  "leftWinDelta": null,
+  "baseline": {
+    "modelLeft": false,
+    "seed": 310001,
+    "admitted": true,
+    "reasons": [],
+    "winner": "Left",
+    "turn": 21,
+    "steps": 96,
+    "decisions": 0,
+    "candidates": 0,
+    "rejected": 0,
+    "choices": 6,
+    "seconds": 9.2332337
+  },
+  "treatment": {
+    "modelLeft": true,
+    "seed": 310001,
+    "admitted": false,
+    "reasons": [
+      "InvalidOperationException:enumerator_mutated_root",
+      "unfinished"
+    ],
+    "winner": "NotAvailable",
+    "turn": 3,
+    "steps": 4,
+    "decisions": 3,
+    "candidates": 5,
+    "rejected": 0,
+    "choices": 1,
+    "seconds": 0.059211
+  },
+  "localRawSha256": "192506c7bdbbf9125fcd59cc3964ab8d5087c4054270ece4590fc5993b23f9b0"
+}

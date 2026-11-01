@@ -1,0 +1,67 @@
+[
+  {
+    "id": "F1",
+    "line": "114-125",
+    "alsoAt": [144, 145, 163],
+    "area": "disposal",
+    "trigger": "Rebuild() throws after line 119 (`var a = Attach(e)`): line 120 `Check(e, a)` (Budget/health), line 121 `Apply`/`Check` during replay, or line 122 `replay_mismatch`. Budget() at line 116 runs before the objects are created, so it is not one of these paths.",
+    "consequence": "The ChoicePolicyAdapter created at 119 (and the MatchEngine created at 117) is never disposed. The callers' `using var trialAdapter = rebuilt.Adapter` (145) and `using var replayAdapter = Rebuild().Adapter` (163) never bind because Rebuild never returns. One adapter leaks per failed candidate probe and per failed prefix replay; failure is a normal path (Budget, replay verification), so leaks accumulate across candidates and steps.",
+    "confidence": "high"
+  },
+  {
+    "id": "F2",
+    "line": 150,
+    "alsoAt": [40, 43],
+    "area": "fault admission",
+    "trigger": "Any candidate probe in the model branch (line 144) that is evaluated by the inline TrainingAdmission.Check at 149-151.",
+    "consequence": "The same predicate is written twice with different arguments: Health passes `KLink.Bot.Effects.Blueprint.KismetLibrary.Default is not null` at position 6, the candidate probe passes the literal `true`. The two admission results can diverge (when the blueprint singleton is null the probe admits a state that Health rejects), so Accepted/Rejected and the recorded fault set depend on which call site ran. At most one of the two spellings can match the intended contract.",
+    "confidence": "high"
+  },
+  {
+    "id": "F3",
+    "line": 41,
+    "alsoAt": [43, 169],
+    "area": "fault admission",
+    "trigger": "Health is called at 128 (zero steps), 121 (during replay) and 161 (after every executed step); the final check at 168-170 runs on the finished state.",
+    "consequence": "Health passes the literal `Side.Left` for the position where the final call passes `engine.State.Winner`, and the literal `1` where the final call passes `tape.Count`. After the first step the intermediate checks therefore evaluate a step count of 1 for a game with N steps, and they evaluate a fixed Left side for states where the decisive side is not Left. Intermediate and final admission are not the same predicate, so `Admitted`, `Comparable` and `LeftWinDelta` can flip depending on which check produced the reason.",
+    "confidence": "high"
+  },
+  {
+    "id": "F4",
+    "line": 161,
+    "alsoAt": [107, 110, 111, 168],
+    "area": "report handling",
+    "trigger": "Elapsed time crosses max-seconds during the step that finishes the game: `Apply(engine, step)` at 161 completes the terminal position, then `Check(engine, adapter)` calls Budget() (107 via 110-111) and throws.",
+    "consequence": "A game that ran to completion within max-steps is recorded with reason `InvalidOperationException:time_limit` and `Admitted = false`, which forces `Comparable = false` and `LeftWinDelta = null` (92), and prevents the terminal TrainingAdmission.Check at 168 from running at all. The outcome of a completed game is discarded by a clock test that fires after completion; nothing in the report distinguishes this from a genuinely truncated game.",
+    "confidence": "medium-high"
+  },
+  {
+    "id": "F5",
+    "line": 26,
+    "alsoAt": [34, 154],
+    "area": "terminal tie ranking",
+    "trigger": "A finished position whose Winner is neither Left nor Right (draw / None), if the engine can produce one.",
+    "consequence": "Line 154 records `(score, trial.State.IsFinished, trial.State.Winner == Side.Left)`, so a proven draw becomes Terminal=true, Wins=false: Value() = 0 and Rank() = 0, identical to a proven loss. A completed draw therefore loses every tie at 0 against a non-terminal estimate of 0.0 (line 35 breaks the tie with Rank 1 > 0) and is reported as a non-win in Winner/LeftWinDelta.",
+    "dependsOn": "Side.Winner can be a non-decisive value while State.IsFinished is true",
+    "confidence": "medium"
+  },
+  {
+    "id": "F6",
+    "line": 35,
+    "alsoAt": [26],
+    "area": "terminal tie ranking",
+    "trigger": "policy.Evaluate returns a score greater than 1 for a non-terminal candidate. No range clamp or validation of the model output exists anywhere in this file.",
+    "consequence": "Value() clamps a terminal win to exactly 1 while a non-terminal entry keeps its raw score, so any non-terminal score > 1 satisfies `next > value` and outranks a proven terminal win; Best returns the undecided continuation instead of the winning one.",
+    "dependsOn": "policy.Evaluate output range is not bounded to [0,1] by contract",
+    "confidence": "medium"
+  },
+  {
+    "id": "F7",
+    "line": "103-106",
+    "alsoAt": [126, 94, 96],
+    "area": "report handling",
+    "trigger": "`new MatchEngine(db, left, right, seed)` (103), `Attach(engine)` (104) or `new NnPolicy(...)` (105) throws.",
+    "consequence": "These three statements are outside the try block that starts at 126, so the exception escapes Play and then Run. The output file is only created at line 94, so no report is produced at all, contradicting the stated contract at 96 that failed attempts are data in the report; a completed baseline Attempt is also lost when the treatment attempt fails at setup.",
+    "confidence": "medium"
+  }
+]

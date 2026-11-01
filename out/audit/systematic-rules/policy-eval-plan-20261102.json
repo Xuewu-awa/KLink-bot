@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "scope": "Engineering smoke; left-only objective-compatible value policy vs Greedy, paired Greedy-vs-Greedy control; no strength or PvP certification.",
+  "training": {
+    "data": "D:\\Codex Workshop\\KLink-bot\\out\\audit\\deepseek-frozen-split-20261102\\pilot.bin",
+    "dataSha256": "5fa97eab224e92984359fe758a8c4ea90bf5d2a51f38093848f17fbf85af1ba8",
+    "split": "D:\\Codex Workshop\\KLink-bot\\out\\audit\\deepseek-frozen-split-20261102\\pilot.bin.split.json",
+    "splitSha256": "7f09dea0f0690d7d34f2c23bbc17322b773a1d8c085545643ed10eacbd249a30",
+    "target": "win",
+    "epochs": 1,
+    "hidden": 16,
+    "learningRate": 0.05,
+    "initializationSeed": 42,
+    "selection": "final epoch only; one training attempt; no tuning"
+  },
+  "evaluation": {
+    "games": [
+      {
+        "matchup": [
+          0,
+          1
+        ],
+        "seed": 310000
+      },
+      {
+        "matchup": [
+          0,
+          1
+        ],
+        "seed": 310001
+      },
+      {
+        "matchup": [
+          1,
+          0
+        ],
+        "seed": 311000
+      },
+      {
+        "matchup": [
+          1,
+          0
+        ],
+        "seed": 311001
+      }
+    ],
+    "maxSteps": 1000,
+    "maxSeconds": 60,
+    "choices": "first-index/v1",
+    "modelSide": "left",
+    "policy": "existing NnPolicy enumeration, one-ply afterstate argmax, known-terminal outcome override, first tied candidate",
+    "control": "both sides Greedy PlayStep, same ordered decks and seed",
+    "admission": "terminal Left/Right winner, no VM/unsupported/unimplemented/choice faults, no pending choices, all replay prefixes match; probe faults reject entire attempt",
+    "outcomes": "retain all attempts, no replacement/reseeding; paired Left-win delta only if both admitted",
+    "budget": "wall budget checked between synchronous calls; limits may censor expensive policy games; engineering smoke not strength evidence",
+    "distributionLimit": "Greedy before-decision training vs one-ply policy afterstates; observational contract compatibility does not establish identical distribution",
+    "independence": "new evaluation seeds, disjoint from all original training attempts and prior external-eval seeds"
+  }
+}

@@ -64,6 +64,7 @@ internal static class Program
 
         try
         {
+            if (cmd == "policy-evaluation-selftest") return PolicyMatchEvaluation.SelfTest();
             if (cmd == "admission-selftest") return AdmissionSelfTest.Run();
             if (cmd == "external-evaluation-selftest") return ExternalValueEvaluationSelfTest.Run();
             if (cmd == "evaluate-external") return ExternalValueEvaluation.Run(opts);
@@ -109,6 +110,7 @@ internal static class Program
 
             return cmd switch
             {
+                "evaluate-policy" => PolicyMatchEvaluation.Run(opts, db, vecs, dataDir, FindDir("card-vectors.json")),
                 "actions-selftest" => ActionDatasetSelfTest.Run(db,vecs),
                 "action-model-selftest" => ActionModelSelfTest.Run(),
                 "train-actions" => ActionModelTool.Train(opts,dataDir,Path.Combine(FindDir("card-vectors.json"),"card-vectors.json")),
@@ -1081,6 +1083,10 @@ internal static class Program
               NNTrain verify-actions --data actions.jsonl.gz
               NNTrain actions-selftest
               NNTrain action-model-selftest
+              NNTrain evaluate-policy --model win-model.bin --training-data original.bin --plan frozen.json
+                       --matchup L,R --seed N --out result.json [--max-steps 1000] [--max-seconds 60]
+                       左方模型 vs Greedy，配对 Greedy 对照；保留不准入/超限结果，不据此认证规则或强度。
+              NNTrain policy-evaluation-selftest
               NNTrain train-actions --data actions.jsonl.gz --out action-model.json [--epochs 3] [--hidden 16] [--lr 0.01] [--split-seed 1]
               NNTrain verify-action-model --data actions.jsonl.gz --model action-model.json
             动作评分器仅离线模仿教师，不提供合法掩码、不执行对局；按整局分离训练/验证，精确绑定输入和教师。

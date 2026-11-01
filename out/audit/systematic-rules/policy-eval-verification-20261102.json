@@ -1,0 +1,4246 @@
+{
+  "modelSha256": "7ff70b1fd65be589ea7b86b6338bda3713feb0aaaff83cc1d7bb1200387e336f",
+  "trainingSha256": "5fa97eab224e92984359fe758a8c4ea90bf5d2a51f38093848f17fbf85af1ba8",
+  "splitSha256": "7f09dea0f0690d7d34f2c23bbc17322b773a1d8c085545643ed10eacbd249a30",
+  "uniqueNewSeeds": 6,
+  "initialPairs": 4,
+  "initialComparable": 0,
+  "isolatedPairs": 2,
+  "isolatedComparable": 2,
+  "modelLeftWins": 0,
+  "greedyControlLeftWins": 1,
+  "pairedWinDeltaSum": -1,
+  "finalToolSha256": "874aa88ee6263d0b4997b43b85e7180226ae0058c1f6a6957982aebbf1e82841",
+  "results": [
+    {
+      "schemaVersion": 1,
+      "planSha256": "f826345d510ffd7ad704e73fbf0922b21ae2edd3855594a72c00b2fae65254b6",
+      "modelSha256": "7ff70b1fd65be589ea7b86b6338bda3713feb0aaaff83cc1d7bb1200387e336f",
+      "trainingDataSha256": "5fa97eab224e92984359fe758a8c4ea90bf5d2a51f38093848f17fbf85af1ba8",
+      "simulatorSha256": "7cba599e45879a8af7eecefa41bafa8256bc37d602dbb29fcd78031b12c5dfb9",
+      "inputs": {
+        "cards.json": "3550dc76eb0414c500166875f45909077aeeb3ea4d229b9b0ba9c66a81987c4b",
+        "card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b",
+        "card-effects.json": "fc335d228779a2859627ee706d85949149ca595d0cfdfbc4971541831e5a8df0",
+        "card-vectors.json": "b15b93cb02e7e8a712561a2da52127a5867084ecb878a6ad58539b56b1109ab9",
+        "event-contracts.json": "e4806dd48efbfc799a27c14b3660ad76ee03cd3f13e3e4320b213c5928efb112",
+        "card-ir-native-defaults.json": "a4f2812716f03ded180f45603ac7b715e890c54b1bc5b4b75fe2b1ec0975d711"
+      },
+      "toolSha256": "e9acca488903a14af5ccf1de725641cccbb1320963105665aec0608ada3d2898",
+      "matchup": [
+        0,
+        1
+      ],
+      "seed": 310000,
+      "maxSteps": 1000,
+      "maxSeconds": 60,
+      "scope": "Left-only win model; existing NnPolicy candidate enumeration; one-ply afterstates; first-index choices. No complete legal mask, calibrated probability, PvP certification or strength claim.",
+      "comparable": false,
+      "leftWinDelta": null,
+      "baseline": {
+        "modelLeft": false,
+        "seed": 310000,
+        "admitted": true,
+        "reasons": [],
+        "winner": "Left",
+        "turn": 27,
+        "steps": 151,
+        "decisions": 0,
+        "candidates": 0,
+        "rejected": 0,
+        "choices": 12,
+        "seconds": 17.3078506
+      },
+      "treatment": {
+        "modelLeft": true,
+        "seed": 310000,
+        "admitted": false,
+        "reasons": [
+          "InvalidOperationException:enumerator_mutated_root",
+          "unfinished",
+          "no_samples"
+        ],
+        "winner": "NotAvailable",
+        "turn": 1,
+        "steps": 0,
+        "decisions": 1,
+        "candidates": 0,
+        "rejected": 0,
+        "choices": 0,
+        "seconds": 0.0109187
+      },
+      "localRawSha256": "752a64634fd1463caa5112780ffae0274f777ffed5ef94e7b0e786256e4b08df"
+    },
+    {
+      "schemaVersion": 1,
+      "planSha256": "f826345d510ffd7ad704e73fbf0922b21ae2edd3855594a72c00b2fae65254b6",
+      "modelSha256": "7ff70b1fd65be589ea7b86b6338bda3713feb0aaaff83cc1d7bb1200387e336f",
+      "trainingDataSha256": "5fa97eab224e92984359fe758a8c4ea90bf5d2a51f38093848f17fbf85af1ba8",
+      "simulatorSha256": "7cba599e45879a8af7eecefa41bafa8256bc37d602dbb29fcd78031b12c5dfb9",
+      "inputs": {
+        "cards.json": "3550dc76eb0414c500166875f45909077aeeb3ea4d229b9b0ba9c66a81987c4b",
+        "card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b",
+        "card-effects.json": "fc335d228779a2859627ee706d85949149ca595d0cfdfbc4971541831e5a8df0",
+        "card-vectors.json": "b15b93cb02e7e8a712561a2da52127a5867084ecb878a6ad58539b56b1109ab9",
+        "event-contracts.json": "e4806dd48efbfc799a27c14b3660ad76ee03cd3f13e3e4320b213c5928efb112",
+        "card-ir-native-defaults.json": "a4f2812716f03ded180f45603ac7b715e890c54b1bc5b4b75fe2b1ec0975d711"
+      },
+      "toolSha256": "e9acca488903a14af5ccf1de725641cccbb1320963105665aec0608ada3d2898",
+      "matchup": [
+        0,
+        1
+      ],
+      "seed": 310001,
+      "maxSteps": 1000,
+      "maxSeconds": 60,
+      "scope": "Left-only win model; existing NnPolicy candidate enumeration; one-ply afterstates; first-index choices. No complete legal mask, calibrated probability, PvP certification or strength claim.",
+      "comparable": false,
+      "leftWinDelta": null,
+      "baseline": {
+        "modelLeft": false,
+        "seed": 310001,
+        "admitted": true,
+        "reasons": [],
+        "winner": "Left",
+        "turn": 21,
+        "steps": 96,
+        "decisions": 0,
+        "candidates": 0,
+        "rejected": 0,
+        "choices": 6,
+        "seconds": 9.2332337
+      },
+      "treatment": {
+        "modelLeft": true,
+        "seed": 310001,
+        "admitted": false,
+        "reasons": [
+          "InvalidOperationException:enumerator_mutated_root",
+          "unfinished"
+        ],
+        "winner": "NotAvailable",
+        "turn": 3,
+        "steps": 4,
+        "decisions": 3,
+        "candidates": 5,
+        "rejected": 0,
+        "choices": 1,
+        "seconds": 0.059211
+      },
+      "localRawSha256": "192506c7bdbbf9125fcd59cc3964ab8d5087c4054270ece4590fc5993b23f9b0"
+    },
+    {
+      "schemaVersion": 1,
+      "planSha256": "f826345d510ffd7ad704e73fbf0922b21ae2edd3855594a72c00b2fae65254b6",
+      "modelSha256": "7ff70b1fd65be589ea7b86b6338bda3713feb0aaaff83cc1d7bb1200387e336f",
+      "trainingDataSha256": "5fa97eab224e92984359fe758a8c4ea90bf5d2a51f38093848f17fbf85af1ba8",
+      "simulatorSha256": "7cba599e45879a8af7eecefa41bafa8256bc37d602dbb29fcd78031b12c5dfb9",
+      "inputs": {
+        "cards.json": "3550dc76eb0414c500166875f45909077aeeb3ea4d229b9b0ba9c66a81987c4b",
+        "card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b",
+        "card-effects.json": "fc335d228779a2859627ee706d85949149ca595d0cfdfbc4971541831e5a8df0",
+        "card-vectors.json": "b15b93cb02e7e8a712561a2da52127a5867084ecb878a6ad58539b56b1109ab9",
+        "event-contracts.json": "e4806dd48efbfc799a27c14b3660ad76ee03cd3f13e3e4320b213c5928efb112",
+        "card-ir-native-defaults.json": "a4f2812716f03ded180f45603ac7b715e890c54b1bc5b4b75fe2b1ec0975d711"
+      },
+      "toolSha256": "e9acca488903a14af5ccf1de725641cccbb1320963105665aec0608ada3d2898",
+      "matchup": [
+        1,
+        0
+      ],
+      "seed": 311000,
+      "maxSteps": 1000,
+      "maxSeconds": 60,
+      "scope": "Left-only win model; existing NnPolicy candidate enumeration; one-ply afterstates; first-index choices. No complete legal mask, calibrated probability, PvP certification or strength claim.",
+      "comparable": false,
+      "leftWinDelta": null,
+      "baseline": {
+        "modelLeft": false,
+        "seed": 311000,
+        "admitted": true,
+        "reasons": [],
+        "winner": "Left",
+        "turn": 31,
+        "steps": 148,
+        "decisions": 0,
+        "candidates": 0,
+        "rejected": 0,
+        "choices": 18,
+        "seconds": 17.7346348
+      },
+      "treatment": {
+        "modelLeft": true,
+        "seed": 311000,
+        "admitted": false,
+        "reasons": [
+          "InvalidOperationException:enumerator_mutated_root",
+          "unfinished"
+        ],
+        "winner": "NotAvailable",
+        "turn": 3,
+        "steps": 3,
+        "decisions": 2,
+        "candidates": 1,
+        "rejected": 0,
+        "choices": 0,
+        "seconds": 0.0230959
+      },
+      "localRawSha256": "4ae16cb6b58fcd0d81bb43557252ad5fc2d4a4cbd5f16b7df1652d8dbc3d24e4"
+    },
+    {
+      "schemaVersion": 1,
+      "planSha256": "f826345d510ffd7ad704e73fbf0922b21ae2edd3855594a72c00b2fae65254b6",
+      "modelSha256": "7ff70b1fd65be589ea7b86b6338bda3713feb0aaaff83cc1d7bb1200387e336f",
+      "trainingDataSha256": "5fa97eab224e92984359fe758a8c4ea90bf5d2a51f38093848f17fbf85af1ba8",
+      "simulatorSha256": "7cba599e45879a8af7eecefa41bafa8256bc37d602dbb29fcd78031b12c5dfb9",
+      "inputs": {
+        "cards.json": "3550dc76eb0414c500166875f45909077aeeb3ea4d229b9b0ba9c66a81987c4b",
+        "card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b",
+        "card-effects.json": "fc335d228779a2859627ee706d85949149ca595d0cfdfbc4971541831e5a8df0",
+        "card-vectors.json": "b15b93cb02e7e8a712561a2da52127a5867084ecb878a6ad58539b56b1109ab9",
+        "event-contracts.json": "e4806dd48efbfc799a27c14b3660ad76ee03cd3f13e3e4320b213c5928efb112",
+        "card-ir-native-defaults.json": "a4f2812716f03ded180f45603ac7b715e890c54b1bc5b4b75fe2b1ec0975d711"
+      },
+      "toolSha256": "e9acca488903a14af5ccf1de725641cccbb1320963105665aec0608ada3d2898",
+      "matchup": [
+        1,
+        0
+      ],
+      "seed": 311001,
+      "maxSteps": 1000,
+      "maxSeconds": 60,
+      "scope": "Left-only win model; existing NnPolicy candidate enumeration; one-ply afterstates; first-index choices. No complete legal mask, calibrated probability, PvP certification or strength claim.",
+      "comparable": false,
+      "leftWinDelta": null,
+      "baseline": {
+        "modelLeft": false,
+        "seed": 311001,
+        "admitted": true,
+        "reasons": [],
+        "winner": "Left",
+        "turn": 35,
+        "steps": 208,
+        "decisions": 0,
+        "candidates": 0,
+        "rejected": 0,
+        "choices": 19,
+        "seconds": 32.8868313
+      },
+      "treatment": {
+        "modelLeft": true,
+        "seed": 311001,
+        "admitted": false,
+        "reasons": [
+          "InvalidOperationException:enumerator_mutated_root",
+          "unfinished"
+        ],
+        "winner": "NotAvailable",
+        "turn": 3,
+        "steps": 3,
+        "decisions": 2,
+        "candidates": 1,
+        "rejected": 0,
+        "choices": 0,
+        "seconds": 0.0267443
+      },
+      "localRawSha256": "d3920d2927cb572bc5ae34757861f917b400ef9c399fb6311d1a90cf287436fa"
+    },
+    {
+      "schemaVersion": 1,
+      "planSha256": "c4c1d7c65c2fe5ad14c370e30cf9ecbd9018c41a7a20154b60c8c9d9102e7afb",
+      "modelSha256": "7ff70b1fd65be589ea7b86b6338bda3713feb0aaaff83cc1d7bb1200387e336f",
+      "trainingDataSha256": "5fa97eab224e92984359fe758a8c4ea90bf5d2a51f38093848f17fbf85af1ba8",
+      "simulatorSha256": "7cba599e45879a8af7eecefa41bafa8256bc37d602dbb29fcd78031b12c5dfb9",
+      "inputs": {
+        "cards.json": "3550dc76eb0414c500166875f45909077aeeb3ea4d229b9b0ba9c66a81987c4b",
+        "card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b",
+        "card-effects.json": "fc335d228779a2859627ee706d85949149ca595d0cfdfbc4971541831e5a8df0",
+        "card-vectors.json": "b15b93cb02e7e8a712561a2da52127a5867084ecb878a6ad58539b56b1109ab9",
+        "event-contracts.json": "e4806dd48efbfc799a27c14b3660ad76ee03cd3f13e3e4320b213c5928efb112",
+        "card-ir-native-defaults.json": "a4f2812716f03ded180f45603ac7b715e890c54b1bc5b4b75fe2b1ec0975d711"
+      },
+      "toolSha256": "874aa88ee6263d0b4997b43b85e7180226ae0058c1f6a6957982aebbf1e82841",
+      "matchup": [
+        0,
+        1
+      ],
+      "seed": 320000,
+      "maxSteps": 1000,
+      "maxSeconds": 60,
+      "scope": "Left-only win model; existing NnPolicy candidate enumeration; one-ply afterstates; first-index choices. No complete legal mask, calibrated probability, PvP certification or strength claim.",
+      "comparable": true,
+      "leftWinDelta": -1,
+      "baseline": {
+        "modelLeft": false,
+        "seed": 320000,
+        "admitted": true,
+        "reasons": [],
+        "winner": "Left",
+        "turn": 17,
+        "steps": 65,
+        "decisions": 0,
+        "candidates": 0,
+        "rejected": 0,
+        "choices": 3,
+        "seconds": 2.6307246
+      },
+      "treatment": {
+        "modelLeft": true,
+        "seed": 320000,
+        "admitted": true,
+        "reasons": [],
+        "winner": "Right",
+        "turn": 28,
+        "steps": 129,
+        "decisions": 63,
+        "candidates": 608,
+        "rejected": 55,
+        "choices": 15,
+        "seconds": 42.6956995
+      },
+      "localRawSha256": "56eee459a418429a5b37544047962de21554c5c2e424ba41eb9844db999dc84c"
+    },
+    {
+      "schemaVersion": 1,
+      "planSha256": "c4c1d7c65c2fe5ad14c370e30cf9ecbd9018c41a7a20154b60c8c9d9102e7afb",
+      "modelSha256": "7ff70b1fd65be589ea7b86b6338bda3713feb0aaaff83cc1d7bb1200387e336f",
+      "trainingDataSha256": "5fa97eab224e92984359fe758a8c4ea90bf5d2a51f38093848f17fbf85af1ba8",
+      "simulatorSha256": "7cba599e45879a8af7eecefa41bafa8256bc37d602dbb29fcd78031b12c5dfb9",
+      "inputs": {
+        "cards.json": "3550dc76eb0414c500166875f45909077aeeb3ea4d229b9b0ba9c66a81987c4b",
+        "card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b",
+        "card-effects.json": "fc335d228779a2859627ee706d85949149ca595d0cfdfbc4971541831e5a8df0",
+        "card-vectors.json": "b15b93cb02e7e8a712561a2da52127a5867084ecb878a6ad58539b56b1109ab9",
+        "event-contracts.json": "e4806dd48efbfc799a27c14b3660ad76ee03cd3f13e3e4320b213c5928efb112",
+        "card-ir-native-defaults.json": "a4f2812716f03ded180f45603ac7b715e890c54b1bc5b4b75fe2b1ec0975d711"
+      },
+      "toolSha256": "874aa88ee6263d0b4997b43b85e7180226ae0058c1f6a6957982aebbf1e82841",
+      "matchup": [
+        1,
+        0
+      ],
+      "seed": 321000,
+      "maxSteps": 1000,
+      "maxSeconds": 60,
+      "scope": "Left-only win model; existing NnPolicy candidate enumeration; one-ply afterstates; first-index choices. No complete legal mask, calibrated probability, PvP certification or strength claim.",
+      "comparable": true,
+      "leftWinDelta": 0,
+      "baseline": {
+        "modelLeft": false,
+        "seed": 321000,
+        "admitted": true,
+        "reasons": [],
+        "winner": "Right",
+        "turn": 24,
+        "steps": 126,
+        "decisions": 0,
+        "candidates": 0,
+        "rejected": 0,
+        "choices": 14,
+        "seconds": 15.3153544
+      },
+      "treatment": {
+        "modelLeft": true,
+        "seed": 321000,
+        "admitted": true,
+        "reasons": [],
+        "winner": "Right",
+        "turn": 20,
+        "steps": 89,
+        "decisions": 34,
+        "candidates": 361,
+        "rejected": 65,
+        "choices": 5,
+        "seconds": 19.9826079
+      },
+      "localRawSha256": "86302c6c16d0ed5e7c90990464cba617a50ccb557c87664f41786a024158ffaa"
+    }
+  ],
+  "modelMetadata": {
+    "tool": "NNTrain",
+    "encoderSpec": "v2/dim=745;order=global3,perspective371,opposite371;global=turn/30,activeIsPerspective,cardsPlayedThisTurn/10;perSideGlobal=hqDef/20,kredits/12,maxKredits/12,handCount/10,deckCount/40,boardCount/10;zones=Hand,BoardFrontline,OwnHalf,Discard,Deck;zone=mean(cardVec90)+count/10;deckZone=count/10only,noCardVec;oppHandZone=count/10only,noCardVec(hiddenInfo+deckFingerprint);cardVec=s[9]+k[0..80];label=P(perspective wins)",
+    "trainingContract": {
+      "Version": 1,
+      "SamplingMode": "policy-and-choice-before/v1",
+      "ObservationSpec": "v2/dim=745;order=global3,perspective371,opposite371;global=turn/30,activeIsPerspective,cardsPlayedThisTurn/10;perSideGlobal=hqDef/20,kredits/12,maxKredits/12,handCount/10,deckCount/40,boardCount/10;zones=Hand,BoardFrontline,OwnHalf,Discard,Deck;zone=mean(cardVec90)+count/10;deckZone=count/10only,noCardVec;oppHandZone=count/10only,noCardVec(hiddenInfo+deckFingerprint);cardVec=s[9]+k[0..80];label=P(perspective wins)",
+      "ObservationPerspective": "left",
+      "ChoicePolicy": "first-index/v1",
+      "Target": "win",
+      "DatasetSha256": "5fa97eab224e92984359fe758a8c4ea90bf5d2a51f38093848f17fbf85af1ba8",
+      "SimulatorSha256": "7cba599e45879a8af7eecefa41bafa8256bc37d602dbb29fcd78031b12c5dfb9",
+      "InputsSha256": {
+        "cards.json": "3550dc76eb0414c500166875f45909077aeeb3ea4d229b9b0ba9c66a81987c4b",
+        "card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b",
+        "card-effects.json": "fc335d228779a2859627ee706d85949149ca595d0cfdfbc4971541831e5a8df0",
+        "card-vectors.json": "b15b93cb02e7e8a712561a2da52127a5867084ecb878a6ad58539b56b1109ab9",
+        "event-contracts.json": "e4806dd48efbfc799a27c14b3660ad76ee03cd3f13e3e4320b213c5928efb112",
+        "card-ir-native-defaults.json": "a4f2812716f03ded180f45603ac7b715e890c54b1bc5b4b75fe2b1ec0975d711"
+      }
+    },
+    "data": "pilot.bin",
+    "samples": 11740,
+    "trainSamples": 8457,
+    "valSamples": 3283,
+    "valGames": 24,
+    "games": 96,
+    "epochs": 1,
+    "hidden": 16,
+    "lr": 0.05,
+    "weightInitSeed": 42,
+    "splitSeed": -1,
+    "splitSource": "frozen-manifest/v1",
+    "splitManifestSha256": "7f09dea0f0690d7d34f2c23bbc17322b773a1d8c085545643ed10eacbd249a30",
+    "normalizationSpec": "training-split-only/v1",
+    "trainingGameIds": [
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35,
+      36,
+      37,
+      38,
+      39,
+      40,
+      41,
+      42,
+      43,
+      44,
+      45,
+      46,
+      47,
+      54,
+      55,
+      56,
+      57,
+      58,
+      59,
+      60,
+      61,
+      62,
+      63,
+      64,
+      65,
+      66,
+      67,
+      68,
+      69,
+      70,
+      71,
+      78,
+      79,
+      80,
+      81,
+      82,
+      83,
+      84,
+      85,
+      86,
+      87,
+      88,
+      89,
+      90,
+      91,
+      92,
+      93,
+      94,
+      95
+    ],
+    "validationGameIds": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      48,
+      49,
+      50,
+      51,
+      52,
+      53,
+      72,
+      73,
+      74,
+      75,
+      76,
+      77
+    ],
+    "target": "win",
+    "valAccuracy": 0.5543710021321961,
+    "bestValAccuracy": 0.5543710021321961,
+    "validationMetric": "win-accuracy/v1",
+    "validationMetricStatus": "available",
+    "validationMetricCorrect": 1820,
+    "validationMetricTotal": 3283,
+    "pairCoverage": {
+      "Full": {
+        "Rows": 11740,
+        "DistinctGames": 96,
+        "Cells": [
+          {
+            "Matchup": 1,
+            "Turn": 1,
+            "WinRows": 33,
+            "LossRows": 12,
+            "WinGames": 18,
+            "LossGames": 6,
+            "Pairs": 12
+          },
+          {
+            "Matchup": 1,
+            "Turn": 2,
+            "WinRows": 33,
+            "LossRows": 11,
+            "WinGames": 18,
+            "LossGames": 6,
+            "Pairs": 11
+          },
+          {
+            "Matchup": 1,
+            "Turn": 3,
+            "WinRows": 51,
+            "LossRows": 18,
+            "WinGames": 18,
+            "LossGames": 6,
+            "Pairs": 18
+          },
+          {
+            "Matchup": 1,
+            "Turn": 4,
+            "WinRows": 44,
+            "LossRows": 20,
+            "WinGames": 18,
+            "LossGames": 6,
+            "Pairs": 20
+          },
+          {
+            "Matchup": 1,
+            "Turn": 5,
+            "WinRows": 81,
+            "LossRows": 17,
+            "WinGames": 18,
+            "LossGames": 6,
+            "Pairs": 17
+          },
+          {
+            "Matchup": 1,
+            "Turn": 6,
+            "WinRows": 54,
+            "LossRows": 11,
+            "WinGames": 18,
+            "LossGames": 6,
+            "Pairs": 11
+          },
+          {
+            "Matchup": 1,
+            "Turn": 7,
+            "WinRows": 98,
+            "LossRows": 14,
+            "WinGames": 18,
+            "LossGames": 6,
+            "Pairs": 14
+          },
+          {
+            "Matchup": 1,
+            "Turn": 8,
+            "WinRows": 55,
+            "LossRows": 20,
+            "WinGames": 18,
+            "LossGames": 6,
+            "Pairs": 20
+          },
+          {
+            "Matchup": 1,
+            "Turn": 9,
+            "WinRows": 111,
+            "LossRows": 22,
+            "WinGames": 18,
+            "LossGames": 6,
+            "Pairs": 22
+          },
+          {
+            "Matchup": 1,
+            "Turn": 10,
+            "WinRows": 64,
+            "LossRows": 20,
+            "WinGames": 18,
+            "LossGames": 6,
+            "Pairs": 20
+          },
+          {
+            "Matchup": 1,
+            "Turn": 11,
+            "WinRows": 143,
+            "LossRows": 45,
+            "WinGames": 18,
+            "LossGames": 6,
+            "Pairs": 45
+          },
+          {
+            "Matchup": 1,
+            "Turn": 12,
+            "WinRows": 54,
+            "LossRows": 26,
+            "WinGames": 16,
+            "LossGames": 6,
+            "Pairs": 26
+          },
+          {
+            "Matchup": 1,
+            "Turn": 13,
+            "WinRows": 123,
+            "LossRows": 50,
+            "WinGames": 16,
+            "LossGames": 6,
+            "Pairs": 50
+          },
+          {
+            "Matchup": 1,
+            "Turn": 14,
+            "WinRows": 45,
+            "LossRows": 28,
+            "WinGames": 13,
+            "LossGames": 6,
+            "Pairs": 28
+          },
+          {
+            "Matchup": 1,
+            "Turn": 15,
+            "WinRows": 90,
+            "LossRows": 53,
+            "WinGames": 13,
+            "LossGames": 6,
+            "Pairs": 53
+          },
+          {
+            "Matchup": 1,
+            "Turn": 16,
+            "WinRows": 48,
+            "LossRows": 33,
+            "WinGames": 7,
+            "LossGames": 6,
+            "Pairs": 33
+          },
+          {
+            "Matchup": 1,
+            "Turn": 17,
+            "WinRows": 62,
+            "LossRows": 49,
+            "WinGames": 7,
+            "LossGames": 6,
+            "Pairs": 49
+          },
+          {
+            "Matchup": 1,
+            "Turn": 18,
+            "WinRows": 26,
+            "LossRows": 33,
+            "WinGames": 6,
+            "LossGames": 6,
+            "Pairs": 26
+          },
+          {
+            "Matchup": 1,
+            "Turn": 19,
+            "WinRows": 45,
+            "LossRows": 42,
+            "WinGames": 6,
+            "LossGames": 6,
+            "Pairs": 42
+          },
+          {
+            "Matchup": 1,
+            "Turn": 20,
+            "WinRows": 42,
+            "LossRows": 64,
+            "WinGames": 6,
+            "LossGames": 6,
+            "Pairs": 42
+          },
+          {
+            "Matchup": 1,
+            "Turn": 21,
+            "WinRows": 47,
+            "LossRows": 23,
+            "WinGames": 6,
+            "LossGames": 6,
+            "Pairs": 23
+          },
+          {
+            "Matchup": 1,
+            "Turn": 22,
+            "WinRows": 56,
+            "LossRows": 54,
+            "WinGames": 6,
+            "LossGames": 6,
+            "Pairs": 54
+          },
+          {
+            "Matchup": 1,
+            "Turn": 23,
+            "WinRows": 42,
+            "LossRows": 24,
+            "WinGames": 6,
+            "LossGames": 6,
+            "Pairs": 24
+          },
+          {
+            "Matchup": 1,
+            "Turn": 24,
+            "WinRows": 53,
+            "LossRows": 46,
+            "WinGames": 5,
+            "LossGames": 6,
+            "Pairs": 46
+          },
+          {
+            "Matchup": 1,
+            "Turn": 25,
+            "WinRows": 23,
+            "LossRows": 18,
+            "WinGames": 5,
+            "LossGames": 6,
+            "Pairs": 18
+          },
+          {
+            "Matchup": 1,
+            "Turn": 26,
+            "WinRows": 18,
+            "LossRows": 56,
+            "WinGames": 3,
+            "LossGames": 6,
+            "Pairs": 18
+          },
+          {
+            "Matchup": 1,
+            "Turn": 27,
+            "WinRows": 24,
+            "LossRows": 26,
+            "WinGames": 3,
+            "LossGames": 6,
+            "Pairs": 24
+          },
+          {
+            "Matchup": 1,
+            "Turn": 28,
+            "WinRows": 22,
+            "LossRows": 56,
+            "WinGames": 3,
+            "LossGames": 6,
+            "Pairs": 22
+          },
+          {
+            "Matchup": 1,
+            "Turn": 29,
+            "WinRows": 22,
+            "LossRows": 22,
+            "WinGames": 3,
+            "LossGames": 5,
+            "Pairs": 22
+          },
+          {
+            "Matchup": 1,
+            "Turn": 30,
+            "WinRows": 7,
+            "LossRows": 40,
+            "WinGames": 2,
+            "LossGames": 5,
+            "Pairs": 7
+          },
+          {
+            "Matchup": 1,
+            "Turn": 31,
+            "WinRows": 4,
+            "LossRows": 8,
+            "WinGames": 1,
+            "LossGames": 3,
+            "Pairs": 4
+          },
+          {
+            "Matchup": 1,
+            "Turn": 32,
+            "WinRows": 0,
+            "LossRows": 33,
+            "WinGames": 0,
+            "LossGames": 3,
+            "Pairs": 0
+          },
+          {
+            "Matchup": 1,
+            "Turn": 33,
+            "WinRows": 0,
+            "LossRows": 3,
+            "WinGames": 0,
+            "LossGames": 2,
+            "Pairs": 0
+          },
+          {
+            "Matchup": 1,
+            "Turn": 34,
+            "WinRows": 0,
+            "LossRows": 11,
+            "WinGames": 0,
+            "LossGames": 2,
+            "Pairs": 0
+          },
+          {
+            "Matchup": 1,
+            "Turn": 35,
+            "WinRows": 0,
+            "LossRows": 1,
+            "WinGames": 0,
+            "LossGames": 1,
+            "Pairs": 0
+          },
+          {
+            "Matchup": 1,
+            "Turn": 36,
+            "WinRows": 0,
+            "LossRows": 8,
+            "WinGames": 0,
+            "LossGames": 1,
+            "Pairs": 0
+          },
+          {
+            "Matchup": 1,
+            "Turn": 37,
+            "WinRows": 0,
+            "LossRows": 5,
+            "WinGames": 0,
+            "LossGames": 1,
+            "Pairs": 0
+          },
+          {
+            "Matchup": 1,
+            "Turn": 38,
+            "WinRows": 0,
+            "LossRows": 8,
+            "WinGames": 0,
+            "LossGames": 1,
+            "Pairs": 0
+          },
+          {
+            "Matchup": 1,
+            "Turn": 39,
+            "WinRows": 0,
+            "LossRows": 3,
+            "WinGames": 0,
+            "LossGames": 1,
+            "Pairs": 0
+          },
+          {
+            "Matchup": 1,
+            "Turn": 40,
+            "WinRows": 0,
+            "LossRows": 8,
+            "WinGames": 0,
+            "LossGames": 1,
+            "Pairs": 0
+          },
+          {
+            "Matchup": 1,
+            "Turn": 41,
+            "WinRows": 0,
+            "LossRows": 2,
+            "WinGames": 0,
+            "LossGames": 1,
+            "Pairs": 0
+          },
+          {
+            "Matchup": 1,
+            "Turn": 42,
+            "WinRows": 0,
+            "LossRows": 5,
+            "WinGames": 0,
+            "LossGames": 1,
+            "Pairs": 0
+          },
+          {
+            "Matchup": 22,
+            "Turn": 1,
+            "WinRows": 9,
+            "LossRows": 35,
+            "WinGames": 5,
+            "LossGames": 19,
+            "Pairs": 9
+          },
+          {
+            "Matchup": 22,
+            "Turn": 2,
+            "WinRows": 10,
+            "LossRows": 38,
+            "WinGames": 5,
+            "LossGames": 19,
+            "Pairs": 10
+          },
+          {
+            "Matchup": 22,
+            "Turn": 3,
+            "WinRows": 15,
+            "LossRows": 54,
+            "WinGames": 5,
+            "LossGames": 19,
+            "Pairs": 15
+          },
+          {
+            "Matchup": 22,
+            "Turn": 4,
+            "WinRows": 15,
+            "LossRows": 55,
+            "WinGames": 5,
+            "LossGames": 19,
+            "Pairs": 15
+          },
+          {
+            "Matchup": 22,
+            "Turn": 5,
+            "WinRows": 15,
+            "LossRows": 57,
+            "WinGames": 5,
+            "LossGames": 19,
+            "Pairs": 15
+          },
+          {
+            "Matchup": 22,
+            "Turn": 6,
+            "WinRows": 13,
+            "LossRows": 67,
+            "WinGames": 5,
+            "LossGames": 19,
+            "Pairs": 13
+          },
+          {
+            "Matchup": 22,
+            "Turn": 7,
+            "WinRows": 10,
+            "LossRows": 57,
+            "WinGames": 5,
+            "LossGames": 19,
+            "Pairs": 10
+          },
+          {
+            "Matchup": 22,
+            "Turn": 8,
+            "WinRows": 20,
+            "LossRows": 80,
+            "WinGames": 5,
+            "LossGames": 19,
+            "Pairs": 20
+          },
+          {
+            "Matchup": 22,
+            "Turn": 9,
+            "WinRows": 15,
+            "LossRows": 73,
+            "WinGames": 5,
+            "LossGames": 19,
+            "Pairs": 15
+          },
+          {
+            "Matchup": 22,
+            "Turn": 10,
+            "WinRows": 17,
+            "LossRows": 110,
+            "WinGames": 5,
+            "LossGames": 19,
+            "Pairs": 17
+          },
+          {
+            "Matchup": 22,
+            "Turn": 11,
+            "WinRows": 14,
+            "LossRows": 75,
+            "WinGames": 5,
+            "LossGames": 19,
+            "Pairs": 14
+          },
+          {
+            "Matchup": 22,
+            "Turn": 12,
+            "WinRows": 35,
+            "LossRows": 124,
+            "WinGames": 5,
+            "LossGames": 19,
+            "Pairs": 35
+          },
+          {
+            "Matchup": 22,
+            "Turn": 13,
+            "WinRows": 18,
+            "LossRows": 101,
+            "WinGames": 5,
+            "LossGames": 19,
+            "Pairs": 18
+          },
+          {
+            "Matchup": 22,
+            "Turn": 14,
+            "WinRows": 30,
+            "LossRows": 192,
+            "WinGames": 5,
+            "LossGames": 19,
+            "Pairs": 30
+          },
+          {
+            "Matchup": 22,
+            "Turn": 15,
+            "WinRows": 26,
+            "LossRows": 108,
+            "WinGames": 5,
+            "LossGames": 19,
+            "Pairs": 26
+          },
+          {
+            "Matchup": 22,
+            "Turn": 16,
+            "WinRows": 34,
+            "LossRows": 171,
+            "WinGames": 5,
+            "LossGames": 19,
+            "Pairs": 34
+          },
+          {
+            "Matchup": 22,
+            "Turn": 17,
+            "WinRows": 30,
+            "LossRows": 98,
+            "WinGames": 5,
+            "LossGames": 17,
+            "Pairs": 30
+          },
+          {
+            "Matchup": 22,
+            "Turn": 18,
+            "WinRows": 31,
+            "LossRows": 139,
+            "WinGames": 5,
+            "LossGames": 17,
+            "Pairs": 31
+          },
+          {
+            "Matchup": 22,
+            "Turn": 19,
+            "WinRows": 40,
+            "LossRows": 106,
+            "WinGames": 5,
+            "LossGames": 14,
+            "Pairs": 40
+          },
+          {
+            "Matchup": 22,
+            "Turn": 20,
+            "WinRows": 23,
+            "LossRows": 129,
+            "WinGames": 5,
+            "LossGames": 14,
+            "Pairs": 23
+          },
+          {
+            "Matchup": 22,
+            "Turn": 21,
+            "WinRows": 40,
+            "LossRows": 77,
+            "WinGames": 5,
+            "LossGames": 13,
+            "Pairs": 40
+          },
+          {
+            "Matchup": 22,
+            "Turn": 22,
+            "WinRows": 32,
+            "LossRows": 112,
+            "WinGames": 5,
+            "LossGames": 13,
+            "Pairs": 32
+          },
+          {
+            "Matchup": 22,
+            "Turn": 23,
+            "WinRows": 28,
+            "LossRows": 97,
+            "WinGames": 5,
+            "LossGames": 9,
+            "Pairs": 28
+          },
+          {
+            "Matchup": 22,
+            "Turn": 24,
+            "WinRows": 30,
+            "LossRows": 63,
+            "WinGames": 5,
+            "LossGames": 9,
+            "Pairs": 30
+          },
+          {
+            "Matchup": 22,
+            "Turn": 25,
+            "WinRows": 51,
+            "LossRows": 46,
+            "WinGames": 5,
+            "LossGames": 7,
+            "Pairs": 46
+          },
+          {
+            "Matchup": 22,
+            "Turn": 26,
+            "WinRows": 28,
+            "LossRows": 31,
+            "WinGames": 5,
+            "LossGames": 7,
+            "Pairs": 28
+          },
+          {
+            "Matchup": 22,
+            "Turn": 27,
+            "WinRows": 50,
+            "LossRows": 37,
+            "WinGames": 5,
+            "LossGames": 5,
+            "Pairs": 37
+          },
+          {
+            "Matchup": 22,
+            "Turn": 28,
+            "WinRows": 25,
+            "LossRows": 33,
+            "WinGames": 5,
+            "LossGames": 5,
+            "Pairs": 25
+          },
+          {
+            "Matchup": 22,
+            "Turn": 29,
+            "WinRows": 51,
+            "LossRows": 30,
+            "WinGames": 5,
+            "LossGames": 5,
+            "Pairs": 30
+          },
+          {
+            "Matchup": 22,
+            "Turn": 30,
+            "WinRows": 27,
+            "LossRows": 33,
+            "WinGames": 5,
+            "LossGames": 5,
+            "Pairs": 27
+          },
+          {
+            "Matchup": 22,
+            "Turn": 31,
+            "WinRows": 50,
+            "LossRows": 38,
+            "WinGames": 5,
+            "LossGames": 5,
+            "Pairs": 38
+          },
+          {
+            "Matchup": 22,
+            "Turn": 32,
+            "WinRows": 14,
+            "LossRows": 20,
+            "WinGames": 4,
+            "LossGames": 5,
+            "Pairs": 14
+          },
+          {
+            "Matchup": 22,
+            "Turn": 33,
+            "WinRows": 28,
+            "LossRows": 14,
+            "WinGames": 4,
+            "LossGames": 3,
+            "Pairs": 14
+          },
+          {
+            "Matchup": 22,
+            "Turn": 34,
+            "WinRows": 4,
+            "LossRows": 18,
+            "WinGames": 2,
+            "LossGames": 3,
+            "Pairs": 4
+          },
+          {
+            "Matchup": 22,
+            "Turn": 35,
+            "WinRows": 13,
+            "LossRows": 5,
+            "WinGames": 2,
+            "LossGames": 2,
+            "Pairs": 5
+          },
+          {
+            "Matchup": 22,
+            "Turn": 36,
+            "WinRows": 4,
+            "LossRows": 8,
+            "WinGames": 1,
+            "LossGames": 2,
+            "Pairs": 4
+          },
+          {
+            "Matchup": 22,
+            "Turn": 37,
+            "WinRows": 10,
+            "LossRows": 2,
+            "WinGames": 1,
+            "LossGames": 1,
+            "Pairs": 2
+          },
+          {
+            "Matchup": 22,
+            "Turn": 38,
+            "WinRows": 4,
+            "LossRows": 2,
+            "WinGames": 1,
+            "LossGames": 1,
+            "Pairs": 2
+          },
+          {
+            "Matchup": 22,
+            "Turn": 39,
+            "WinRows": 2,
+            "LossRows": 1,
+            "WinGames": 1,
+            "LossGames": 1,
+            "Pairs": 1
+          },
+          {
+            "Matchup": 22,
+            "Turn": 40,
+            "WinRows": 0,
+            "LossRows": 1,
+            "WinGames": 0,
+            "LossGames": 1,
+            "Pairs": 0
+          },
+          {
+            "Matchup": 22,
+            "Turn": 41,
+            "WinRows": 0,
+            "LossRows": 1,
+            "WinGames": 0,
+            "LossGames": 1,
+            "Pairs": 0
+          },
+          {
+            "Matchup": 22,
+            "Turn": 42,
+            "WinRows": 0,
+            "LossRows": 1,
+            "WinGames": 0,
+            "LossGames": 1,
+            "Pairs": 0
+          },
+          {
+            "Matchup": 22,
+            "Turn": 43,
+            "WinRows": 0,
+            "LossRows": 1,
+            "WinGames": 0,
+            "LossGames": 1,
+            "Pairs": 0
+          },
+          {
+            "Matchup": 22,
+            "Turn": 44,
+            "WinRows": 0,
+            "LossRows": 1,
+            "WinGames": 0,
+            "LossGames": 1,
+            "Pairs": 0
+          },
+          {
+            "Matchup": 47,
+            "Turn": 1,
+            "WinRows": 31,
+            "LossRows": 13,
+            "WinGames": 16,
+            "LossGames": 8,
+            "Pairs": 13
+          },
+          {
+            "Matchup": 47,
+            "Turn": 2,
+            "WinRows": 37,
+            "LossRows": 20,
+            "WinGames": 16,
+            "LossGames": 8,
+            "Pairs": 20
+          },
+          {
+            "Matchup": 47,
+            "Turn": 3,
+            "WinRows": 47,
+            "LossRows": 21,
+            "WinGames": 16,
+            "LossGames": 8,
+            "Pairs": 21
+          },
+          {
+            "Matchup": 47,
+            "Turn": 4,
+            "WinRows": 42,
+            "LossRows": 27,
+            "WinGames": 16,
+            "LossGames": 8,
+            "Pairs": 27
+          },
+          {
+            "Matchup": 47,
+            "Turn": 5,
+            "WinRows": 68,
+            "LossRows": 23,
+            "WinGames": 16,
+            "LossGames": 8,
+            "Pairs": 23
+          },
+          {
+            "Matchup": 47,
+            "Turn": 6,
+            "WinRows": 39,
+            "LossRows": 35,
+            "WinGames": 16,
+            "LossGames": 8,
+            "Pairs": 35
+          },
+          {
+            "Matchup": 47,
+            "Turn": 7,
+            "WinRows": 83,
+            "LossRows": 26,
+            "WinGames": 16,
+            "LossGames": 8,
+            "Pairs": 26
+          },
+          {
+            "Matchup": 47,
+            "Turn": 8,
+            "WinRows": 67,
+            "LossRows": 48,
+            "WinGames": 16,
+            "LossGames": 8,
+            "Pairs": 48
+          },
+          {
+            "Matchup": 47,
+            "Turn": 9,
+            "WinRows": 116,
+            "LossRows": 30,
+            "WinGames": 16,
+            "LossGames": 8,
+            "Pairs": 30
+          },
+          {
+            "Matchup": 47,
+            "Turn": 10,
+            "WinRows": 84,
+            "LossRows": 61,
+            "WinGames": 16,
+            "LossGames": 8,
+            "Pairs": 61
+          },
+          {
+            "Matchup": 47,
+            "Turn": 11,
+            "WinRows": 110,
+            "LossRows": 49,
+            "WinGames": 16,
+            "LossGames": 8,
+            "Pairs": 49
+          },
+          {
+            "Matchup": 47,
+            "Turn": 12,
+            "WinRows": 96,
+            "LossRows": 46,
+            "WinGames": 15,
+            "LossGames": 8,
+            "Pairs": 46
+          },
+          {
+            "Matchup": 47,
+            "Turn": 13,
+            "WinRows": 132,
+            "LossRows": 67,
+            "WinGames": 15,
+            "LossGames": 8,
+            "Pairs": 67
+          },
+          {
+            "Matchup": 47,
+            "Turn": 14,
+            "WinRows": 96,
+            "LossRows": 64,
+            "WinGames": 13,
+            "LossGames": 8,
+            "Pairs": 64
+          },
+          {
+            "Matchup": 47,
+            "Turn": 15,
+            "WinRows": 138,
+            "LossRows": 62,
+            "WinGames": 13,
+            "LossGames": 8,
+            "Pairs": 62
+          },
+          {
+            "Matchup": 47,
+            "Turn": 16,
+            "WinRows": 80,
+            "LossRows": 61,
+            "WinGames": 12,
+            "LossGames": 8,
+            "Pairs": 61
+          },
+          {
+            "Matchup": 47,
+            "Turn": 17,
+            "WinRows": 101,
+            "LossRows": 50,
+            "WinGames": 12,
+            "LossGames": 8,
+            "Pairs": 50
+          },
+          {
+            "Matchup": 47,
+            "Turn": 18,
+            "WinRows": 50,
+            "LossRows": 73,
+            "WinGames": 9,
+            "LossGames": 8,
+            "Pairs": 50
+          },
+          {
+            "Matchup": 47,
+            "Turn": 19,
+            "WinRows": 89,
+            "LossRows": 38,
+            "WinGames": 9,
+            "LossGames": 7,
+            "Pairs": 38
+          },
+          {
+            "Matchup": 47,
+            "Turn": 20,
+            "WinRows": 45,
+            "LossRows": 47,
+            "WinGames": 7,
+            "LossGames": 7,
+            "Pairs": 45
+          },
+          {
+            "Matchup": 47,
+            "Turn": 21,
+            "WinRows": 47,
+            "LossRows": 23,
+            "WinGames": 7,
+            "LossGames": 4,
+            "Pairs": 23
+          },
+          {
+            "Matchup": 47,
+            "Turn": 22,
+            "WinRows": 16,
+            "LossRows": 22,
+            "WinGames": 3,
+            "LossGames": 4,
+            "Pairs": 16
+          },
+          {
+            "Matchup": 47,
+            "Turn": 23,
+            "WinRows": 23,
+            "LossRows": 21,
+            "WinGames": 3,
+            "LossGames": 2,
+            "Pairs": 21
+          },
+          {
+            "Matchup": 47,
+            "Turn": 24,
+            "WinRows": 2,
+            "LossRows": 16,
+            "WinGames": 1,
+            "LossGames": 2,
+            "Pairs": 2
+          },
+          {
+            "Matchup": 47,
+            "Turn": 25,
+            "WinRows": 10,
+            "LossRows": 2,
+            "WinGames": 1,
+            "LossGames": 1,
+            "Pairs": 2
+          },
+          {
+            "Matchup": 68,
+            "Turn": 1,
+            "WinRows": 31,
+            "LossRows": 26,
+            "WinGames": 13,
+            "LossGames": 11,
+            "Pairs": 26
+          },
+          {
+            "Matchup": 68,
+            "Turn": 2,
+            "WinRows": 26,
+            "LossRows": 22,
+            "WinGames": 13,
+            "LossGames": 11,
+            "Pairs": 22
+          },
+          {
+            "Matchup": 68,
+            "Turn": 3,
+            "WinRows": 52,
+            "LossRows": 37,
+            "WinGames": 13,
+            "LossGames": 11,
+            "Pairs": 37
+          },
+          {
+            "Matchup": 68,
+            "Turn": 4,
+            "WinRows": 37,
+            "LossRows": 33,
+            "WinGames": 13,
+            "LossGames": 11,
+            "Pairs": 33
+          },
+          {
+            "Matchup": 68,
+            "Turn": 5,
+            "WinRows": 45,
+            "LossRows": 45,
+            "WinGames": 13,
+            "LossGames": 11,
+            "Pairs": 45
+          },
+          {
+            "Matchup": 68,
+            "Turn": 6,
+            "WinRows": 28,
+            "LossRows": 50,
+            "WinGames": 13,
+            "LossGames": 11,
+            "Pairs": 28
+          },
+          {
+            "Matchup": 68,
+            "Turn": 7,
+            "WinRows": 70,
+            "LossRows": 47,
+            "WinGames": 13,
+            "LossGames": 11,
+            "Pairs": 47
+          },
+          {
+            "Matchup": 68,
+            "Turn": 8,
+            "WinRows": 45,
+            "LossRows": 66,
+            "WinGames": 13,
+            "LossGames": 11,
+            "Pairs": 45
+          },
+          {
+            "Matchup": 68,
+            "Turn": 9,
+            "WinRows": 67,
+            "LossRows": 56,
+            "WinGames": 13,
+            "LossGames": 11,
+            "Pairs": 56
+          },
+          {
+            "Matchup": 68,
+            "Turn": 10,
+            "WinRows": 68,
+            "LossRows": 87,
+            "WinGames": 13,
+            "LossGames": 11,
+            "Pairs": 68
+          },
+          {
+            "Matchup": 68,
+            "Turn": 11,
+            "WinRows": 99,
+            "LossRows": 60,
+            "WinGames": 13,
+            "LossGames": 11,
+            "Pairs": 60
+          },
+          {
+            "Matchup": 68,
+            "Turn": 12,
+            "WinRows": 98,
+            "LossRows": 88,
+            "WinGames": 13,
+            "LossGames": 11,
+            "Pairs": 88
+          },
+          {
+            "Matchup": 68,
+            "Turn": 13,
+            "WinRows": 107,
+            "LossRows": 73,
+            "WinGames": 13,
+            "LossGames": 10,
+            "Pairs": 73
+          },
+          {
+            "Matchup": 68,
+            "Turn": 14,
+            "WinRows": 102,
+            "LossRows": 100,
+            "WinGames": 13,
+            "LossGames": 10,
+            "Pairs": 100
+          },
+          {
+            "Matchup": 68,
+            "Turn": 15,
+            "WinRows": 110,
+            "LossRows": 56,
+            "WinGames": 13,
+            "LossGames": 10,
+            "Pairs": 56
+          },
+          {
+            "Matchup": 68,
+            "Turn": 16,
+            "WinRows": 93,
+            "LossRows": 98,
+            "WinGames": 13,
+            "LossGames": 10,
+            "Pairs": 93
+          },
+          {
+            "Matchup": 68,
+            "Turn": 17,
+            "WinRows": 97,
+            "LossRows": 55,
+            "WinGames": 13,
+            "LossGames": 10,
+            "Pairs": 55
+          },
+          {
+            "Matchup": 68,
+            "Turn": 18,
+            "WinRows": 86,
+            "LossRows": 81,
+            "WinGames": 12,
+            "LossGames": 10,
+            "Pairs": 81
+          },
+          {
+            "Matchup": 68,
+            "Turn": 19,
+            "WinRows": 94,
+            "LossRows": 40,
+            "WinGames": 12,
+            "LossGames": 6,
+            "Pairs": 40
+          },
+          {
+            "Matchup": 68,
+            "Turn": 20,
+            "WinRows": 74,
+            "LossRows": 41,
+            "WinGames": 11,
+            "LossGames": 6,
+            "Pairs": 41
+          },
+          {
+            "Matchup": 68,
+            "Turn": 21,
+            "WinRows": 83,
+            "LossRows": 18,
+            "WinGames": 11,
+            "LossGames": 4,
+            "Pairs": 18
+          },
+          {
+            "Matchup": 68,
+            "Turn": 22,
+            "WinRows": 46,
+            "LossRows": 35,
+            "WinGames": 7,
+            "LossGames": 4,
+            "Pairs": 35
+          },
+          {
+            "Matchup": 68,
+            "Turn": 23,
+            "WinRows": 41,
+            "LossRows": 5,
+            "WinGames": 7,
+            "LossGames": 2,
+            "Pairs": 5
+          },
+          {
+            "Matchup": 68,
+            "Turn": 24,
+            "WinRows": 27,
+            "LossRows": 17,
+            "WinGames": 5,
+            "LossGames": 2,
+            "Pairs": 17
+          },
+          {
+            "Matchup": 68,
+            "Turn": 25,
+            "WinRows": 38,
+            "LossRows": 5,
+            "WinGames": 5,
+            "LossGames": 1,
+            "Pairs": 5
+          },
+          {
+            "Matchup": 68,
+            "Turn": 26,
+            "WinRows": 22,
+            "LossRows": 15,
+            "WinGames": 4,
+            "LossGames": 1,
+            "Pairs": 15
+          },
+          {
+            "Matchup": 68,
+            "Turn": 27,
+            "WinRows": 26,
+            "LossRows": 3,
+            "WinGames": 4,
+            "LossGames": 1,
+            "Pairs": 3
+          },
+          {
+            "Matchup": 68,
+            "Turn": 28,
+            "WinRows": 8,
+            "LossRows": 7,
+            "WinGames": 2,
+            "LossGames": 1,
+            "Pairs": 7
+          },
+          {
+            "Matchup": 68,
+            "Turn": 29,
+            "WinRows": 14,
+            "LossRows": 0,
+            "WinGames": 2,
+            "LossGames": 0,
+            "Pairs": 0
+          },
+          {
+            "Matchup": 68,
+            "Turn": 30,
+            "WinRows": 5,
+            "LossRows": 0,
+            "WinGames": 2,
+            "LossGames": 0,
+            "Pairs": 0
+          },
+          {
+            "Matchup": 68,
+            "Turn": 31,
+            "WinRows": 13,
+            "LossRows": 0,
+            "WinGames": 2,
+            "LossGames": 0,
+            "Pairs": 0
+          },
+          {
+            "Matchup": 68,
+            "Turn": 32,
+            "WinRows": 2,
+            "LossRows": 0,
+            "WinGames": 1,
+            "LossGames": 0,
+            "Pairs": 0
+          },
+          {
+            "Matchup": 68,
+            "Turn": 33,
+            "WinRows": 6,
+            "LossRows": 0,
+            "WinGames": 1,
+            "LossGames": 0,
+            "Pairs": 0
+          }
+        ],
+        "ComparableCells": 123,
+        "RowsInComparableCells": 11608,
+        "DeterministicPairs": 3747,
+        "PairedRows": 7494,
+        "UnpairedRows": 4246
+      },
+      "Training": {
+        "Rows": 8457,
+        "DistinctGames": 72,
+        "Cells": [
+          {
+            "Matchup": 1,
+            "Turn": 1,
+            "WinRows": 27,
+            "LossRows": 6,
+            "WinGames": 15,
+            "LossGames": 3,
+            "Pairs": 6
+          },
+          {
+            "Matchup": 1,
+            "Turn": 2,
+            "WinRows": 28,
+            "LossRows": 5,
+            "WinGames": 15,
+            "LossGames": 3,
+            "Pairs": 5
+          },
+          {
+            "Matchup": 1,
+            "Turn": 3,
+            "WinRows": 43,
+            "LossRows": 9,
+            "WinGames": 15,
+            "LossGames": 3,
+            "Pairs": 9
+          },
+          {
+            "Matchup": 1,
+            "Turn": 4,
+            "WinRows": 35,
+            "LossRows": 10,
+            "WinGames": 15,
+            "LossGames": 3,
+            "Pairs": 10
+          },
+          {
+            "Matchup": 1,
+            "Turn": 5,
+            "WinRows": 75,
+            "LossRows": 9,
+            "WinGames": 15,
+            "LossGames": 3,
+            "Pairs": 9
+          },
+          {
+            "Matchup": 1,
+            "Turn": 6,
+            "WinRows": 45,
+            "LossRows": 6,
+            "WinGames": 15,
+            "LossGames": 3,
+            "Pairs": 6
+          },
+          {
+            "Matchup": 1,
+            "Turn": 7,
+            "WinRows": 89,
+            "LossRows": 7,
+            "WinGames": 15,
+            "LossGames": 3,
+            "Pairs": 7
+          },
+          {
+            "Matchup": 1,
+            "Turn": 8,
+            "WinRows": 48,
+            "LossRows": 10,
+            "WinGames": 15,
+            "LossGames": 3,
+            "Pairs": 10
+          },
+          {
+            "Matchup": 1,
+            "Turn": 9,
+            "WinRows": 101,
+            "LossRows": 12,
+            "WinGames": 15,
+            "LossGames": 3,
+            "Pairs": 12
+          },
+          {
+            "Matchup": 1,
+            "Turn": 10,
+            "WinRows": 53,
+            "LossRows": 8,
+            "WinGames": 15,
+            "LossGames": 3,
+            "Pairs": 8
+          },
+          {
+            "Matchup": 1,
+            "Turn": 11,
+            "WinRows": 122,
+            "LossRows": 26,
+            "WinGames": 15,
+            "LossGames": 3,
+            "Pairs": 26
+          },
+          {
+            "Matchup": 1,
+            "Turn": 12,
+            "WinRows": 48,
+            "LossRows": 7,
+            "WinGames": 13,
+            "LossGames": 3,
+            "Pairs": 7
+          },
+          {
+            "Matchup": 1,
+            "Turn": 13,
+            "WinRows": 94,
+            "LossRows": 30,
+            "WinGames": 13,
+            "LossGames": 3,
+            "Pairs": 30
+          },
+          {
+            "Matchup": 1,
+            "Turn": 14,
+            "WinRows": 35,
+            "LossRows": 13,
+            "WinGames": 10,
+            "LossGames": 3,
+            "Pairs": 13
+          },
+          {
+            "Matchup": 1,
+            "Turn": 15,
+            "WinRows": 69,
+            "LossRows": 26,
+            "WinGames": 10,
+            "LossGames": 3,
+            "Pairs": 26
+          },
+          {
+            "Matchup": 1,
+            "Turn": 16,
+            "WinRows": 44,
+            "LossRows": 15,
+            "WinGames": 6,
+            "LossGames": 3,
+            "Pairs": 15
+          },
+          {
+            "Matchup": 1,
+            "Turn": 17,
+            "WinRows": 52,
+            "LossRows": 25,
+            "WinGames": 6,
+            "LossGames": 3,
+            "Pairs": 25
+          },
+          {
+            "Matchup": 1,
+            "Turn": 18,
+            "WinRows": 22,
+            "LossRows": 20,
+            "WinGames": 5,
+            "LossGames": 3,
+            "Pairs": 20
+          },
+          {
+            "Matchup": 1,
+            "Turn": 19,
+            "WinRows": 40,
+            "LossRows": 23,
+            "WinGames": 5,
+            "LossGames": 3,
+            "Pairs": 23
+          },
+          {
+            "Matchup": 1,
+            "Turn": 20,
+            "WinRows": 32,
+            "LossRows": 27,
+            "WinGames": 5,
+            "LossGames": 3,
+            "Pairs": 27
+          },
+          {
+            "Matchup": 1,
+            "Turn": 21,
+            "WinRows": 39,
+            "LossRows": 9,
+            "WinGames": 5,
+            "LossGames": 3,
+            "Pairs": 9
+          },
+          {
+            "Matchup": 1,
+            "Turn": 22,
+            "WinRows": 45,
+            "LossRows": 31,
+            "WinGames": 5,
+            "LossGames": 3,
+            "Pairs": 31
+          },
+          {
+            "Matchup": 1,
+            "Turn": 23,
+            "WinRows": 39,
+            "LossRows": 7,
+            "WinGames": 5,
+            "LossGames": 3,
+            "Pairs": 7
+          },
+          {
+            "Matchup": 1,
+            "Turn": 24,
+            "WinRows": 37,
+            "LossRows": 29,
+            "WinGames": 4,
+            "LossGames": 3,
+            "Pairs": 29
+          },
+          {
+            "Matchup": 1,
+            "Turn": 25,
+            "WinRows": 21,
+            "LossRows": 5,
+            "WinGames": 4,
+            "LossGames": 3,
+            "Pairs": 5
+          },
+          {
+            "Matchup": 1,
+            "Turn": 26,
+            "WinRows": 7,
+            "LossRows": 35,
+            "WinGames": 2,
+            "LossGames": 3,
+            "Pairs": 7
+          },
+          {
+            "Matchup": 1,
+            "Turn": 27,
+            "WinRows": 15,
+            "LossRows": 15,
+            "WinGames": 2,
+            "LossGames": 3,
+            "Pairs": 15
+          },
+          {
+            "Matchup": 1,
+            "Turn": 28,
+            "WinRows": 14,
+            "LossRows": 22,
+            "WinGames": 2,
+            "LossGames": 3,
+            "Pairs": 14
+          },
+          {
+            "Matchup": 1,
+            "Turn": 29,
+            "WinRows": 13,
+            "LossRows": 9,
+            "WinGames": 2,
+            "LossGames": 2,
+            "Pairs": 9
+          },
+          {
+            "Matchup": 1,
+            "Turn": 30,
+            "WinRows": 5,
+            "LossRows": 12,
+            "WinGames": 1,
+            "LossGames": 2,
+            "Pairs": 5
+          },
+          {
+            "Matchup": 1,
+            "Turn": 31,
+            "WinRows": 4,
+            "LossRows": 1,
+            "WinGames": 1,
+            "LossGames": 1,
+            "Pairs": 1
+          },
+          {
+            "Matchup": 1,
+            "Turn": 32,
+            "WinRows": 0,
+            "LossRows": 6,
+            "WinGames": 0,
+            "LossGames": 1,
+            "Pairs": 0
+          },
+          {
+            "Matchup": 22,
+            "Turn": 1,
+            "WinRows": 7,
+            "LossRows": 28,
+            "WinGames": 3,
+            "LossGames": 15,
+            "Pairs": 7
+          },
+          {
+            "Matchup": 22,
+            "Turn": 2,
+            "WinRows": 6,
+            "LossRows": 30,
+            "WinGames": 3,
+            "LossGames": 15,
+            "Pairs": 6
+          },
+          {
+            "Matchup": 22,
+            "Turn": 3,
+            "WinRows": 11,
+            "LossRows": 38,
+            "WinGames": 3,
+            "LossGames": 15,
+            "Pairs": 11
+          },
+          {
+            "Matchup": 22,
+            "Turn": 4,
+            "WinRows": 9,
+            "LossRows": 43,
+            "WinGames": 3,
+            "LossGames": 15,
+            "Pairs": 9
+          },
+          {
+            "Matchup": 22,
+            "Turn": 5,
+            "WinRows": 10,
+            "LossRows": 47,
+            "WinGames": 3,
+            "LossGames": 15,
+            "Pairs": 10
+          },
+          {
+            "Matchup": 22,
+            "Turn": 6,
+            "WinRows": 7,
+            "LossRows": 57,
+            "WinGames": 3,
+            "LossGames": 15,
+            "Pairs": 7
+          },
+          {
+            "Matchup": 22,
+            "Turn": 7,
+            "WinRows": 7,
+            "LossRows": 44,
+            "WinGames": 3,
+            "LossGames": 15,
+            "Pairs": 7
+          },
+          {
+            "Matchup": 22,
+            "Turn": 8,
+            "WinRows": 12,
+            "LossRows": 57,
+            "WinGames": 3,
+            "LossGames": 15,
+            "Pairs": 12
+          },
+          {
+            "Matchup": 22,
+            "Turn": 9,
+            "WinRows": 11,
+            "LossRows": 58,
+            "WinGames": 3,
+            "LossGames": 15,
+            "Pairs": 11
+          },
+          {
+            "Matchup": 22,
+            "Turn": 10,
+            "WinRows": 11,
+            "LossRows": 89,
+            "WinGames": 3,
+            "LossGames": 15,
+            "Pairs": 11
+          },
+          {
+            "Matchup": 22,
+            "Turn": 11,
+            "WinRows": 8,
+            "LossRows": 60,
+            "WinGames": 3,
+            "LossGames": 15,
+            "Pairs": 8
+          },
+          {
+            "Matchup": 22,
+            "Turn": 12,
+            "WinRows": 19,
+            "LossRows": 99,
+            "WinGames": 3,
+            "LossGames": 15,
+            "Pairs": 19
+          },
+          {
+            "Matchup": 22,
+            "Turn": 13,
+            "WinRows": 7,
+            "LossRows": 75,
+            "WinGames": 3,
+            "LossGames": 15,
+            "Pairs": 7
+          },
+          {
+            "Matchup": 22,
+            "Turn": 14,
+            "WinRows": 19,
+            "LossRows": 153,
+            "WinGames": 3,
+            "LossGames": 15,
+            "Pairs": 19
+          },
+          {
+            "Matchup": 22,
+            "Turn": 15,
+            "WinRows": 15,
+            "LossRows": 88,
+            "WinGames": 3,
+            "LossGames": 15,
+            "Pairs": 15
+          },
+          {
+            "Matchup": 22,
+            "Turn": 16,
+            "WinRows": 23,
+            "LossRows": 143,
+            "WinGames": 3,
+            "LossGames": 15,
+            "Pairs": 23
+          },
+          {
+            "Matchup": 22,
+            "Turn": 17,
+            "WinRows": 16,
+            "LossRows": 78,
+            "WinGames": 3,
+            "LossGames": 13,
+            "Pairs": 16
+          },
+          {
+            "Matchup": 22,
+            "Turn": 18,
+            "WinRows": 17,
+            "LossRows": 105,
+            "WinGames": 3,
+            "LossGames": 13,
+            "Pairs": 17
+          },
+          {
+            "Matchup": 22,
+            "Turn": 19,
+            "WinRows": 27,
+            "LossRows": 57,
+            "WinGames": 3,
+            "LossGames": 10,
+            "Pairs": 27
+          },
+          {
+            "Matchup": 22,
+            "Turn": 20,
+            "WinRows": 14,
+            "LossRows": 90,
+            "WinGames": 3,
+            "LossGames": 10,
+            "Pairs": 14
+          },
+          {
+            "Matchup": 22,
+            "Turn": 21,
+            "WinRows": 18,
+            "LossRows": 47,
+            "WinGames": 3,
+            "LossGames": 9,
+            "Pairs": 18
+          },
+          {
+            "Matchup": 22,
+            "Turn": 22,
+            "WinRows": 15,
+            "LossRows": 72,
+            "WinGames": 3,
+            "LossGames": 9,
+            "Pairs": 15
+          },
+          {
+            "Matchup": 22,
+            "Turn": 23,
+            "WinRows": 15,
+            "LossRows": 72,
+            "WinGames": 3,
+            "LossGames": 6,
+            "Pairs": 15
+          },
+          {
+            "Matchup": 22,
+            "Turn": 24,
+            "WinRows": 17,
+            "LossRows": 49,
+            "WinGames": 3,
+            "LossGames": 6,
+            "Pairs": 17
+          },
+          {
+            "Matchup": 22,
+            "Turn": 25,
+            "WinRows": 38,
+            "LossRows": 36,
+            "WinGames": 3,
+            "LossGames": 5,
+            "Pairs": 36
+          },
+          {
+            "Matchup": 22,
+            "Turn": 26,
+            "WinRows": 19,
+            "LossRows": 22,
+            "WinGames": 3,
+            "LossGames": 5,
+            "Pairs": 19
+          },
+          {
+            "Matchup": 22,
+            "Turn": 27,
+            "WinRows": 34,
+            "LossRows": 19,
+            "WinGames": 3,
+            "LossGames": 3,
+            "Pairs": 19
+          },
+          {
+            "Matchup": 22,
+            "Turn": 28,
+            "WinRows": 19,
+            "LossRows": 23,
+            "WinGames": 3,
+            "LossGames": 3,
+            "Pairs": 19
+          },
+          {
+            "Matchup": 22,
+            "Turn": 29,
+            "WinRows": 25,
+            "LossRows": 19,
+            "WinGames": 3,
+            "LossGames": 3,
+            "Pairs": 19
+          },
+          {
+            "Matchup": 22,
+            "Turn": 30,
+            "WinRows": 21,
+            "LossRows": 21,
+            "WinGames": 3,
+            "LossGames": 3,
+            "Pairs": 21
+          },
+          {
+            "Matchup": 22,
+            "Turn": 31,
+            "WinRows": 29,
+            "LossRows": 18,
+            "WinGames": 3,
+            "LossGames": 3,
+            "Pairs": 18
+          },
+          {
+            "Matchup": 22,
+            "Turn": 32,
+            "WinRows": 11,
+            "LossRows": 8,
+            "WinGames": 3,
+            "LossGames": 3,
+            "Pairs": 8
+          },
+          {
+            "Matchup": 22,
+            "Turn": 33,
+            "WinRows": 20,
+            "LossRows": 5,
+            "WinGames": 3,
+            "LossGames": 1,
+            "Pairs": 5
+          },
+          {
+            "Matchup": 22,
+            "Turn": 34,
+            "WinRows": 4,
+            "LossRows": 2,
+            "WinGames": 2,
+            "LossGames": 1,
+            "Pairs": 2
+          },
+          {
+            "Matchup": 22,
+            "Turn": 35,
+            "WinRows": 13,
+            "LossRows": 0,
+            "WinGames": 2,
+            "LossGames": 0,
+            "Pairs": 0
+          },
+          {
+            "Matchup": 22,
+            "Turn": 36,
+            "WinRows": 4,
+            "LossRows": 0,
+            "WinGames": 1,
+            "LossGames": 0,
+            "Pairs": 0
+          },
+          {
+            "Matchup": 22,
+            "Turn": 37,
+            "WinRows": 10,
+            "LossRows": 0,
+            "WinGames": 1,
+            "LossGames": 0,
+            "Pairs": 0
+          },
+          {
+            "Matchup": 22,
+            "Turn": 38,
+            "WinRows": 4,
+            "LossRows": 0,
+            "WinGames": 1,
+            "LossGames": 0,
+            "Pairs": 0
+          },
+          {
+            "Matchup": 22,
+            "Turn": 39,
+            "WinRows": 2,
+            "LossRows": 0,
+            "WinGames": 1,
+            "LossGames": 0,
+            "Pairs": 0
+          },
+          {
+            "Matchup": 47,
+            "Turn": 1,
+            "WinRows": 24,
+            "LossRows": 11,
+            "WinGames": 12,
+            "LossGames": 6,
+            "Pairs": 11
+          },
+          {
+            "Matchup": 47,
+            "Turn": 2,
+            "WinRows": 25,
+            "LossRows": 14,
+            "WinGames": 12,
+            "LossGames": 6,
+            "Pairs": 14
+          },
+          {
+            "Matchup": 47,
+            "Turn": 3,
+            "WinRows": 35,
+            "LossRows": 16,
+            "WinGames": 12,
+            "LossGames": 6,
+            "Pairs": 16
+          },
+          {
+            "Matchup": 47,
+            "Turn": 4,
+            "WinRows": 32,
+            "LossRows": 21,
+            "WinGames": 12,
+            "LossGames": 6,
+            "Pairs": 21
+          },
+          {
+            "Matchup": 47,
+            "Turn": 5,
+            "WinRows": 53,
+            "LossRows": 17,
+            "WinGames": 12,
+            "LossGames": 6,
+            "Pairs": 17
+          },
+          {
+            "Matchup": 47,
+            "Turn": 6,
+            "WinRows": 29,
+            "LossRows": 25,
+            "WinGames": 12,
+            "LossGames": 6,
+            "Pairs": 25
+          },
+          {
+            "Matchup": 47,
+            "Turn": 7,
+            "WinRows": 62,
+            "LossRows": 19,
+            "WinGames": 12,
+            "LossGames": 6,
+            "Pairs": 19
+          },
+          {
+            "Matchup": 47,
+            "Turn": 8,
+            "WinRows": 42,
+            "LossRows": 37,
+            "WinGames": 12,
+            "LossGames": 6,
+            "Pairs": 37
+          },
+          {
+            "Matchup": 47,
+            "Turn": 9,
+            "WinRows": 80,
+            "LossRows": 23,
+            "WinGames": 12,
+            "LossGames": 6,
+            "Pairs": 23
+          },
+          {
+            "Matchup": 47,
+            "Turn": 10,
+            "WinRows": 61,
+            "LossRows": 45,
+            "WinGames": 12,
+            "LossGames": 6,
+            "Pairs": 45
+          },
+          {
+            "Matchup": 47,
+            "Turn": 11,
+            "WinRows": 75,
+            "LossRows": 37,
+            "WinGames": 12,
+            "LossGames": 6,
+            "Pairs": 37
+          },
+          {
+            "Matchup": 47,
+            "Turn": 12,
+            "WinRows": 74,
+            "LossRows": 37,
+            "WinGames": 11,
+            "LossGames": 6,
+            "Pairs": 37
+          },
+          {
+            "Matchup": 47,
+            "Turn": 13,
+            "WinRows": 92,
+            "LossRows": 43,
+            "WinGames": 11,
+            "LossGames": 6,
+            "Pairs": 43
+          },
+          {
+            "Matchup": 47,
+            "Turn": 14,
+            "WinRows": 58,
+            "LossRows": 49,
+            "WinGames": 9,
+            "LossGames": 6,
+            "Pairs": 49
+          },
+          {
+            "Matchup": 47,
+            "Turn": 15,
+            "WinRows": 95,
+            "LossRows": 47,
+            "WinGames": 9,
+            "LossGames": 6,
+            "Pairs": 47
+          },
+          {
+            "Matchup": 47,
+            "Turn": 16,
+            "WinRows": 53,
+            "LossRows": 47,
+            "WinGames": 8,
+            "LossGames": 6,
+            "Pairs": 47
+          },
+          {
+            "Matchup": 47,
+            "Turn": 17,
+            "WinRows": 83,
+            "LossRows": 43,
+            "WinGames": 8,
+            "LossGames": 6,
+            "Pairs": 43
+          },
+          {
+            "Matchup": 47,
+            "Turn": 18,
+            "WinRows": 45,
+            "LossRows": 52,
+            "WinGames": 8,
+            "LossGames": 6,
+            "Pairs": 45
+          },
+          {
+            "Matchup": 47,
+            "Turn": 19,
+            "WinRows": 80,
+            "LossRows": 33,
+            "WinGames": 8,
+            "LossGames": 6,
+            "Pairs": 33
+          },
+          {
+            "Matchup": 47,
+            "Turn": 20,
+            "WinRows": 36,
+            "LossRows": 35,
+            "WinGames": 6,
+            "LossGames": 6,
+            "Pairs": 35
+          },
+          {
+            "Matchup": 47,
+            "Turn": 21,
+            "WinRows": 42,
+            "LossRows": 23,
+            "WinGames": 6,
+            "LossGames": 4,
+            "Pairs": 23
+          },
+          {
+            "Matchup": 47,
+            "Turn": 22,
+            "WinRows": 16,
+            "LossRows": 22,
+            "WinGames": 3,
+            "LossGames": 4,
+            "Pairs": 16
+          },
+          {
+            "Matchup": 47,
+            "Turn": 23,
+            "WinRows": 23,
+            "LossRows": 21,
+            "WinGames": 3,
+            "LossGames": 2,
+            "Pairs": 21
+          },
+          {
+            "Matchup": 47,
+            "Turn": 24,
+            "WinRows": 2,
+            "LossRows": 16,
+            "WinGames": 1,
+            "LossGames": 2,
+            "Pairs": 2
+          },
+          {
+            "Matchup": 47,
+            "Turn": 25,
+            "WinRows": 10,
+            "LossRows": 2,
+            "WinGames": 1,
+            "LossGames": 1,
+            "Pairs": 2
+          },
+          {
+            "Matchup": 68,
+            "Turn": 1,
+            "WinRows": 25,
+            "LossRows": 18,
+            "WinGames": 10,
+            "LossGames": 8,
+            "Pairs": 18
+          },
+          {
+            "Matchup": 68,
+            "Turn": 2,
+            "WinRows": 20,
+            "LossRows": 16,
+            "WinGames": 10,
+            "LossGames": 8,
+            "Pairs": 16
+          },
+          {
+            "Matchup": 68,
+            "Turn": 3,
+            "WinRows": 41,
+            "LossRows": 26,
+            "WinGames": 10,
+            "LossGames": 8,
+            "Pairs": 26
+          },
+          {
+            "Matchup": 68,
+            "Turn": 4,
+            "WinRows": 28,
+            "LossRows": 24,
+            "WinGames": 10,
+            "LossGames": 8,
+            "Pairs": 24
+          },
+          {
+            "Matchup": 68,
+            "Turn": 5,
+            "WinRows": 34,
+            "LossRows": 29,
+            "WinGames": 10,
+            "LossGames": 8,
+            "Pairs": 29
+          },
+          {
+            "Matchup": 68,
+            "Turn": 6,
+            "WinRows": 20,
+            "LossRows": 43,
+            "WinGames": 10,
+            "LossGames": 8,
+            "Pairs": 20
+          },
+          {
+            "Matchup": 68,
+            "Turn": 7,
+            "WinRows": 51,
+            "LossRows": 34,
+            "WinGames": 10,
+            "LossGames": 8,
+            "Pairs": 34
+          },
+          {
+            "Matchup": 68,
+            "Turn": 8,
+            "WinRows": 31,
+            "LossRows": 51,
+            "WinGames": 10,
+            "LossGames": 8,
+            "Pairs": 31
+          },
+          {
+            "Matchup": 68,
+            "Turn": 9,
+            "WinRows": 46,
+            "LossRows": 41,
+            "WinGames": 10,
+            "LossGames": 8,
+            "Pairs": 41
+          },
+          {
+            "Matchup": 68,
+            "Turn": 10,
+            "WinRows": 49,
+            "LossRows": 67,
+            "WinGames": 10,
+            "LossGames": 8,
+            "Pairs": 49
+          },
+          {
+            "Matchup": 68,
+            "Turn": 11,
+            "WinRows": 77,
+            "LossRows": 39,
+            "WinGames": 10,
+            "LossGames": 8,
+            "Pairs": 39
+          },
+          {
+            "Matchup": 68,
+            "Turn": 12,
+            "WinRows": 67,
+            "LossRows": 62,
+            "WinGames": 10,
+            "LossGames": 8,
+            "Pairs": 62
+          },
+          {
+            "Matchup": 68,
+            "Turn": 13,
+            "WinRows": 92,
+            "LossRows": 48,
+            "WinGames": 10,
+            "LossGames": 7,
+            "Pairs": 48
+          },
+          {
+            "Matchup": 68,
+            "Turn": 14,
+            "WinRows": 78,
+            "LossRows": 69,
+            "WinGames": 10,
+            "LossGames": 7,
+            "Pairs": 69
+          },
+          {
+            "Matchup": 68,
+            "Turn": 15,
+            "WinRows": 84,
+            "LossRows": 35,
+            "WinGames": 10,
+            "LossGames": 7,
+            "Pairs": 35
+          },
+          {
+            "Matchup": 68,
+            "Turn": 16,
+            "WinRows": 65,
+            "LossRows": 71,
+            "WinGames": 10,
+            "LossGames": 7,
+            "Pairs": 65
+          },
+          {
+            "Matchup": 68,
+            "Turn": 17,
+            "WinRows": 73,
+            "LossRows": 39,
+            "WinGames": 10,
+            "LossGames": 7,
+            "Pairs": 39
+          },
+          {
+            "Matchup": 68,
+            "Turn": 18,
+            "WinRows": 76,
+            "LossRows": 65,
+            "WinGames": 9,
+            "LossGames": 7,
+            "Pairs": 65
+          },
+          {
+            "Matchup": 68,
+            "Turn": 19,
+            "WinRows": 68,
+            "LossRows": 36,
+            "WinGames": 9,
+            "LossGames": 5,
+            "Pairs": 36
+          },
+          {
+            "Matchup": 68,
+            "Turn": 20,
+            "WinRows": 54,
+            "LossRows": 38,
+            "WinGames": 8,
+            "LossGames": 5,
+            "Pairs": 38
+          },
+          {
+            "Matchup": 68,
+            "Turn": 21,
+            "WinRows": 59,
+            "LossRows": 18,
+            "WinGames": 8,
+            "LossGames": 4,
+            "Pairs": 18
+          },
+          {
+            "Matchup": 68,
+            "Turn": 22,
+            "WinRows": 29,
+            "LossRows": 35,
+            "WinGames": 5,
+            "LossGames": 4,
+            "Pairs": 29
+          },
+          {
+            "Matchup": 68,
+            "Turn": 23,
+            "WinRows": 30,
+            "LossRows": 5,
+            "WinGames": 5,
+            "LossGames": 2,
+            "Pairs": 5
+          },
+          {
+            "Matchup": 68,
+            "Turn": 24,
+            "WinRows": 15,
+            "LossRows": 17,
+            "WinGames": 4,
+            "LossGames": 2,
+            "Pairs": 15
+          },
+          {
+            "Matchup": 68,
+            "Turn": 25,
+            "WinRows": 33,
+            "LossRows": 5,
+            "WinGames": 4,
+            "LossGames": 1,
+            "Pairs": 5
+          },
+          {
+            "Matchup": 68,
+            "Turn": 26,
+            "WinRows": 13,
+            "LossRows": 15,
+            "WinGames": 3,
+            "LossGames": 1,
+            "Pairs": 13
+          },
+          {
+            "Matchup": 68,
+            "Turn": 27,
+            "WinRows": 14,
+            "LossRows": 3,
+            "WinGames": 3,
+            "LossGames": 1,
+            "Pairs": 3
+          },
+          {
+            "Matchup": 68,
+            "Turn": 28,
+            "WinRows": 2,
+            "LossRows": 7,
+            "WinGames": 1,
+            "LossGames": 1,
+            "Pairs": 2
+          },
+          {
+            "Matchup": 68,
+            "Turn": 29,
+            "WinRows": 4,
+            "LossRows": 0,
+            "WinGames": 1,
+            "LossGames": 0,
+            "Pairs": 0
+          },
+          {
+            "Matchup": 68,
+            "Turn": 30,
+            "WinRows": 2,
+            "LossRows": 0,
+            "WinGames": 1,
+            "LossGames": 0,
+            "Pairs": 0
+          },
+          {
+            "Matchup": 68,
+            "Turn": 31,
+            "WinRows": 9,
+            "LossRows": 0,
+            "WinGames": 1,
+            "LossGames": 0,
+            "Pairs": 0
+          },
+          {
+            "Matchup": 68,
+            "Turn": 32,
+            "WinRows": 2,
+            "LossRows": 0,
+            "WinGames": 1,
+            "LossGames": 0,
+            "Pairs": 0
+          },
+          {
+            "Matchup": 68,
+            "Turn": 33,
+            "WinRows": 6,
+            "LossRows": 0,
+            "WinGames": 1,
+            "LossGames": 0,
+            "Pairs": 0
+          }
+        ],
+        "ComparableCells": 118,
+        "RowsInComparableCells": 8395,
+        "DeterministicPairs": 2495,
+        "PairedRows": 4990,
+        "UnpairedRows": 3467
+      },
+      "Validation": {
+        "Rows": 3283,
+        "DistinctGames": 24,
+        "Cells": [
+          {
+            "Matchup": 1,
+            "Turn": 1,
+            "WinRows": 6,
+            "LossRows": 6,
+            "WinGames": 3,
+            "LossGames": 3,
+            "Pairs": 6
+          },
+          {
+            "Matchup": 1,
+            "Turn": 2,
+            "WinRows": 5,
+            "LossRows": 6,
+            "WinGames": 3,
+            "LossGames": 3,
+            "Pairs": 5
+          },
+          {
+            "Matchup": 1,
+            "Turn": 3,
+            "WinRows": 8,
+            "LossRows": 9,
+            "WinGames": 3,
+            "LossGames": 3,
+            "Pairs": 8
+          },
+          {
+            "Matchup": 1,
+            "Turn": 4,
+            "WinRows": 9,
+            "LossRows": 10,
+            "WinGames": 3,
+            "LossGames": 3,
+            "Pairs": 9
+          },
+          {
+            "Matchup": 1,
+            "Turn": 5,
+            "WinRows": 6,
+            "LossRows": 8,
+            "WinGames": 3,
+            "LossGames": 3,
+            "Pairs": 6
+          },
+          {
+            "Matchup": 1,
+            "Turn": 6,
+            "WinRows": 9,
+            "LossRows": 5,
+            "WinGames": 3,
+            "LossGames": 3,
+            "Pairs": 5
+          },
+          {
+            "Matchup": 1,
+            "Turn": 7,
+            "WinRows": 9,
+            "LossRows": 7,
+            "WinGames": 3,
+            "LossGames": 3,
+            "Pairs": 7
+          },
+          {
+            "Matchup": 1,
+            "Turn": 8,
+            "WinRows": 7,
+            "LossRows": 10,
+            "WinGames": 3,
+            "LossGames": 3,
+            "Pairs": 7
+          },
+          {
+            "Matchup": 1,
+            "Turn": 9,
+            "WinRows": 10,
+            "LossRows": 10,
+            "WinGames": 3,
+            "LossGames": 3,
+            "Pairs": 10
+          },
+          {
+            "Matchup": 1,
+            "Turn": 10,
+            "WinRows": 11,
+            "LossRows": 12,
+            "WinGames": 3,
+            "LossGames": 3,
+            "Pairs": 11
+          },
+          {
+            "Matchup": 1,
+            "Turn": 11,
+            "WinRows": 21,
+            "LossRows": 19,
+            "WinGames": 3,
+            "LossGames": 3,
+            "Pairs": 19
+          },
+          {
+            "Matchup": 1,
+            "Turn": 12,
+            "WinRows": 6,
+            "LossRows": 19,
+            "WinGames": 3,
+            "LossGames": 3,
+            "Pairs": 6
+          },
+          {
+            "Matchup": 1,
+            "Turn": 13,
+            "WinRows": 29,
+            "LossRows": 20,
+            "WinGames": 3,
+            "LossGames": 3,
+            "Pairs": 20
+          },
+          {
+            "Matchup": 1,
+            "Turn": 14,
+            "WinRows": 10,
+            "LossRows": 15,
+            "WinGames": 3,
+            "LossGames": 3,
+            "Pairs": 10
+          },
+          {
+            "Matchup": 1,
+            "Turn": 15,
+            "WinRows": 21,
+            "LossRows": 27,
+            "WinGames": 3,
+            "LossGames": 3,
+            "Pairs": 21
+          },
+          {
+            "Matchup": 1,
+            "Turn": 16,
+            "WinRows": 4,
+            "LossRows": 18,
+            "WinGames": 1,
+            "LossGames": 3,
+            "Pairs": 4
+          },
+          {
+            "Matchup": 1,
+            "Turn": 17,
+            "WinRows": 10,
+            "LossRows": 24,
+            "WinGames": 1,
+            "LossGames": 3,
+            "Pairs": 10
+          },
+          {
+            "Matchup": 1,
+            "Turn": 18,
+            "WinRows": 4,
+            "LossRows": 13,
+            "WinGames": 1,
+            "LossGames": 3,
+            "Pairs": 4
+          },
+          {
+            "Matchup": 1,
+            "Turn": 19,
+            "WinRows": 5,
+            "LossRows": 19,
+            "WinGames": 1,
+            "LossGames": 3,
+            "Pairs": 5
+          },
+          {
+            "Matchup": 1,
+            "Turn": 20,
+            "WinRows": 10,
+            "LossRows": 37,
+            "WinGames": 1,
+            "LossGames": 3,
+            "Pairs": 10
+          },
+          {
+            "Matchup": 1,
+            "Turn": 21,
+            "WinRows": 8,
+            "LossRows": 14,
+            "WinGames": 1,
+            "LossGames": 3,
+            "Pairs": 8
+          },
+          {
+            "Matchup": 1,
+            "Turn": 22,
+            "WinRows": 11,
+            "LossRows": 23,
+            "WinGames": 1,
+            "LossGames": 3,
+            "Pairs": 11
+          },
+          {
+            "Matchup": 1,
+            "Turn": 23,
+            "WinRows": 3,
+            "LossRows": 17,
+            "WinGames": 1,
+            "LossGames": 3,
+            "Pairs": 3
+          },
+          {
+            "Matchup": 1,
+            "Turn": 24,
+            "WinRows": 16,
+            "LossRows": 17,
+            "WinGames": 1,
+            "LossGames": 3,
+            "Pairs": 16
+          },
+          {
+            "Matchup": 1,
+            "Turn": 25,
+            "WinRows": 2,
+            "LossRows": 13,
+            "WinGames": 1,
+            "LossGames": 3,
+            "Pairs": 2
+          },
+          {
+            "Matchup": 1,
+            "Turn": 26,
+            "WinRows": 11,
+            "LossRows": 21,
+            "WinGames": 1,
+            "LossGames": 3,
+            "Pairs": 11
+          },
+          {
+            "Matchup": 1,
+            "Turn": 27,
+            "WinRows": 9,
+            "LossRows": 11,
+            "WinGames": 1,
+            "LossGames": 3,
+            "Pairs": 9
+          },
+          {
+            "Matchup": 1,
+            "Turn": 28,
+            "WinRows": 8,
+            "LossRows": 34,
+            "WinGames": 1,
+            "LossGames": 3,
+            "Pairs": 8
+          },
+          {
+            "Matchup": 1,
+            "Turn": 29,
+            "WinRows": 9,
+            "LossRows": 13,
+            "WinGames": 1,
+            "LossGames": 3,
+            "Pairs": 9
+          },
+          {
+            "Matchup": 1,
+            "Turn": 30,
+            "WinRows": 2,
+            "LossRows": 28,
+            "WinGames": 1,
+            "LossGames": 3,
+            "Pairs": 2
+          },
+          {
+            "Matchup": 1,
+            "Turn": 31,
+            "WinRows": 0,
+            "LossRows": 7,
+            "WinGames": 0,
+            "LossGames": 2,
+            "Pairs": 0
+          },
+          {
+            "Matchup": 1,
+            "Turn": 32,
+            "WinRows": 0,
+            "LossRows": 27,
+            "WinGames": 0,
+            "LossGames": 2,
+            "Pairs": 0
+          },
+          {
+            "Matchup": 1,
+            "Turn": 33,
+            "WinRows": 0,
+            "LossRows": 3,
+            "WinGames": 0,
+            "LossGames": 2,
+            "Pairs": 0
+          },
+          {
+            "Matchup": 1,
+            "Turn": 34,
+            "WinRows": 0,
+            "LossRows": 11,
+            "WinGames": 0,
+            "LossGames": 2,
+            "Pairs": 0
+          },
+          {
+            "Matchup": 1,
+            "Turn": 35,
+            "WinRows": 0,
+            "LossRows": 1,
+            "WinGames": 0,
+            "LossGames": 1,
+            "Pairs": 0
+          },
+          {
+            "Matchup": 1,
+            "Turn": 36,
+            "WinRows": 0,
+            "LossRows": 8,
+            "WinGames": 0,
+            "LossGames": 1,
+            "Pairs": 0
+          },
+          {
+            "Matchup": 1,
+            "Turn": 37,
+            "WinRows": 0,
+            "LossRows": 5,
+            "WinGames": 0,
+            "LossGames": 1,
+            "Pairs": 0
+          },
+          {
+            "Matchup": 1,
+            "Turn": 38,
+            "WinRows": 0,
+            "LossRows": 8,
+            "WinGames": 0,
+            "LossGames": 1,
+            "Pairs": 0
+          },
+          {
+            "Matchup": 1,
+            "Turn": 39,
+            "WinRows": 0,
+            "LossRows": 3,
+            "WinGames": 0,
+            "LossGames": 1,
+            "Pairs": 0
+          },
+          {
+            "Matchup": 1,
+            "Turn": 40,
+            "WinRows": 0,
+            "LossRows": 8,
+            "WinGames": 0,
+            "LossGames": 1,
+            "Pairs": 0
+          },
+          {
+            "Matchup": 1,
+            "Turn": 41,
+            "WinRows": 0,
+            "LossRows": 2,
+            "WinGames": 0,
+            "LossGames": 1,
+            "Pairs": 0
+          },
+          {
+            "Matchup": 1,
+            "Turn": 42,
+            "WinRows": 0,
+            "LossRows": 5,
+            "WinGames": 0,
+            "LossGames": 1,
+            "Pairs": 0
+          },
+          {
+            "Matchup": 22,
+            "Turn": 1,
+            "WinRows": 2,
+            "LossRows": 7,
+            "WinGames": 2,
+            "LossGames": 4,
+            "Pairs": 2
+          },
+          {
+            "Matchup": 22,
+            "Turn": 2,
+            "WinRows": 4,
+            "LossRows": 8,
+            "WinGames": 2,
+            "LossGames": 4,
+            "Pairs": 4
+          },
+          {
+            "Matchup": 22,
+            "Turn": 3,
+            "WinRows": 4,
+            "LossRows": 16,
+            "WinGames": 2,
+            "LossGames": 4,
+            "Pairs": 4
+          },
+          {
+            "Matchup": 22,
+            "Turn": 4,
+            "WinRows": 6,
+            "LossRows": 12,
+            "WinGames": 2,
+            "LossGames": 4,
+            "Pairs": 6
+          },
+          {
+            "Matchup": 22,
+            "Turn": 5,
+            "WinRows": 5,
+            "LossRows": 10,
+            "WinGames": 2,
+            "LossGames": 4,
+            "Pairs": 5
+          },
+          {
+            "Matchup": 22,
+            "Turn": 6,
+            "WinRows": 6,
+            "LossRows": 10,
+            "WinGames": 2,
+            "LossGames": 4,
+            "Pairs": 6
+          },
+          {
+            "Matchup": 22,
+            "Turn": 7,
+            "WinRows": 3,
+            "LossRows": 13,
+            "WinGames": 2,
+            "LossGames": 4,
+            "Pairs": 3
+          },
+          {
+            "Matchup": 22,
+            "Turn": 8,
+            "WinRows": 8,
+            "LossRows": 23,
+            "WinGames": 2,
+            "LossGames": 4,
+            "Pairs": 8
+          },
+          {
+            "Matchup": 22,
+            "Turn": 9,
+            "WinRows": 4,
+            "LossRows": 15,
+            "WinGames": 2,
+            "LossGames": 4,
+            "Pairs": 4
+          },
+          {
+            "Matchup": 22,
+            "Turn": 10,
+            "WinRows": 6,
+            "LossRows": 21,
+            "WinGames": 2,
+            "LossGames": 4,
+            "Pairs": 6
+          },
+          {
+            "Matchup": 22,
+            "Turn": 11,
+            "WinRows": 6,
+            "LossRows": 15,
+            "WinGames": 2,
+            "LossGames": 4,
+            "Pairs": 6
+          },
+          {
+            "Matchup": 22,
+            "Turn": 12,
+            "WinRows": 16,
+            "LossRows": 25,
+            "WinGames": 2,
+            "LossGames": 4,
+            "Pairs": 16
+          },
+          {
+            "Matchup": 22,
+            "Turn": 13,
+            "WinRows": 11,
+            "LossRows": 26,
+            "WinGames": 2,
+            "LossGames": 4,
+            "Pairs": 11
+          },
+          {
+            "Matchup": 22,
+            "Turn": 14,
+            "WinRows": 11,
+            "LossRows": 39,
+            "WinGames": 2,
+            "LossGames": 4,
+            "Pairs": 11
+          },
+          {
+            "Matchup": 22,
+            "Turn": 15,
+            "WinRows": 11,
+            "LossRows": 20,
+            "WinGames": 2,
+            "LossGames": 4,
+            "Pairs": 11
+          },
+          {
+            "Matchup": 22,
+            "Turn": 16,
+            "WinRows": 11,
+            "LossRows": 28,
+            "WinGames": 2,
+            "LossGames": 4,
+            "Pairs": 11
+          },
+          {
+            "Matchup": 22,
+            "Turn": 17,
+            "WinRows": 14,
+            "LossRows": 20,
+            "WinGames": 2,
+            "LossGames": 4,
+            "Pairs": 14
+          },
+          {
+            "Matchup": 22,
+            "Turn": 18,
+            "WinRows": 14,
+            "LossRows": 34,
+            "WinGames": 2,
+            "LossGames": 4,
+            "Pairs": 14
+          },
+          {
+            "Matchup": 22,
+            "Turn": 19,
+            "WinRows": 13,
+            "LossRows": 49,
+            "WinGames": 2,
+            "LossGames": 4,
+            "Pairs": 13
+          },
+          {
+            "Matchup": 22,
+            "Turn": 20,
+            "WinRows": 9,
+            "LossRows": 39,
+            "WinGames": 2,
+            "LossGames": 4,
+            "Pairs": 9
+          },
+          {
+            "Matchup": 22,
+            "Turn": 21,
+            "WinRows": 22,
+            "LossRows": 30,
+            "WinGames": 2,
+            "LossGames": 4,
+            "Pairs": 22
+          },
+          {
+            "Matchup": 22,
+            "Turn": 22,
+            "WinRows": 17,
+            "LossRows": 40,
+            "WinGames": 2,
+            "LossGames": 4,
+            "Pairs": 17
+          },
+          {
+            "Matchup": 22,
+            "Turn": 23,
+            "WinRows": 13,
+            "LossRows": 25,
+            "WinGames": 2,
+            "LossGames": 3,
+            "Pairs": 13
+          },
+          {
+            "Matchup": 22,
+            "Turn": 24,
+            "WinRows": 13,
+            "LossRows": 14,
+            "WinGames": 2,
+            "LossGames": 3,
+            "Pairs": 13
+          },
+          {
+            "Matchup": 22,
+            "Turn": 25,
+            "WinRows": 13,
+            "LossRows": 10,
+            "WinGames": 2,
+            "LossGames": 2,
+            "Pairs": 10
+          },
+          {
+            "Matchup": 22,
+            "Turn": 26,
+            "WinRows": 9,
+            "LossRows": 9,
+            "WinGames": 2,
+            "LossGames": 2,
+            "Pairs": 9
+          },
+          {
+            "Matchup": 22,
+            "Turn": 27,
+            "WinRows": 16,
+            "LossRows": 18,
+            "WinGames": 2,
+            "LossGames": 2,
+            "Pairs": 16
+          },
+          {
+            "Matchup": 22,
+            "Turn": 28,
+            "WinRows": 6,
+            "LossRows": 10,
+            "WinGames": 2,
+            "LossGames": 2,
+            "Pairs": 6
+          },
+          {
+            "Matchup": 22,
+            "Turn": 29,
+            "WinRows": 26,
+            "LossRows": 11,
+            "WinGames": 2,
+            "LossGames": 2,
+            "Pairs": 11
+          },
+          {
+            "Matchup": 22,
+            "Turn": 30,
+            "WinRows": 6,
+            "LossRows": 12,
+            "WinGames": 2,
+            "LossGames": 2,
+            "Pairs": 6
+          },
+          {
+            "Matchup": 22,
+            "Turn": 31,
+            "WinRows": 21,
+            "LossRows": 20,
+            "WinGames": 2,
+            "LossGames": 2,
+            "Pairs": 20
+          },
+          {
+            "Matchup": 22,
+            "Turn": 32,
+            "WinRows": 3,
+            "LossRows": 12,
+            "WinGames": 1,
+            "LossGames": 2,
+            "Pairs": 3
+          },
+          {
+            "Matchup": 22,
+            "Turn": 33,
+            "WinRows": 8,
+            "LossRows": 9,
+            "WinGames": 1,
+            "LossGames": 2,
+            "Pairs": 8
+          },
+          {
+            "Matchup": 22,
+            "Turn": 34,
+            "WinRows": 0,
+            "LossRows": 16,
+            "WinGames": 0,
+            "LossGames": 2,
+            "Pairs": 0
+          },
+          {
+            "Matchup": 22,
+            "Turn": 35,
+            "WinRows": 0,
+            "LossRows": 5,
+            "WinGames": 0,
+            "LossGames": 2,
+            "Pairs": 0
+          },
+          {
+            "Matchup": 22,
+            "Turn": 36,
+            "WinRows": 0,
+            "LossRows": 8,
+            "WinGames": 0,
+            "LossGames": 2,
+            "Pairs": 0
+          },
+          {
+            "Matchup": 22,
+            "Turn": 37,
+            "WinRows": 0,
+            "LossRows": 2,
+            "WinGames": 0,
+            "LossGames": 1,
+            "Pairs": 0
+          },
+          {
+            "Matchup": 22,
+            "Turn": 38,
+            "WinRows": 0,
+            "LossRows": 2,
+            "WinGames": 0,
+            "LossGames": 1,
+            "Pairs": 0
+          },
+          {
+            "Matchup": 22,
+            "Turn": 39,
+            "WinRows": 0,
+            "LossRows": 1,
+            "WinGames": 0,
+            "LossGames": 1,
+            "Pairs": 0
+          },
+          {
+            "Matchup": 22,
+            "Turn": 40,
+            "WinRows": 0,
+            "LossRows": 1,
+            "WinGames": 0,
+            "LossGames": 1,
+            "Pairs": 0
+          },
+          {
+            "Matchup": 22,
+            "Turn": 41,
+            "WinRows": 0,
+            "LossRows": 1,
+            "WinGames": 0,
+            "LossGames": 1,
+            "Pairs": 0
+          },
+          {
+            "Matchup": 22,
+            "Turn": 42,
+            "WinRows": 0,
+            "LossRows": 1,
+            "WinGames": 0,
+            "LossGames": 1,
+            "Pairs": 0
+          },
+          {
+            "Matchup": 22,
+            "Turn": 43,
+            "WinRows": 0,
+            "LossRows": 1,
+            "WinGames": 0,
+            "LossGames": 1,
+            "Pairs": 0
+          },
+          {
+            "Matchup": 22,
+            "Turn": 44,
+            "WinRows": 0,
+            "LossRows": 1,
+            "WinGames": 0,
+            "LossGames": 1,
+            "Pairs": 0
+          },
+          {
+            "Matchup": 47,
+            "Turn": 1,
+            "WinRows": 7,
+            "LossRows": 2,
+            "WinGames": 4,
+            "LossGames": 2,
+            "Pairs": 2
+          },
+          {
+            "Matchup": 47,
+            "Turn": 2,
+            "WinRows": 12,
+            "LossRows": 6,
+            "WinGames": 4,
+            "LossGames": 2,
+            "Pairs": 6
+          },
+          {
+            "Matchup": 47,
+            "Turn": 3,
+            "WinRows": 12,
+            "LossRows": 5,
+            "WinGames": 4,
+            "LossGames": 2,
+            "Pairs": 5
+          },
+          {
+            "Matchup": 47,
+            "Turn": 4,
+            "WinRows": 10,
+            "LossRows": 6,
+            "WinGames": 4,
+            "LossGames": 2,
+            "Pairs": 6
+          },
+          {
+            "Matchup": 47,
+            "Turn": 5,
+            "WinRows": 15,
+            "LossRows": 6,
+            "WinGames": 4,
+            "LossGames": 2,
+            "Pairs": 6
+          },
+          {
+            "Matchup": 47,
+            "Turn": 6,
+            "WinRows": 10,
+            "LossRows": 10,
+            "WinGames": 4,
+            "LossGames": 2,
+            "Pairs": 10
+          },
+          {
+            "Matchup": 47,
+            "Turn": 7,
+            "WinRows": 21,
+            "LossRows": 7,
+            "WinGames": 4,
+            "LossGames": 2,
+            "Pairs": 7
+          },
+          {
+            "Matchup": 47,
+            "Turn": 8,
+            "WinRows": 25,
+            "LossRows": 11,
+            "WinGames": 4,
+            "LossGames": 2,
+            "Pairs": 11
+          },
+          {
+            "Matchup": 47,
+            "Turn": 9,
+            "WinRows": 36,
+            "LossRows": 7,
+            "WinGames": 4,
+            "LossGames": 2,
+            "Pairs": 7
+          },
+          {
+            "Matchup": 47,
+            "Turn": 10,
+            "WinRows": 23,
+            "LossRows": 16,
+            "WinGames": 4,
+            "LossGames": 2,
+            "Pairs": 16
+          },
+          {
+            "Matchup": 47,
+            "Turn": 11,
+            "WinRows": 35,
+            "LossRows": 12,
+            "WinGames": 4,
+            "LossGames": 2,
+            "Pairs": 12
+          },
+          {
+            "Matchup": 47,
+            "Turn": 12,
+            "WinRows": 22,
+            "LossRows": 9,
+            "WinGames": 4,
+            "LossGames": 2,
+            "Pairs": 9
+          },
+          {
+            "Matchup": 47,
+            "Turn": 13,
+            "WinRows": 40,
+            "LossRows": 24,
+            "WinGames": 4,
+            "LossGames": 2,
+            "Pairs": 24
+          },
+          {
+            "Matchup": 47,
+            "Turn": 14,
+            "WinRows": 38,
+            "LossRows": 15,
+            "WinGames": 4,
+            "LossGames": 2,
+            "Pairs": 15
+          },
+          {
+            "Matchup": 47,
+            "Turn": 15,
+            "WinRows": 43,
+            "LossRows": 15,
+            "WinGames": 4,
+            "LossGames": 2,
+            "Pairs": 15
+          },
+          {
+            "Matchup": 47,
+            "Turn": 16,
+            "WinRows": 27,
+            "LossRows": 14,
+            "WinGames": 4,
+            "LossGames": 2,
+            "Pairs": 14
+          },
+          {
+            "Matchup": 47,
+            "Turn": 17,
+            "WinRows": 18,
+            "LossRows": 7,
+            "WinGames": 4,
+            "LossGames": 2,
+            "Pairs": 7
+          },
+          {
+            "Matchup": 47,
+            "Turn": 18,
+            "WinRows": 5,
+            "LossRows": 21,
+            "WinGames": 1,
+            "LossGames": 2,
+            "Pairs": 5
+          },
+          {
+            "Matchup": 47,
+            "Turn": 19,
+            "WinRows": 9,
+            "LossRows": 5,
+            "WinGames": 1,
+            "LossGames": 1,
+            "Pairs": 5
+          },
+          {
+            "Matchup": 47,
+            "Turn": 20,
+            "WinRows": 9,
+            "LossRows": 12,
+            "WinGames": 1,
+            "LossGames": 1,
+            "Pairs": 9
+          },
+          {
+            "Matchup": 47,
+            "Turn": 21,
+            "WinRows": 5,
+            "LossRows": 0,
+            "WinGames": 1,
+            "LossGames": 0,
+            "Pairs": 0
+          },
+          {
+            "Matchup": 68,
+            "Turn": 1,
+            "WinRows": 6,
+            "LossRows": 8,
+            "WinGames": 3,
+            "LossGames": 3,
+            "Pairs": 6
+          },
+          {
+            "Matchup": 68,
+            "Turn": 2,
+            "WinRows": 6,
+            "LossRows": 6,
+            "WinGames": 3,
+            "LossGames": 3,
+            "Pairs": 6
+          },
+          {
+            "Matchup": 68,
+            "Turn": 3,
+            "WinRows": 11,
+            "LossRows": 11,
+            "WinGames": 3,
+            "LossGames": 3,
+            "Pairs": 11
+          },
+          {
+            "Matchup": 68,
+            "Turn": 4,
+            "WinRows": 9,
+            "LossRows": 9,
+            "WinGames": 3,
+            "LossGames": 3,
+            "Pairs": 9
+          },
+          {
+            "Matchup": 68,
+            "Turn": 5,
+            "WinRows": 11,
+            "LossRows": 16,
+            "WinGames": 3,
+            "LossGames": 3,
+            "Pairs": 11
+          },
+          {
+            "Matchup": 68,
+            "Turn": 6,
+            "WinRows": 8,
+            "LossRows": 7,
+            "WinGames": 3,
+            "LossGames": 3,
+            "Pairs": 7
+          },
+          {
+            "Matchup": 68,
+            "Turn": 7,
+            "WinRows": 19,
+            "LossRows": 13,
+            "WinGames": 3,
+            "LossGames": 3,
+            "Pairs": 13
+          },
+          {
+            "Matchup": 68,
+            "Turn": 8,
+            "WinRows": 14,
+            "LossRows": 15,
+            "WinGames": 3,
+            "LossGames": 3,
+            "Pairs": 14
+          },
+          {
+            "Matchup": 68,
+            "Turn": 9,
+            "WinRows": 21,
+            "LossRows": 15,
+            "WinGames": 3,
+            "LossGames": 3,
+            "Pairs": 15
+          },
+          {
+            "Matchup": 68,
+            "Turn": 10,
+            "WinRows": 19,
+            "LossRows": 20,
+            "WinGames": 3,
+            "LossGames": 3,
+            "Pairs": 19
+          },
+          {
+            "Matchup": 68,
+            "Turn": 11,
+            "WinRows": 22,
+            "LossRows": 21,
+            "WinGames": 3,
+            "LossGames": 3,
+            "Pairs": 21
+          },
+          {
+            "Matchup": 68,
+            "Turn": 12,
+            "WinRows": 31,
+            "LossRows": 26,
+            "WinGames": 3,
+            "LossGames": 3,
+            "Pairs": 26
+          },
+          {
+            "Matchup": 68,
+            "Turn": 13,
+            "WinRows": 15,
+            "LossRows": 25,
+            "WinGames": 3,
+            "LossGames": 3,
+            "Pairs": 15
+          },
+          {
+            "Matchup": 68,
+            "Turn": 14,
+            "WinRows": 24,
+            "LossRows": 31,
+            "WinGames": 3,
+            "LossGames": 3,
+            "Pairs": 24
+          },
+          {
+            "Matchup": 68,
+            "Turn": 15,
+            "WinRows": 26,
+            "LossRows": 21,
+            "WinGames": 3,
+            "LossGames": 3,
+            "Pairs": 21
+          },
+          {
+            "Matchup": 68,
+            "Turn": 16,
+            "WinRows": 28,
+            "LossRows": 27,
+            "WinGames": 3,
+            "LossGames": 3,
+            "Pairs": 27
+          },
+          {
+            "Matchup": 68,
+            "Turn": 17,
+            "WinRows": 24,
+            "LossRows": 16,
+            "WinGames": 3,
+            "LossGames": 3,
+            "Pairs": 16
+          },
+          {
+            "Matchup": 68,
+            "Turn": 18,
+            "WinRows": 10,
+            "LossRows": 16,
+            "WinGames": 3,
+            "LossGames": 3,
+            "Pairs": 10
+          },
+          {
+            "Matchup": 68,
+            "Turn": 19,
+            "WinRows": 26,
+            "LossRows": 4,
+            "WinGames": 3,
+            "LossGames": 1,
+            "Pairs": 4
+          },
+          {
+            "Matchup": 68,
+            "Turn": 20,
+            "WinRows": 20,
+            "LossRows": 3,
+            "WinGames": 3,
+            "LossGames": 1,
+            "Pairs": 3
+          },
+          {
+            "Matchup": 68,
+            "Turn": 21,
+            "WinRows": 24,
+            "LossRows": 0,
+            "WinGames": 3,
+            "LossGames": 0,
+            "Pairs": 0
+          },
+          {
+            "Matchup": 68,
+            "Turn": 22,
+            "WinRows": 17,
+            "LossRows": 0,
+            "WinGames": 2,
+            "LossGames": 0,
+            "Pairs": 0
+          },
+          {
+            "Matchup": 68,
+            "Turn": 23,
+            "WinRows": 11,
+            "LossRows": 0,
+            "WinGames": 2,
+            "LossGames": 0,
+            "Pairs": 0
+          },
+          {
+            "Matchup": 68,
+            "Turn": 24,
+            "WinRows": 12,
+            "LossRows": 0,
+            "WinGames": 1,
+            "LossGames": 0,
+            "Pairs": 0
+          },
+          {
+            "Matchup": 68,
+            "Turn": 25,
+            "WinRows": 5,
+            "LossRows": 0,
+            "WinGames": 1,
+            "LossGames": 0,
+            "Pairs": 0
+          },
+          {
+            "Matchup": 68,
+            "Turn": 26,
+            "WinRows": 9,
+            "LossRows": 0,
+            "WinGames": 1,
+            "LossGames": 0,
+            "Pairs": 0
+          },
+          {
+            "Matchup": 68,
+            "Turn": 27,
+            "WinRows": 12,
+            "LossRows": 0,
+            "WinGames": 1,
+            "LossGames": 0,
+            "Pairs": 0
+          },
+          {
+            "Matchup": 68,
+            "Turn": 28,
+            "WinRows": 6,
+            "LossRows": 0,
+            "WinGames": 1,
+            "LossGames": 0,
+            "Pairs": 0
+          },
+          {
+            "Matchup": 68,
+            "Turn": 29,
+            "WinRows": 10,
+            "LossRows": 0,
+            "WinGames": 1,
+            "LossGames": 0,
+            "Pairs": 0
+          },
+          {
+            "Matchup": 68,
+            "Turn": 30,
+            "WinRows": 3,
+            "LossRows": 0,
+            "WinGames": 1,
+            "LossGames": 0,
+            "Pairs": 0
+          },
+          {
+            "Matchup": 68,
+            "Turn": 31,
+            "WinRows": 4,
+            "LossRows": 0,
+            "WinGames": 1,
+            "LossGames": 0,
+            "Pairs": 0
+          }
+        ],
+        "ComparableCells": 103,
+        "RowsInComparableCells": 3038,
+        "DeterministicPairs": 1049,
+        "PairedRows": 2098,
+        "UnpairedRows": 1185
+      },
+      "Spec": "matchup-turn-pair-coverage/v1",
+      "LostPairsBySplit": 203,
+      "ValidationPairsInTrainComparableCells": 1049,
+      "ValidationPairsOutsideTrainComparableCells": 0
+    },
+    "savedEpochWeights": 1,
+    "processedTrainingUnits": 8457,
+    "trainingUnit": "row",
+    "pairObjective": null,
+    "trainedAt": "2026-11-02 01:11:45"
+  },
+  "checks": "Exact input/model/split/plan/runtime binding, seed disjointness including all original attempts and prior external evaluation, all outcomes/attempts/traces/reasons and paired deltas recomputed."
+}

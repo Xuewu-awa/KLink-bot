@@ -8545,6 +8545,28 @@
         "Frozen source/model and strict simulator hashes unchanged; no tuning, retraining or checkpoint selection. Original holdout remains intact.",
         "No additional PvP rules or card certification and no overall completion percentage."
       ]
+    },
+    {
+      "id": "TRAINING/NNTrain/policy-match-evaluation-20261102",
+      "status": "partial",
+      "report": "out/audit/systematic-rules/policy-eval-20261102.json",
+      "report_sha256": "32759a285488a132815810b95ce6d5786c39fe0125cdb020f2839d78cf024c67",
+      "source_bindings": {
+        "tools/NNTrain/Program.cs": "af0872b2f91828bc5f3d443b49d8ee2a6aa3d0d4f193b8832a2aa467f85bfbf1",
+        "tools/NNTrain/PolicyMatchEvaluation.cs": "3a4985467122bcf2314ba59bcfddd4dd0fbae2526511417e70d11de35e866db6",
+        "out/audit/systematic-rules/policy-eval-verify-20261102.py": "431f7cbd8a6d79d046d8bd42b0082ffc7a38b6a08861c76a356d7e40648d3233",
+        ".gitattributes": "b5b15780b9b2f9584267fead553508076013115a31f42c04a8d94116be98f7c5"
+      },
+      "limitations": [
+        "Engineering smoke only: two corrected ordered-matchup seed pairs, left perspective only; no independent strength, calibrated probability, card certification or overall completion claim.",
+        "Existing NnPolicy enumerator is reused on a disposable reconstruction; it is not a certified complete legal-action mask. Production NnPolicy.Choose remains unchanged and is not promoted.",
+        "Training observations are Greedy before-decision states; one-ply afterstates under the model have distribution shift even though input and encoder contracts agree.",
+        "Original four treatment failures are preserved and excluded from paired wins, never called losses. Isolation amendment used two new seeds; not a blinded rerun of the initial comparison.",
+        "Wall limits are checked between synchronous calls and include replay/validation. Over-budget finished attempts remain inadmissible. Fingerprints are change detectors, not proof that all hidden VM state is equal.",
+        "Raw binary, model, complete trace/fingerprint results and quality manifests remain local with public SHA256 bindings. Original tool binary was not retained; initial attempts bind recorded tool hash and raw output, not final-source rerun. Corrected attempts bind the final tool binary.",
+        "Known terminal wins/losses override sigmoid estimates; invalid terminal winners, nonfinite or out-of-range scores reject the attempt. First-index choice policy remains fixed, not learned.",
+        "The two immutable plan files retain their original CRLF bytes via exact-path Git attributes; their pre-execution SHA256 is preserved in the repository."
+      ]
     }
   ]
 }
