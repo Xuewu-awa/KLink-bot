@@ -20,19 +20,22 @@ internal static class CloneProbeBenchmark
         string[] left, string[] right, ulong seed, List<ConfirmedRoot> prefix, MatchEngine reference)
     {
         var replayStates = new Dictionary<int,string>(); var cloneStates = new Dictionary<int,string>();
+        var reverseStates = new Dictionary<int,string>();
         var replay = IsolatedActionProbe.RunCore(db,vectors,left,right,seed,prefix,reference,new(),
             afterApply:(e,i)=>replayStates.Add(i,Successor(e)));
         var clone = CloneActionProbe.RunCore(db,vectors,left,right,seed,prefix,reference,new(),
             afterApply:(e,i)=>cloneStates.Add(i,Successor(e)));
-        var reverse = CloneActionProbe.RunCore(db,vectors,left,right,seed,prefix,reference,new(),reverse:true);
+        var reverse = CloneActionProbe.RunCore(db,vectors,left,right,seed,prefix,reference,new(),reverse:true,
+            afterApply:(e,i)=>reverseStates.Add(i,Successor(e)));
         if (replay.Errors.Count!=0 || clone.Errors.Count!=0 || reverse.Errors.Count!=0)
             return "batch_errors:"+JsonSerializer.Serialize(new {replay.Errors,CloneErrors=clone.Errors,ReverseErrors=reverse.Errors});
         if (JsonSerializer.Serialize(replay.Candidates)!=JsonSerializer.Serialize(clone.Candidates)
             || JsonSerializer.Serialize(clone.Candidates)!=JsonSerializer.Serialize(reverse.Candidates)) return "candidate_mismatch";
-        if (replayStates.Count!=replay.Candidates.Count || cloneStates.Count!=clone.Candidates.Count)
+        if (replayStates.Count!=replay.Candidates.Count || cloneStates.Count!=clone.Candidates.Count || reverseStates.Count!=reverse.Candidates.Count)
             return "root_successors_missing";
         foreach (var pair in replayStates)
-            if (!cloneStates.TryGetValue(pair.Key,out var value) || value!=pair.Value) return "successor_mismatch:"+pair.Key;
+            if (!cloneStates.TryGetValue(pair.Key,out var value) || value!=pair.Value
+                || !reverseStates.TryGetValue(pair.Key,out var reversed) || reversed!=pair.Value) return "successor_mismatch:"+pair.Key;
         return null;
     }
 
@@ -60,6 +63,7 @@ internal static class CloneProbeBenchmark
             chooseOnePolicy:OracleChooseOnePolicy.Last);
         if(teacher.Labels.Count!=steps || teacher.Errors.Any(e=>e is not ("episode_buffer_limit" or "unfinished")))
             throw new InvalidDataException("Teacher prefix unavailable: "+string.Join(',',teacher.Errors));
+        var profile=new CloneProbeProfile();
         var reference=new MatchEngine(db,left,right,seed);
         using var choices=new ChoicePolicyAdapter(reference,vectors,r=>r.Options.Count==0 && r.CanCancel ? -1 : 0);
         reference.Start(); var prefix=new List<ConfirmedRoot>(); var rows=new List<object>();
@@ -79,6 +83,9 @@ internal static class CloneProbeBenchmark
             var clone=CloneActionProbe.Run(db,vectors,left,right,seed,prefix,reference);
             determinate+=clone.Candidates.Count(c=>c.Status!=SimulatorExecutability.Unknown);
             unknown+=clone.Candidates.Count(c=>c.Status==SimulatorExecutability.Unknown);
+            // Profiling is a separate run: instrumentation is excluded from timed comparisons.
+            var profiled=CloneActionProbe.RunCore(db,vectors,left,right,seed,prefix,reference,new(),profile:profile);
+            if(JsonSerializer.Serialize(profiled)!=JsonSerializer.Serialize(clone))throw new InvalidDataException("Profiling changed report");
             double rm=0,cm=0; long rb=0,cb=0;
             for(int i=0;i<repeats;i++)
             {
@@ -100,6 +107,10 @@ internal static class CloneProbeBenchmark
         var report=new {scope="Bounded engineering fixtures; equal Unknown is not semantic coverage; no default change or PvP certification.",
             replayContract=IsolatedActionProbe.Contract,cloneContract=CloneActionProbe.Contract,
             seed,leftDeck=leftName,rightDeck=rightName,steps,repeats,vectors="empty execution-only map",
+            runtime=System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription,
+            architecture=System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture.ToString(),
+            profileScope="one separate clone run per prefix; total includes stages; comparison includes comparison.state/request; unlisted work remains in total; elapsed/allocated, not peak memory",
+            cloneProfile=profile.Samples,
             mismatches,determinate,unknown,replayMs,cloneMs,replayBytes,cloneBytes,rows};
         File.WriteAllText(output,JsonSerializer.Serialize(report,new JsonSerializerOptions{WriteIndented=true}));
         Console.WriteLine($"Clone comparison: mismatches={mismatches}, determinate={determinate}, unknown={unknown}; replay={replayMs:F1}ms/{replayBytes}B clone={cloneMs:F1}ms/{cloneBytes}B");

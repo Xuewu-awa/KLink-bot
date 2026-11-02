@@ -7,6 +7,30 @@ using KLink.Bot.Training;
 namespace KLink.Bot.Sim;
 internal static partial class SelfTest
 {
+    private static string? CloneProbeProfileIsObservational(CardDatabase db)
+    {
+        var (engine,deck,prefix)=ProbeFixture(db,2); var vectors=new StateEncoder.CardVecs();
+        foreach(bool fault in new[]{false,true})
+        {
+            Action<MatchEngine,int>? hook=fault ? (e,i)=>throw new InvalidOperationException("profile fixture") : null;
+            var plain=CloneActionProbe.RunCore(db,vectors,deck,deck,1,prefix,engine,new(),afterApply:hook);
+            var profile=new CloneProbeProfile();
+            var measured=CloneActionProbe.RunCore(db,vectors,deck,deck,1,prefix,engine,new(),afterApply:hook,profile:profile);
+            if(JsonSerializer.Serialize(plain)!=JsonSerializer.Serialize(measured))return "profiling changed outcomes";
+            var samples=profile.Samples;
+            if(samples["total"].Count!=1 || samples["baseline_replay"].Count!=1
+                || samples["engine_clone"].Count!=measured.ClonesCreated
+                || samples["comparison"].Count!=measured.Candidates.Count
+                || samples["root_execution"].Count!=measured.Candidates.Count
+                || samples["evidence"].Count!=measured.Candidates.Count
+                || samples.Values.Any(v=>v.Milliseconds<0 || v.AllocatedBytes<0))return "profiling count/unwind";
+        }
+        var limited=new CloneProbeProfile();
+        var rejected=CloneActionProbe.RunCore(db,vectors,deck,deck,1,prefix,engine,new(MaxCandidates:1),profile:limited);
+        return rejected.Errors.Contains("probe_work_limit") && limited.Samples["total"].Count==1
+            && !limited.Samples.ContainsKey("baseline_replay") ? null : "early exit profiling";
+    }
+
     private static string? CloneProbeReplayEquivalence(CardDatabase db)
     {
         var (engine,deck,prefix)=ProbeFixture(db); var vectors=new StateEncoder.CardVecs();

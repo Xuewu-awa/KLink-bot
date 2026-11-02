@@ -477,3 +477,80 @@ ChoicePolicyAdapter and the replay probe by the primary agent; it did not implem
 or publish changes. This engineering batch does not update PvP certification or the
 audit completion denominator. Next: broaden prefixes and profile the remaining
 snapshot/query/copy allocations before selecting any faster default.
+
+### Longer prefixes and stage profiling (2026-11-02)
+
+The comparison now also checks every reversed-clone root successor against replay,
+not just reversed classifications. Four fixtures cover 80 prefixes (lengths 0–15
+in three runs and 0–31 in the fourth), using three deck pairs and two seeds. Each
+candidate must reach the root observer in all three traversal paths. Reports with
+batch errors, missing successors or mismatches fail validation.
+
+| Fixture / seed / prefixes | Candidates | Unknown | Replay / clone ms | Replay / clone allocated bytes |
+|---|---:|---:|---:|---:|
+| Arado / 1 / 16 | 754 | 0 | 3937.7 / 3063.2 | 6,984,595,648 / 4,918,637,048 |
+| 英日–日澳快攻 / 1 / 16 | 860 | 45 | 11639.4 / 10181.6 | 14,845,964,752 / 10,703,612,688 |
+| 德芬车–苏澳中速 / 2 / 16 | 818 | 1 | 5813.4 / 3665.6 | 9,025,339,624 / 5,416,632,440 |
+| Arado / 2 / 32 | 2114 | 0 | 13979.0 / 9781.8 | 24,877,611,768 / 14,082,420,912 |
+
+These are totals over three timed repetitions, with separate warmup and validation,
+on .NET 10.0.12 x64 and empty execution-only card vectors. Across 4,546 candidate
+comparisons there were zero classification or observed-successor mismatches:
+1,477 Accepted, 3,023 Rejected, and 46 Unknown (37 choice-policy-dependent and nine
+unimplemented-call). Unknown remains unresolved. The longer Arado run overlaps
+earlier prefixes; these are fixture comparisons, not unique game situations or
+additional PvP certification. Equal observed successors do not establish equality
+of every private field. Timings vary; measured elapsed reductions were 12.5–36.9%
+and allocated-byte reductions 27.9–43.4%. No default execution path changed.
+
+`CloneProbeProfile` is internal, single-thread instrumentation. One separate
+profiled clone run per prefix must produce exactly the same report as the normal
+run; its overhead is excluded from the timed comparison. It records stage counts,
+elapsed time and current-thread allocated bytes. `total` includes all scopes;
+`comparison` includes `comparison.state` and `comparison.request`. These parent and
+child values must not be summed together. Unlisted work remains in total. Allocation
+counts are not retained or peak memory, and sampling instrumentation affects timings.
+
+The stage split changes the optimization priority according to workload:
+
+| Fixture | State/clock/trace comparison time | Candidate rebuild/JSON time | Engine clone time |
+|---|---:|---:|---:|
+| Arado 16 | 44.7% | 19.5% | 25.5% |
+| 英日–日澳快攻 16 | 24.2% | 7.7% | 58.9% |
+| 德芬车–苏澳中速 16 | 45.7% | 19.7% | 27.1% |
+| Arado 32 | 43.1% | 23.0% | 28.3% |
+
+Next, prototype a lower-allocation exact snapshot comparison behind the experimental
+probe, with the existing JSON comparison retained as the test oracle. It must
+preserve field coverage, list order, mismatch detection and reference-contamination
+checks. Measure snapshot construction versus serialization before selecting the
+implementation. For the 英日 fixture, separately split the graph-copy cost before
+changing clone ownership or sharing rules. Removing checks or switching defaults
+is not justified by this batch.
+
+The DeepSeek worker produced a source-only allocation/loop inventory in a private
+packet. The primary agent checked the repeated `DescribeCandidates`, feature-array,
+snapshot and serialization sites against source and measured their stage costs.
+The inventory's multiplicative candidate-rebuild cost is structural, not a measured
+claim that it dominates every deck. The worker made no source or publishing changes.
+
+Reproduce from the repository root with `dotnet run --project tools/BotSim -c Release
+-- probe-actions-clone`, adding the options below (run sequentially):
+
+```text
+--plain --steps 16 --repeats 3 --out out/audit/clone-profile-plain16-20261102.json
+--steps 16 --repeats 3 --out out/audit/clone-profile-meta16-20261102.json
+--deck-a 德芬车 --deck-b 苏澳中速 --seed 2 --steps 16 --repeats 3 --out out/audit/clone-profile-gersov16-20261102.json
+--plain --seed 2 --steps 32 --repeats 3 --out out/audit/clone-profile-plain32-seed2-20261102.json
+```
+
+Profiling regressions cover normal completion, injected root-observer exceptions
+and early budget exit, checking unchanged outcomes and scope unwinding. Validation
+uses a separate publishing snapshot excluding unrelated dirty probe edits and
+preserving unchanged checkout data bytes as described above. This batch changes
+engineering diagnostics only; audit matrix scopes and completion estimates remain
+unchanged.
+
+All 1,089 BotSim selftests and nine NNTrain policy evaluation selftests passed in
+that snapshot; the four targeted CloneActionProbe cases also passed. Existing
+NNTrain CS8632 warnings remain.

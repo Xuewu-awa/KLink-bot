@@ -20,6 +20,7 @@ internal static partial class SelfTest
 
     private static readonly List<Case> Cases = new()
     {
+        new("CloneActionProbe: profiling preserves outcomes and unwinds", CloneProbeProfileIsObservational),
         new("CloneActionProbe: replay successor equivalence and owned selectors", CloneProbeReplayEquivalence),
         new("CloneActionProbe: branch isolation faults choices and idle gate", CloneProbeIsolationAndFailures),
         new("CloneActionProbe: budgets prefix failure and reference invalidation", CloneProbeLimitsAndInvalidation),

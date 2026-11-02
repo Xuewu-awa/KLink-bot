@@ -34,8 +34,9 @@ public static class CloneActionProbe
         IReadOnlyList<string> left, IReadOnlyList<string> right, ulong seed,
         IReadOnlyList<ConfirmedRoot> prefix, MatchEngine reference, ActionProbeLimits limits,
         Action<MatchEngine,int>? afterRebuild = null, Action<MatchEngine,int>? afterApply = null,
-        bool reverse = false, Action<MatchEngine>? afterBaseline = null)
+        bool reverse = false, Action<MatchEngine>? afterBaseline = null, CloneProbeProfile? profile = null)
     {
+        using var totalProfile = profile?.Measure("total");
         if (limits.MaxCandidates <= 0 || limits.MaxPrefixRoots < 0 || limits.MaxTotalPrefixRoots < 0)
             throw new ArgumentOutOfRangeException(nameof(limits));
         var results = new List<CandidateExecutionProbe>(); var errors = new List<string>();
@@ -66,7 +67,9 @@ public static class CloneActionProbe
             var initialHealth = Health(reference);
             if (initialHealth is not null) { errors.Add("reference_"+initialHealth); return Report(); }
             var actor = reference.State.ActiveSide;
-            var request = new MainActionPolicyAdapter(reference,vectors).DescribeCandidates(actor);
+            MainActionRequest request;
+            using (profile?.Measure("reference_request"))
+                request = new MainActionPolicyAdapter(reference,vectors).DescribeCandidates(actor);
             if (!request.Observation.All(float.IsFinite) || request.Candidates.Any(c=>!c.Features.All(float.IsFinite)))
             { errors.Add("nonfinite_request"); return Report(); }
             string expectedRequest = JsonSerializer.Serialize(request), snapshot = reference.State.SnapshotJson(),
@@ -79,20 +82,24 @@ public static class CloneActionProbe
             // Never detach a selector from the caller's reference. Own this replay and
             // dispose only its adapter before the idle clone boundary. The fixed policy
             // ignores Sequence; arbitrary stateful policies are deliberately unsupported.
-            var baseline = new MatchEngine(database,leftDeck,rightDeck,seed); engines++;
-            using (var baselineChoices = new ChoicePolicyAdapter(baseline,vectors,
-                r=>r.Options.Count==0 && r.CanCancel ? -1 : 0))
+            MatchEngine baseline;
+            using (profile?.Measure("baseline_replay"))
             {
-                baseline.Start();
-                string? failure = Health(baseline,baselineChoices);
-                foreach (var root in history)
+                baseline = new MatchEngine(database,leftDeck,rightDeck,seed); engines++;
+                using (var baselineChoices = new ChoicePolicyAdapter(baseline,vectors,
+                    r=>r.Options.Count==0 && r.CanCancel ? -1 : 0))
                 {
-                    if (failure is not null) break;
-                    roots++;
-                    if (!MainActionPolicyAdapter.ApplyRoot(baseline,root.Actor,root.Command)) failure = "prefix_rejected";
-                    failure ??= Health(baseline,baselineChoices);
+                    baseline.Start();
+                    string? failure = Health(baseline,baselineChoices);
+                    foreach (var root in history)
+                    {
+                        if (failure is not null) break;
+                        roots++;
+                        if (!MainActionPolicyAdapter.ApplyRoot(baseline,root.Actor,root.Command)) failure = "prefix_rejected";
+                        failure ??= Health(baseline,baselineChoices);
+                    }
+                    if (failure is not null) { errors.Add("baseline_"+failure); return Report(); }
                 }
-                if (failure is not null) { errors.Add("baseline_"+failure); return Report(); }
             }
             afterBaseline?.Invoke(baseline);
             var order = reverse ? request.Candidates.Reverse() : request.Candidates;
@@ -106,17 +113,28 @@ public static class CloneActionProbe
                 try
                 {
                     phase = "clone";
-                    probe = baseline.CloneAtIdle(); clones++;
+                    using (profile?.Measure("engine_clone"))
+                    { probe = baseline.CloneAtIdle(); clones++; }
                     choices = new ChoicePolicyAdapter(probe,vectors,r=>r.Options.Count==0 && r.CanCancel ? -1 : 0);
                     string? failure = Health(probe,choices);
                     if (failure is null)
                     {
+                        using var comparisonProfile = profile?.Measure("comparison");
                         phase = "comparison"; afterRebuild?.Invoke(probe,option.Index);
                         failure = Health(probe,choices);
-                        if (failure is null && (clock!=Clock(probe) || snapshot!=probe.State.SnapshotJson()
-                            || trace!=Trace(probe) || expectedRequest!=JsonSerializer.Serialize(
-                                new MainActionPolicyAdapter(probe,vectors).DescribeCandidates(actor))))
-                            failure = "prefix_mismatch";
+                        if (failure is null)
+                        {
+                            bool matches;
+                            using (profile?.Measure("comparison.state"))
+                                matches = clock==Clock(probe) && snapshot==probe.State.SnapshotJson() && trace==Trace(probe);
+                            if (matches)
+                            {
+                                using var requestProfile = profile?.Measure("comparison.request");
+                                matches = expectedRequest==JsonSerializer.Serialize(
+                                    new MainActionPolicyAdapter(probe,vectors).DescribeCandidates(actor));
+                            }
+                            if (!matches) failure = "prefix_mismatch";
+                        }
                     }
                     if (failure is not null) reason = failure;
                     else
@@ -127,7 +145,9 @@ public static class CloneActionProbe
                         faultsBefore = probe.Api.Vm.FaultedPrograms;
                         choiceFaultsBefore = choices.Faults; completedBefore = choices.CompletedChoices;
                         long completed = choices.CompletedChoices;
-                        bool accepted = MainActionPolicyAdapter.ApplyRoot(probe,actor,option.Command);
+                        bool accepted;
+                        using (profile?.Measure("root_execution"))
+                            accepted = MainActionPolicyAdapter.ApplyRoot(probe,actor,option.Command);
                         afterApply?.Invoke(probe,option.Index);
                         failure = Health(probe,choices);
                         // A root that required a nested policy answer is not a plain
@@ -144,6 +164,7 @@ public static class CloneActionProbe
                 {
                     if (probe is not null)
                     {
+                        using var evidenceProfile = profile?.Measure("evidence");
                         static IReadOnlyDictionary<string,int> Delta(IReadOnlyDictionary<string,int> after,
                             IReadOnlyDictionary<string,int> before, bool calls)
                             => new System.Collections.ObjectModel.ReadOnlyDictionary<string,int>(after
@@ -164,6 +185,7 @@ public static class CloneActionProbe
             }
             // Detect observable cross-instance contamination; do not silently use
             // earlier labels if the reference changed anywhere during the batch.
+            using var referenceCheckProfile = profile?.Measure("reference_check");
             if (clock!=Clock(reference) || snapshot!=reference.State.SnapshotJson() || trace!=Trace(reference)
                 || expectedRequest!=JsonSerializer.Serialize(new MainActionPolicyAdapter(reference,vectors).DescribeCandidates(actor))
                 || diagnostics!=Diagnostics(reference) || Health(reference) is not null)
