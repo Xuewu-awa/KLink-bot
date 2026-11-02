@@ -8,7 +8,7 @@ namespace KLink.Bot.Engine;
 /// 协议里的卡对象只有 5 个字段（card_id / is_gold / location / location_number / name），
 /// 其余全部是内核自己维护的运行时状态。
 /// </summary>
-public sealed class CardInstance
+public sealed partial class CardInstance
 {
     /// <summary>协议里的 cardID。左侧 HQ=1、首张牌=2 起；右侧 HQ=41、首张牌=42 起。</summary>
     public required int CardId { get; init; }
@@ -493,7 +493,7 @@ public sealed class CardInstance
     /// 建卡时由当前卡定义的 CDO 数组填充；完整卡池的两个触发数组
     /// 已通过只读客户端内存核查。
     /// </summary>
-    public HashSet<string> SuppressionExceptionTriggers { get; } = new(StringComparer.Ordinal);
+    public HashSet<string> SuppressionExceptionTriggers { get; private set; } = new(StringComparer.Ordinal);
 
     /// <summary>
     /// 被**抑制**时的回合号 —— **仅作诊断留痕**（2026-10-02 第三轮改写）。
@@ -623,7 +623,7 @@ public sealed class CardInstance
     // ---- 关键字 ----
     // Fury/Blitz here are raw members; use HasKeyword for effective
     // combat ability, which also includes the received source list.
-    public HashSet<string> Keywords { get; } = new(StringComparer.Ordinal);
+    public HashSet<string> Keywords { get; private set; } = new(StringComparer.Ordinal);
 
     /// <summary>自定义能力（对应子动作 ActionCustomAbilityAdd/Remove 与 CustomAbilityAdd 调用）。</summary>
     public string? CustomAbility
@@ -637,11 +637,11 @@ public sealed class CardInstance
     }
 
     /// <summary>Current pak's ability → ordered, unique source card IDs.</summary>
-    public Dictionary<string, List<int>> ReceivedAbilitiesFromCards { get; } = new(StringComparer.Ordinal);
+    public Dictionary<string, List<int>> ReceivedAbilitiesFromCards { get; private set; } = new(StringComparer.Ordinal);
     public Dictionary<string, List<int>>? SuppressStrippedAbilities { get; set; }
 
     /// <summary>Native GameplayTags removed from this instance's CDO container.</summary>
-    public HashSet<string> RemovedGameplayTags { get; } = new(StringComparer.OrdinalIgnoreCase);
+    public HashSet<string> RemovedGameplayTags { get; private set; } = new(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
     /// 蓝图的 `KreditsTax_AsEnemyTarget` —— **被敌方指定为目标时要多付的费用**。
@@ -663,17 +663,17 @@ public sealed class CardInstance
     public int KreditsTaxAsEnemyTarget { get; set; }
 
     /// <summary>卡牌私有 JSON 暂存（对应游戏里的 JSON_Get*/JSON_Set*/JSON_Clear 一族调用）。</summary>
-    public CardCustomJson CustomJson { get; } = new();
+    public CardCustomJson CustomJson { get; private set; } = new();
 
     /// <summary>
     /// Blueprint TSet members that must survive separate event/function VM
     /// frames.  Values remain object-typed because the generated IR omits the
     /// native element type (the gameplay member currently stores card refs).
     /// </summary>
-    public Dictionary<string, HashSet<object?>> BlueprintSets { get; } = new(StringComparer.Ordinal);
+    public Dictionary<string, HashSet<object?>> BlueprintSets { get; private set; } = new(StringComparer.Ordinal);
 
     /// <summary>InstanceVariable storage shared by separate Blueprint calls/events.</summary>
-    public Dictionary<string, object?> BlueprintVariables { get; } = new(StringComparer.Ordinal);
+    public Dictionary<string, object?> BlueprintVariables { get; private set; } = new(StringComparer.Ordinal);
 
     /// <summary>
     /// buff 记录：(来源卡, 是否临时) → 该来源施加的修正。
@@ -686,10 +686,10 @@ public sealed class CardInstance
     /// 蓝图里这是两笔独立的 buff（`AddBuffsToRemoveEndOfTurn` 登记的只是临时那一笔），
     /// 所以拆成两条。
     /// </summary>
-    public Dictionary<(int SourceCardId, bool Temporary), CardBuff> BuffsBySource { get; } = new();
+    public Dictionary<(int SourceCardId, bool Temporary), CardBuff> BuffsBySource { get; private set; } = new();
 
     /// <summary>Object-owned native +0x108 array; independent of JSON and current target enumeration.</summary>
-    public List<int> CardsBuffedByThisCard { get; } = new();
+    public List<int> CardsBuffedByThisCard { get; private set; } = new();
 
     /// <summary>
     /// Reflected public +0x70 field, independent of encrypted temporary attack
@@ -1134,7 +1134,7 @@ public sealed class CardInstance
 }
 
 /// <summary>某个来源施加在卡上的持续修正。</summary>
-public sealed class CardBuff
+public sealed partial class CardBuff
 {
     public int SourceCardId { get; init; }
     public int Attack { get; set; }
@@ -1210,7 +1210,8 @@ public sealed class CardBuff
     public int Pinned { get; set; }
     // customAdd stores a zero-valued type-5 entry. Presence, not its numeric
     // amount or the number of abilities, determines whether this record exists.
-    public HashSet<string> CustomAbilityDetails { get; init; } = new(StringComparer.Ordinal);
+    private HashSet<string> _customAbilityDetails = new(StringComparer.Ordinal);
+    public HashSet<string> CustomAbilityDetails { get => _customAbilityDetails; init => _customAbilityDetails = value; }
 
     /// <summary>
     /// Opaque handwritten absolute-offset compatibility flag. Known native
