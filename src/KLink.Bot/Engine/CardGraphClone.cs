@@ -3,8 +3,7 @@ namespace KLink.Bot.Engine;
 /// <summary>
 /// Copies the reachable card graph, preserving reference aliases and cycles.
 /// Catalog definitions are shared and must remain read-only. This is not an engine checkpoint.
-/// Collection contents and current enumeration order are copied; internal removed-entry
-/// slots are not. Subsequent remove/add enumeration may differ from the source.
+/// Reviewed .NET 10 x64 dictionary/set slots and free chains retain subsequent ordering.
 /// Unsupported payloads/comparers fail explicitly; no partial result is returned.
 /// </summary>
 public sealed class CardGraphClone
@@ -52,7 +51,7 @@ public sealed class CardGraphClone
             case CardCustomJson json:
                 var jsonCopy = new CardCustomJson();
                 _copies.Add(json, jsonCopy);
-                jsonCopy.CopyFrom(json);
+                json.CopyGraphTo(jsonCopy);
                 return jsonCopy;
             case List<int> list: return CopyList(list);
             case List<string> list: return CopyList(list);
@@ -82,7 +81,7 @@ public sealed class CardGraphClone
     private List<T> CopyList<T>(List<T> source)
     {
         CheckExactType<List<T>>(source);
-        var copy = new List<T>(source.Count);
+        var copy = new List<T>(source.Capacity);
         _copies.Add(source, copy);
         foreach (var item in source) copy.Add(Copy(item));
         return copy;
@@ -112,7 +111,7 @@ public sealed class CardGraphClone
         CheckComparer(source.Comparer);
         var copy = new HashSet<T>(source.Comparer);
         _copies.Add(source, copy);
-        foreach (var item in source) copy.Add(Copy(item));
+        CollectionSlotClone.Set(source, copy, Copy);
         return copy;
     }
 
@@ -120,9 +119,9 @@ public sealed class CardGraphClone
     {
         CheckExactType<Dictionary<TKey, TValue>>(source);
         CheckComparer(source.Comparer);
-        var copy = new Dictionary<TKey, TValue>(source.Count, source.Comparer);
+        var copy = new Dictionary<TKey, TValue>(source.Comparer);
         _copies.Add(source, copy);
-        foreach (var pair in source) copy.Add(Copy(pair.Key), Copy(pair.Value));
+        CollectionSlotClone.Dictionary(source, copy, Copy, Copy);
         return copy;
     }
 

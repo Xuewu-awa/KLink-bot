@@ -12,6 +12,14 @@ public sealed class CardCustomJson : IReadOnlyDictionary<string, string>
     private readonly Dictionary<string, string> _values = new(JsonKeyComparer.Instance);
     private readonly Dictionary<string, CardJsonType> _types = new(JsonKeyComparer.Instance);
 
+    // Ordinary CopyFrom has native merge semantics; graph copying must also
+    // preserve removed-entry slots for subsequent key replacement/insertion.
+    internal void CopyGraphTo(CardCustomJson target)
+    {
+        CollectionSlotClone.Dictionary(_values, target._values, static key => key, static value => value);
+        CollectionSlotClone.Dictionary(_types, target._types, static key => key, static value => value);
+    }
+
     public string this[string key]
     {
         get => _values[key];

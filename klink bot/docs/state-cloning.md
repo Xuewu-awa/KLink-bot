@@ -1,6 +1,6 @@
 # Exact state cloning for candidate evaluation
 
-Status: RNG clone and logical card-graph copy foundation only. Candidate evaluation
+Status: RNG and supported card-graph/container cloning foundation only. Candidate evaluation
 still constructs an independent engine and replays the committed action tape.
 No speedup is claimed by this work.
 
@@ -32,8 +32,9 @@ Reference-field dispositions:
   and CardsBuffedByThisCard: copied recursively through the same memo.
 - CardBuff's custom-ability details set: copied through that memo; every scalar
   retains its raw value, including zero-presence and nullable ledger metadata.
-- CardCustomJson's two private maps: rebuilt through CopyFrom, preserving native
-  ASCII key comparison, key spelling/order and separate JSON type tags.
+- CardCustomJson's two private maps: copied through the slot adapter, preserving
+  native ASCII key comparison, removed slots, spelling/order and separate type
+  tags. Ordinary CopyFrom retains its existing native merge behavior.
 
 Supported payloads are explicit in CardGraphClone.cs: boxed primitives/enums,
 strings, cards/buffs/JSON, the listed VM list/map/set/array types and ledger pairs.
@@ -47,25 +48,42 @@ arrays, source/copy isolation, suppression ledgers, raw private values, JSON tag
 comparers and unsupported payloads. Reflection-based test inventories require a
 review when reference fields or unfamiliar value-field types are added.
 
-Important remaining card-container boundary: rebuilding a Dictionary or HashSet
-retains current enumeration order but does not retain removed-entry slots. A later
-insertion may enumerate at a different position from the source. Capacity and
-enumerator version are also not copied. Therefore this logical graph copy is not
-yet an exact continuation contract and must not be used for candidate evaluation.
-Resolve and regression-test remove/add continuation (including identity-keyed
-containers), then validate actual persisted VM payloads before closing card cloning.
+Dictionary/HashSet continuation now uses the narrow CollectionSlotClone adapter.
+It preserves occupied/removed entry positions, encoded LIFO free chains, capacity,
+version and fast-mod metadata, detaches both mutable buffers, and rebuilds hash
+buckets from remapped keys without moving entries. The internal comparer is
+retained so string hash codes use the same runtime comparer. Cached dictionary
+key/value views are discarded because they capture their owner, then created
+lazily against the destination. Lists also retain capacity.
 
-Validation on 2026-11-02: 4 targeted CardGraphClone tests and the complete 1,063
-BotSim selftests passed; NNTrain policy-evaluation-selftest passed all 9 checks.
-A .NET 10 remove/insert probe reproduced the open ordering boundary for both
-Dictionary and HashSet: source `a,d,c`, rebuilt copy `a,c,d` after deleting `b`
-from `a,b,c` and then inserting `d`. DeepSeek supplied a read-only source inventory;
-the primary agent checked the field dispositions and implemented/reviewed the code.
+The adapter requires .NET 10 x64 and validates exact top-level and entry field
+names/types before use. Unknown layouts and invalid slot/free-chain metadata fail
+with NotSupportedException; there is no fallback to content-only copying. The
+installed .NET 10.0.12 layout was independently inventoried by DeepSeek and checked
+by the primary agent. This is intentionally a runtime-specific adapter, not a
+general reflective object copier or support for other runtime versions/AOT.
+Source state must be quiescent during copying. Active enumerators are not copied.
+Validate actual persisted VM payloads and complete the remaining engine boundaries
+before using cloning for candidate evaluation; no replay replacement is enabled.
+
+Validation on 2026-11-02: six targeted CardGraphClone cases cover the original
+graph checks plus 1,200 deterministic string/JSON mutation steps (three seeds),
+900 identity-keyed mutation steps (default and reference comparers), guaranteed
+colliding numeric keys under default equality, repeated cloning, cached views,
+growth, trim, clear, empty/all-removed states, null set elements and
+case-sensitive/insensitive comparers. The new continuation regression
+failed against the previous content-only implementation before the fix. The older
+standalone probe (`a,d,c` versus `a,c,d`) remains historical evidence of the bug.
+
+Final validation: all six targeted CardGraphClone cases passed, the complete
+BotSim selftest passed 1,065 cases, and NNTrain policy-evaluation-selftest passed
+all nine cases. These checks do not establish complete PvP rule coverage or an
+evaluation throughput improvement.
 
 ## Remaining implementation boundaries
 
-1. Card graph: logical copying above is implemented. Exact mutable-container
-   continuation and coverage of actual persisted VM payloads remain open.
+1. Card graph: supported container continuation above is implemented. Coverage
+   of actual persisted VM payloads remains open; unsupported values still fail.
 2. GameState: retain side/id indexes, battle order, HQ bindings, queues,
    histories, allocators, policies, RNG and admission diagnostics. Rebind callbacks
    to the destination engine. SnapshotJson is an observation format, not a restore

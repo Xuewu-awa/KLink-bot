@@ -176,6 +176,142 @@ internal static partial class SelfTest
 
     private sealed class CloneTestList : List<int> { }
 
+    private static string? CardGraphIdentityContainerContinuation(CardDatabase db)
+    {
+        foreach (bool referenceComparer in new[] { false, true })
+        {
+            var cards = Enumerable.Range(0, 70).Select(CloneTestCard).ToArray();
+            var root = cards[0];
+            IEqualityComparer<object> comparer = referenceComparer ? ReferenceEqualityComparer.Instance : EqualityComparer<object>.Default;
+            var map = new Dictionary<object, object?>(comparer);
+            var set = new HashSet<object?>(referenceComparer ? ReferenceEqualityComparer.Instance : EqualityComparer<object?>.Default);
+            root.BlueprintVariables["map"] = map;
+            root.BlueprintSets["set"] = set;
+            map[map] = set; set.Add(set); set.Add(null);
+            for (int i = 0; i < 45; i++) { map.Add(cards[i], cards[i]); set.Add(cards[i]); }
+            foreach (int i in new[] { 22, 5, 37, 2 }) { map.Remove(cards[i]); set.Remove(cards[i]); }
+            int capacity = map.EnsureCapacity(0);
+            set.EnsureCapacity(capacity);
+            // Default object equality uses each boxed int's value as hash: these
+            // seven distinct keys occupy the same bucket before remapping.
+            for (int i = 1; i <= 7; i++)
+            {
+                object collidingKey = i * capacity;
+                map[collidingKey] = cards[i]; set.Add(collidingKey);
+            }
+            var graph = CardGraphClone.Create(cards);
+            var target = graph.Cards[root];
+            var copiedMap = (Dictionary<object, object?>)target.BlueprintVariables["map"]!;
+            var copiedSet = target.BlueprintSets["set"];
+            object? Remap(object? item) => item is CardInstance card ? graph.Cards[card]
+                : ReferenceEquals(item, map) ? copiedMap : ReferenceEquals(item, set) ? copiedSet : item;
+            var rng = new Random(533);
+            for (int step = 0; step < 450; step++)
+            {
+                if (step == 0)
+                    for (int i = 1; i <= 7; i++)
+                    {
+                        object key = map.Keys.First(k => k is int number && number == i * capacity);
+                        if (!map.Remove(key) || !copiedMap.Remove(Remap(key)!)
+                            || !set.Remove(key) || !copiedSet.Remove(Remap(key))) return "collision-chain removal differs";
+                    }
+                var card = cards[rng.Next(cards.Length)];
+                var copy = graph.Cards[card];
+                if (rng.Next(3) == 0)
+                {
+                    if (map.Remove(card) != copiedMap.Remove(copy) || set.Remove(card) != copiedSet.Remove(copy))
+                        return $"remapped removal differs at {step}";
+                }
+                else { map[card] = card; copiedMap[copy] = copy; set.Add(card); copiedSet.Add(copy); }
+                if (step == 125) { map.EnsureCapacity(257); copiedMap.EnsureCapacity(257); set.EnsureCapacity(257); copiedSet.EnsureCapacity(257); }
+                if (step % 71 == 0) { map.TrimExcess(); copiedMap.TrimExcess(); set.TrimExcess(); copiedSet.TrimExcess(); }
+                if (!map.Keys.Select(Remap).SequenceEqual(copiedMap.Keys)
+                    || !map.Values.Select(Remap).SequenceEqual(copiedMap.Values)
+                    || !set.Select(Remap).SequenceEqual(copiedSet)
+                    || map.Any(p => !copiedMap.TryGetValue(Remap(p.Key)!, out var v) || !ReferenceEquals(v, Remap(p.Value)))
+                    || set.Any(p => !copiedSet.Contains(Remap(p))))
+                    return $"rehash, lookup or ordering differs at {step}";
+            }
+            copiedMap.Clear(); copiedSet.Clear();
+            if (map.Count == 0 || set.Count == 0) return "shared identity-container buffers";
+        }
+        // Exercise allocated-empty/all-removed/cleared containers and case folding.
+        foreach (var comparer in new IEqualityComparer<string>[] { EqualityComparer<string>.Default, StringComparer.Ordinal, StringComparer.OrdinalIgnoreCase })
+        for (int mode = 0; mode < 4; mode++)
+        {
+            var root = CloneTestCard(1);
+            var map = new Dictionary<string, object?>(comparer);
+            var set = new HashSet<string>(comparer);
+            root.BlueprintVariables["nested"] = map;
+            root.BlueprintVariables["set"] = set;
+            if (mode > 0) { map.EnsureCapacity(17); set.EnsureCapacity(17); }
+            if (mode > 1) { map["A"] = 1; set.Add("A"); map.Remove("A"); set.Remove("A"); }
+            if (mode > 2) { map.Clear(); set.Clear(); }
+            var copy = CardGraphClone.Create(new[] { root }).Roots[0];
+            var cm = (Dictionary<string, object?>)copy.BlueprintVariables["nested"]!;
+            var cs = (HashSet<string>)copy.BlueprintVariables["set"]!;
+            foreach (string key in new[] { "A", "a", "B", "b", "é", "É" })
+            { map[key] = key; cm[key] = key; set.Add(key); cs.Add(key); }
+            if (!map.SequenceEqual(cm) || !set.SequenceEqual(cs)) return "empty-container or comparer continuation differs";
+        }
+        return null;
+    }
+
+    private static string? CardGraphContainerContinuation(CardDatabase db)
+    {
+        // Rebuilding contents passes initial equality, but fails the first insertion.
+        foreach (int seed in new[] { 0, 17, 223 })
+        {
+            var card = CloneTestCard(1);
+            var map = card.BlueprintVariables;
+            var set = card.Keywords;
+            map.EnsureCapacity(107); set.EnsureCapacity(107);
+            for (int i = 0; i < 40; i++) { map[$"key-{i}"] = i; set.Add($"key-{i}"); }
+            foreach (int i in new[] { 7, 2, 31, 0, 18 }) { map.Remove($"key-{i}"); set.Remove($"key-{i}"); }
+            card.CustomJson.Set("first", "1", CardJsonType.Number);
+            card.CustomJson.Set("hole", "x", CardJsonType.String);
+            card.CustomJson.Set("last", "true", CardJsonType.Boolean);
+            card.CustomJson.Remove("hole");
+            // Force cached views to exist before cloning.
+            _ = map.Keys; _ = map.Values;
+            var copy = CardGraphClone.Create(new[] { card }).Roots[0];
+            if (map.EnsureCapacity(0) != copy.BlueprintVariables.EnsureCapacity(0)
+                || set.EnsureCapacity(0) != copy.Keywords.EnsureCapacity(0)) return "capacity lost";
+            var rng = new Random(seed);
+            for (int step = 0; step < 400; step++)
+            {
+                string key = $"key-{rng.Next(120)}";
+                switch (rng.Next(6))
+                {
+                    case 0: map.Remove(key); copy.BlueprintVariables.Remove(key);
+                        set.Remove(key); copy.Keywords.Remove(key);
+                        card.CustomJson.Remove(key); copy.CustomJson.Remove(key); break;
+                    case 1 when step % 11 == 0:
+                        map.TrimExcess(); copy.BlueprintVariables.TrimExcess();
+                        set.TrimExcess(); copy.Keywords.TrimExcess(); break;
+                    case 2 when step % 71 == 0:
+                        map.Clear(); copy.BlueprintVariables.Clear(); set.Clear(); copy.Keywords.Clear();
+                        card.CustomJson.Clear(); copy.CustomJson.Clear(); break;
+                    default:
+                        map[key] = step; copy.BlueprintVariables[key] = step;
+                        set.Add(key); copy.Keywords.Add(key);
+                        card.CustomJson.Set(key, step.ToString(), CardJsonType.Number);
+                        copy.CustomJson.Set(key, step.ToString(), CardJsonType.Number); break;
+                }
+                if (!map.SequenceEqual(copy.BlueprintVariables) || !set.SequenceEqual(copy.Keywords)
+                    || !card.CustomJson.SequenceEqual(copy.CustomJson)
+                    || card.CustomJson.Any(p => card.CustomJson.TypeOf(p.Key) != copy.CustomJson.TypeOf(p.Key)))
+                    return $"container continuation differs: seed={seed}, step={step}";
+                if (step % 53 == 0)
+                    copy = CardGraphClone.Create(new[] { card }).Roots[0];
+            }
+            copy.BlueprintVariables["copy-only"] = 1;
+            copy.Keywords.Add("copy-only");
+            if (map.ContainsKey("copy-only") || set.Contains("copy-only")) return "container buffer shared";
+        }
+        return null;
+    }
+
     private static string? CardGraphPayloadsAndOrdering(CardDatabase db)
     {
         var a = CloneTestCard(1);
