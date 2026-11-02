@@ -185,6 +185,18 @@ public sealed class CardDatabase
         DeckCodeIds = deckCodeIds;
     }
 
+    // Engine-owned view: catalog data stays frozen/shared, query diagnostics and
+    // the lazy reverse index belong to the branch. Register before state/API copy.
+    internal CardDatabase CloneView(Engine.CardGraphClone context)
+    {
+        // All database instances originate from the private dictionary constructor.
+        var copy = new CardDatabase(_byName, (Dictionary<string, string>)DeckCodeIds);
+        context.RegisterStateCopy(this, copy);
+        copy._codeByName = context.Copy(_codeByName);
+        copy.VariantFallbacks = VariantFallbacks;
+        return copy;
+    }
+
     /// <summary>
     /// 卡名归一化：卡组码表里会出现 <c>xxx_bal</c>（平衡变体）和 <c>xxx_vet</c>（老兵变体），
     /// 但蓝图里只有基础卡 <c>xxx</c> —— 这些变体是**数据变体**，逻辑复用基础卡。

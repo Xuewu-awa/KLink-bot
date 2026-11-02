@@ -1,8 +1,8 @@
 # Exact state cloning for candidate evaluation
 
 Status: RNG, supported card-graph/container and detached GameState cloning are
-implemented. An internal idle VM component copy is also implemented; complete
-MatchEngine/CardApi cloning remains open. Candidate evaluation still constructs an independent engine and
+implemented. Internal idle VM and CardApi component copies and isolated database
+query views are also implemented; complete MatchEngine cloning remains open. Candidate evaluation still constructs an independent engine and
 replays the committed action tape.
 No speedup is claimed by this work.
 
@@ -174,10 +174,10 @@ or throughput improvement is claimed.
 2. GameState: detached copying below is implemented. Destination-engine callback
    binding and the complete idle-boundary gate remain integration work.
    SnapshotJson is an observation format, not a restore contract.
-3. MatchEngine/CardApi: preserve persistent state and diagnostic counters;
-   rebuild dispatch delegates against the destination API. Review static template
-   ownership and pool caches before sharing anything. Bind choice adapters to the
-   destination. A copied delegate may still capture the source engine.
+3. MatchEngine: integrate the state/API/VM components below; preserve engine
+   counters, action IDs, logs and deck inputs, rebind owned state callbacks and
+   reject or explicitly rebuild external choice adapters. A copied delegate may
+   still capture the source engine. CardApi component copying alone is insufficient.
 4. Define and enforce an idle decision boundary. Pending selections include
    closures, so checking PendingSelectionCount alone does not establish that all
    effect, receipt, autoplay and forced-end-turn work is quiescent. Mid-resolution
@@ -245,7 +245,88 @@ Validation: all three KismetVmClone cases passed; the full BotSim selftest passe
 1,075 cases, and NNTrain policy-evaluation-selftest passed nine cases. NNTrain
 continues to emit existing CS8632 nullable-context warnings.
 
-CardApi template/cache
-ownership, rebuilt dispatch closures, external choice adapters and the complete
-engine idle gate remain the next integration boundary. No throughput gain or
+At the end of the VM batch, CardApi template/cache ownership and rebuilt dispatch
+closures remained open; the component batch below addresses those items. External
+choice adapters and the complete engine idle gate remain integration work. No throughput gain or
 additional PvP rule certification is claimed.
+
+
+## Idle CardApi component and database view (2026-11-02)
+
+The internal CardApi(destinationEngine, sourceApi, sharedMemo) constructor now
+copies the API component, including its VM. It remains inaccessible as a public
+engine checkpoint. It requires whole-engine quiescence established by its caller,
+a state-enabled memo shared with the copied GameState, and destination state and
+callbacks wired by the future engine integration. Direct calls into API methods
+must also be quiescent; the four local scope checks are not a complete engine
+idle gate or synchronization mechanism.
+
+All 18 API fields (15 explicit fields and three auto-property backing fields),
+four database fields and four candidate-cache record fields have exact reflection
+inventory guards. Dispositions:
+
+| Fields | Disposition |
+| --- | --- |
+| `_engine` | Bind supplied destination engine. |
+| `_dispatch` | Rebuild through BuildDispatch on destination API; source overrides/delegates are not copied. |
+| `Vm` | Copy with destination API and shared memo, retaining VM diagnostics. |
+| `_playedCardBroadcastDepth`, `_resolvingTriggerQueue`, `_triggerDepth` | Reject nonzero/active scope; destination starts idle. Active VM execution is also rejected. |
+| `_playedCardBroadcastDone`, `_triggerBuffers` | Copy through memo, including retained scratch roots and aliases. |
+| `TriggerTrace`, `AuraTrace` | Copy through memo, retaining aliases to VM/state traces. |
+| `_staticPool`, `_staticPoolVariants` | Copy lists and mutable template instances through memo; frozen definitions/identity tokens remain shared under the existing catalog contract. |
+| `_staticPoolDb` | Resolve through memo so a previously registered database view retains cache-invalidation identity. |
+| `_staticPoolReservationPolicy`, `_staticPoolBlacklistPolicy` | Share immutable policy objects, preserving reference-based invalidation semantics. |
+| `_staticPoolGeneration` | Copy raw. |
+| `_gcsPurityCache`, `_gcsCache` | Copy dictionaries and slot order. Copy each GcsCacheEntry record shell before traversing its Cards list, preserving cycles through card variables. |
+
+CardDatabase.CloneView(memo) creates and registers an internal database view before
+state/API traversal. The frozen `_byName` catalog and DeckCodeIds data are shared;
+`VariantFallbacks` is copied raw and the mutable lazy `_codeByName` reverse index
+is independently copied without initializing a cold index. GameState copying now
+consults the memo for its Database reference. Standalone GameStateClone retains
+its previous shared-database behavior; it does not silently acquire the isolated
+view. Future engine cloning must register the view first and handle/reject any
+foreign database references used by external effect contexts.
+
+The state-only whitelist adds the API cache/buffer container shapes, the cache
+entry record and the database reference disposition. The public card-only copier
+is unchanged. No general delegate or object reflection copier is introduced.
+Global GCS hit/miss/bypass counters remain process-wide diagnostics and are not
+reset/copied. KismetLibrary.Default and its loaded IR/lazy indexes remain shared;
+cloning assumes the library/catalog are frozen, no IR reload and no concurrent
+access. Definitions contain mutable nested collections: freezing is a caller
+contract, not enforced deep immutability.
+
+Four CardApiClone regressions cover inventories, nonzero retained state,
+state/API/VM trace aliases, template/list/cache cycles, both-way isolation,
+repeated copying with state-first/API-first traversal, cached candidate flags and
+order, branch-local policy invalidation, rebuilt dispatch destination binding,
+actual database fallback counting, cold/warm lazy-index isolation, and rejection
+during broadcast, trigger, queue resolution and live VM execution. The test-only
+wiring deliberately leaves GameState callbacks detached; it is not production
+engine restoration.
+
+The current card IR did not produce a nonempty cache in the initial search for
+this fixture (PAMS uses a non-cacheable instance-writing path). The cache test
+therefore scopes a controlled local-only IR program on an existing definition,
+executes the real VM/GetChooseSpawnCards/static-pool implementation and restores
+the IR/local-program cache afterward. It proves the engineering copy contract,
+not actual-card cacheability or PvP rule semantics. Its retained cached lists and
+template mutations are intentionally preserved rather than reconstructed.
+
+DeepSeek supplied a bounded field/mutator inventory of the three pre-change API
+partials. The primary agent checked it against source and the runtime field guard;
+its counts correctly distinguish 15 explicit fields and three stored properties.
+No worker source edits or rule judgments were integrated.
+
+Remaining work: complete engine field dispositions and owned-callback binding,
+external choice-adapter policy, full safe-idle gate, then fixed-prefix comparisons
+against independent full replay before enabling clone-based candidate evaluation.
+There is no new PvP certification or measured throughput gain in this batch.
+
+Validation: all four CardApiClone cases passed, full BotSim selftest passed 1,079
+cases, and NNTrain policy-evaluation-selftest passed nine cases (existing CS8632
+nullable-context warnings remain). An initial full run exposed legacy fixtures
+selecting the sole nonpublic CardDatabase constructor by reflection; CloneView
+uses a factory method instead of adding a constructor, and the rerun passed.
+The final added actual-fallback/cold-index assertions passed in the targeted run.

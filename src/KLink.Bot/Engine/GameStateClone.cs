@@ -34,7 +34,7 @@ public sealed partial class GameState
             throw new NotSupportedException("GameState clone during scoped deck removal");
         context.RegisterStateCopy(source, this);
 
-        Database = source.Database; // frozen catalog contract
+        Database = context.Copy(source.Database); // shared unless explicitly remapped by engine owner
         CardReservations = source.CardReservations; // immutable policy objects
         CardBlacklist = source.CardBlacklist;
         Seed = source.Seed;
@@ -115,6 +115,14 @@ public sealed partial class CardGraphClone
         copy = value switch
         {
             GameState state => new GameState(state, this),
+            Cards.CardDatabase database => database, // standalone state: frozen catalog contract
+            Effects.CardApi.GcsCacheEntry entry => new Effects.CardApi.GcsCacheEntry(entry, this),
+            List<List<CardInstance>> list => CopyList(list),
+            Dictionary<(bool, bool), List<CardInstance>> map => CopyMap(map),
+            ValueTuple<bool, bool> key => key,
+            Dictionary<string, bool> map => CopyMap(map),
+            Dictionary<string, string> map => CopyMap(map),
+            Dictionary<string, Effects.CardApi.GcsCacheEntry> map => CopyMap(map),
             UeRandomStream random => CopyRandom(random),
             GameState.GameplayRestriction restriction => CopyRestriction(restriction),
             GameState.GameplaySideEffect effect => CopySideEffect(effect),

@@ -20,6 +20,10 @@ internal static partial class SelfTest
 
     private static readonly List<Case> Cases = new()
     {
+        new("CardApiClone: exact fields trace aliases and isolation", CardApiCloneFields),
+        new("CardApiClone: VM pools caches cycles and invalidation", CardApiClonePools),
+        new("CardApiClone: dispatch binding and database views", CardApiCloneBindingAndDatabase),
+        new("CardApiClone: active execution rejection", CardApiCloneActiveRejection),
         new("KismetVmClone: exact fields aliases and isolation", VmCloneFieldsAndAliases),
         new("KismetVmClone: destination binding and continuation", VmCloneContinuation),
         new("KismetVmClone: nested execution rejection and unwind", VmCloneExecutionBoundary),

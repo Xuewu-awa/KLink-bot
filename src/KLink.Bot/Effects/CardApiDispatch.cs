@@ -3030,8 +3030,16 @@ public sealed partial class CardApi
     /// <summary>卡名 → 候选表（元素是 <see cref="_staticPool"/> 里的模板实例，全程只读）。</summary>
     private readonly Dictionary<string, GcsCacheEntry> _gcsCache = new(StringComparer.Ordinal);
 
-    private sealed record GcsCacheEntry(
-        int Generation, List<CardInstance> Cards, bool MarkAsSeen, bool KeepOrder);
+    internal sealed record GcsCacheEntry(
+        int Generation, List<CardInstance> Cards, bool MarkAsSeen, bool KeepOrder)
+    {
+        internal GcsCacheEntry(GcsCacheEntry source, CardGraphClone context)
+            : this(source.Generation, null!, source.MarkAsSeen, source.KeepOrder)
+        {
+            context.RegisterStateCopy(source, this);
+            Cards = context.Copy(source.Cards);
+        }
+    }
 
     /// <summary>缓存命中次数（诊断用；也是「跑的是新 dll」的哨兵）。</summary>
     public static long GcsCacheHits { get; private set; }
