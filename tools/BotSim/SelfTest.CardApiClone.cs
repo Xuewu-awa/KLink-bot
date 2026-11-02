@@ -207,6 +207,122 @@ internal static partial class SelfTest
         return null;
     }
 
+    private static string? CardApiCloneStringIndexStorage(CardDatabase db)
+    {
+        const BindingFlags flags = BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public;
+        var indexField = CloneFields(typeof(CardDatabase)).Single(f => f.Name == "_codeByName");
+        var seed = new Dictionary<string,string>(StringComparer.Ordinal);
+        var comparerField = seed.GetType().GetField("_comparer", flags)!;
+        var rawComparer = comparerField.GetValue(seed)!;
+        // Exercise the runtime's seeded string hash comparer, not only its usual
+        // nonrandomized wrapper. The public comparer remains the reviewed Ordinal.
+        var randomized = (IEqualityComparer<string>)rawComparer.GetType()
+            .GetMethod("GetRandomizedEqualityComparer", flags)!.Invoke(rawComparer, null)!;
+        foreach(var comparer in new IEqualityComparer<string>[] { EqualityComparer<string>.Default,
+            StringComparer.Ordinal, StringComparer.OrdinalIgnoreCase, ReferenceEqualityComparer.Instance, randomized })
+        for(int mode=0; mode<6; mode++)
+        {
+            var map = new Dictionary<string,string>(comparer);
+            if(mode>0) map.EnsureCapacity(67);
+            if(mode>1)
+            {
+                foreach(string key in new[]{"A","a","B","b","é","É","removed"}) map[key]=key+"-value";
+                // More entries than initial buckets exercise hash collisions, and
+                // distinct equal strings exercise the reference comparer separately.
+                for(int i=0;i<91;i++) map["slot-"+i]="value-"+i;
+                map[new string('A',1)]="separate-key";
+                map["null-value"]=null!;
+            }
+            if(mode>2) { map.Remove("removed"); map.Remove("B"); }
+            if(mode>3) map.Clear();
+            if(mode>4) map.TrimExcess();
+            _=map.Keys; _=map.Values;
+            var view = CopyDatabaseView(db, VmCloneContext());
+            indexField.SetValue(view, map);
+            var memo = VmCloneContext();
+            var copiedView = CopyDatabaseView(view, memo);
+            var copied = (Dictionary<string,string>)indexField.GetValue(copiedView)!;
+            var card = CloneTestCard(1);
+            card.BlueprintVariables["index"]=map;
+            var copiedCard = CopyVmGraph(memo, card);
+            if(ReferenceEquals(map,copied) || !ReferenceEquals(copiedCard.BlueprintVariables["index"],copied))
+                return "string index identity/graph alias";
+            foreach(string name in new[]{"_count","_freeCount","_freeList","_version","_fastModMultiplier","_comparer"})
+            {
+                var field=map.GetType().GetField(name,flags)!;
+                if(!Equals(field.GetValue(map),field.GetValue(copied))) return "string index metadata: "+name;
+            }
+            foreach(string name in new[]{"_buckets","_entries"})
+            {
+                var field=map.GetType().GetField(name,flags)!;
+                var a=(Array?)field.GetValue(map); var b=(Array?)field.GetValue(copied);
+                if((a is null)!=(b is null) || (a is not null && (ReferenceEquals(a,b) || a.Length!=b!.Length)))
+                    return "string index storage: "+name;
+                if(a is not null && !a.Cast<object>().SequenceEqual(b!.Cast<object>()))
+                    return "string index raw slots/buckets: "+name;
+            }
+            if(map.GetType().GetField("_keys",flags)!.GetValue(copied) is not null
+                || map.GetType().GetField("_values",flags)!.GetValue(copied) is not null)
+                return "string index retained source views";
+            foreach(var pair in map)
+                if(!copied.TryGetValue(pair.Key,out var value) || !ReferenceEquals(pair.Value,value))
+                    return "string index hash lookup/value identity";
+            if(map.Zip(copied).Any(pair => !ReferenceEquals(pair.First.Key,pair.Second.Key)
+                || !ReferenceEquals(pair.First.Value,pair.Second.Value))) return "string index payload identity";
+            foreach(string key in new[]{"A","a","B","new","é","É"})
+            { map[key]=key; copied[key]=key; }
+            map.Remove("a"); copied.Remove("a");
+            map["reuse"]="slot"; copied["reuse"]="slot";
+            if(!map.SequenceEqual(copied) || map.EnsureCapacity(0)!=copied.EnsureCapacity(0))
+                return "string index continuation/comparer";
+            copied["copy-only"]="x"; map["source-only"]="y";
+            if(map.ContainsKey("copy-only") || copied.ContainsKey("source-only")) return "string index isolation";
+            var again=(Dictionary<string,string>)indexField.GetValue(CopyDatabaseView(copiedView,VmCloneContext()))!;
+            if(ReferenceEquals(again,copied) || !again.SequenceEqual(copied)) return "string index repeat clone";
+        }
+        foreach(string fieldName in new[]{"_count","_freeCount","_freeList"})
+        {
+            var map=new Dictionary<string,string> { ["removed"]="value" };
+            map.Remove("removed");
+            map.GetType().GetField(fieldName,flags)!.SetValue(map,fieldName=="_count" ? -1 : 9);
+            try { CopyVmGraph(VmCloneContext(),map); return "invalid string index accepted: "+fieldName; }
+            catch(TargetInvocationException ex) when(ex.InnerException is NotSupportedException) { }
+        }
+        return null;
+    }
+
+    private static string? CardApiCloneStringIndexBucketRejection(CardDatabase db)
+    {
+        const BindingFlags flags=BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public;
+        foreach(string mode in new[]{"range","negative","cycle","duplicate","missing","free","hash"})
+        {
+            var map=new Dictionary<string,string>(StringComparer.Ordinal) { ["a"]="A", ["b"]="B", ["c"]="C" };
+            map.EnsureCapacity(17);
+            var buckets=(int[])map.GetType().GetField("_buckets",flags)!.GetValue(map)!;
+            var entries=(Array)map.GetType().GetField("_entries",flags)!.GetValue(map)!;
+            var entry=entries.GetValue(0)!;
+            var next=entry.GetType().GetField("next",flags)!;
+            var hash=entry.GetType().GetField("hashCode",flags)!;
+            int bucket=(int)((uint)hash.GetValue(entry)! % (uint)buckets.Length);
+            switch(mode)
+            {
+                case "range": buckets[bucket]=99; break;
+                case "negative": buckets[bucket]=-1; break;
+                case "cycle": next.SetValue(entry,0); entries.SetValue(entry,0); break;
+                case "duplicate": buckets[(bucket+1)%buckets.Length]=buckets[bucket]; break;
+                case "missing": Array.Clear(buckets); break;
+                case "free": map.Remove("a"); buckets[bucket]=1; break;
+                case "hash": hash.SetValue(entry,(uint)((bucket+1)%buckets.Length)); entries.SetValue(entry,0); break;
+            }
+            var savedBuckets=(int[])buckets.Clone(); var savedEntries=(Array)entries.Clone();
+            try { CopyVmGraph(VmCloneContext(),map); return "invalid string buckets accepted: "+mode; }
+            catch(TargetInvocationException ex) when(ex.InnerException is NotSupportedException) { }
+            if(!buckets.SequenceEqual(savedBuckets) || !entries.Cast<object>().SequenceEqual(savedEntries.Cast<object>()))
+                return "rejection changed source string storage: "+mode;
+        }
+        return null;
+    }
+
     private static string? CardApiCloneActiveRejection(CardDatabase db)
     {
         var (engine, state) = EmptyBoard(db);

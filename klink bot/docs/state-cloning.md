@@ -795,3 +795,85 @@ Next measured target: the complex fixture's independently mutable database
 reverse index still allocates about 339 MB per profiling run. Investigate its
 copy cost while preserving capacity, enumeration, mutability and isolation;
 sharing or dropping the warmed index is outside the accepted clone contract.
+
+
+## Immutable string index clone allocation (2026-11-02)
+
+The graph-context `CollectionSlotClone` adapter now specializes exact
+`Dictionary<string, string>` instances after the existing unallocated-storage
+gate. Strings retain their identities in `CardGraphClone`; copying the entry and
+bucket arrays therefore preserves hashes and collision links without per-entry
+boxing, remapping or rehashing. The raw comparer, including its randomized hash
+seed, scalar metadata, capacity, occupied slots and encoded free chain are
+preserved. Both arrays remain independent and cached Keys/Values views are
+cleared. Memo registration, exact-type/comparer admission and graph aliases retain
+their previous boundaries. The function-transform overload keeps its original
+path because supplied transformations need not preserve strings.
+
+Typed expression getters for the validated Entry next/hash fields are compiled
+once per cached layout. Runtime and full field-layout checks still require the
+reviewed .NET 10 x64 layout. Raw bucket chains are checked for range, cycles,
+duplicate or missing slots, free-slot references and hash/bucket agreement;
+malformed chains are rejected rather than repaired by rehashing. Active counts
+and the exact encoded free chain are also checked. This remains an in-process
+clone adapter, not a persistence format. No payload whitelist, frozen catalog
+sharing, card data or PvP rule behavior was changed.
+
+Before/after reports use baseline `4d5757b`, .NET 10.0.12 x64, seed 1,
+16 prefixes and three timed repeats, with `probe-actions-clone --utf8-snapshots
+--steps 16 --repeats 3`; the control adds `--plain`. Reports are
+`out/audit/clone-string-{meta,plain}16-{before,after}-20261102.json`.
+
+| Timed clone-path allocation, three repeats | Before bytes | After bytes | Reduction |
+|---|---:|---:|---:|
+| Complex fixture (英日–日澳快攻) | 8,099,728,664 | 7,330,463,744 | 9.50% |
+| Arado control | 3,748,218,792 | 3,718,732,632 | 0.79% |
+
+These totals include comparison and action execution. Separate single profiling
+runs report the following allocations; nested parent/child rows overlap and must
+not be summed.
+
+| Profile stage | Complex before / after bytes | Control before / after bytes |
+|---|---:|---:|
+| engine_clone (parent) | 1,395,829,400 / 1,139,619,920 | 344,725,632 / 334,921,408 |
+| clone.database | 338,956,960 / 100,117,760 | 96,512 / 96,512 |
+| clone.api.pool | 666,674,696 / 656,793,560 | 205,088 / 205,088 |
+| snapshot.build | 816,764,576 / 816,764,704 | 705,176,752 / 705,176,752 |
+
+The complex database stage allocates 70.46% less and the engine_clone parent
+18.36% less. Whole clone-path elapsed totals were 8,790.9 / 8,883.9 ms for the
+complex fixture and 2,586.9 / 2,665.4 ms for the control. No overall timing speedup
+is established. Allocation gains are workload-specific; they do not establish
+training throughput or peak-memory reductions.
+
+All 1,614 candidate comparisons across 32 prefixes retained identical counts,
+reasons, engine/root counts and zero batch errors. Both versions have zero
+mismatches against replay classification and observed successors in both clone
+orders. Totals remain 559 Accepted, 1,010 Rejected and 45 Unknown (37 choice
+policy dependent, eight unimplemented calls). The benchmark's string/UTF-8 and
+profiled/unprofiled comparisons also passed. These simulator engineering fixtures
+do not certify PvP rules; no audit matrix certification was refreshed.
+
+New regression coverage includes five comparer representations: default,
+Ordinal, OrdinalIgnoreCase, reference equality and the runtime's randomized
+Ordinal wrapper. It covers never-allocated/reserved/populated/removed/Clear/
+TrimExcess storage, collisions, null values, raw slots and bucket equality,
+string identity, graph aliases, views, continuation, repeated clones, two-way
+isolation and malformed metadata/bucket rejection. Valid-storage coverage also
+passes against baseline production code. All six CardApiClone cases, all 1,094
+BotSim selftests and nine NNTrain policy evaluation checks passed in
+`out/audit/clone-string-publish-20261102`. NNTrain retains existing CS8632 warnings.
+The isolated snapshot preserves checkout data bytes and excludes unrelated local
+probe edits. Intended source/test bytes were checked against the tested snapshot.
+
+The DeepSeek worker supplied a private bounded source-review checklist through
+`deepseek-worker`. The primary independently verified the useful comparer,
+metadata, alias and bucket-validation points. Its missing-whitelist inference
+was rejected after checking the existing GameStateClone string-map admission;
+worker output was not used as authoritative rule evidence.
+
+Next measured target: snapshot.build allocates about 817 MB in the complex
+profiling run, exceeding the API pool's 657 MB. Investigate intermediate snapshot
+materialization while preserving the exact schema, ordering, null and numeric
+encoding and comparison contract. Any implementation requires fresh equivalence
+checks and measurements; the default probe mode remains unchanged.

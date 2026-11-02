@@ -35,6 +35,8 @@ internal static partial class SelfTest
         new("CardApiClone: exact fields trace aliases and isolation", CardApiCloneFields),
         new("CardApiClone: VM pools caches cycles and invalidation", CardApiClonePools),
         new("CardApiClone: dispatch binding and database views", CardApiCloneBindingAndDatabase),
+        new("CardApiClone: string index storage and continuation", CardApiCloneStringIndexStorage),
+        new("CardApiClone: string index corrupt bucket rejection", CardApiCloneStringIndexBucketRejection),
         new("CardApiClone: active execution rejection", CardApiCloneActiveRejection),
         new("KismetVmClone: exact fields aliases and isolation", VmCloneFieldsAndAliases),
         new("KismetVmClone: destination binding and continuation", VmCloneContinuation),
