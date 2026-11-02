@@ -1414,3 +1414,54 @@ rule certification is claimed. No rules matrix fingerprints were refreshed.
 Next: benchmark the full pipeline on representative fixtures and use measured
 costs to design a separate, explicitly bounded reference-check policy before
 attempting higher-volume training generation.
+
+## Paired pipeline measurements and next experiment (2026-11-02)
+
+An isolated Release snapshot of commit `918643b5d1dc6e01cfc8b906b6363f1745a80326`
+was instrumented locally; the production source was not changed. Each run was
+one fresh process, one game, seed 1, native choice policy. Times below are
+medians of three runs in seconds, on an Intel Core Ultra 9 275HX with .NET SDK
+10.0.401. The full process includes startup, loading and work outside the
+instrumented stages; the stage times therefore do not sum to the total.
+
+| Fixture | Rows | Total | Reference | Clone including baseline checks | Admission | Fingerprints and summary | Serialize and write | Verify |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| M1 synthetic | 39 | 3.80 | 1.13 | 1.13 | 0.26 | 0.19 | 0.08 | 0.19 |
+| 英日 vs 日澳快攻 | 107 | 16.03 | 10.98 | 3.35 | 0.10 | 0.08 | 0.05 | 0.19 |
+| 苏英爆破 vs 德澳老兵 | 170 | 32.98 | 23.82 | 7.54 | 0.16 | 0.17 | 0.07 | 0.34 |
+
+All nine runs accepted one game and rejected none. For each, the recorded clone
+and reference row, snapshot, trace and RNG fingerprints match, and the existing
+dataset verifier passed. The reference reconstructed 741, 5,671 and 14,365
+prefix roots respectively; clone baseline roots were verified for all 39, 107
+and 170 decisions. These are simulator consistency checks, not evidence of
+KARDS rule correctness. The two named matchups are test fixtures, not a claim
+that the sample represents all decks, game lengths or seeds.
+
+Per-run measurements, current-thread allocation counters and input hashes are
+in `out/audit/clone-pipeline-measurements-20261102.json`. Allocation counters
+measure cumulative allocations on the calling thread, not peak memory or all
+threads. The probe source SHA256 is
+`6c2f8724193d2a7bfcf7e89587f3474de0dcd572457fa76d6a5edd297122d066`;
+the instrumented NNTrain binary differs from the production binary. Each run
+includes cold process startup; OS caches and machine load were not controlled.
+Three repeats of a single seed are insufficient for a throughput estimate
+across a training corpus. Timings include probe overhead and are not a direct
+before/after speedup comparison.
+
+The measured heavy-fixture bottleneck is reference execution, not gzip row
+writing. First profile its prefix reconstruction and seek optimizations that
+preserve the full independent reference and all existing checks. Compare exact
+rows, final snapshots, traces, RNG state, admission outcomes and faults against
+the current implementation across multiple seeds and deck pairs, including
+failure cases; measure the complete pipeline before accepting an optimization.
+
+Separately, a future sampled-reference experiment would need its own producer,
+schema and model contract, with unverified games explicitly distinguished from
+paired v6 data. Before generating training data it would need a reproducible,
+predeclared sampling scheme, independent full-reference holdouts stratified by
+deck and game characteristics, change-triggered invalidation, explicit failure
+handling and reported coverage. Sampling can miss rare or correlated errors;
+passing sampled checks cannot certify individual unsampled games. No sampling
+policy is implemented or authorized as equivalent to v6, and the existing v6
+contract continues to require a complete independent reference for every game.

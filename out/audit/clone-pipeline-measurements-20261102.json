@@ -1,0 +1,461 @@
+[
+  {
+    "fixture": "m1",
+    "repeat": 0,
+    "elapsedMs": 4650.374,
+    "rows": 39,
+    "phases": [
+      {
+        "phase": "reference",
+        "ms": 1353.992,
+        "allocatedBytes": 558072904
+      },
+      {
+        "phase": "clone",
+        "ms": 1094.6,
+        "allocatedBytes": 545865776
+      },
+      {
+        "phase": "admission",
+        "ms": 258.575,
+        "allocatedBytes": 17309800
+      },
+      {
+        "phase": "fingerprints_summary",
+        "ms": 193.221,
+        "allocatedBytes": 27796664
+      },
+      {
+        "phase": "row_serialization_write",
+        "ms": 71.868,
+        "allocatedBytes": 27902016
+      },
+      {
+        "phase": "verify",
+        "ms": 176.448,
+        "allocatedBytes": 29536384
+      }
+    ],
+    "inputHashes": {
+      "card-effects.json": "fc335d228779a2859627ee706d85949149ca595d0cfdfbc4971541831e5a8df0",
+      "card-ir-native-defaults.json": "a4f2812716f03ded180f45603ac7b715e890c54b1bc5b4b75fe2b1ec0975d711",
+      "card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b",
+      "card-vectors.json": "b15b93cb02e7e8a712561a2da52127a5867084ecb878a6ad58539b56b1109ab9",
+      "cards.json": "3550dc76eb0414c500166875f45909077aeeb3ea4d229b9b0ba9c66a81987c4b",
+      "deck_code_ids.json": "261cfd518c1a1ce40488f141e8dbd617ff19abe0734c49319ebcd6ac5dcb257e",
+      "event-contracts.json": "e4806dd48efbfc799a27c14b3660ad76ee03cd3f13e3e4320b213c5928efb112",
+      "live-actions.json": "db413a4644afe75806e66c47e200d93c5d93e91ca03e23fca38465b7dcb4dab3",
+      "KLink.Bot.dll": "7c8b069b70c23634a35bebc36cb2ce55e0cc6abbfa418715b73df70f03af72ac",
+      "NNTrain.dll": "c9487740a85f0c8e78bc6938adfbcc86ab1207a2f6ee88c0dd379ae29864b2e6"
+    },
+    "dataSha256": "84d9485a9f23af0d7796a3ee3de1b85ebf046fc7cd9a4c9be24ffbbe6b6a83e1"
+  },
+  {
+    "fixture": "m1",
+    "repeat": 1,
+    "elapsedMs": 3802.781,
+    "rows": 39,
+    "phases": [
+      {
+        "phase": "reference",
+        "ms": 1125.312,
+        "allocatedBytes": 558072416
+      },
+      {
+        "phase": "clone",
+        "ms": 1137.912,
+        "allocatedBytes": 545999968
+      },
+      {
+        "phase": "admission",
+        "ms": 259.823,
+        "allocatedBytes": 17298736
+      },
+      {
+        "phase": "fingerprints_summary",
+        "ms": 199.076,
+        "allocatedBytes": 27794848
+      },
+      {
+        "phase": "row_serialization_write",
+        "ms": 78.216,
+        "allocatedBytes": 27902016
+      },
+      {
+        "phase": "verify",
+        "ms": 192.178,
+        "allocatedBytes": 29536384
+      }
+    ],
+    "inputHashes": {
+      "card-effects.json": "fc335d228779a2859627ee706d85949149ca595d0cfdfbc4971541831e5a8df0",
+      "card-ir-native-defaults.json": "a4f2812716f03ded180f45603ac7b715e890c54b1bc5b4b75fe2b1ec0975d711",
+      "card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b",
+      "card-vectors.json": "b15b93cb02e7e8a712561a2da52127a5867084ecb878a6ad58539b56b1109ab9",
+      "cards.json": "3550dc76eb0414c500166875f45909077aeeb3ea4d229b9b0ba9c66a81987c4b",
+      "deck_code_ids.json": "261cfd518c1a1ce40488f141e8dbd617ff19abe0734c49319ebcd6ac5dcb257e",
+      "event-contracts.json": "e4806dd48efbfc799a27c14b3660ad76ee03cd3f13e3e4320b213c5928efb112",
+      "live-actions.json": "db413a4644afe75806e66c47e200d93c5d93e91ca03e23fca38465b7dcb4dab3",
+      "KLink.Bot.dll": "7c8b069b70c23634a35bebc36cb2ce55e0cc6abbfa418715b73df70f03af72ac",
+      "NNTrain.dll": "c9487740a85f0c8e78bc6938adfbcc86ab1207a2f6ee88c0dd379ae29864b2e6"
+    },
+    "dataSha256": "84d9485a9f23af0d7796a3ee3de1b85ebf046fc7cd9a4c9be24ffbbe6b6a83e1"
+  },
+  {
+    "fixture": "m1",
+    "repeat": 2,
+    "elapsedMs": 3785.141,
+    "rows": 39,
+    "phases": [
+      {
+        "phase": "reference",
+        "ms": 1123.992,
+        "allocatedBytes": 558063760
+      },
+      {
+        "phase": "clone",
+        "ms": 1127.908,
+        "allocatedBytes": 545981144
+      },
+      {
+        "phase": "admission",
+        "ms": 262.849,
+        "allocatedBytes": 17298896
+      },
+      {
+        "phase": "fingerprints_summary",
+        "ms": 194.027,
+        "allocatedBytes": 27799616
+      },
+      {
+        "phase": "row_serialization_write",
+        "ms": 76.407,
+        "allocatedBytes": 27902016
+      },
+      {
+        "phase": "verify",
+        "ms": 189.72,
+        "allocatedBytes": 29544216
+      }
+    ],
+    "inputHashes": {
+      "card-effects.json": "fc335d228779a2859627ee706d85949149ca595d0cfdfbc4971541831e5a8df0",
+      "card-ir-native-defaults.json": "a4f2812716f03ded180f45603ac7b715e890c54b1bc5b4b75fe2b1ec0975d711",
+      "card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b",
+      "card-vectors.json": "b15b93cb02e7e8a712561a2da52127a5867084ecb878a6ad58539b56b1109ab9",
+      "cards.json": "3550dc76eb0414c500166875f45909077aeeb3ea4d229b9b0ba9c66a81987c4b",
+      "deck_code_ids.json": "261cfd518c1a1ce40488f141e8dbd617ff19abe0734c49319ebcd6ac5dcb257e",
+      "event-contracts.json": "e4806dd48efbfc799a27c14b3660ad76ee03cd3f13e3e4320b213c5928efb112",
+      "live-actions.json": "db413a4644afe75806e66c47e200d93c5d93e91ca03e23fca38465b7dcb4dab3",
+      "KLink.Bot.dll": "7c8b069b70c23634a35bebc36cb2ce55e0cc6abbfa418715b73df70f03af72ac",
+      "NNTrain.dll": "c9487740a85f0c8e78bc6938adfbcc86ab1207a2f6ee88c0dd379ae29864b2e6"
+    },
+    "dataSha256": "84d9485a9f23af0d7796a3ee3de1b85ebf046fc7cd9a4c9be24ffbbe6b6a83e1"
+  },
+  {
+    "fixture": "meta1",
+    "repeat": 0,
+    "elapsedMs": 16123.842,
+    "rows": 107,
+    "phases": [
+      {
+        "phase": "reference",
+        "ms": 10953.918,
+        "allocatedBytes": 7800887704
+      },
+      {
+        "phase": "clone",
+        "ms": 3806.638,
+        "allocatedBytes": 2682295040
+      },
+      {
+        "phase": "admission",
+        "ms": 98.19,
+        "allocatedBytes": 43939896
+      },
+      {
+        "phase": "fingerprints_summary",
+        "ms": 84.429,
+        "allocatedBytes": 53658352
+      },
+      {
+        "phase": "row_serialization_write",
+        "ms": 47.869,
+        "allocatedBytes": 53229584
+      },
+      {
+        "phase": "verify",
+        "ms": 187.542,
+        "allocatedBytes": 58058272
+      }
+    ],
+    "inputHashes": {
+      "card-effects.json": "fc335d228779a2859627ee706d85949149ca595d0cfdfbc4971541831e5a8df0",
+      "card-ir-native-defaults.json": "a4f2812716f03ded180f45603ac7b715e890c54b1bc5b4b75fe2b1ec0975d711",
+      "card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b",
+      "card-vectors.json": "b15b93cb02e7e8a712561a2da52127a5867084ecb878a6ad58539b56b1109ab9",
+      "cards.json": "3550dc76eb0414c500166875f45909077aeeb3ea4d229b9b0ba9c66a81987c4b",
+      "deck_code_ids.json": "261cfd518c1a1ce40488f141e8dbd617ff19abe0734c49319ebcd6ac5dcb257e",
+      "event-contracts.json": "e4806dd48efbfc799a27c14b3660ad76ee03cd3f13e3e4320b213c5928efb112",
+      "live-actions.json": "db413a4644afe75806e66c47e200d93c5d93e91ca03e23fca38465b7dcb4dab3",
+      "KLink.Bot.dll": "7c8b069b70c23634a35bebc36cb2ce55e0cc6abbfa418715b73df70f03af72ac",
+      "NNTrain.dll": "c9487740a85f0c8e78bc6938adfbcc86ab1207a2f6ee88c0dd379ae29864b2e6"
+    },
+    "dataSha256": "4c187e742108e271f8b6f4fd6cda65dd64d71c35a0be5bb0ed80d57a162973a1"
+  },
+  {
+    "fixture": "meta1",
+    "repeat": 1,
+    "elapsedMs": 15575.698,
+    "rows": 107,
+    "phases": [
+      {
+        "phase": "reference",
+        "ms": 10976.912,
+        "allocatedBytes": 7801685504
+      },
+      {
+        "phase": "clone",
+        "ms": 3326.545,
+        "allocatedBytes": 2682958088
+      },
+      {
+        "phase": "admission",
+        "ms": 79.529,
+        "allocatedBytes": 31356936
+      },
+      {
+        "phase": "fingerprints_summary",
+        "ms": 81.447,
+        "allocatedBytes": 53658352
+      },
+      {
+        "phase": "row_serialization_write",
+        "ms": 43.174,
+        "allocatedBytes": 53223040
+      },
+      {
+        "phase": "verify",
+        "ms": 186.909,
+        "allocatedBytes": 58069600
+      }
+    ],
+    "inputHashes": {
+      "card-effects.json": "fc335d228779a2859627ee706d85949149ca595d0cfdfbc4971541831e5a8df0",
+      "card-ir-native-defaults.json": "a4f2812716f03ded180f45603ac7b715e890c54b1bc5b4b75fe2b1ec0975d711",
+      "card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b",
+      "card-vectors.json": "b15b93cb02e7e8a712561a2da52127a5867084ecb878a6ad58539b56b1109ab9",
+      "cards.json": "3550dc76eb0414c500166875f45909077aeeb3ea4d229b9b0ba9c66a81987c4b",
+      "deck_code_ids.json": "261cfd518c1a1ce40488f141e8dbd617ff19abe0734c49319ebcd6ac5dcb257e",
+      "event-contracts.json": "e4806dd48efbfc799a27c14b3660ad76ee03cd3f13e3e4320b213c5928efb112",
+      "live-actions.json": "db413a4644afe75806e66c47e200d93c5d93e91ca03e23fca38465b7dcb4dab3",
+      "KLink.Bot.dll": "7c8b069b70c23634a35bebc36cb2ce55e0cc6abbfa418715b73df70f03af72ac",
+      "NNTrain.dll": "c9487740a85f0c8e78bc6938adfbcc86ab1207a2f6ee88c0dd379ae29864b2e6"
+    },
+    "dataSha256": "4c187e742108e271f8b6f4fd6cda65dd64d71c35a0be5bb0ed80d57a162973a1"
+  },
+  {
+    "fixture": "meta1",
+    "repeat": 2,
+    "elapsedMs": 16032.853,
+    "rows": 107,
+    "phases": [
+      {
+        "phase": "reference",
+        "ms": 11379.773,
+        "allocatedBytes": 7800848008
+      },
+      {
+        "phase": "clone",
+        "ms": 3349.529,
+        "allocatedBytes": 2683090800
+      },
+      {
+        "phase": "admission",
+        "ms": 119.614,
+        "allocatedBytes": 43939896
+      },
+      {
+        "phase": "fingerprints_summary",
+        "ms": 100.49,
+        "allocatedBytes": 53658352
+      },
+      {
+        "phase": "row_serialization_write",
+        "ms": 48.879,
+        "allocatedBytes": 53225576
+      },
+      {
+        "phase": "verify",
+        "ms": 197.451,
+        "allocatedBytes": 58050952
+      }
+    ],
+    "inputHashes": {
+      "card-effects.json": "fc335d228779a2859627ee706d85949149ca595d0cfdfbc4971541831e5a8df0",
+      "card-ir-native-defaults.json": "a4f2812716f03ded180f45603ac7b715e890c54b1bc5b4b75fe2b1ec0975d711",
+      "card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b",
+      "card-vectors.json": "b15b93cb02e7e8a712561a2da52127a5867084ecb878a6ad58539b56b1109ab9",
+      "cards.json": "3550dc76eb0414c500166875f45909077aeeb3ea4d229b9b0ba9c66a81987c4b",
+      "deck_code_ids.json": "261cfd518c1a1ce40488f141e8dbd617ff19abe0734c49319ebcd6ac5dcb257e",
+      "event-contracts.json": "e4806dd48efbfc799a27c14b3660ad76ee03cd3f13e3e4320b213c5928efb112",
+      "live-actions.json": "db413a4644afe75806e66c47e200d93c5d93e91ca03e23fca38465b7dcb4dab3",
+      "KLink.Bot.dll": "7c8b069b70c23634a35bebc36cb2ce55e0cc6abbfa418715b73df70f03af72ac",
+      "NNTrain.dll": "c9487740a85f0c8e78bc6938adfbcc86ab1207a2f6ee88c0dd379ae29864b2e6"
+    },
+    "dataSha256": "4c187e742108e271f8b6f4fd6cda65dd64d71c35a0be5bb0ed80d57a162973a1"
+  },
+  {
+    "fixture": "meta2",
+    "repeat": 0,
+    "elapsedMs": 33006.22,
+    "rows": 170,
+    "phases": [
+      {
+        "phase": "reference",
+        "ms": 24223.114,
+        "allocatedBytes": 19148141088
+      },
+      {
+        "phase": "clone",
+        "ms": 7283.266,
+        "allocatedBytes": 5524319304
+      },
+      {
+        "phase": "admission",
+        "ms": 153.134,
+        "allocatedBytes": 60267680
+      },
+      {
+        "phase": "fingerprints_summary",
+        "ms": 189.911,
+        "allocatedBytes": 90795472
+      },
+      {
+        "phase": "row_serialization_write",
+        "ms": 71.745,
+        "allocatedBytes": 72626424
+      },
+      {
+        "phase": "verify",
+        "ms": 283.824,
+        "allocatedBytes": 98359632
+      }
+    ],
+    "inputHashes": {
+      "card-effects.json": "fc335d228779a2859627ee706d85949149ca595d0cfdfbc4971541831e5a8df0",
+      "card-ir-native-defaults.json": "a4f2812716f03ded180f45603ac7b715e890c54b1bc5b4b75fe2b1ec0975d711",
+      "card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b",
+      "card-vectors.json": "b15b93cb02e7e8a712561a2da52127a5867084ecb878a6ad58539b56b1109ab9",
+      "cards.json": "3550dc76eb0414c500166875f45909077aeeb3ea4d229b9b0ba9c66a81987c4b",
+      "deck_code_ids.json": "261cfd518c1a1ce40488f141e8dbd617ff19abe0734c49319ebcd6ac5dcb257e",
+      "event-contracts.json": "e4806dd48efbfc799a27c14b3660ad76ee03cd3f13e3e4320b213c5928efb112",
+      "live-actions.json": "db413a4644afe75806e66c47e200d93c5d93e91ca03e23fca38465b7dcb4dab3",
+      "KLink.Bot.dll": "7c8b069b70c23634a35bebc36cb2ce55e0cc6abbfa418715b73df70f03af72ac",
+      "NNTrain.dll": "c9487740a85f0c8e78bc6938adfbcc86ab1207a2f6ee88c0dd379ae29864b2e6"
+    },
+    "dataSha256": "094212f8805a6927f25631e5e75bbd68e53cd6b6fb7d372ccddec290b04b922a"
+  },
+  {
+    "fixture": "meta2",
+    "repeat": 1,
+    "elapsedMs": 32981.613,
+    "rows": 170,
+    "phases": [
+      {
+        "phase": "reference",
+        "ms": 23822.264,
+        "allocatedBytes": 19147571776
+      },
+      {
+        "phase": "clone",
+        "ms": 7624.279,
+        "allocatedBytes": 5524753672
+      },
+      {
+        "phase": "admission",
+        "ms": 173.031,
+        "allocatedBytes": 60267760
+      },
+      {
+        "phase": "fingerprints_summary",
+        "ms": 142.434,
+        "allocatedBytes": 90797000
+      },
+      {
+        "phase": "row_serialization_write",
+        "ms": 70.963,
+        "allocatedBytes": 72626424
+      },
+      {
+        "phase": "verify",
+        "ms": 341.377,
+        "allocatedBytes": 98361832
+      }
+    ],
+    "inputHashes": {
+      "card-effects.json": "fc335d228779a2859627ee706d85949149ca595d0cfdfbc4971541831e5a8df0",
+      "card-ir-native-defaults.json": "a4f2812716f03ded180f45603ac7b715e890c54b1bc5b4b75fe2b1ec0975d711",
+      "card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b",
+      "card-vectors.json": "b15b93cb02e7e8a712561a2da52127a5867084ecb878a6ad58539b56b1109ab9",
+      "cards.json": "3550dc76eb0414c500166875f45909077aeeb3ea4d229b9b0ba9c66a81987c4b",
+      "deck_code_ids.json": "261cfd518c1a1ce40488f141e8dbd617ff19abe0734c49319ebcd6ac5dcb257e",
+      "event-contracts.json": "e4806dd48efbfc799a27c14b3660ad76ee03cd3f13e3e4320b213c5928efb112",
+      "live-actions.json": "db413a4644afe75806e66c47e200d93c5d93e91ca03e23fca38465b7dcb4dab3",
+      "KLink.Bot.dll": "7c8b069b70c23634a35bebc36cb2ce55e0cc6abbfa418715b73df70f03af72ac",
+      "NNTrain.dll": "c9487740a85f0c8e78bc6938adfbcc86ab1207a2f6ee88c0dd379ae29864b2e6"
+    },
+    "dataSha256": "094212f8805a6927f25631e5e75bbd68e53cd6b6fb7d372ccddec290b04b922a"
+  },
+  {
+    "fixture": "meta2",
+    "repeat": 2,
+    "elapsedMs": 32640.248,
+    "rows": 170,
+    "phases": [
+      {
+        "phase": "reference",
+        "ms": 23545.211,
+        "allocatedBytes": 19149835264
+      },
+      {
+        "phase": "clone",
+        "ms": 7539.796,
+        "allocatedBytes": 5524956256
+      },
+      {
+        "phase": "admission",
+        "ms": 161.859,
+        "allocatedBytes": 60267680
+      },
+      {
+        "phase": "fingerprints_summary",
+        "ms": 166.646,
+        "allocatedBytes": 90800872
+      },
+      {
+        "phase": "row_serialization_write",
+        "ms": 76.394,
+        "allocatedBytes": 72626424
+      },
+      {
+        "phase": "verify",
+        "ms": 346.111,
+        "allocatedBytes": 98362472
+      }
+    ],
+    "inputHashes": {
+      "card-effects.json": "fc335d228779a2859627ee706d85949149ca595d0cfdfbc4971541831e5a8df0",
+      "card-ir-native-defaults.json": "a4f2812716f03ded180f45603ac7b715e890c54b1bc5b4b75fe2b1ec0975d711",
+      "card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b",
+      "card-vectors.json": "b15b93cb02e7e8a712561a2da52127a5867084ecb878a6ad58539b56b1109ab9",
+      "cards.json": "3550dc76eb0414c500166875f45909077aeeb3ea4d229b9b0ba9c66a81987c4b",
+      "deck_code_ids.json": "261cfd518c1a1ce40488f141e8dbd617ff19abe0734c49319ebcd6ac5dcb257e",
+      "event-contracts.json": "e4806dd48efbfc799a27c14b3660ad76ee03cd3f13e3e4320b213c5928efb112",
+      "live-actions.json": "db413a4644afe75806e66c47e200d93c5d93e91ca03e23fca38465b7dcb4dab3",
+      "KLink.Bot.dll": "7c8b069b70c23634a35bebc36cb2ce55e0cc6abbfa418715b73df70f03af72ac",
+      "NNTrain.dll": "c9487740a85f0c8e78bc6938adfbcc86ab1207a2f6ee88c0dd379ae29864b2e6"
+    },
+    "dataSha256": "094212f8805a6927f25631e5e75bbd68e53cd6b6fb7d372ccddec290b04b922a"
+  }
+]
