@@ -1,0 +1,3975 @@
+{
+  "schema_version": 1,
+  "report_id": "KISMET-MATH-NODE-CATALOG-20261103",
+  "scope": "executable card IR steps and local-function steps; display/campaign and non-PvP assets are included",
+  "inputs": {
+    "klink bot/docs/card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b",
+    "src/KLink.Bot/Effects/Blueprint/KismetVm.cs": "0af6f3eb2bc660bb7025a2c5eda928802eb723cffa2de3d18a5e01a0d49f41ae",
+    "klink bot/tools/audit-kismet-math-catalog.py": "40577221841653bf47af63510c246a049ed9bdda450dc1cc52cab262125090a0"
+  },
+  "totals": {
+    "ir_card_count": 1709,
+    "expression_nodes_with_math_key": 9061,
+    "standalone_op_math_steps": 220,
+    "total_math_call_sites": 9281,
+    "distinct_math_names": 69,
+    "declared_math_names": 73,
+    "evalmath_switch_case_names": 73,
+    "unknown_operation_steps": 40,
+    "invalid_math_name_nodes": 0
+  },
+  "declaration_switch_comparison": {
+    "declared_without_evalmath_case": [],
+    "evalmath_case_without_declaration": [],
+    "declared_names_not_seen_in_ir": [
+      "Array_Length",
+      "Conv_BoolToInt",
+      "Conv_ByteToText",
+      "Conv_StringToText",
+      "EnumCompareCardType",
+      "Max_IntInt",
+      "Min_IntInt",
+      "NotEqual_StrStr"
+    ],
+    "meaning": "name-set equality checks source catalog consistency only; it does not validate operation semantics"
+  },
+  "names": [
+    {
+      "name": "Abs_Int",
+      "occurrence_count": 1,
+      "expression_math_count": 1,
+      "standalone_op_math_count": 0,
+      "examples": [
+        {
+          "card": "card_event_great_expanse",
+          "program": "steps",
+          "instruction_i": 539,
+          "bo": 539,
+          "expression_path": "src"
+        }
+      ],
+      "declared_in_ImplementedMathNames": true
+    },
+    {
+      "name": "Add_IntInt",
+      "occurrence_count": 1416,
+      "expression_math_count": 1416,
+      "standalone_op_math_count": 0,
+      "examples": [
+        {
+          "card": "card_event_anzac_spirit",
+          "program": "steps",
+          "instruction_i": 170,
+          "bo": 170,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_event_anzac_spirit",
+          "program": "steps",
+          "instruction_i": 644,
+          "bo": 644,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_event_corps_command",
+          "program": "locals._DoOnCardPlayedOrGotchaTriggered",
+          "instruction_i": 813,
+          "bo": 1165,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_event_forward_base_anzac",
+          "program": "locals.GetPlayFromHandDamage",
+          "instruction_i": 995,
+          "bo": 995,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_event_repel_the_attack",
+          "program": "steps",
+          "instruction_i": 277,
+          "bo": 277,
+          "expression_path": "src"
+        }
+      ],
+      "declared_in_ImplementedMathNames": true
+    },
+    {
+      "name": "Array_Get",
+      "occurrence_count": 21,
+      "expression_math_count": 21,
+      "standalone_op_math_count": 0,
+      "examples": [
+        {
+          "card": "card_event_blockade",
+          "program": "steps",
+          "instruction_i": 436,
+          "bo": 436,
+          "expression_path": "args[0]"
+        },
+        {
+          "card": "card_event_escort_group",
+          "program": "steps",
+          "instruction_i": 212,
+          "bo": 212,
+          "expression_path": "args[0]"
+        },
+        {
+          "card": "card_event_escort_group",
+          "program": "steps",
+          "instruction_i": 345,
+          "bo": 345,
+          "expression_path": "args[0]"
+        },
+        {
+          "card": "card_event_escort_group",
+          "program": "steps",
+          "instruction_i": 490,
+          "bo": 490,
+          "expression_path": "args[0]"
+        },
+        {
+          "card": "card_event_escort_group",
+          "program": "steps",
+          "instruction_i": 625,
+          "bo": 625,
+          "expression_path": "args[0]"
+        }
+      ],
+      "declared_in_ImplementedMathNames": true
+    },
+    {
+      "name": "BooleanAND",
+      "occurrence_count": 1529,
+      "expression_math_count": 1529,
+      "standalone_op_math_count": 0,
+      "examples": [
+        {
+          "card": "card_event_corps_command",
+          "program": "locals._DoOnCardPlayedOrGotchaTriggered",
+          "instruction_i": 441,
+          "bo": 645,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_event_task_force_44",
+          "program": "steps",
+          "instruction_i": 382,
+          "bo": 382,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_event_the_double_sunrise",
+          "program": "steps",
+          "instruction_i": 341,
+          "bo": 341,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_event_the_double_sunrise",
+          "program": "steps",
+          "instruction_i": 1286,
+          "bo": 1286,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_unit_16th_infantry_brigade",
+          "program": "steps",
+          "instruction_i": 753,
+          "bo": 753,
+          "expression_path": "src"
+        }
+      ],
+      "declared_in_ImplementedMathNames": true
+    },
+    {
+      "name": "BooleanOR",
+      "occurrence_count": 157,
+      "expression_math_count": 157,
+      "standalone_op_math_count": 0,
+      "examples": [
+        {
+          "card": "card_unit_16th_infantry_brigade",
+          "program": "steps",
+          "instruction_i": 937,
+          "bo": 937,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_unit_coastwatchers",
+          "program": "steps",
+          "instruction_i": 302,
+          "bo": 302,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_unit_coastwatchers",
+          "program": "steps",
+          "instruction_i": 400,
+          "bo": 400,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_unit_coastwatchers",
+          "program": "steps",
+          "instruction_i": 1160,
+          "bo": 1160,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_unit_coastwatchers",
+          "program": "steps",
+          "instruction_i": 1258,
+          "bo": 1258,
+          "expression_path": "src"
+        }
+      ],
+      "declared_in_ImplementedMathNames": true
+    },
+    {
+      "name": "BreakVector",
+      "occurrence_count": 7,
+      "expression_math_count": 0,
+      "standalone_op_math_count": 7,
+      "examples": [
+        {
+          "card": "card_event_mass_deployment",
+          "program": "locals.GetRandomKreditCombo",
+          "instruction_i": 551,
+          "bo": 551,
+          "expression_path": "locals.GetRandomKreditCombo[18]"
+        },
+        {
+          "card": "card_event_mass_deployment",
+          "program": "locals.SpawnUnitsWithKreditCombo",
+          "instruction_i": 383,
+          "bo": 383,
+          "expression_path": "locals.SpawnUnitsWithKreditCombo[15]"
+        },
+        {
+          "card": "card_event_mass_deployment",
+          "program": "locals.SpawnUnitsWithKreditCombo",
+          "instruction_i": 673,
+          "bo": 673,
+          "expression_path": "locals.SpawnUnitsWithKreditCombo[22]"
+        },
+        {
+          "card": "card_event_mass_deployment",
+          "program": "locals.SpawnUnitsWithKreditCombo",
+          "instruction_i": 894,
+          "bo": 894,
+          "expression_path": "locals.SpawnUnitsWithKreditCombo[27]"
+        },
+        {
+          "card": "card_event_mass_deployment",
+          "program": "locals.SpawnUnitsWithKreditCombo",
+          "instruction_i": 1829,
+          "bo": 1829,
+          "expression_path": "locals.SpawnUnitsWithKreditCombo[54]"
+        }
+      ],
+      "declared_in_ImplementedMathNames": true
+    },
+    {
+      "name": "Clamp",
+      "occurrence_count": 3,
+      "expression_math_count": 3,
+      "standalone_op_math_count": 0,
+      "examples": [
+        {
+          "card": "card_event_mass_deployment",
+          "program": "locals.GetRandomKreditCombo",
+          "instruction_i": 5,
+          "bo": 5,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_unit_seagull",
+          "program": "locals.GetReducedDamage",
+          "instruction_i": 96,
+          "bo": 96,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_unit_seagull",
+          "program": "locals.OnCardDealDamage_ModifyDamageDealt",
+          "instruction_i": 306,
+          "bo": 306,
+          "expression_path": "src"
+        }
+      ],
+      "declared_in_ImplementedMathNames": true
+    },
+    {
+      "name": "Concat_StrStr",
+      "occurrence_count": 22,
+      "expression_math_count": 22,
+      "standalone_op_math_count": 0,
+      "examples": [
+        {
+          "card": "card_location_german_scen5",
+          "program": "steps",
+          "instruction_i": 3141,
+          "bo": 3141,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_unit_sendai_regiment",
+          "program": "steps",
+          "instruction_i": 367,
+          "bo": 367,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_unit_sendai_regiment",
+          "program": "steps",
+          "instruction_i": 475,
+          "bo": 475,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_unit_kyoto_regiment",
+          "program": "steps",
+          "instruction_i": 367,
+          "bo": 367,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_unit_kyoto_regiment",
+          "program": "steps",
+          "instruction_i": 475,
+          "bo": 475,
+          "expression_path": "src"
+        }
+      ],
+      "declared_in_ImplementedMathNames": true
+    },
+    {
+      "name": "Conv_ByteToInt",
+      "occurrence_count": 1,
+      "expression_math_count": 1,
+      "standalone_op_math_count": 0,
+      "examples": [
+        {
+          "card": "card_unit_35th_infantry_regiment",
+          "program": "locals.getMoveReason",
+          "instruction_i": 219,
+          "bo": 219,
+          "expression_path": "src"
+        }
+      ],
+      "declared_in_ImplementedMathNames": true
+    },
+    {
+      "name": "Conv_IntToBool",
+      "occurrence_count": 10,
+      "expression_math_count": 10,
+      "standalone_op_math_count": 0,
+      "examples": [
+        {
+          "card": "card_event_radar_alert",
+          "program": "steps",
+          "instruction_i": 558,
+          "bo": 558,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_event_sea_patrol",
+          "program": "steps",
+          "instruction_i": 135,
+          "bo": 135,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_event_cross_of_lorraine",
+          "program": "steps",
+          "instruction_i": 244,
+          "bo": 244,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_unit_type_4_chi_to",
+          "program": "locals.ApplyBuff",
+          "instruction_i": 337,
+          "bo": 337,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_unit_type_4_chi_to",
+          "program": "locals.RemoveBuff",
+          "instruction_i": 105,
+          "bo": 105,
+          "expression_path": "src"
+        }
+      ],
+      "declared_in_ImplementedMathNames": true
+    },
+    {
+      "name": "Conv_IntToByte",
+      "occurrence_count": 3,
+      "expression_math_count": 3,
+      "standalone_op_math_count": 0,
+      "examples": [
+        {
+          "card": "card_unit_35th_infantry_regiment",
+          "program": "locals.getMoveReason",
+          "instruction_i": 136,
+          "bo": 136,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_unit_35th_infantry_regiment",
+          "program": "locals.getMoveReason",
+          "instruction_i": 288,
+          "bo": 288,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_unit_35th_infantry_regiment",
+          "program": "locals.getMoveReason",
+          "instruction_i": 465,
+          "bo": 465,
+          "expression_path": "src"
+        }
+      ],
+      "declared_in_ImplementedMathNames": true
+    },
+    {
+      "name": "Conv_IntToDouble",
+      "occurrence_count": 7,
+      "expression_math_count": 7,
+      "standalone_op_math_count": 0,
+      "examples": [
+        {
+          "card": "card_location_british_scen5",
+          "program": "steps",
+          "instruction_i": 4831,
+          "bo": 4831,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_location_british_scen5",
+          "program": "steps",
+          "instruction_i": 4898,
+          "bo": 4898,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_location_british_scen5",
+          "program": "steps",
+          "instruction_i": 5452,
+          "bo": 5452,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_location_british_scen5",
+          "program": "steps",
+          "instruction_i": 5519,
+          "bo": 5519,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_event_mass_deployment",
+          "program": "locals.SpawnUnitsWithKreditCombo",
+          "instruction_i": 346,
+          "bo": 346,
+          "expression_path": "src"
+        }
+      ],
+      "declared_in_ImplementedMathNames": true
+    },
+    {
+      "name": "Conv_IntToInt64",
+      "occurrence_count": 68,
+      "expression_math_count": 68,
+      "standalone_op_math_count": 0,
+      "examples": [
+        {
+          "card": "card_location_british_scen1",
+          "program": "steps",
+          "instruction_i": 2794,
+          "bo": 2794,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_location_british_scen2",
+          "program": "steps",
+          "instruction_i": 6296,
+          "bo": 6296,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_location_british_scen3",
+          "program": "steps",
+          "instruction_i": 5750,
+          "bo": 5750,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_location_british_scen4",
+          "program": "steps",
+          "instruction_i": 6542,
+          "bo": 6542,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_location_british_scen5",
+          "program": "steps",
+          "instruction_i": 7380,
+          "bo": 7380,
+          "expression_path": "src"
+        }
+      ],
+      "declared_in_ImplementedMathNames": true
+    },
+    {
+      "name": "Conv_IntToString",
+      "occurrence_count": 34,
+      "expression_math_count": 34,
+      "standalone_op_math_count": 0,
+      "examples": [
+        {
+          "card": "card_event_campaign_alamein3_riding_the_storm",
+          "program": "steps",
+          "instruction_i": 467,
+          "bo": 467,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_location_german_scen1",
+          "program": "steps",
+          "instruction_i": 3484,
+          "bo": 3484,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_location_german_scen2",
+          "program": "steps",
+          "instruction_i": 4218,
+          "bo": 4218,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_location_german_scen5",
+          "program": "steps",
+          "instruction_i": 3104,
+          "bo": 3104,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_location_german_scen5",
+          "program": "steps",
+          "instruction_i": 6461,
+          "bo": 6461,
+          "expression_path": "src"
+        }
+      ],
+      "declared_in_ImplementedMathNames": true
+    },
+    {
+      "name": "Conv_IntToText",
+      "occurrence_count": 26,
+      "expression_math_count": 26,
+      "standalone_op_math_count": 0,
+      "examples": [
+        {
+          "card": "card_unit_the_silent_seventh",
+          "program": "steps",
+          "instruction_i": 1112,
+          "bo": 1112,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_unit_panzer_iii_j_late",
+          "program": "steps",
+          "instruction_i": 796,
+          "bo": 796,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_event_claim_objective",
+          "program": "steps",
+          "instruction_i": 784,
+          "bo": 784,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_unit_182_landwehr",
+          "program": "steps",
+          "instruction_i": 495,
+          "bo": 495,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_unit_panther_a_zimm",
+          "program": "steps",
+          "instruction_i": 482,
+          "bo": 482,
+          "expression_path": "src"
+        }
+      ],
+      "declared_in_ImplementedMathNames": true
+    },
+    {
+      "name": "Conv_NameToString",
+      "occurrence_count": 17,
+      "expression_math_count": 17,
+      "standalone_op_math_count": 0,
+      "examples": [
+        {
+          "card": "card_event_through_the_ice",
+          "program": "steps",
+          "instruction_i": 240,
+          "bo": 240,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_event_through_the_ice",
+          "program": "steps",
+          "instruction_i": 851,
+          "bo": 851,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_event_second_front",
+          "program": "steps",
+          "instruction_i": 10,
+          "bo": 10,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_location_german_scen1",
+          "program": "steps",
+          "instruction_i": 296,
+          "bo": 296,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_location_german_scen2",
+          "program": "steps",
+          "instruction_i": 3899,
+          "bo": 3899,
+          "expression_path": "src"
+        }
+      ],
+      "declared_in_ImplementedMathNames": true
+    },
+    {
+      "name": "Conv_StringToInt",
+      "occurrence_count": 16,
+      "expression_math_count": 16,
+      "standalone_op_math_count": 0,
+      "examples": [
+        {
+          "card": "card_event_campaign_alamein3_riding_the_storm",
+          "program": "steps",
+          "instruction_i": 1248,
+          "bo": 1248,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_location_german_scen1",
+          "program": "steps",
+          "instruction_i": 333,
+          "bo": 333,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_location_german_scen2",
+          "program": "steps",
+          "instruction_i": 3936,
+          "bo": 3936,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_unit_aichi_d3a",
+          "program": "steps",
+          "instruction_i": 1166,
+          "bo": 1166,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_unit_type_92_105mm_field_gun",
+          "program": "steps",
+          "instruction_i": 884,
+          "bo": 884,
+          "expression_path": "src"
+        }
+      ],
+      "declared_in_ImplementedMathNames": true
+    },
+    {
+      "name": "Conv_StringToName",
+      "occurrence_count": 21,
+      "expression_math_count": 21,
+      "standalone_op_math_count": 0,
+      "examples": [
+        {
+          "card": "card_event_second_front",
+          "program": "steps",
+          "instruction_i": 931,
+          "bo": 931,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_event_second_front",
+          "program": "steps",
+          "instruction_i": 987,
+          "bo": 987,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_event_second_front",
+          "program": "steps",
+          "instruction_i": 1224,
+          "bo": 1224,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_event_second_front",
+          "program": "steps",
+          "instruction_i": 1280,
+          "bo": 1280,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_event_second_front",
+          "program": "steps",
+          "instruction_i": 1872,
+          "bo": 1872,
+          "expression_path": "src"
+        }
+      ],
+      "declared_in_ImplementedMathNames": true
+    },
+    {
+      "name": "Conv_TextToString",
+      "occurrence_count": 2,
+      "expression_math_count": 2,
+      "standalone_op_math_count": 0,
+      "examples": [
+        {
+          "card": "card_event_seize_the_initiative",
+          "program": "steps",
+          "instruction_i": 764,
+          "bo": 764,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_event_carrier_battle",
+          "program": "steps",
+          "instruction_i": 754,
+          "bo": 754,
+          "expression_path": "src"
+        }
+      ],
+      "declared_in_ImplementedMathNames": true
+    },
+    {
+      "name": "Divide_IntInt",
+      "occurrence_count": 37,
+      "expression_math_count": 37,
+      "standalone_op_math_count": 0,
+      "examples": [
+        {
+          "card": "card_location_british_scen1",
+          "program": "steps",
+          "instruction_i": 2733,
+          "bo": 2733,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_location_british_scen3",
+          "program": "steps",
+          "instruction_i": 5689,
+          "bo": 5689,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_location_british_scen5",
+          "program": "steps",
+          "instruction_i": 7338,
+          "bo": 7338,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_location_british_scen5",
+          "program": "steps",
+          "instruction_i": 8339,
+          "bo": 8339,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_location_german_scen1",
+          "program": "steps",
+          "instruction_i": 3988,
+          "bo": 3988,
+          "expression_path": "src"
+        }
+      ],
+      "declared_in_ImplementedMathNames": true
+    },
+    {
+      "name": "EndsWith",
+      "occurrence_count": 2,
+      "expression_math_count": 2,
+      "standalone_op_math_count": 0,
+      "examples": [
+        {
+          "card": "card_event_through_the_ice",
+          "program": "steps",
+          "instruction_i": 355,
+          "bo": 355,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_event_through_the_ice",
+          "program": "steps",
+          "instruction_i": 937,
+          "bo": 937,
+          "expression_path": "src"
+        }
+      ],
+      "declared_in_ImplementedMathNames": true
+    },
+    {
+      "name": "EnumCompareCardLocation",
+      "occurrence_count": 55,
+      "expression_math_count": 0,
+      "standalone_op_math_count": 55,
+      "examples": [
+        {
+          "card": "card_event_tactical_withdrawal",
+          "program": "locals.CanPlayFromHand",
+          "instruction_i": 133,
+          "bo": 133,
+          "expression_path": "locals.CanPlayFromHand[4]"
+        },
+        {
+          "card": "card_event_airdrop",
+          "program": "locals.CanPlayFromHand",
+          "instruction_i": 171,
+          "bo": 171,
+          "expression_path": "locals.CanPlayFromHand[6]"
+        },
+        {
+          "card": "card_event_frozen_assets",
+          "program": "steps",
+          "instruction_i": 10,
+          "bo": 10,
+          "expression_path": "steps[0]"
+        },
+        {
+          "card": "card_unit_uusimaa_regiment",
+          "program": "steps",
+          "instruction_i": 120,
+          "bo": 120,
+          "expression_path": "steps[5]"
+        },
+        {
+          "card": "card_event_chasing_shadows",
+          "program": "locals.CanPlayFromHand",
+          "instruction_i": 69,
+          "bo": 69,
+          "expression_path": "locals.CanPlayFromHand[2]"
+        }
+      ],
+      "declared_in_ImplementedMathNames": true
+    },
+    {
+      "name": "EnumCompareFaction",
+      "occurrence_count": 98,
+      "expression_math_count": 0,
+      "standalone_op_math_count": 98,
+      "examples": [
+        {
+          "card": "card_event_hmas_warramunga",
+          "program": "steps",
+          "instruction_i": 306,
+          "bo": 306,
+          "expression_path": "steps[8]"
+        },
+        {
+          "card": "card_event_atlantic_convoy",
+          "program": "steps",
+          "instruction_i": 79,
+          "bo": 79,
+          "expression_path": "steps[3]"
+        },
+        {
+          "card": "card_event_close_air_support",
+          "program": "locals.CanPlayFromHand",
+          "instruction_i": 188,
+          "bo": 188,
+          "expression_path": "locals.CanPlayFromHand[6]"
+        },
+        {
+          "card": "card_event_radar_alert",
+          "program": "locals.GetRandomBritishAir",
+          "instruction_i": 362,
+          "bo": 362,
+          "expression_path": "locals.GetRandomBritishAir[11]"
+        },
+        {
+          "card": "card_event_kangaroo_transport",
+          "program": "locals.CanPlayFromHand",
+          "instruction_i": 69,
+          "bo": 69,
+          "expression_path": "locals.CanPlayFromHand[2]"
+        }
+      ],
+      "declared_in_ImplementedMathNames": true
+    },
+    {
+      "name": "EnumCompareSide",
+      "occurrence_count": 56,
+      "expression_math_count": 0,
+      "standalone_op_math_count": 56,
+      "examples": [
+        {
+          "card": "card_unit_22nd_guards_brigade",
+          "program": "steps",
+          "instruction_i": 79,
+          "bo": 79,
+          "expression_path": "steps[3]"
+        },
+        {
+          "card": "card_event_echelon",
+          "program": "steps",
+          "instruction_i": 79,
+          "bo": 79,
+          "expression_path": "steps[3]"
+        },
+        {
+          "card": "card_unit_6th_airlanding_brigade",
+          "program": "locals.OnOtherCardDealDamageAddDamage",
+          "instruction_i": 33,
+          "bo": 33,
+          "expression_path": "locals.OnOtherCardDealDamageAddDamage[2]"
+        },
+        {
+          "card": "card_event_first_responders",
+          "program": "steps",
+          "instruction_i": 79,
+          "bo": 79,
+          "expression_path": "steps[3]"
+        },
+        {
+          "card": "card_unit_royal_fusiliers",
+          "program": "steps",
+          "instruction_i": 234,
+          "bo": 234,
+          "expression_path": "steps[7]"
+        }
+      ],
+      "declared_in_ImplementedMathNames": true
+    },
+    {
+      "name": "EqualEqual_BoolBool",
+      "occurrence_count": 3,
+      "expression_math_count": 3,
+      "standalone_op_math_count": 0,
+      "examples": [
+        {
+          "card": "card_unit_115th_separate_btn",
+          "program": "steps",
+          "instruction_i": 391,
+          "bo": 391,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_unit_115th_separate_btn",
+          "program": "steps",
+          "instruction_i": 856,
+          "bo": 856,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_unit_115th_separate_btn",
+          "program": "steps",
+          "instruction_i": 1428,
+          "bo": 1428,
+          "expression_path": "src"
+        }
+      ],
+      "declared_in_ImplementedMathNames": true
+    },
+    {
+      "name": "EqualEqual_ByteByte",
+      "occurrence_count": 848,
+      "expression_math_count": 848,
+      "standalone_op_math_count": 0,
+      "examples": [
+        {
+          "card": "card_event_the_double_sunrise",
+          "program": "steps",
+          "instruction_i": 281,
+          "bo": 281,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_event_the_double_sunrise",
+          "program": "steps",
+          "instruction_i": 1226,
+          "bo": 1226,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_unit_16th_infantry_brigade",
+          "program": "steps",
+          "instruction_i": 79,
+          "bo": 79,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_unit_16th_infantry_brigade",
+          "program": "steps",
+          "instruction_i": 693,
+          "bo": 693,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_unit_27th_mg_battalion",
+          "program": "steps",
+          "instruction_i": 70,
+          "bo": 70,
+          "expression_path": "src"
+        }
+      ],
+      "declared_in_ImplementedMathNames": true
+    },
+    {
+      "name": "EqualEqual_DoubleDouble",
+      "occurrence_count": 8,
+      "expression_math_count": 8,
+      "standalone_op_math_count": 0,
+      "examples": [
+        {
+          "card": "card_location_british_scen5",
+          "program": "steps",
+          "instruction_i": 4990,
+          "bo": 4990,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_location_british_scen5",
+          "program": "steps",
+          "instruction_i": 5611,
+          "bo": 5611,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_event_mass_deployment",
+          "program": "locals.SpawnUnitsWithKreditCombo",
+          "instruction_i": 429,
+          "bo": 429,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_event_mass_deployment",
+          "program": "locals.SpawnUnitsWithKreditCombo",
+          "instruction_i": 719,
+          "bo": 719,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_event_mass_deployment",
+          "program": "locals.SpawnUnitsWithKreditCombo",
+          "instruction_i": 940,
+          "bo": 940,
+          "expression_path": "src"
+        }
+      ],
+      "declared_in_ImplementedMathNames": true
+    },
+    {
+      "name": "EqualEqual_IntInt",
+      "occurrence_count": 435,
+      "expression_math_count": 435,
+      "standalone_op_math_count": 0,
+      "examples": [
+        {
+          "card": "card_event_corps_command",
+          "program": "locals._DoOnCardPlayedOrGotchaTriggered",
+          "instruction_i": 381,
+          "bo": 549,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_event_forward_base_anzac",
+          "program": "locals.GetPlayFromHandDamage",
+          "instruction_i": 429,
+          "bo": 429,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_event_guerilla_warfare_school",
+          "program": "steps",
+          "instruction_i": 154,
+          "bo": 154,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_event_guerilla_warfare_school",
+          "program": "steps",
+          "instruction_i": 288,
+          "bo": 288,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_event_task_force_44",
+          "program": "steps",
+          "instruction_i": 344,
+          "bo": 344,
+          "expression_path": "src"
+        }
+      ],
+      "declared_in_ImplementedMathNames": true
+    },
+    {
+      "name": "EqualEqual_NameName",
+      "occurrence_count": 164,
+      "expression_math_count": 164,
+      "standalone_op_math_count": 0,
+      "examples": [
+        {
+          "card": "card_event_national_fire_service",
+          "program": "locals.DeactivateOtherNFS",
+          "instruction_i": 363,
+          "bo": 363,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_unit_gladiator_escort",
+          "program": "locals.OnOtherCardDealDamageAddDamageAfterCalc",
+          "instruction_i": 81,
+          "bo": 81,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_event_baker_street_irregulars",
+          "program": "locals.GetChooseSpawnCards",
+          "instruction_i": 1591,
+          "bo": 1591,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_event_baker_street_irregulars",
+          "program": "locals.GetChooseSpawnCards",
+          "instruction_i": 1655,
+          "bo": 1655,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_event_baker_street_irregulars",
+          "program": "locals.GetChooseSpawnCards",
+          "instruction_i": 1719,
+          "bo": 1719,
+          "expression_path": "src"
+        }
+      ],
+      "declared_in_ImplementedMathNames": true
+    },
+    {
+      "name": "EqualEqual_ObjectObject",
+      "occurrence_count": 18,
+      "expression_math_count": 18,
+      "standalone_op_math_count": 0,
+      "examples": [
+        {
+          "card": "card_event_forward_base_anzac",
+          "program": "locals.GetPlayFromHandDamage",
+          "instruction_i": 83,
+          "bo": 83,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_event_arming_resistance",
+          "program": "steps",
+          "instruction_i": 122,
+          "bo": 122,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_unit_dornier_do_217",
+          "program": "steps",
+          "instruction_i": 29,
+          "bo": 29,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_unit_marder_iii_h",
+          "program": "steps",
+          "instruction_i": 1194,
+          "bo": 1194,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_unit_kyushu_j7w3",
+          "program": "locals.OnCardDealDamage",
+          "instruction_i": 0,
+          "bo": 0,
+          "expression_path": "src"
+        }
+      ],
+      "declared_in_ImplementedMathNames": true
+    },
+    {
+      "name": "EqualEqual_StrStr",
+      "occurrence_count": 3,
+      "expression_math_count": 3,
+      "standalone_op_math_count": 0,
+      "examples": [
+        {
+          "card": "card_unit_tsu_regiment",
+          "program": "steps",
+          "instruction_i": 1102,
+          "bo": 1102,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_unit_p37los",
+          "program": "steps",
+          "instruction_i": 1605,
+          "bo": 2329,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_unit_m20_scout_car",
+          "program": "steps",
+          "instruction_i": 728,
+          "bo": 728,
+          "expression_path": "src"
+        }
+      ],
+      "declared_in_ImplementedMathNames": true
+    },
+    {
+      "name": "EqualEqual_StriStri",
+      "occurrence_count": 2,
+      "expression_math_count": 2,
+      "standalone_op_math_count": 0,
+      "examples": [
+        {
+          "card": "card_event_through_the_ice",
+          "program": "steps",
+          "instruction_i": 446,
+          "bo": 446,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_unit_35th_infantry_regiment",
+          "program": "locals.getMoveReason",
+          "instruction_i": 417,
+          "bo": 417,
+          "expression_path": "src"
+        }
+      ],
+      "declared_in_ImplementedMathNames": true
+    },
+    {
+      "name": "FMod",
+      "occurrence_count": 2,
+      "expression_math_count": 2,
+      "standalone_op_math_count": 0,
+      "examples": [
+        {
+          "card": "card_location_british_scen5",
+          "program": "steps",
+          "instruction_i": 4935,
+          "bo": 4935,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_location_british_scen5",
+          "program": "steps",
+          "instruction_i": 5556,
+          "bo": 5556,
+          "expression_path": "src"
+        }
+      ],
+      "declared_in_ImplementedMathNames": true
+    },
+    {
+      "name": "FTrunc",
+      "occurrence_count": 3,
+      "expression_math_count": 3,
+      "standalone_op_math_count": 0,
+      "examples": [
+        {
+          "card": "card_event_mass_deployment",
+          "program": "locals.GetRandomKreditCombo",
+          "instruction_i": 597,
+          "bo": 597,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_event_mass_deployment",
+          "program": "locals.GetRandomKreditCombo",
+          "instruction_i": 634,
+          "bo": 634,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_event_mass_deployment",
+          "program": "locals.GetRandomKreditCombo",
+          "instruction_i": 671,
+          "bo": 671,
+          "expression_path": "src"
+        }
+      ],
+      "declared_in_ImplementedMathNames": true
+    },
+    {
+      "name": "Format",
+      "occurrence_count": 57,
+      "expression_math_count": 57,
+      "standalone_op_math_count": 0,
+      "examples": [
+        {
+          "card": "card_location_british_scen1",
+          "program": "steps",
+          "instruction_i": 3075,
+          "bo": 3075,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_location_british_scen2",
+          "program": "steps",
+          "instruction_i": 6578,
+          "bo": 6578,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_location_british_scen3",
+          "program": "steps",
+          "instruction_i": 6031,
+          "bo": 6031,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_location_british_scen4",
+          "program": "steps",
+          "instruction_i": 6877,
+          "bo": 6877,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_location_british_scen5",
+          "program": "steps",
+          "instruction_i": 7661,
+          "bo": 7661,
+          "expression_path": "src"
+        }
+      ],
+      "undeclared_occurrences": [
+        {
+          "card": "card_location_british_scen1",
+          "program": "steps",
+          "instruction_i": 3075,
+          "bo": 3075,
+          "expression_path": "src",
+          "node": {
+            "math": "Format",
+            "args": [
+              {
+                "str": "null"
+              },
+              {
+                "var": "K2Node_MakeArray_Array",
+                "scope": "local",
+                "element_type": "Struct"
+              }
+            ]
+          }
+        },
+        {
+          "card": "card_location_british_scen2",
+          "program": "steps",
+          "instruction_i": 6578,
+          "bo": 6578,
+          "expression_path": "src",
+          "node": {
+            "math": "Format",
+            "args": [
+              {
+                "str": "null"
+              },
+              {
+                "var": "K2Node_MakeArray_Array",
+                "scope": "local",
+                "element_type": "Struct"
+              }
+            ]
+          }
+        },
+        {
+          "card": "card_location_british_scen3",
+          "program": "steps",
+          "instruction_i": 6031,
+          "bo": 6031,
+          "expression_path": "src",
+          "node": {
+            "math": "Format",
+            "args": [
+              {
+                "str": "null"
+              },
+              {
+                "var": "K2Node_MakeArray_Array",
+                "scope": "local",
+                "element_type": "Struct"
+              }
+            ]
+          }
+        },
+        {
+          "card": "card_location_british_scen4",
+          "program": "steps",
+          "instruction_i": 6877,
+          "bo": 6877,
+          "expression_path": "src",
+          "node": {
+            "math": "Format",
+            "args": [
+              {
+                "str": "null"
+              },
+              {
+                "var": "K2Node_MakeArray_Array",
+                "scope": "local",
+                "element_type": "Struct"
+              }
+            ]
+          }
+        },
+        {
+          "card": "card_location_british_scen5",
+          "program": "steps",
+          "instruction_i": 7661,
+          "bo": 7661,
+          "expression_path": "src",
+          "node": {
+            "math": "Format",
+            "args": [
+              {
+                "str": "null"
+              },
+              {
+                "var": "K2Node_MakeArray_Array",
+                "scope": "local",
+                "element_type": "Struct"
+              }
+            ]
+          }
+        },
+        {
+          "card": "card_location_british_scen5",
+          "program": "steps",
+          "instruction_i": 8662,
+          "bo": 8662,
+          "expression_path": "src",
+          "node": {
+            "math": "Format",
+            "args": [
+              {
+                "str": "null"
+              },
+              {
+                "var": "K2Node_MakeArray_Array_1",
+                "scope": "local",
+                "element_type": "Struct"
+              }
+            ]
+          }
+        },
+        {
+          "card": "card_location_british_scen5",
+          "program": "steps",
+          "instruction_i": 9937,
+          "bo": 9937,
+          "expression_path": "src",
+          "node": {
+            "math": "Format",
+            "args": [
+              {
+                "str": "null"
+              },
+              {
+                "var": "K2Node_MakeArray_Array_2",
+                "scope": "local",
+                "element_type": "Struct"
+              }
+            ]
+          }
+        },
+        {
+          "card": "card_location_german_scen2_ai",
+          "program": "steps",
+          "instruction_i": 940,
+          "bo": 940,
+          "expression_path": "src",
+          "node": {
+            "math": "Format",
+            "args": [
+              {
+                "str": "null"
+              },
+              {
+                "var": "K2Node_MakeArray_Array_1",
+                "scope": "local",
+                "element_type": "Struct"
+              }
+            ]
+          }
+        },
+        {
+          "card": "card_location_german_scen2_ai",
+          "program": "steps",
+          "instruction_i": 1501,
+          "bo": 1501,
+          "expression_path": "src",
+          "node": {
+            "math": "Format",
+            "args": [
+              {
+                "str": "null"
+              },
+              {
+                "var": "K2Node_MakeArray_Array",
+                "scope": "local",
+                "element_type": "Struct"
+              }
+            ]
+          }
+        },
+        {
+          "card": "card_location_german_scen1",
+          "program": "steps",
+          "instruction_i": 1893,
+          "bo": 1893,
+          "expression_path": "src",
+          "node": {
+            "math": "Format",
+            "args": [
+              {
+                "str": "null"
+              },
+              {
+                "var": "K2Node_MakeArray_Array_1",
+                "scope": "local",
+                "element_type": "Struct"
+              }
+            ]
+          }
+        },
+        {
+          "card": "card_location_german_scen1",
+          "program": "steps",
+          "instruction_i": 4364,
+          "bo": 4364,
+          "expression_path": "src",
+          "node": {
+            "math": "Format",
+            "args": [
+              {
+                "str": "null"
+              },
+              {
+                "var": "K2Node_MakeArray_Array",
+                "scope": "local",
+                "element_type": "Struct"
+              }
+            ]
+          }
+        },
+        {
+          "card": "card_location_german_scen1",
+          "program": "steps",
+          "instruction_i": 5297,
+          "bo": 5297,
+          "expression_path": "src",
+          "node": {
+            "math": "Format",
+            "args": [
+              {
+                "str": "null"
+              },
+              {
+                "var": "K2Node_MakeArray_Array",
+                "scope": "local",
+                "element_type": "Struct"
+              }
+            ]
+          }
+        },
+        {
+          "card": "card_location_german_scen1",
+          "program": "steps",
+          "instruction_i": 5825,
+          "bo": 5825,
+          "expression_path": "src",
+          "node": {
+            "math": "Format",
+            "args": [
+              {
+                "str": "null"
+              },
+              {
+                "var": "K2Node_MakeArray_Array",
+                "scope": "local",
+                "element_type": "Struct"
+              }
+            ]
+          }
+        },
+        {
+          "card": "card_location_german_scen1",
+          "program": "steps",
+          "instruction_i": 6357,
+          "bo": 6357,
+          "expression_path": "src",
+          "node": {
+            "math": "Format",
+            "args": [
+              {
+                "str": "null"
+              },
+              {
+                "var": "K2Node_MakeArray_Array_2",
+                "scope": "local",
+                "element_type": "Struct"
+              }
+            ]
+          }
+        },
+        {
+          "card": "card_location_german_scen2",
+          "program": "steps",
+          "instruction_i": 3196,
+          "bo": 3196,
+          "expression_path": "src",
+          "node": {
+            "math": "Format",
+            "args": [
+              {
+                "str": "null"
+              },
+              {
+                "var": "K2Node_MakeArray_Array",
+                "scope": "local",
+                "element_type": "Struct"
+              }
+            ]
+          }
+        },
+        {
+          "card": "card_location_german_scen2",
+          "program": "steps",
+          "instruction_i": 5456,
+          "bo": 5456,
+          "expression_path": "src",
+          "node": {
+            "math": "Format",
+            "args": [
+              {
+                "str": "null"
+              },
+              {
+                "var": "K2Node_MakeArray_Array_1",
+                "scope": "local",
+                "element_type": "Struct"
+              }
+            ]
+          }
+        },
+        {
+          "card": "card_location_german_scen3",
+          "program": "steps",
+          "instruction_i": 13665,
+          "bo": 13665,
+          "expression_path": "src",
+          "node": {
+            "math": "Format",
+            "args": [
+              {
+                "str": "null"
+              },
+              {
+                "var": "K2Node_MakeArray_Array_1",
+                "scope": "local",
+                "element_type": "Struct"
+              }
+            ]
+          }
+        },
+        {
+          "card": "card_location_german_scen3",
+          "program": "steps",
+          "instruction_i": 14327,
+          "bo": 14327,
+          "expression_path": "src",
+          "node": {
+            "math": "Format",
+            "args": [
+              {
+                "str": "null"
+              },
+              {
+                "var": "K2Node_MakeArray_Array",
+                "scope": "local",
+                "element_type": "Struct"
+              }
+            ]
+          }
+        },
+        {
+          "card": "card_location_german_scen3",
+          "program": "steps",
+          "instruction_i": 15503,
+          "bo": 15503,
+          "expression_path": "src",
+          "node": {
+            "math": "Format",
+            "args": [
+              {
+                "str": "null"
+              },
+              {
+                "var": "K2Node_MakeArray_Array_2",
+                "scope": "local",
+                "element_type": "Struct"
+              }
+            ]
+          }
+        },
+        {
+          "card": "card_location_german_scen4",
+          "program": "steps",
+          "instruction_i": 4298,
+          "bo": 4298,
+          "expression_path": "src",
+          "node": {
+            "math": "Format",
+            "args": [
+              {
+                "str": "null"
+              },
+              {
+                "var": "K2Node_MakeArray_Array",
+                "scope": "local",
+                "element_type": "Struct"
+              }
+            ]
+          }
+        },
+        {
+          "card": "card_location_german_scen4",
+          "program": "steps",
+          "instruction_i": 5709,
+          "bo": 5709,
+          "expression_path": "src",
+          "node": {
+            "math": "Format",
+            "args": [
+              {
+                "str": "null"
+              },
+              {
+                "var": "K2Node_MakeArray_Array_1",
+                "scope": "local",
+                "element_type": "Struct"
+              }
+            ]
+          }
+        },
+        {
+          "card": "card_location_german_scen5",
+          "program": "steps",
+          "instruction_i": 6196,
+          "bo": 6196,
+          "expression_path": "src",
+          "node": {
+            "math": "Format",
+            "args": [
+              {
+                "str": "null"
+              },
+              {
+                "var": "K2Node_MakeArray_Array",
+                "scope": "local",
+                "element_type": "Struct"
+              }
+            ]
+          }
+        },
+        {
+          "card": "card_location_german_scen5",
+          "program": "steps",
+          "instruction_i": 7351,
+          "bo": 7351,
+          "expression_path": "src",
+          "node": {
+            "math": "Format",
+            "args": [
+              {
+                "str": "null"
+              },
+              {
+                "var": "K2Node_MakeArray_Array_2",
+                "scope": "local",
+                "element_type": "Struct"
+              }
+            ]
+          }
+        },
+        {
+          "card": "card_location_german_scen5",
+          "program": "steps",
+          "instruction_i": 7921,
+          "bo": 7921,
+          "expression_path": "src",
+          "node": {
+            "math": "Format",
+            "args": [
+              {
+                "str": "null"
+              },
+              {
+                "var": "K2Node_MakeArray_Array_1",
+                "scope": "local",
+                "element_type": "Struct"
+              }
+            ]
+          }
+        },
+        {
+          "card": "card_event_seize_the_initiative",
+          "program": "steps",
+          "instruction_i": 684,
+          "bo": 684,
+          "expression_path": "src",
+          "node": {
+            "math": "Format",
+            "args": [
+              {
+                "str": "null"
+              },
+              {
+                "var": "K2Node_MakeArray_Array",
+                "scope": "local",
+                "element_type": "Struct"
+              }
+            ]
+          }
+        },
+        {
+          "card": "card_event_carrier_battle",
+          "program": "steps",
+          "instruction_i": 680,
+          "bo": 680,
+          "expression_path": "src",
+          "node": {
+            "math": "Format",
+            "args": [
+              {
+                "str": "null"
+              },
+              {
+                "var": "K2Node_MakeArray_Array",
+                "scope": "local",
+                "element_type": "Struct"
+              }
+            ]
+          }
+        },
+        {
+          "card": "card_location_japan_scen1",
+          "program": "steps",
+          "instruction_i": 4301,
+          "bo": 4301,
+          "expression_path": "src",
+          "node": {
+            "math": "Format",
+            "args": [
+              {
+                "str": "null"
+              },
+              {
+                "var": "K2Node_MakeArray_Array",
+                "scope": "local",
+                "element_type": "Struct"
+              }
+            ]
+          }
+        },
+        {
+          "card": "card_location_japan_scen1",
+          "program": "steps",
+          "instruction_i": 4961,
+          "bo": 4961,
+          "expression_path": "src",
+          "node": {
+            "math": "Format",
+            "args": [
+              {
+                "str": "null"
+              },
+              {
+                "var": "K2Node_MakeArray_Array",
+                "scope": "local",
+                "element_type": "Struct"
+              }
+            ]
+          }
+        },
+        {
+          "card": "card_location_japan_scen1",
+          "program": "steps",
+          "instruction_i": 5999,
+          "bo": 5999,
+          "expression_path": "src",
+          "node": {
+            "math": "Format",
+            "args": [
+              {
+                "str": "null"
+              },
+              {
+                "var": "K2Node_MakeArray_Array_1",
+                "scope": "local",
+                "element_type": "Struct"
+              }
+            ]
+          }
+        },
+        {
+          "card": "card_location_japan_scen2",
+          "program": "steps",
+          "instruction_i": 6663,
+          "bo": 6663,
+          "expression_path": "src",
+          "node": {
+            "math": "Format",
+            "args": [
+              {
+                "str": "null"
+              },
+              {
+                "var": "K2Node_MakeArray_Array",
+                "scope": "local",
+                "element_type": "Struct"
+              }
+            ]
+          }
+        },
+        {
+          "card": "card_location_japan_scen2",
+          "program": "steps",
+          "instruction_i": 7290,
+          "bo": 7290,
+          "expression_path": "src",
+          "node": {
+            "math": "Format",
+            "args": [
+              {
+                "str": "null"
+              },
+              {
+                "var": "K2Node_MakeArray_Array_1",
+                "scope": "local",
+                "element_type": "Struct"
+              }
+            ]
+          }
+        },
+        {
+          "card": "card_location_japan_scen3",
+          "program": "steps",
+          "instruction_i": 3755,
+          "bo": 3755,
+          "expression_path": "src",
+          "node": {
+            "math": "Format",
+            "args": [
+              {
+                "str": "null"
+              },
+              {
+                "var": "K2Node_MakeArray_Array",
+                "scope": "local",
+                "element_type": "Struct"
+              }
+            ]
+          }
+        },
+        {
+          "card": "card_location_japan_scen3",
+          "program": "steps",
+          "instruction_i": 5032,
+          "bo": 5032,
+          "expression_path": "src",
+          "node": {
+            "math": "Format",
+            "args": [
+              {
+                "str": "null"
+              },
+              {
+                "var": "K2Node_MakeArray_Array_1",
+                "scope": "local",
+                "element_type": "Struct"
+              }
+            ]
+          }
+        },
+        {
+          "card": "card_location_japan_scen4",
+          "program": "steps",
+          "instruction_i": 6044,
+          "bo": 6044,
+          "expression_path": "src",
+          "node": {
+            "math": "Format",
+            "args": [
+              {
+                "str": "null"
+              },
+              {
+                "var": "K2Node_MakeArray_Array",
+                "scope": "local",
+                "element_type": "Struct"
+              }
+            ]
+          }
+        },
+        {
+          "card": "card_location_japan_scen4",
+          "program": "steps",
+          "instruction_i": 7168,
+          "bo": 7168,
+          "expression_path": "src",
+          "node": {
+            "math": "Format",
+            "args": [
+              {
+                "str": "null"
+              },
+              {
+                "var": "K2Node_MakeArray_Array_1",
+                "scope": "local",
+                "element_type": "Struct"
+              }
+            ]
+          }
+        },
+        {
+          "card": "card_location_japan_scen5",
+          "program": "steps",
+          "instruction_i": 5298,
+          "bo": 5298,
+          "expression_path": "src",
+          "node": {
+            "math": "Format",
+            "args": [
+              {
+                "str": "null"
+              },
+              {
+                "var": "K2Node_MakeArray_Array",
+                "scope": "local",
+                "element_type": "Struct"
+              }
+            ]
+          }
+        },
+        {
+          "card": "card_location_japan_scen5",
+          "program": "steps",
+          "instruction_i": 6004,
+          "bo": 6004,
+          "expression_path": "src",
+          "node": {
+            "math": "Format",
+            "args": [
+              {
+                "str": "null"
+              },
+              {
+                "var": "K2Node_MakeArray_Array_1",
+                "scope": "local",
+                "element_type": "Struct"
+              }
+            ]
+          }
+        },
+        {
+          "card": "card_unit_115th_separate_btn",
+          "program": "steps",
+          "instruction_i": 2725,
+          "bo": 2725,
+          "expression_path": "src",
+          "node": {
+            "math": "Format",
+            "args": [
+              {
+                "str": "null"
+              },
+              {
+                "var": "K2Node_MakeArray_Array",
+                "scope": "local",
+                "element_type": "Struct"
+              }
+            ]
+          }
+        },
+        {
+          "card": "card_location_soviet_scen1",
+          "program": "steps",
+          "instruction_i": 8740,
+          "bo": 8740,
+          "expression_path": "src",
+          "node": {
+            "math": "Format",
+            "args": [
+              {
+                "str": "null"
+              },
+              {
+                "var": "K2Node_MakeArray_Array_1",
+                "scope": "local",
+                "element_type": "Struct"
+              }
+            ]
+          }
+        },
+        {
+          "card": "card_location_soviet_scen1",
+          "program": "steps",
+          "instruction_i": 9398,
+          "bo": 9398,
+          "expression_path": "src",
+          "node": {
+            "math": "Format",
+            "args": [
+              {
+                "str": "null"
+              },
+              {
+                "var": "K2Node_MakeArray_Array",
+                "scope": "local",
+                "element_type": "Struct"
+              }
+            ]
+          }
+        },
+        {
+          "card": "card_location_soviet_scen2",
+          "program": "steps",
+          "instruction_i": 6242,
+          "bo": 6242,
+          "expression_path": "src",
+          "node": {
+            "math": "Format",
+            "args": [
+              {
+                "str": "null"
+              },
+              {
+                "var": "K2Node_MakeArray_Array",
+                "scope": "local",
+                "element_type": "Struct"
+              }
+            ]
+          }
+        },
+        {
+          "card": "card_location_soviet_scen2",
+          "program": "steps",
+          "instruction_i": 6909,
+          "bo": 6909,
+          "expression_path": "src",
+          "node": {
+            "math": "Format",
+            "args": [
+              {
+                "str": "null"
+              },
+              {
+                "var": "K2Node_MakeArray_Array_1",
+                "scope": "local",
+                "element_type": "Struct"
+              }
+            ]
+          }
+        },
+        {
+          "card": "card_location_soviet_scen3",
+          "program": "steps",
+          "instruction_i": 7243,
+          "bo": 7243,
+          "expression_path": "src",
+          "node": {
+            "math": "Format",
+            "args": [
+              {
+                "str": "null"
+              },
+              {
+                "var": "K2Node_MakeArray_Array",
+                "scope": "local",
+                "element_type": "Struct"
+              }
+            ]
+          }
+        },
+        {
+          "card": "card_location_soviet_scen4",
+          "program": "steps",
+          "instruction_i": 7597,
+          "bo": 7597,
+          "expression_path": "src",
+          "node": {
+            "math": "Format",
+            "args": [
+              {
+                "str": "null"
+              },
+              {
+                "var": "K2Node_MakeArray_Array",
+                "scope": "local",
+                "element_type": "Struct"
+              }
+            ]
+          }
+        },
+        {
+          "card": "card_location_soviet_scen4",
+          "program": "steps",
+          "instruction_i": 9107,
+          "bo": 9107,
+          "expression_path": "src",
+          "node": {
+            "math": "Format",
+            "args": [
+              {
+                "str": "null"
+              },
+              {
+                "var": "K2Node_MakeArray_Array_1",
+                "scope": "local",
+                "element_type": "Struct"
+              }
+            ]
+          }
+        },
+        {
+          "card": "card_location_soviet_scen5",
+          "program": "steps",
+          "instruction_i": 3563,
+          "bo": 3563,
+          "expression_path": "src",
+          "node": {
+            "math": "Format",
+            "args": [
+              {
+                "str": "null"
+              },
+              {
+                "var": "K2Node_MakeArray_Array",
+                "scope": "local",
+                "element_type": "Struct"
+              }
+            ]
+          }
+        },
+        {
+          "card": "card_location_soviet_scen5",
+          "program": "steps",
+          "instruction_i": 4710,
+          "bo": 4710,
+          "expression_path": "src",
+          "node": {
+            "math": "Format",
+            "args": [
+              {
+                "str": "null"
+              },
+              {
+                "var": "K2Node_MakeArray_Array_1",
+                "scope": "local",
+                "element_type": "Struct"
+              }
+            ]
+          }
+        },
+        {
+          "card": "card_location_usa_scen1",
+          "program": "steps",
+          "instruction_i": 5014,
+          "bo": 5014,
+          "expression_path": "src",
+          "node": {
+            "math": "Format",
+            "args": [
+              {
+                "str": "null"
+              },
+              {
+                "var": "K2Node_MakeArray_Array",
+                "scope": "local",
+                "element_type": "Struct"
+              }
+            ]
+          }
+        },
+        {
+          "card": "card_location_usa_scen2",
+          "program": "steps",
+          "instruction_i": 4940,
+          "bo": 4940,
+          "expression_path": "src",
+          "node": {
+            "math": "Format",
+            "args": [
+              {
+                "str": "null"
+              },
+              {
+                "var": "K2Node_MakeArray_Array",
+                "scope": "local",
+                "element_type": "Struct"
+              }
+            ]
+          }
+        },
+        {
+          "card": "card_location_usa_scen2",
+          "program": "steps",
+          "instruction_i": 5668,
+          "bo": 5668,
+          "expression_path": "src",
+          "node": {
+            "math": "Format",
+            "args": [
+              {
+                "str": "null"
+              },
+              {
+                "var": "K2Node_MakeArray_Array_1",
+                "scope": "local",
+                "element_type": "Struct"
+              }
+            ]
+          }
+        },
+        {
+          "card": "card_location_usa_scen3",
+          "program": "steps",
+          "instruction_i": 5274,
+          "bo": 5274,
+          "expression_path": "src",
+          "node": {
+            "math": "Format",
+            "args": [
+              {
+                "str": "null"
+              },
+              {
+                "var": "K2Node_MakeArray_Array",
+                "scope": "local",
+                "element_type": "Struct"
+              }
+            ]
+          }
+        },
+        {
+          "card": "card_location_usa_scen3",
+          "program": "steps",
+          "instruction_i": 5888,
+          "bo": 5888,
+          "expression_path": "src",
+          "node": {
+            "math": "Format",
+            "args": [
+              {
+                "str": "null"
+              },
+              {
+                "var": "K2Node_MakeArray_Array",
+                "scope": "local",
+                "element_type": "Struct"
+              }
+            ]
+          }
+        },
+        {
+          "card": "card_location_usa_scen3",
+          "program": "steps",
+          "instruction_i": 6993,
+          "bo": 6993,
+          "expression_path": "src",
+          "node": {
+            "math": "Format",
+            "args": [
+              {
+                "str": "null"
+              },
+              {
+                "var": "K2Node_MakeArray_Array_1",
+                "scope": "local",
+                "element_type": "Struct"
+              }
+            ]
+          }
+        },
+        {
+          "card": "card_location_usa_scen4",
+          "program": "steps",
+          "instruction_i": 6879,
+          "bo": 6879,
+          "expression_path": "src",
+          "node": {
+            "math": "Format",
+            "args": [
+              {
+                "str": "null"
+              },
+              {
+                "var": "K2Node_MakeArray_Array_1",
+                "scope": "local",
+                "element_type": "Struct"
+              }
+            ]
+          }
+        },
+        {
+          "card": "card_location_usa_scen4",
+          "program": "steps",
+          "instruction_i": 7433,
+          "bo": 7433,
+          "expression_path": "src",
+          "node": {
+            "math": "Format",
+            "args": [
+              {
+                "str": "null"
+              },
+              {
+                "var": "K2Node_MakeArray_Array",
+                "scope": "local",
+                "element_type": "Struct"
+              }
+            ]
+          }
+        },
+        {
+          "card": "card_location_usa_scen5",
+          "program": "steps",
+          "instruction_i": 4632,
+          "bo": 4632,
+          "expression_path": "src",
+          "node": {
+            "math": "Format",
+            "args": [
+              {
+                "str": "null"
+              },
+              {
+                "var": "K2Node_MakeArray_Array",
+                "scope": "local",
+                "element_type": "Struct"
+              }
+            ]
+          }
+        },
+        {
+          "card": "card_location_usa_scen5",
+          "program": "steps",
+          "instruction_i": 5607,
+          "bo": 5607,
+          "expression_path": "src",
+          "node": {
+            "math": "Format",
+            "args": [
+              {
+                "str": "null"
+              },
+              {
+                "var": "K2Node_MakeArray_Array_1",
+                "scope": "local",
+                "element_type": "Struct"
+              }
+            ]
+          }
+        }
+      ],
+      "declared_in_ImplementedMathNames": false,
+      "undeclared_occurrence_count": 57
+    },
+    {
+      "name": "GetDisplayName",
+      "occurrence_count": 1,
+      "expression_math_count": 1,
+      "standalone_op_math_count": 0,
+      "examples": [
+        {
+          "card": "card_unit_75th_rifle_regiment",
+          "program": "locals.SpawnCopy",
+          "instruction_i": 0,
+          "bo": 0,
+          "expression_path": "src"
+        }
+      ],
+      "undeclared_occurrences": [
+        {
+          "card": "card_unit_75th_rifle_regiment",
+          "program": "locals.SpawnCopy",
+          "instruction_i": 0,
+          "bo": 0,
+          "expression_path": "src",
+          "node": {
+            "math": "GetDisplayName",
+            "args": [
+              {
+                "self": true
+              }
+            ]
+          }
+        }
+      ],
+      "declared_in_ImplementedMathNames": false,
+      "undeclared_occurrence_count": 1
+    },
+    {
+      "name": "GetEmptyText",
+      "occurrence_count": 1,
+      "expression_math_count": 1,
+      "standalone_op_math_count": 0,
+      "examples": [
+        {
+          "card": "card_unit_tropic_lightning",
+          "program": "steps",
+          "instruction_i": 1919,
+          "bo": 1919,
+          "expression_path": "src"
+        }
+      ],
+      "declared_in_ImplementedMathNames": true
+    },
+    {
+      "name": "GetEnumeratorUserFriendlyName",
+      "occurrence_count": 22,
+      "expression_math_count": 22,
+      "standalone_op_math_count": 0,
+      "examples": [
+        {
+          "card": "card_event_lost_cause_skirm",
+          "program": "steps",
+          "instruction_i": 102,
+          "bo": 102,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_event_second_front",
+          "program": "steps",
+          "instruction_i": 137,
+          "bo": 137,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_event_isolation",
+          "program": "steps",
+          "instruction_i": 259,
+          "bo": 259,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_unit_sendai_regiment",
+          "program": "steps",
+          "instruction_i": 171,
+          "bo": 171,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_unit_sendai_regiment",
+          "program": "steps",
+          "instruction_i": 407,
+          "bo": 407,
+          "expression_path": "src"
+        }
+      ],
+      "declared_in_ImplementedMathNames": true
+    },
+    {
+      "name": "GetEnumeratorValueFromIndex",
+      "occurrence_count": 1,
+      "expression_math_count": 1,
+      "standalone_op_math_count": 0,
+      "examples": [
+        {
+          "card": "card_unit_35th_infantry_regiment",
+          "program": "locals.getMoveReason",
+          "instruction_i": 173,
+          "bo": 173,
+          "expression_path": "src"
+        }
+      ],
+      "declared_in_ImplementedMathNames": true
+    },
+    {
+      "name": "GetFactionEnum",
+      "occurrence_count": 11,
+      "expression_math_count": 11,
+      "standalone_op_math_count": 0,
+      "examples": [
+        {
+          "card": "card_event_second_front",
+          "program": "steps",
+          "instruction_i": 1024,
+          "bo": 1024,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_event_second_front",
+          "program": "steps",
+          "instruction_i": 1317,
+          "bo": 1317,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_event_second_front",
+          "program": "steps",
+          "instruction_i": 1984,
+          "bo": 1984,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_event_second_front",
+          "program": "steps",
+          "instruction_i": 2296,
+          "bo": 2296,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_event_isolation",
+          "program": "steps",
+          "instruction_i": 881,
+          "bo": 881,
+          "expression_path": "src"
+        }
+      ],
+      "declared_in_ImplementedMathNames": true
+    },
+    {
+      "name": "GetOrSpawnActor",
+      "occurrence_count": 1,
+      "expression_math_count": 1,
+      "standalone_op_math_count": 0,
+      "examples": [
+        {
+          "card": "card_brawl_test1",
+          "program": "locals.getSkirmishBP",
+          "instruction_i": 67,
+          "bo": 67,
+          "expression_path": "src"
+        }
+      ],
+      "undeclared_occurrences": [
+        {
+          "card": "card_brawl_test1",
+          "program": "locals.getSkirmishBP",
+          "instruction_i": 67,
+          "bo": 67,
+          "expression_path": "src",
+          "node": {
+            "math": "GetOrSpawnActor",
+            "args": [
+              {
+                "self": true
+              },
+              {
+                "obj": "/Game/Blueprints/BP_SkirmishMode.BP_SkirmishMode_C"
+              }
+            ]
+          }
+        }
+      ],
+      "declared_in_ImplementedMathNames": false,
+      "undeclared_occurrence_count": 1
+    },
+    {
+      "name": "GetStaticCard",
+      "occurrence_count": 24,
+      "expression_math_count": 24,
+      "standalone_op_math_count": 0,
+      "examples": [
+        {
+          "card": "card_unit_hampshire_regiment",
+          "program": "locals.GetChooseSpawnCards",
+          "instruction_i": 0,
+          "bo": 0,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_unit_hampshire_regiment",
+          "program": "locals.GetChooseSpawnCards",
+          "instruction_i": 33,
+          "bo": 33,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_unit_hampshire_regiment",
+          "program": "locals.GetChooseSpawnCards",
+          "instruction_i": 66,
+          "bo": 66,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_event_bpf",
+          "program": "locals.GetChooseSpawnCards",
+          "instruction_i": 540,
+          "bo": 540,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_event_bpf",
+          "program": "locals.GetChooseSpawnCards",
+          "instruction_i": 573,
+          "bo": 573,
+          "expression_path": "src"
+        }
+      ],
+      "declared_in_ImplementedMathNames": true
+    },
+    {
+      "name": "GetStaticKredits",
+      "occurrence_count": 2,
+      "expression_math_count": 0,
+      "standalone_op_math_count": 2,
+      "examples": [
+        {
+          "card": "card_event_bomber_cost",
+          "program": "steps",
+          "instruction_i": 79,
+          "bo": 79,
+          "expression_path": "steps[3]"
+        },
+        {
+          "card": "card_event_bomber_cost",
+          "program": "steps",
+          "instruction_i": 916,
+          "bo": 916,
+          "expression_path": "steps[27]"
+        }
+      ],
+      "declared_in_ImplementedMathNames": true
+    },
+    {
+      "name": "GetValidValue",
+      "occurrence_count": 2,
+      "expression_math_count": 2,
+      "standalone_op_math_count": 0,
+      "examples": [
+        {
+          "card": "card_unit_35th_infantry_regiment",
+          "program": "locals.getMoveReason",
+          "instruction_i": 325,
+          "bo": 325,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_unit_35th_infantry_regiment",
+          "program": "locals.getMoveReason",
+          "instruction_i": 502,
+          "bo": 502,
+          "expression_path": "src"
+        }
+      ],
+      "declared_in_ImplementedMathNames": true
+    },
+    {
+      "name": "GreaterEqual_IntInt",
+      "occurrence_count": 141,
+      "expression_math_count": 141,
+      "standalone_op_math_count": 0,
+      "examples": [
+        {
+          "card": "card_event_the_commonwealth",
+          "program": "steps",
+          "instruction_i": 194,
+          "bo": 194,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_event_the_commonwealth",
+          "program": "locals.GetPlayFromHandDamage",
+          "instruction_i": 104,
+          "bo": 104,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_event_dowding_system",
+          "program": "steps",
+          "instruction_i": 120,
+          "bo": 120,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_unit_no_3_commando",
+          "program": "locals.CanOtherCardBeTargetted",
+          "instruction_i": 89,
+          "bo": 89,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_event_hms_talbot",
+          "program": "steps",
+          "instruction_i": 126,
+          "bo": 126,
+          "expression_path": "src"
+        }
+      ],
+      "declared_in_ImplementedMathNames": true
+    },
+    {
+      "name": "Greater_IntInt",
+      "occurrence_count": 605,
+      "expression_math_count": 605,
+      "standalone_op_math_count": 0,
+      "examples": [
+        {
+          "card": "card_event_corps_command",
+          "program": "locals._DoOnCardPlayedOrGotchaTriggered",
+          "instruction_i": 628,
+          "bo": 908,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_event_forward_base_anzac",
+          "program": "locals.CanPlayFromHand",
+          "instruction_i": 237,
+          "bo": 237,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_event_guerilla_warfare_school",
+          "program": "steps",
+          "instruction_i": 632,
+          "bo": 632,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_event_hmas_warramunga",
+          "program": "steps",
+          "instruction_i": 69,
+          "bo": 69,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_event_task_force_44",
+          "program": "steps",
+          "instruction_i": 310,
+          "bo": 310,
+          "expression_path": "src"
+        }
+      ],
+      "declared_in_ImplementedMathNames": true
+    },
+    {
+      "name": "IsValid",
+      "occurrence_count": 445,
+      "expression_math_count": 445,
+      "standalone_op_math_count": 0,
+      "examples": [
+        {
+          "card": "card_event_aans",
+          "program": "steps",
+          "instruction_i": 138,
+          "bo": 138,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_event_corps_command",
+          "program": "locals._DoOnCardPlayedOrGotchaTriggered",
+          "instruction_i": 727,
+          "bo": 1047,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_event_guerilla_warfare_school",
+          "program": "steps",
+          "instruction_i": 735,
+          "bo": 735,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_event_the_double_sunrise",
+          "program": "steps",
+          "instruction_i": 698,
+          "bo": 698,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_event_the_double_sunrise",
+          "program": "steps",
+          "instruction_i": 1713,
+          "bo": 1713,
+          "expression_path": "src"
+        }
+      ],
+      "declared_in_ImplementedMathNames": true
+    },
+    {
+      "name": "LessEqual_IntInt",
+      "occurrence_count": 218,
+      "expression_math_count": 218,
+      "standalone_op_math_count": 0,
+      "examples": [
+        {
+          "card": "card_event_anzac_spirit",
+          "program": "steps",
+          "instruction_i": 548,
+          "bo": 548,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_event_burning_fields_skirm",
+          "program": "steps",
+          "instruction_i": 291,
+          "bo": 291,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_event_espionage_skirm",
+          "program": "steps",
+          "instruction_i": 459,
+          "bo": 459,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_event_lost_cause_skirm",
+          "program": "locals.CanPlayFromHand",
+          "instruction_i": 282,
+          "bo": 282,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_event_atlantic_convoy",
+          "program": "steps",
+          "instruction_i": 1010,
+          "bo": 1010,
+          "expression_path": "src"
+        }
+      ],
+      "declared_in_ImplementedMathNames": true
+    },
+    {
+      "name": "Less_IntInt",
+      "occurrence_count": 996,
+      "expression_math_count": 996,
+      "standalone_op_math_count": 0,
+      "examples": [
+        {
+          "card": "card_event_anzac_spirit",
+          "program": "steps",
+          "instruction_i": 298,
+          "bo": 298,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_event_corps_command",
+          "program": "locals._DoOnCardPlayedOrGotchaTriggered",
+          "instruction_i": 144,
+          "bo": 208,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_event_forward_base_anzac",
+          "program": "locals.GetPlayFromHandDamage",
+          "instruction_i": 286,
+          "bo": 286,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_event_repel_the_attack",
+          "program": "steps",
+          "instruction_i": 405,
+          "bo": 405,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_event_the_double_sunrise",
+          "program": "steps",
+          "instruction_i": 97,
+          "bo": 97,
+          "expression_path": "src"
+        }
+      ],
+      "declared_in_ImplementedMathNames": true
+    },
+    {
+      "name": "MakeLiteralInt",
+      "occurrence_count": 1,
+      "expression_math_count": 1,
+      "standalone_op_math_count": 0,
+      "examples": [
+        {
+          "card": "card_unit_35th_infantry_regiment",
+          "program": "locals.getMoveReason",
+          "instruction_i": 51,
+          "bo": 51,
+          "expression_path": "src"
+        }
+      ],
+      "declared_in_ImplementedMathNames": true
+    },
+    {
+      "name": "MakeLiteralText",
+      "occurrence_count": 4,
+      "expression_math_count": 4,
+      "standalone_op_math_count": 0,
+      "examples": [
+        {
+          "card": "card_unit_115th_separate_btn",
+          "program": "steps",
+          "instruction_i": 10,
+          "bo": 10,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_unit_38th_guards_rifles",
+          "program": "steps",
+          "instruction_i": 10,
+          "bo": 10,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_unit_133rd_ironman",
+          "program": "steps",
+          "instruction_i": 174,
+          "bo": 174,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_unit_103rd_cavalry_recon",
+          "program": "steps",
+          "instruction_i": 658,
+          "bo": 658,
+          "expression_path": "src"
+        }
+      ],
+      "declared_in_ImplementedMathNames": true
+    },
+    {
+      "name": "Max",
+      "occurrence_count": 6,
+      "expression_math_count": 6,
+      "standalone_op_math_count": 0,
+      "examples": [
+        {
+          "card": "card_unit_the_silent_seventh",
+          "program": "steps",
+          "instruction_i": 2204,
+          "bo": 2204,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_unit_the_silent_seventh",
+          "program": "steps",
+          "instruction_i": 2611,
+          "bo": 2611,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_unit_the_silent_seventh",
+          "program": "locals.checkAndUpdateBuff",
+          "instruction_i": 1083,
+          "bo": 1083,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_event_spirit_of_rome",
+          "program": "steps",
+          "instruction_i": 345,
+          "bo": 345,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_unit_76th_napoli",
+          "program": "steps",
+          "instruction_i": 283,
+          "bo": 283,
+          "expression_path": "src"
+        }
+      ],
+      "declared_in_ImplementedMathNames": true
+    },
+    {
+      "name": "Min",
+      "occurrence_count": 4,
+      "expression_math_count": 4,
+      "standalone_op_math_count": 0,
+      "examples": [
+        {
+          "card": "card_unit_the_silent_seventh",
+          "program": "steps",
+          "instruction_i": 2246,
+          "bo": 2246,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_unit_the_silent_seventh",
+          "program": "steps",
+          "instruction_i": 2653,
+          "bo": 2653,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_unit_the_silent_seventh",
+          "program": "locals.checkAndUpdateBuff",
+          "instruction_i": 1125,
+          "bo": 1125,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_unit_jet_protoype_a",
+          "program": "steps",
+          "instruction_i": 523,
+          "bo": 523,
+          "expression_path": "src"
+        }
+      ],
+      "declared_in_ImplementedMathNames": true
+    },
+    {
+      "name": "Multiply_IntInt",
+      "occurrence_count": 127,
+      "expression_math_count": 127,
+      "standalone_op_math_count": 0,
+      "examples": [
+        {
+          "card": "card_unit_flaming_matilda_anzac",
+          "program": "locals.OnCardDealDamage_ModifyDamageDealt",
+          "instruction_i": 172,
+          "bo": 172,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_unit_the_silent_seventh",
+          "program": "steps",
+          "instruction_i": 2288,
+          "bo": 2288,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_unit_the_silent_seventh",
+          "program": "steps",
+          "instruction_i": 2695,
+          "bo": 2695,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_unit_the_silent_seventh",
+          "program": "locals.checkAndUpdateBuff",
+          "instruction_i": 1167,
+          "bo": 1167,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_unit_royal_ulster_rifles",
+          "program": "locals.OnOtherCardDealDamageAddDamageAfterCalc",
+          "instruction_i": 299,
+          "bo": 299,
+          "expression_path": "src"
+        }
+      ],
+      "declared_in_ImplementedMathNames": true
+    },
+    {
+      "name": "NotEqual_BoolBool",
+      "occurrence_count": 1,
+      "expression_math_count": 1,
+      "standalone_op_math_count": 0,
+      "examples": [
+        {
+          "card": "card_unit_511th_regiment",
+          "program": "locals.checkAndUpdateBuffOnCard",
+          "instruction_i": 544,
+          "bo": 788,
+          "expression_path": "src"
+        }
+      ],
+      "declared_in_ImplementedMathNames": true
+    },
+    {
+      "name": "NotEqual_ByteByte",
+      "occurrence_count": 591,
+      "expression_math_count": 591,
+      "standalone_op_math_count": 0,
+      "examples": [
+        {
+          "card": "card_event_hmas_warramunga",
+          "program": "steps",
+          "instruction_i": 358,
+          "bo": 358,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_event_repel_the_attack",
+          "program": "steps",
+          "instruction_i": 79,
+          "bo": 79,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_event_raid",
+          "program": "steps",
+          "instruction_i": 300,
+          "bo": 300,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_event_raid",
+          "program": "steps",
+          "instruction_i": 756,
+          "bo": 756,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_event_raid",
+          "program": "steps",
+          "instruction_i": 1116,
+          "bo": 1116,
+          "expression_path": "src"
+        }
+      ],
+      "declared_in_ImplementedMathNames": true
+    },
+    {
+      "name": "NotEqual_IntInt",
+      "occurrence_count": 428,
+      "expression_math_count": 428,
+      "standalone_op_math_count": 0,
+      "examples": [
+        {
+          "card": "card_unit_2_2nd_pioneers",
+          "program": "steps",
+          "instruction_i": 79,
+          "bo": 79,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_unit_the_silent_seventh",
+          "program": "steps",
+          "instruction_i": 2330,
+          "bo": 2330,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_unit_the_silent_seventh",
+          "program": "locals.checkAndUpdateBuff",
+          "instruction_i": 361,
+          "bo": 361,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_event_foreign_support_skirm",
+          "program": "locals.RandomChooseCards",
+          "instruction_i": 411,
+          "bo": 411,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_event_foreign_support_skirm",
+          "program": "locals.RandomChooseCards",
+          "instruction_i": 459,
+          "bo": 459,
+          "expression_path": "src"
+        }
+      ],
+      "declared_in_ImplementedMathNames": true
+    },
+    {
+      "name": "NotEqual_NameName",
+      "occurrence_count": 2,
+      "expression_math_count": 2,
+      "standalone_op_math_count": 0,
+      "examples": [
+        {
+          "card": "card_event_ural_factories_cam1",
+          "program": "steps",
+          "instruction_i": 2668,
+          "bo": 2668,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_event_yank_the_army_weekly",
+          "program": "steps",
+          "instruction_i": 64,
+          "bo": 64,
+          "expression_path": "src"
+        }
+      ],
+      "declared_in_ImplementedMathNames": true
+    },
+    {
+      "name": "NotEqual_ObjectObject",
+      "occurrence_count": 18,
+      "expression_math_count": 18,
+      "standalone_op_math_count": 0,
+      "examples": [
+        {
+          "card": "card_unit_flaming_matilda_anzac",
+          "program": "steps",
+          "instruction_i": 4464,
+          "bo": 4464,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_unit_raaf_walrus",
+          "program": "steps",
+          "instruction_i": 4490,
+          "bo": 4490,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_unit_sdf",
+          "program": "steps",
+          "instruction_i": 1758,
+          "bo": 1758,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_unit_1st_london_brigade",
+          "program": "steps",
+          "instruction_i": 1306,
+          "bo": 1306,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_unit_adler_command_vehicle",
+          "program": "steps",
+          "instruction_i": 2572,
+          "bo": 2572,
+          "expression_path": "src"
+        }
+      ],
+      "declared_in_ImplementedMathNames": true
+    },
+    {
+      "name": "NotEqual_StriStri",
+      "occurrence_count": 10,
+      "expression_math_count": 10,
+      "standalone_op_math_count": 0,
+      "examples": [
+        {
+          "card": "card_unit_sendai_regiment",
+          "program": "steps",
+          "instruction_i": 849,
+          "bo": 849,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_unit_sendai_regiment",
+          "program": "steps",
+          "instruction_i": 898,
+          "bo": 898,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_unit_kyoto_regiment",
+          "program": "steps",
+          "instruction_i": 849,
+          "bo": 849,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_unit_kyoto_regiment",
+          "program": "steps",
+          "instruction_i": 898,
+          "bo": 898,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_event_confusion",
+          "program": "steps",
+          "instruction_i": 311,
+          "bo": 311,
+          "expression_path": "src"
+        }
+      ],
+      "declared_in_ImplementedMathNames": true
+    },
+    {
+      "name": "Not_PreBool",
+      "occurrence_count": 203,
+      "expression_math_count": 203,
+      "standalone_op_math_count": 0,
+      "examples": [
+        {
+          "card": "card_unit_7th_brigade_anzac",
+          "program": "steps",
+          "instruction_i": 49,
+          "bo": 49,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_unit_flaming_matilda_anzac",
+          "program": "steps",
+          "instruction_i": 974,
+          "bo": 974,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_unit_raaf_walrus",
+          "program": "steps",
+          "instruction_i": 967,
+          "bo": 967,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_unit_the_silent_seventh",
+          "program": "steps",
+          "instruction_i": 594,
+          "bo": 594,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_event_foreign_support_skirm",
+          "program": "steps",
+          "instruction_i": 523,
+          "bo": 523,
+          "expression_path": "src"
+        }
+      ],
+      "declared_in_ImplementedMathNames": true
+    },
+    {
+      "name": "Percent_IntInt",
+      "occurrence_count": 14,
+      "expression_math_count": 14,
+      "standalone_op_math_count": 0,
+      "examples": [
+        {
+          "card": "card_event_front_and_homeland",
+          "program": "steps",
+          "instruction_i": 755,
+          "bo": 755,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_unit_43_infantry_regiment",
+          "program": "steps",
+          "instruction_i": 463,
+          "bo": 463,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_unit_jet_protoype_a",
+          "program": "steps",
+          "instruction_i": 202,
+          "bo": 202,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_unit_115th_separate_btn",
+          "program": "steps",
+          "instruction_i": 224,
+          "bo": 224,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_unit_115th_separate_btn",
+          "program": "steps",
+          "instruction_i": 311,
+          "bo": 311,
+          "expression_path": "src"
+        }
+      ],
+      "declared_in_ImplementedMathNames": true
+    },
+    {
+      "name": "PrintString",
+      "occurrence_count": 2,
+      "expression_math_count": 0,
+      "standalone_op_math_count": 2,
+      "examples": [
+        {
+          "card": "card_location_german_scen5",
+          "program": "steps",
+          "instruction_i": 3203,
+          "bo": 3203,
+          "expression_path": "steps[77]"
+        },
+        {
+          "card": "card_unit_75th_rifle_regiment",
+          "program": "locals.SpawnCopy",
+          "instruction_i": 90,
+          "bo": 122,
+          "expression_path": "locals.SpawnCopy[2]"
+        }
+      ],
+      "undeclared_occurrences": [
+        {
+          "card": "card_location_german_scen5",
+          "program": "steps",
+          "instruction_i": 3203,
+          "bo": 3203,
+          "expression_path": "steps[77]",
+          "node": {
+            "op": "math",
+            "fn": "PrintString",
+            "args": [
+              {
+                "none": true
+              },
+              {
+                "var": "CallFunc_Concat_StrStr_ReturnValue",
+                "scope": "local"
+              },
+              {
+                "bool": true
+              },
+              {
+                "bool": true
+              },
+              {
+                "struct": "/Script/CoreUObject.LinearColor",
+                "array": []
+              },
+              {
+                "float": 2.0
+              },
+              {
+                "name": "None"
+              }
+            ],
+            "outs": [],
+            "i": 3203,
+            "bo": 3203
+          }
+        },
+        {
+          "card": "card_unit_75th_rifle_regiment",
+          "program": "locals.SpawnCopy",
+          "instruction_i": 90,
+          "bo": 122,
+          "expression_path": "locals.SpawnCopy[2]",
+          "node": {
+            "op": "math",
+            "fn": "PrintString",
+            "args": [
+              {
+                "self": true
+              },
+              {
+                "var": "CallFunc_Concat_StrStr_ReturnValue",
+                "scope": "local"
+              },
+              {
+                "bool": true
+              },
+              {
+                "bool": true
+              },
+              {
+                "struct": "/Script/CoreUObject.LinearColor",
+                "array": []
+              },
+              {
+                "float": 2.0
+              },
+              {
+                "name": "None"
+              }
+            ],
+            "outs": [],
+            "i": 90,
+            "bo": 122
+          }
+        }
+      ],
+      "declared_in_ImplementedMathNames": false,
+      "undeclared_occurrence_count": 2
+    },
+    {
+      "name": "RemoveGameplayTag",
+      "occurrence_count": 1,
+      "expression_math_count": 1,
+      "standalone_op_math_count": 0,
+      "examples": [
+        {
+          "card": "card_event_us_weather_bureau",
+          "program": "steps",
+          "instruction_i": 281,
+          "bo": 281,
+          "expression_path": "src"
+        }
+      ],
+      "declared_in_ImplementedMathNames": true
+    },
+    {
+      "name": "SelectInt",
+      "occurrence_count": 31,
+      "expression_math_count": 31,
+      "standalone_op_math_count": 0,
+      "examples": [
+        {
+          "card": "card_event_the_commonwealth",
+          "program": "locals.GetPlayFromHandDamage",
+          "instruction_i": 138,
+          "bo": 138,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_event_cup_of_tea_cam1",
+          "program": "steps",
+          "instruction_i": 2712,
+          "bo": 2712,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_unit_commandos_cam1",
+          "program": "steps",
+          "instruction_i": 1328,
+          "bo": 1328,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_event_fortified_position_cam1",
+          "program": "steps",
+          "instruction_i": 2552,
+          "bo": 2552,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_event_fortified_position_cam1",
+          "program": "steps",
+          "instruction_i": 3481,
+          "bo": 3481,
+          "expression_path": "src"
+        }
+      ],
+      "declared_in_ImplementedMathNames": true
+    },
+    {
+      "name": "SelectString",
+      "occurrence_count": 4,
+      "expression_math_count": 4,
+      "standalone_op_math_count": 0,
+      "examples": [
+        {
+          "card": "card_event_through_the_ice",
+          "program": "steps",
+          "instruction_i": 391,
+          "bo": 391,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_event_sally",
+          "program": "locals.CanPlayFromHand",
+          "instruction_i": 227,
+          "bo": 227,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_event_sally",
+          "program": "locals.CanPlayFromHand",
+          "instruction_i": 634,
+          "bo": 634,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_event_sally",
+          "program": "locals.CanPlayFromHand",
+          "instruction_i": 1095,
+          "bo": 1095,
+          "expression_path": "src"
+        }
+      ],
+      "declared_in_ImplementedMathNames": true
+    },
+    {
+      "name": "Split",
+      "occurrence_count": 5,
+      "expression_math_count": 5,
+      "standalone_op_math_count": 0,
+      "examples": [
+        {
+          "card": "card_event_through_the_ice",
+          "program": "steps",
+          "instruction_i": 299,
+          "bo": 299,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_event_through_the_ice",
+          "program": "steps",
+          "instruction_i": 987,
+          "bo": 987,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_unit_sendai_regiment",
+          "program": "steps",
+          "instruction_i": 993,
+          "bo": 993,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_unit_kyoto_regiment",
+          "program": "steps",
+          "instruction_i": 993,
+          "bo": 993,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_event_special_reinforcements",
+          "program": "steps",
+          "instruction_i": 815,
+          "bo": 815,
+          "expression_path": "src"
+        }
+      ],
+      "declared_in_ImplementedMathNames": true
+    },
+    {
+      "name": "Subtract_IntInt",
+      "occurrence_count": 131,
+      "expression_math_count": 131,
+      "standalone_op_math_count": 0,
+      "examples": [
+        {
+          "card": "card_unit_4th_brigade_nz",
+          "program": "steps",
+          "instruction_i": 123,
+          "bo": 123,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_unit_4th_brigade_nz",
+          "program": "steps",
+          "instruction_i": 272,
+          "bo": 272,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_unit_the_silent_seventh",
+          "program": "steps",
+          "instruction_i": 2116,
+          "bo": 2116,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_unit_the_silent_seventh",
+          "program": "steps",
+          "instruction_i": 2162,
+          "bo": 2162,
+          "expression_path": "src"
+        },
+        {
+          "card": "card_unit_the_silent_seventh",
+          "program": "steps",
+          "instruction_i": 2523,
+          "bo": 2523,
+          "expression_path": "src"
+        }
+      ],
+      "declared_in_ImplementedMathNames": true
+    },
+    {
+      "name": "__SwitchValue",
+      "occurrence_count": 76,
+      "expression_math_count": 76,
+      "standalone_op_math_count": 0,
+      "examples": [
+        {
+          "card": "card_location_british_scen1",
+          "program": "steps",
+          "instruction_i": 3125,
+          "bo": 3125,
+          "expression_path": "args[2]"
+        },
+        {
+          "card": "card_location_british_scen2",
+          "program": "steps",
+          "instruction_i": 6629,
+          "bo": 6629,
+          "expression_path": "args[2]"
+        },
+        {
+          "card": "card_location_british_scen2",
+          "program": "steps",
+          "instruction_i": 7069,
+          "bo": 7069,
+          "expression_path": "args[2]"
+        },
+        {
+          "card": "card_location_british_scen3",
+          "program": "steps",
+          "instruction_i": 6081,
+          "bo": 6081,
+          "expression_path": "args[2]"
+        },
+        {
+          "card": "card_location_british_scen4",
+          "program": "steps",
+          "instruction_i": 1488,
+          "bo": 1488,
+          "expression_path": "args[2]"
+        }
+      ],
+      "declared_in_ImplementedMathNames": true
+    }
+  ],
+  "unknown_operation_examples": [
+    {
+      "card": "card_location_british_scen2",
+      "program": "steps",
+      "instruction_i": 90,
+      "bo": 90,
+      "unknown": null
+    },
+    {
+      "card": "card_location_british_scen2",
+      "program": "steps",
+      "instruction_i": 113,
+      "bo": 113,
+      "unknown": null
+    },
+    {
+      "card": "card_location_british_scen4",
+      "program": "steps",
+      "instruction_i": 90,
+      "bo": 90,
+      "unknown": null
+    },
+    {
+      "card": "card_location_british_scen4",
+      "program": "steps",
+      "instruction_i": 113,
+      "bo": 113,
+      "unknown": null
+    },
+    {
+      "card": "card_location_british_scen5",
+      "program": "steps",
+      "instruction_i": 90,
+      "bo": 90,
+      "unknown": null
+    },
+    {
+      "card": "card_location_british_scen5",
+      "program": "steps",
+      "instruction_i": 113,
+      "bo": 113,
+      "unknown": null
+    },
+    {
+      "card": "card_location_german_scen1",
+      "program": "steps",
+      "instruction_i": 90,
+      "bo": 90,
+      "unknown": null
+    },
+    {
+      "card": "card_location_german_scen1",
+      "program": "steps",
+      "instruction_i": 113,
+      "bo": 113,
+      "unknown": null
+    },
+    {
+      "card": "card_location_german_scen2",
+      "program": "steps",
+      "instruction_i": 90,
+      "bo": 90,
+      "unknown": null
+    },
+    {
+      "card": "card_location_german_scen2",
+      "program": "steps",
+      "instruction_i": 113,
+      "bo": 113,
+      "unknown": null
+    },
+    {
+      "card": "card_location_german_scen3",
+      "program": "steps",
+      "instruction_i": 90,
+      "bo": 90,
+      "unknown": null
+    },
+    {
+      "card": "card_location_german_scen3",
+      "program": "steps",
+      "instruction_i": 113,
+      "bo": 113,
+      "unknown": null
+    },
+    {
+      "card": "card_location_german_scen4",
+      "program": "steps",
+      "instruction_i": 90,
+      "bo": 90,
+      "unknown": null
+    },
+    {
+      "card": "card_location_german_scen4",
+      "program": "steps",
+      "instruction_i": 113,
+      "bo": 113,
+      "unknown": null
+    },
+    {
+      "card": "card_location_german_scen5",
+      "program": "steps",
+      "instruction_i": 90,
+      "bo": 90,
+      "unknown": null
+    },
+    {
+      "card": "card_location_german_scen5",
+      "program": "steps",
+      "instruction_i": 113,
+      "bo": 113,
+      "unknown": null
+    },
+    {
+      "card": "card_location_japan_scen1",
+      "program": "steps",
+      "instruction_i": 90,
+      "bo": 90,
+      "unknown": null
+    },
+    {
+      "card": "card_location_japan_scen1",
+      "program": "steps",
+      "instruction_i": 113,
+      "bo": 113,
+      "unknown": null
+    },
+    {
+      "card": "card_location_japan_scen2",
+      "program": "steps",
+      "instruction_i": 90,
+      "bo": 90,
+      "unknown": null
+    },
+    {
+      "card": "card_location_japan_scen2",
+      "program": "steps",
+      "instruction_i": 113,
+      "bo": 113,
+      "unknown": null
+    }
+  ],
+  "invalid_math_name_examples": [],
+  "limitations": [
+    "This inventory follows executable steps and locals represented in the current card-ir.json; it does not prove PvP scope or reachability.",
+    "ImplementedMathNames and EvalMath case-name agreement is not semantic validation against KARDS native behavior.",
+    "Unknown IR operation bodies remain opaque; this report does not infer their behavior.",
+    "A catalog name that is absent from the IR is not evidence of a missing live rule."
+  ]
+}

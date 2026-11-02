@@ -1203,12 +1203,12 @@ public sealed partial class KismetVm
             case "EndsWith":
                 return (a?.ToString() ?? "").EndsWith(b?.ToString() ?? "",
                     argExprs.Count > 2 && ToInt(Eval(argExprs[2], frame, ctx)) == 1
-                        ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase);
+                        ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal);
             case "Split":
                 {
                     string source = a?.ToString() ?? "", separator = b?.ToString() ?? "";
                     var comparison = argExprs.Count > 4 && ToInt(Eval(argExprs[4], frame, ctx)) == 1
-                        ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
+                        ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
                     bool fromEnd = argExprs.Count > 5 && ToInt(Eval(argExprs[5], frame, ctx)) == 1;
                     int position = separator.Length == 0 ? -1 : fromEnd
                         ? source.LastIndexOf(separator, comparison) : source.IndexOf(separator, comparison);

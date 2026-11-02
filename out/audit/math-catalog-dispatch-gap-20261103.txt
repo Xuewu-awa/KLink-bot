@@ -1,0 +1,20 @@
+{
+  "output": "D:\\Codex Workshop\\KLink-bot\\out\\audit\\systematic-rules\\kismet-math-node-catalog-20261103.json",
+  "totals": {
+    "ir_card_count": 1709,
+    "expression_nodes_with_math_key": 9061,
+    "standalone_op_math_steps": 220,
+    "total_math_call_sites": 9281,
+    "distinct_math_names": 69,
+    "declared_math_names": 73,
+    "evalmath_switch_case_names": 73,
+    "unknown_operation_steps": 40,
+    "invalid_math_name_nodes": 0
+  },
+  "undeclared_math_names": [
+    "Format",
+    "GetDisplayName",
+    "GetOrSpawnActor",
+    "PrintString"
+  ]
+}
