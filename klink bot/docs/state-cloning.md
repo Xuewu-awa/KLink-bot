@@ -1,7 +1,8 @@
 # Exact state cloning for candidate evaluation
 
 Status: RNG, supported card-graph/container and detached GameState cloning are
-implemented. Candidate evaluation still constructs an independent engine and
+implemented. An internal idle VM component copy is also implemented; complete
+MatchEngine/CardApi cloning remains open. Candidate evaluation still constructs an independent engine and
 replays the committed action tape.
 No speedup is claimed by this work.
 
@@ -144,7 +145,8 @@ explicitly. The standalone CardGraphClone whitelist is unchanged by this extensi
 An active WithDeckCardRemoved scope is rejected: its source-stack finally cannot
 continue on a detached state. Clearing three callback properties prevents source
 engine captures, but callers must still establish source quiescence and bind the
-destination engine. There is no automatic MatchEngine construction or VM/API copy.
+destination engine. GameStateClone does not construct a MatchEngine or copy its
+API/VM; the separate internal VM operation is described below.
 
 Five GameStateClone regressions cover raw scalar/nullable presence, exact state
 and nested field inventories, mutable-buffer isolation in both directions,
@@ -172,7 +174,7 @@ or throughput improvement is claimed.
 2. GameState: detached copying below is implemented. Destination-engine callback
    binding and the complete idle-boundary gate remain integration work.
    SnapshotJson is an observation format, not a restore contract.
-3. MatchEngine/CardApi/VM: preserve persistent state and diagnostic counters;
+3. MatchEngine/CardApi: preserve persistent state and diagnostic counters;
    rebuild dispatch delegates against the destination API. Review static template
    ownership and pool caches before sharing anything. Bind choice adapters to the
    destination. A copied delegate may still capture the source engine.
@@ -196,3 +198,54 @@ or throughput improvement is claimed.
   disabled until the engine graph and adapters meet these gates.
 
 This is an engineering acceptance plan, not a certification of PvP rule coverage.
+
+## Idle VM component copy (2026-11-02)
+
+The internal KismetVm(destinationApi, sourceVm, sharedMemo) constructor copies
+only a quiescent VM component. It is not a public engine checkpoint. The caller
+must provide a destination CardApi and a state-enabled CardGraphClone memo shared
+with all other destination roots. Full engine integration is still disabled.
+
+All 17 instance fields have explicit dispositions, enforced by a reflection
+inventory in BotSim:
+
+| Fields / auto-properties | Disposition |
+| --- | --- |
+| `_api` | Bind to supplied destination API; never retain source API. |
+| `_executionDepth` | Require zero; destination starts at zero. |
+| `Trace`, `StepTrace` | Copy via shared memo, preserving aliases to each other and other state roots. |
+| `ProgramsExecuted`, `StepsExecuted`, `UnsupportedInstructions`, `FaultedPrograms`, `UnresolvedJumps`, `FlowReturns`, `StepLimitHits` | Copy raw cumulative counters. |
+| `UnimplementedCalls`, `UnsupportedOps` | Copy dictionary storage/slots via shared memo. |
+| `CaptureMissingCallSites`, `MissingCallSitesOmitted`, `MissingCallSiteCaptureFailures` | Copy diagnostic configuration and cumulative counters. |
+| `_missingCallSites` | Copy dictionary via shared memo; share sealed immutable KismetMissingCallSite string/integer records. |
+
+The state-only payload whitelist now admits that diagnostic dictionary and its
+immutable keys. The card-only whitelist is unchanged. All RunCore paths wrap the
+whole frame operation in a depth increment/finally decrement, including nested
+local/event execution, missing entries, interpreter faults and failures before
+the interpreter catch. Active stack frames/locals/flow stacks are not copied.
+This guard is not thread synchronization: callers must prevent concurrent access.
+
+Three targeted regressions cover the exact field inventory, nonzero raw counters,
+trace aliases across state roots, two-way isolation, repeated copies, real missing
+call provenance continuation, destination API notification binding and copy
+rejection at nesting depths 1/2/1 followed by successful copying after unwind.
+Both interpreted faults and exceptions before the interpreter catch are checked.
+
+The initial DeepSeek engine/API/VM inventory job timed out without an artifact;
+no conclusions from that job are used. The primary review found and included
+KismetMissingCallSites.cs despite its different filename. A narrower DeepSeek
+review then checked those three VM files. Its member table and depth-guard review
+were independently verified; its prose incorrectly says 15 auto-properties
+(the actual breakdown is 14 auto-properties plus 3 explicit fields). Its claim
+about deep copying was explicitly outside its scope; the primary graph review
+and isolation/alias tests establish the supported behavior described here.
+
+Validation: all three KismetVmClone cases passed; the full BotSim selftest passed
+1,075 cases, and NNTrain policy-evaluation-selftest passed nine cases. NNTrain
+continues to emit existing CS8632 nullable-context warnings.
+
+CardApi template/cache
+ownership, rebuilt dispatch closures, external choice adapters and the complete
+engine idle gate remain the next integration boundary. No throughput gain or
+additional PvP rule certification is claimed.

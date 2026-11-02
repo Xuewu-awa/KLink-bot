@@ -121,6 +121,8 @@ public sealed partial class CardGraphClone
             GameAction action => new GameAction(action, this),
             SubAction action => new SubAction(action, this),
             ActionValue2 scalar => scalar, // sealed immutable strings/ints
+            Effects.Blueprint.KismetMissingCallSite site => site, // sealed immutable strings/ints
+            Dictionary<Effects.Blueprint.KismetMissingCallSite, int> map => CopyMap(map),
             List<CardInstance>[] array => CopyArray(array),
             List<int>[] array => CopyArray(array),
             List<GameState.GameplayRestriction> list => CopyList(list),

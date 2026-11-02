@@ -188,6 +188,15 @@ public sealed partial class KismetVm
                             IReadOnlyList<string>? returnVars = null,
                             int maxSteps = 0)
     {
+        _executionDepth++;
+        try { return RunFrame(program, ctx, seed, returnVar, returnVars, maxSteps); }
+        finally { _executionDepth--; }
+    }
+
+    private object? RunFrame(KismetProgram program, EffectContext ctx,
+                            IReadOnlyDictionary<string, object?>? seed, string? returnVar,
+                            IReadOnlyList<string>? returnVars, int maxSteps)
+    {
         // `maxSteps <= 0` = 调用方没给（只有事件程序走这条）：按卡池规模算预算。
         // 局部函数两个入口都显式传 `MaxStepsPerLocalProgram`，不受影响。
         if (maxSteps <= 0)

@@ -20,6 +20,9 @@ internal static partial class SelfTest
 
     private static readonly List<Case> Cases = new()
     {
+        new("KismetVmClone: exact fields aliases and isolation", VmCloneFieldsAndAliases),
+        new("KismetVmClone: destination binding and continuation", VmCloneContinuation),
+        new("KismetVmClone: nested execution rejection and unwind", VmCloneExecutionBoundary),
         new("GameStateClone: exact field coverage", GameStateCloneFieldCoverage),
         new("GameStateClone: roots aliases and isolation", GameStateCloneGraphIsolation),
         new("GameStateClone: continuation and rebinding", GameStateCloneContinuation),
