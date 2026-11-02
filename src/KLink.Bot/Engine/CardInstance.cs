@@ -995,11 +995,7 @@ public sealed partial class CardInstance
         Attack, Defense, MaxDefense, KreditCost, OperationCost,
         EnteredPlayOnTurn, OperationsUsedThisTurn, HasAttackedThisTurn, HasMovedThisTurn,
         AttacksThisTurn,
-        Keywords.Concat(HasFury ? new[] { Keyword.Fury } : Array.Empty<string>())
-            .Concat(HasBlitz ? new[] { Keyword.Blitz } : Array.Empty<string>())
-            .Concat(HasGuard ? new[] { Keyword.Guard } : Array.Empty<string>())
-            .Concat(HasSmokescreen ? new[] { Keyword.Smokescreen } : Array.Empty<string>())
-            .Distinct(StringComparer.Ordinal).OrderBy(k => k, StringComparer.Ordinal).ToArray(),
+        SnapshotKeywords(),
         CustomAbility,
         CustomJson.OrderBy(kv => kv.Key, StringComparer.Ordinal).ToDictionary(kv => kv.Key, kv => kv.Value))
         {
@@ -1120,6 +1116,29 @@ public sealed partial class CardInstance
                     kv => kv.Value.Select(v => v is CardInstance card ? card.CardId : v is int id ? id : 0)
                         .OrderBy(id => id).ToArray(), StringComparer.Ordinal),
         };
+    }
+
+    private string[] SnapshotKeywords()
+    {
+        if (Keywords.Count == 0 && !HasFury && !HasBlitz && !HasGuard && !HasSmokescreen)
+            return Array.Empty<string>();
+
+        // Preserve ordinal set semantics and sorted wire order without the
+        // temporary arrays and chained LINQ enumerators used by the old path.
+        var values = new string[Keywords.Count + 4];
+        int count = 0;
+        foreach (var keyword in Keywords) values[count++] = keyword;
+        if (HasFury) values[count++] = Keyword.Fury;
+        if (HasBlitz) values[count++] = Keyword.Blitz;
+        if (HasGuard) values[count++] = Keyword.Guard;
+        if (HasSmokescreen) values[count++] = Keyword.Smokescreen;
+        Array.Sort(values, 0, count, StringComparer.Ordinal);
+        int unique = 0;
+        for (int i = 0; i < count; i++)
+            if (unique == 0 || !StringComparer.Ordinal.Equals(values[i], values[unique - 1]))
+                values[unique++] = values[i];
+        if (unique != values.Length) Array.Resize(ref values, unique);
+        return values;
     }
 
     // Blueprint references become IDs; collections are copied recursively so

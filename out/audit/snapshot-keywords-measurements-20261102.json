@@ -1,0 +1,36 @@
+{
+  "date": "2026-11-02",
+  "commitBase": "5afc47e5b78d64f47577d8c4a81fd6d798f12620",
+  "productionChange": "CardInstance.Snapshot keyword projection uses one sorted temporary array and an empty fast path; semantics and independent output are retained.",
+  "profiling": {
+    "meta1": { "calls": 105356, "keywordMilliseconds": 51.909, "totalMilliseconds": 577.085 },
+    "meta2": { "calls": 418584, "keywordMilliseconds": 156.324, "totalMilliseconds": 1627.513 }
+  },
+  "benchmark": {
+    "samples": 36,
+    "repeats": 3,
+    "accepted": 36,
+    "rejected": 0,
+    "exactBehaviorAcrossBeforeAfterAndRepeats": true,
+    "medianReductionPercent": {
+      "m1-native": 4.8277,
+      "m1-last": 2.3096,
+      "meta1-seed1": -0.1414,
+      "meta1-seed2": 0.9844,
+      "meta2-seed1": 0.7229,
+      "meta2-seed2": 2.1236
+    },
+    "rawReport": "out/audit/snapshot-keywords-ab-20261102/measurements/report.json"
+  },
+  "tests": { "focusedSnapshot": 1, "fullBotSimAfter": 1098 },
+  "worker": {
+    "job": "20261102-210135-snapshot-keywords-aa836cfb",
+    "status": "timed_out",
+    "use": "No worker claims were adopted."
+  },
+  "limitations": [
+    "Fixed simulator workloads, not a whole-corpus throughput estimate.",
+    "Process startup, OS caches and machine load were uncontrolled.",
+    "Performance evidence does not establish authentic KARDS rule parity."
+  ]
+}

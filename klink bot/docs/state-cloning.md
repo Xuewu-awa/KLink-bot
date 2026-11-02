@@ -1665,3 +1665,37 @@ about old pure-case counts and surrogate coverage were not adopted. This review
 is advisory, not rule authority or performance validation. This batch does not
 refresh rule-audit fingerprints, certify further cards or establish authentic
 KARDS rule parity.
+
+### Snapshot keyword projection allocation probe (2026-11-02)
+
+The next bounded optimization targets only `CardInstance.Snapshot()` keyword
+projection. The old path created four conditional arrays and chained LINQ
+`Concat`/`Distinct`/`OrderBy` operations. The replacement keeps the same raw
+keyword values, effective Fury/Blitz/Guard/Smokescreen presence checks, ordinal
+sorting, duplicate removal and independent returned array, while using one
+temporary array and an empty-array fast path. No card state is cached or
+mutated.
+
+Temporary profiling of the unmodified projection found keyword work at 51.9 ms
+of 577.1 ms over 105,356 snapshots in `meta1`, and 156.3 ms of 1,627.5 ms over
+418,584 snapshots in `meta2`; this is a small component of total snapshot cost.
+The profiling helper was isolated and removed from production sources.
+
+The isolated after snapshot passed all 1,098 BotSim tests. A fresh-process,
+complete paired-v6 A/B run again executed six fixed workloads, three repeats and
+both implementations (36 samples total). Every sample accepted its game and all
+decompressed rows, quality records, clone/reference fingerprints, RNG state and
+non-DLL inputs matched exactly. Median wall-clock changes were: m1-native
+4.8% faster, m1-last 2.3% faster, meta1-seed1 0.1% slower, meta1-seed2 1.0%
+faster, meta2-seed1 0.7% faster and meta2-seed2 2.1% faster. These are fixed
+workload measurements with process startup and uncontrolled machine load; they
+do not establish whole-corpus throughput or rule parity.
+
+The compact report is
+`out/audit/snapshot-keywords-measurements-20261102.json`; raw isolated sources,
+logs and A/B manifests are under
+`out/audit/snapshot-keywords-ab-20261102`. The DeepSeek keyword-equivalence
+review timed out without a delivered artifact, so no worker claim was used;
+equivalence was checked directly by the primary agent and the snapshot
+regressions. This performance-only change does not refresh rule-audit
+fingerprints or certify cards.
