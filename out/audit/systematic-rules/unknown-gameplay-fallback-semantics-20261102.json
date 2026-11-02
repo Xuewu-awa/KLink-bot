@@ -7,9 +7,9 @@
   "conclusion": {
     "production_change": false,
     "static_missing_callsites": 0,
-    "runtime_confirmed_targets": 3,
-    "unresolved_targets": ["card_unit_obice_da_75_13::OnEnterPlay"],
-    "summary": "No defect is established for the three damage-event targets; a focused existing BotSim regression passes. The Obice call drops an anonymous int argument, but the reachable callee closure reads no event/method payload. Its focused smoke test exits before the callsite, so that path still needs a targeted fixture or authoritative asset-level confirmation."
+    "runtime_confirmed_targets": 4,
+    "unresolved_targets": [],
+    "summary": "No semantic defect is established for the four reviewed targets. Three card-local damage-event entrypoints pass a focused BotSim regression. The Obice nested OnEnterPlay call is now reached through normal same-name-card destruction and after-leave dispatch; the test confirms the allied Alpine grant, excludes non-Alpine allies and enemy Alpine units, and observes persistence for the affected card. This validates the simulator path against extracted IR and repository card data, not equivalence to a fresh live-client capture."
   },
   "implementation_facts": [
     {
@@ -27,6 +27,10 @@
     {
       "fact": "The OnEnterPlay event contract has a method enum slot, while OnAfterOtherCardLeaveBoardOrOwner carries cardLeaving and oldLocation. The nested call's literal is anonymous in the IR, so its formal target is not proven by the available extracted record.",
       "source": "klink bot/docs/event-contracts.json"
+    },
+    {
+      "fact": "A focused BotSim fixture destroys a second card_unit_obice_da_75_13 through MatchEngine.Destroy, reaches the observer OnAfterOtherCardLeaveBoardOrOwner callsite and nested OnEnterPlay entrypoint, grants CanMoveAndAttackInTheSameTurn only to the allied Alpine unit, and records PersistCustomFields for that unit.",
+      "source": "tools/BotSim/SelfTest.cs:1086, 35519-35558; card_unit_obice_da_75_13 IR at klink bot/docs/card-ir.json"
     }
   ],
   "validation": [
@@ -37,23 +41,28 @@
     {
       "command": "dotnet run --project tools/BotSim -c Release -- smoke-all-cards --only card_unit_obice_da_75_13 --entry OnAfterOtherCardLeaveBoardOrOwner --no-determinism --no-integration",
       "result": "LIMITED: no exception or missing primitive; 11 steps, one JSON_GetIntArray call, zero state changes. This did not reach the nested OnEnterPlay callsite and is not evidence that its substantive branch works."
+    },
+    {
+      "command": "dotnet run --project tools/BotSim -c Release -- selftest --filter 'Obice：同名单位离场后重新授予己方 Alpine 单位同回合行动能力'",
+      "result": "PASS: 1 focused test; normal destruction reaches the same-name observer path, grants the allied Alpine marker, leaves an ordinary ally and enemy Alpine unmarked, and persists the affected card."
     }
   ],
   "assessment": {
     "confirmed": [
       "The three damage-event fallbacks are covered by an existing integration-style BotSim selftest, which passed on this checkout.",
-      "The Obice nested OnEnterPlay body does not appear to consume the dropped argument in the extracted reachable closure."
+      "The Obice nested OnEnterPlay body does not appear to consume the dropped argument in the extracted reachable closure.",
+      "The Obice nested OnEnterPlay gameplay path executes under a focused BotSim fixture and produces the extracted IR’s expected allied-Alpine state and persistence effects."
     ],
     "not_proven": [
-      "That the anonymous Obice int(0) is specifically the OnEnterPlay method parameter.",
-      "That the Obice nested branch is reached and produces the intended board mutation under an accurately constructed game state.",
-      "Equivalence of this VM fallback behavior to the current live client; this audit used repository IR/contracts and BotSim, not a new client-memory capture."
+      "The anonymous int(0) at the nested Obice OnEnterPlay callsite is specifically the formal method parameter; the extracted IR does not retain that pin name.",
+      "Equivalence of this BotSim path to a fresh live-client capture; no new client-memory observation was used in this focused fixture."
     ],
-    "next_step": "Add a narrowly scoped BotSim fixture that reaches Obice's OnAfterOtherCardLeaveBoardOrOwner callsite with a same-name leaving card and eligible allied Alpine units; assert the expected attribute/persistence changes. Cross-check the anonymous call parameter against the authoritative Blueprint export before making a production change."
+    "next_step": "Continue with the next bounded systematic-audit target. The anonymous int(0) parameter mapping and equivalence to a fresh live-client capture remain unproven; no production change is justified by this review."
   },
   "worker_artifact_review": {
     "job_id": "20261102-215730-unknown-gameplay-map-d66add69",
     "artifact": "out/audit/deepseek-unknown-gameplay-20261102/result.json",
     "status": "mechanical inventory independently spot-checked against KismetVm.cs, KismetIr.cs, CardApi.cs, MatchEngine.cs, event-contracts.json, and the focused BotSim selftest; worker inferences were not treated as proof of game semantics"
-  }
+  },
+  "next_step": "Continue the next bounded systematic-audit target; no production change is justified by this four-target fallback review."
 }

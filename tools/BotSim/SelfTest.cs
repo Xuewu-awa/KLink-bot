@@ -1083,6 +1083,8 @@ internal static partial class SelfTest
         new("行动额度：非例外单位攻击后移动额度耗尽", NonTankCannotAttackThenMove),
         new("同回合行动能力：标记影响消费时判定，撤销不追溯清空额度",
             AlpineMoveAndAttackAbility),
+        new("Obice：同名单位离场后重新授予己方 Alpine 单位同回合行动能力",
+            ObiceReappliesAlpineMoveAndAttack),
         new("行动限制：**死亡单位不能移动也不能攻击**（实测 AI 移动了死单位）", DeadUnitCannotMoveOrAttack),
         // ---- 钉住（Pinned）：移动侧缺门（2026-10-02，玩家实测 + 日志 637706）----
         //    中文客户端把 `Pin` 译作「压制」，所以玩家说的"压制"是 `Pinned`、不是 `Suppressed`。
@@ -35510,6 +35512,48 @@ internal static partial class SelfTest
         unit.HasMovedThisTurn = true;
         if (!unit.CanOperateThisTurn(engine.State))
             return "撤销能力不能追溯清空已经保留的攻击额度";
+
+        return null;
+    }
+
+    private static string? ObiceReappliesAlpineMoveAndAttack(CardDatabase db)
+    {
+        const string obice = "card_unit_obice_da_75_13";
+        const string alpine = "card_unit_3rd_alpini";
+        const string plain = "card_unit_432_infantry_regiment";
+
+        if (!db.Require(alpine).Keywords.Contains("Alpine", StringComparer.Ordinal))
+            return $"测试样本 {alpine} 的 CDO 数据没有 Alpine 关键字";
+
+        var (engine, state) = EmptyBoard(db);
+        var watcher = state.CreateWithId(obice, Side.Left, 60, CardLocation.BoardHqLeft, 1);
+        var ally = state.CreateWithId(alpine, Side.Left, 61, CardLocation.BoardHqLeft, 2);
+        var ordinaryAlly = state.CreateWithId(plain, Side.Left, 62, CardLocation.BoardHqLeft, 3);
+        var enemy = state.CreateWithId(alpine, Side.Right, 63, CardLocation.BoardHqRight, 1);
+        var leaving = state.CreateWithId(obice, Side.Right, 64, CardLocation.BoardHqRight, 2);
+
+        if (!watcher.Definition.IsRegisteredFor("OnAfterOtherCardLeaveBoardOrOwner")
+            || KismetLibrary.Default?.FindProgram(obice, "OnAfterOtherCardLeaveBoardOrOwner") is null)
+            return "Obice 测试前提不成立：CDO 未注册 T8，或提取的入口程序缺失";
+        if (!ally.HasKeyword(Keyword.Alpine) || ordinaryAlly.HasKeyword(Keyword.Alpine)
+            || !enemy.HasKeyword(Keyword.Alpine))
+            return "测试前提不成立：己方 Alpine、普通己方单位和敌方 Alpine 的标签未按 CDO 初始化";
+
+        engine.Destroy(leaving);
+
+        if (leaving.Location != CardLocation.Discard)
+            return "同名 Obice 未通过正常销毁流程离场";
+        if (!ally.CanMoveAndAttackInSameTurn
+            || !CardApi.CustomNameHasAttribute(ally, "customName1", "CanMoveAndAttackInTheSameTurn"))
+            return "同名 Obice 离场后，己方 Alpine 单位未获得同回合行动标记";
+        if (ordinaryAlly.CanMoveAndAttackInSameTurn || enemy.CanMoveAndAttackInSameTurn)
+            return "Obice 错误地标记了非 Alpine 友方单位或敌方 Alpine 单位";
+
+        bool persistedAlly = state.ActionLog.SelectMany(action => action.SubActions)
+            .Any(action => action.Name == "ZActionPersistCustomFields"
+                && action.Values.Any(value => value.Name == "cardID" && value.Value == ally.CardId));
+        if (!persistedAlly)
+            return "Obice 授予行动标记后没有为受影响单位写入 PersistCustomFields 子动作";
 
         return null;
     }
