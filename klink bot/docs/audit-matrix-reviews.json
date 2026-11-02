@@ -8326,6 +8326,35 @@
         "Existing enum mapping reused. Invalid/noncanonical faction formatting and pak/current-client version equivalence are not newly certified.",
         "724 synthetic scenarios check shared phase boundaries, not game reachability, complete card certification or overall PvP completion."
       ]
+    },
+    {
+      "id": "RULE-KISMET-MATH-CATALOG/EnumCompareSide-SDK-contract-20261103",
+      "symbol": "EnumCompareSide",
+      "modes": [
+        null
+      ],
+      "status": "partial",
+      "validated_scope": "当前 card-ir.json 的 56 个 EnumCompareSide 调用点、52 个资产/52 个程序；SDK 声明 ESideEnum=NotAvailable/left/right（0/1/2）与 EnumAreTheyEqual=Equal/NotEqual（0/1）；报告登记的 56 个首个局部消费者均为 NotEqual_ByteByte；另有独立分支读取盘点为 62 次读取（其中 6 个调用点重复读取）；BotSim 3×3 分支回归通过。",
+      "report": "out/audit/systematic-rules/enum-compare-side-sdk-contract-20261103.json",
+      "report_sha256": "412efbafa083d7d58ac3ce07893660c07595bd381712c9771c7e3097294a701c",
+      "client_exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+      "source_bindings": {
+        "klink bot/tools/audit-enum-compare-side.py": "8b56d93ac781e798327815c30004548f537ea0cb0c02910fcf38c6d9f5ea65c6",
+        "src/KLink.Bot/Effects/Blueprint/KismetVm.cs": "0af6f3eb2bc660bb7025a2c5eda928802eb723cffa2de3d18a5e01a0d49f41ae",
+        "tools/BotSim/SelfTest.KismetMath.cs": "83edfb0e0036050a8bde417a347c601a8ca73e5ac014f202bbbf3e98cdd6794f",
+        "tools/BotSim/SelfTest.cs": "8df7e1600892011eb9347bc5368e761e661daca0b44ebbf72b8cf447818e4395",
+        "klink bot/docs/card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b"
+      },
+      "evidence_bindings": {
+        "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\ue4ss\\CXXHeaderDump\\kards.hpp": "f8039a5583a5db8be8c73470418b5b94f6cc1e856d402ffd75403c0fa8a2ac78",
+        "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\ue4ss\\CXXHeaderDump\\kards_enums.hpp": "547f570a5bb9ab42ebd69e7628a3e07dcaa10181d7bb4d06e10ed15aac8ac9bd"
+      },
+      "limitations": [
+        "SDK 只提供声明、参数类型和枚举值，没有 EnumCompareSide 原生函数体；当前回归不构成客户端等价证明。",
+        "静态调用点和局部消费者不能证明 PvP 可达性、执行频率、完整跳转图或异常输入语义。",
+        "仅对 SDK ESideEnum 的 0..2 做 3×3 回归；越界、非法值和运行时对象状态未认证。",
+        "DeepSeek worker 仅用于重复静态整理，未作为规则语义或权威客户端证据。"
+      ]
     }
   ],
   "scope_reviews": {},
@@ -8404,8 +8433,8 @@
       "id": "RULE-KISMET-MATH-CATALOG",
       "title": "Kismet数学节点清单与语义核验",
       "status": "open",
-      "scope": "按当前 card-ir.json 对 69 种数学调用的 9,281 个静态调用点建立可复跑目录。2026-11-03 盘点覆盖 1,709 个 IR 资产；ImplementedMathNames 与 EvalMath 分支名集合为 73/73 一致，但这只验证名称表相互一致，不验证运算语义。IR 中有 61 个不在 VM 声明/分支中的调用点：Format 57、GetDisplayName 1、GetOrSpawnActor 1、PrintString 2；与现有静态派发缺口报告计数相符。另有 8 个已声明名称未在当前 IR 出现。目录包含显示、战役、Brawl 等资产，不建立 PvP 分母或可达性结论；逐项分类 PvP 范围，并与权威客户端行为核验语义和调用分派后，才能决定实现与准入影响。 已依据客户端 UE4SS CoreUObject_enums.hpp 确认 ESearchCase（CaseSensitive=0、IgnoreCase=1）与 ESearchDir（FromStart=0、FromEnd=1）；修正 KismetVm EndsWith/Split 的 ESearchCase 映射，保留 Split 的方向映射，并以 BotSim 定向回归覆盖大小写、起始/末尾查找和失败时输出引用不变。该修复只覆盖这两个字符串节点，其他数学节点语义仍未逐项认证。",
-      "source": "klink bot/tools/audit-kismet-math-catalog.py; out/audit/systematic-rules/kismet-math-node-catalog-20261103.json; out/audit/math-catalog-dispatch-gap-20261103.txt; D:/Program Files/KARDS - The WWII Card Game/KARDS/default/game/kards/Binaries/Win64/ue4ss/CXXHeaderDump/CoreUObject_enums.hpp; src/KLink.Bot/Effects/Blueprint/KismetVm.cs; tools/BotSim/SelfTest.KismetMath.cs"
+      "scope": "按当前 card-ir.json 对 69 种数学调用的 9,281 个静态调用点建立可复跑目录。2026-11-03 盘点覆盖 1,709 个 IR 资产；ImplementedMathNames 与 EvalMath 分支名集合为 73/73 一致，但这只验证名称表相互一致，不验证运算语义。IR 中有 61 个不在 VM 声明/分支中的调用点：Format 57、GetDisplayName 1、GetOrSpawnActor 1、PrintString 2；与现有静态派发缺口报告计数相符。另有 8 个已声明名称未在当前 IR 出现。目录包含显示、战役、Brawl 等资产，不建立 PvP 分母或可达性结论；逐项分类 PvP 范围，并与权威客户端行为核验语义和调用分派后，才能决定实现与准入影响。 已依据客户端 UE4SS CoreUObject_enums.hpp 确认 ESearchCase（CaseSensitive=0、IgnoreCase=1）与 ESearchDir（FromStart=0、FromEnd=1）；修正 KismetVm EndsWith/Split 的 ESearchCase 映射，保留 Split 的方向映射，并以 BotSim 定向回归覆盖大小写、起始/末尾查找和失败时输出引用不变。该修复只覆盖这两个字符串节点，其他数学节点语义仍未逐项认证。 2026-11-03：EnumCompareSide 静态核对当前 IR 56 个调用点、52 个资产/52 个程序；SDK 明确 ESideEnum 的 0/1/2 与 EnumAreTheyEqual 的 0/1，56 个首个局部消费者均为 NotEqual_ByteByte；另有独立分支读取盘点为 62 次读取（其中 6 个调用点重复读取）；BotSim 3×3 映射回归通过。SDK 未含原生函数体，客户端等价、越界语义和 PvP 可达性仍未确认，保持 open。",
+      "source": "klink bot/tools/audit-kismet-math-catalog.py; out/audit/systematic-rules/kismet-math-node-catalog-20261103.json; out/audit/math-catalog-dispatch-gap-20261103.txt; D:/Program Files/KARDS - The WWII Card Game/KARDS/default/game/kards/Binaries/Win64/ue4ss/CXXHeaderDump/CoreUObject_enums.hpp; src/KLink.Bot/Effects/Blueprint/KismetVm.cs; tools/BotSim/SelfTest.KismetMath.cs; klink bot/tools/audit-enum-compare-side.py; out/audit/systematic-rules/enum-compare-side-sdk-contract-20261103.json; D:/Program Files/KARDS - The WWII Card Game/KARDS/default/game/kards/Binaries/Win64/ue4ss/CXXHeaderDump/kards.hpp; D:/Program Files/KARDS - The WWII Card Game/KARDS/default/game/kards/Binaries/Win64/ue4ss/CXXHeaderDump/kards_enums.hpp; tools/BotSim/SelfTest.KismetMath.cs"
     }
   ],
   "training_contract_reviews": [

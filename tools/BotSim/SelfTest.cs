@@ -46,6 +46,7 @@ internal static partial class SelfTest
         new("Kismet math: GetValidValue enum boundary", KismetGetValidValueEnumBounds),
         new("Kismet math: GetFactionEnum SDK ordinal mapping", KismetGetFactionEnumSdkMapping),
         new("Kismet math: EnumCompareFaction SDK branch contract", KismetEnumCompareFactionSdkBranchContract),
+        new("Kismet math: EnumCompareSide SDK branch contract", KismetEnumCompareSideSdkBranchContract),
         new("GameStateClone: exact field coverage", GameStateCloneFieldCoverage),
         new("GameStateClone: roots aliases and isolation", GameStateCloneGraphIsolation),
         new("GameStateClone: continuation and rebinding", GameStateCloneContinuation),

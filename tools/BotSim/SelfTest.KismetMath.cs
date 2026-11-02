@@ -153,4 +153,42 @@ internal static partial class SelfTest
 
         return null;
     }
+
+    private static string? KismetEnumCompareSideSdkBranchContract(CardDatabase db)
+    {
+        // SDK kards_enums.hpp defines ESideEnum as 0..2 and
+        // EnumAreTheyEqual as Equal=0 / NotEqual=1. This exhaustively guards
+        // the simulator projection only; the native function body is absent.
+        const int sideCount = 3;
+        var (engine, state) = EmptyBoard(db);
+        var ctx = new EffectContext { Engine = engine, State = state, Controller = Side.Left };
+        var steps = new List<KismetStep>(sideCount * sideCount);
+        var slots = new List<string>(sideCount * sideCount);
+        for (int left = 0; left < sideCount; left++)
+        {
+            for (int right = 0; right < sideCount; right++)
+            {
+                string slot = $"branch_{left}_{right}";
+                slots.Add(slot);
+                steps.Add(new KismetStep(steps.Count, "math", "EnumCompareSide",
+                    [IntExpr(left), IntExpr(right), LocalExpr(slot)], [2],
+                    null, null, -1, null, null));
+            }
+        }
+
+        var result = engine.Api.Vm.RunLocalProgramMulti(new KismetProgram(steps, 0), ctx, null,
+            slots.ToArray());
+        for (int left = 0; left < sideCount; left++)
+        {
+            for (int right = 0; right < sideCount; right++)
+            {
+                int expected = left == right ? 0 : 1;
+                string slot = $"branch_{left}_{right}";
+                if (!Equals(result[slot], expected))
+                    return $"EnumCompareSide SDK branch ({left},{right}) returned {result[slot] ?? "<null>"}; expected {expected}";
+            }
+        }
+
+        return null;
+    }
 }
