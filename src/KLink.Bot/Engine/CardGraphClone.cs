@@ -123,7 +123,7 @@ public sealed partial class CardGraphClone
         CheckComparer(source.Comparer);
         var copy = new HashSet<T>(source.Comparer);
         _copies.Add(source, copy);
-        CollectionSlotClone.Set(source, copy, Copy);
+        CollectionSlotClone.Set(source, copy, this);
         return copy;
     }
 
@@ -133,7 +133,7 @@ public sealed partial class CardGraphClone
         CheckComparer(source.Comparer);
         var copy = new Dictionary<TKey, TValue>(source.Comparer);
         _copies.Add(source, copy);
-        CollectionSlotClone.Dictionary(source, copy, Copy, Copy);
+        CollectionSlotClone.Dictionary(source, copy, this);
         return copy;
     }
 

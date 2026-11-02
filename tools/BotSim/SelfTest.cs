@@ -50,6 +50,7 @@ internal static partial class SelfTest
         new("CardGraphClone: payloads and current ordering", CardGraphPayloadsAndOrdering),
         new("CardGraphClone: container continuation", CardGraphContainerContinuation),
         new("CardGraphClone: identity containers and empty states", CardGraphIdentityContainerContinuation),
+        new("CardGraphClone: empty storage metadata aliases and rejection", CardGraphEmptyStorageMetadata),
         new("CardGraphClone: VM-produced persistent payloads", CardGraphVmPayloads),
         new("CardGraphClone: real candidate program payload", CardGraphRealCandidatePayload),
         new("调用来源：指令与嵌套表达式及聚合", MissingCallSitePaths),

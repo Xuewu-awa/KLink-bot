@@ -15,14 +15,37 @@ internal static class CollectionSlotClone
         Dictionary<TKey, TValue> target, Func<TKey, TKey> key, Func<TValue, TValue> value) where TKey : notnull
     {
         var layout = MapLayout<TKey, TValue>.Cache.Value;
+        if (source.Count == 0 && layout.TryCopyUnallocated(source, target)) return;
+        CopyDictionary(source, target, key, value, layout);
+    }
+
+    // Keep delegate creation beyond the unallocated-storage gate. A Count==0
+    // collection can still own allocated slots/free chains and must use Copy.
+    internal static void Dictionary<TKey, TValue>(Dictionary<TKey, TValue> source,
+        Dictionary<TKey, TValue> target, CardGraphClone context) where TKey : notnull
+    {
+        var layout = MapLayout<TKey, TValue>.Cache.Value;
+        if (source.Count == 0 && layout.TryCopyUnallocated(source, target)) return;
+        CopyDictionary(source, target, context.Copy, context.Copy, layout);
+    }
+
+    private static void CopyDictionary<TKey, TValue>(Dictionary<TKey, TValue> source,
+        Dictionary<TKey, TValue> target, Func<TKey, TKey> key, Func<TValue, TValue> value, Layout layout) where TKey : notnull
+    {
         var comparer = (IEqualityComparer<TKey>?)layout.Comparer.GetValue(source) ?? EqualityComparer<TKey>.Default;
         layout.Copy(source, target, item => key((TKey)item!), item => value((TValue)item!),
             item => unchecked((uint)comparer.GetHashCode((TKey)item!)));
     }
 
-    internal static void Set<T>(HashSet<T> source, HashSet<T> target, Func<T, T> value)
+    internal static void Set<T>(HashSet<T> source, HashSet<T> target, CardGraphClone context)
     {
         var layout = SetLayout<T>.Cache.Value;
+        if (source.Count == 0 && layout.TryCopyUnallocated(source, target)) return;
+        CopySet(source, target, context.Copy, layout);
+    }
+
+    private static void CopySet<T>(HashSet<T> source, HashSet<T> target, Func<T, T> value, Layout layout)
+    {
         var comparer = (IEqualityComparer<T>?)layout.Comparer.GetValue(source) ?? EqualityComparer<T>.Default;
         layout.Copy(source, target, item => value((T)item!), null,
             item => item is null ? 0 : unchecked((uint)comparer.GetHashCode((T)item)));
@@ -94,6 +117,28 @@ internal static class CollectionSlotClone
         private static void Fail(Type type)
             => throw new NotSupportedException($"Unreviewed collection layout: {type.FullName}");
 
+        internal bool TryCopyUnallocated(object source, object target)
+        {
+            if (_entries.GetValue(source) is not null) return false;
+            int freeList = (int)_freeList.GetValue(source)!;
+            if (_buckets.GetValue(source) is not null || (int)_count.GetValue(source)! != 0
+                || (int)_freeCount.GetValue(source)! != 0 || (freeList != 0 && freeList != -1))
+                throw new NotSupportedException("Invalid unallocated collection metadata.");
+            CopyStorage(source, target, null, null);
+            return true;
+        }
+
+        private void CopyStorage(object source, object target, Array? entries, int[]? buckets)
+        {
+            foreach (var scalar in _scalars) scalar.SetValue(target, scalar.GetValue(source));
+            Comparer.SetValue(target, Comparer.GetValue(source));
+            _entries.SetValue(target, entries);
+            _buckets.SetValue(target, buckets);
+            // Cached views capture their owning dictionary; rebuild lazily on target.
+            _keysView?.SetValue(target, null);
+            _valuesView?.SetValue(target, null);
+        }
+
         internal void Copy(object source, object target, Func<object?, object?> key,
             Func<object?, object?>? value, Func<object?, uint> hash)
         {
@@ -111,13 +156,7 @@ internal static class CollectionSlotClone
             // Never mutate the original entry buffer, including boxed Entry structs.
             var entries = (Array?)sourceEntries?.Clone();
             var buckets = sourceBuckets is null ? null : new int[sourceBuckets.Length];
-            foreach (var scalar in _scalars) scalar.SetValue(target, scalar.GetValue(source));
-            Comparer.SetValue(target, Comparer.GetValue(source));
-            _entries.SetValue(target, entries);
-            _buckets.SetValue(target, buckets);
-            // Cached views capture their owning dictionary; rebuild lazily on target.
-            _keysView?.SetValue(target, null);
-            _valuesView?.SetValue(target, null);
+            CopyStorage(source, target, entries, buckets);
 
             // Never-allocated collections use the CLR's zero-initialized freeList.
             if (sourceEntries is null)

@@ -723,3 +723,75 @@ stage count and unwinding after both an idle-boundary rejection and unsupported
 payload failure inside state traversal. The isolated snapshot excludes unrelated
 local probe edits and preserves unchanged checkout data bytes. NNTrain retains its
 existing CS8632 warnings. No audit matrix certification was changed.
+
+## Unallocated container clone allocation (2026-11-02)
+
+`CollectionSlotClone` now takes a short path only when the source backing entry
+array is null. It validates null buckets, zero count/free count and the reviewed
+zero or minus-one free-list sentinel, then copies the exact scalar metadata and
+raw comparer. Fresh destination identity and memo registration still happen
+before the adapter. Cached dictionary views are cleared so they cannot retain
+the source owner. Runtime/layout, exact-type and comparer gates remain in force.
+Allocated empty containers (reserved capacity, removed entries or Clear) retain
+the existing slot/free-chain copy path; Count alone never selects the short path.
+
+The graph adapter receives its clone context directly. Method-group delegates
+are created only after the storage gate, and capturing lambdas remain in separate
+helpers so they allocate no closure before that gate. This removes work without
+sharing mutable containers, changing traversal order or expanding payload support.
+
+Fresh before/after reports use baseline `b95e967`, .NET 10.0.12 x64, seed 1,
+16 prefixes and three timed repeats, with the same UTF-8 snapshot options as the
+preceding commands. The control adds `--plain`. Reports are
+`out/audit/clone-empty-{meta,plain}16-{before,after}-20261102.json`.
+
+| Timed clone-path allocation, three repeats | Before bytes | After bytes | Reduction |
+|---|---:|---:|---:|
+| 英日–日澳快攻 | 9,859,619,192 | 8,099,834,128 | 17.85% |
+| Arado control | 4,191,910,240 | 3,748,142,240 | 10.59% |
+
+These totals include comparisons and action execution, not just engine cloning.
+Separate single profiling runs attribute the changes as follows; parent/child
+rows overlap and must not be summed.
+
+| Profile stage | Complex before / after bytes | Control before / after bytes |
+|---|---:|---:|
+| engine_clone (parent) | 1,982,482,552 / 1,395,831,784 | 492,636,528 / 344,725,632 |
+| clone.state.cards | 438,769,568 / 266,471,512 | 382,405,328 / 241,660,096 |
+| clone.api.pool | 1,071,512,008 / 666,674,080 | 476,528 / 205,088 |
+| clone.database | 338,956,976 / 338,956,960 | 96,512 / 96,512 |
+
+Timed clone-path elapsed totals were 9,891.6 / 8,125.8 ms for the complex
+fixture and 2,745.2 / 2,688.8 ms for the control. These sequential runs are
+subject to machine load; replay control time also changed, so no causal timing
+speedup is claimed. Allocation reductions are workload-specific, not a training
+throughput forecast.
+
+All 1,614 candidate comparisons across 32 prefixes retained the same counts,
+reasons, engine/root counts and zero batch errors before/after, with zero
+mismatches against replay classification and observed successors in both clone
+orders. Totals remain 559 Accepted, 1,010 Rejected and 45 Unknown (37 choice
+policy dependent, eight unimplemented calls). String/UTF-8 and profiled/unprofiled
+comparisons also passed inside the benchmark. These are engineering fixtures,
+not authoritative PvP rule evidence or additional rule certification.
+
+The new regression covers three supported string comparers across never-allocated,
+reserved, add/remove, Clear and TrimExcess states. It checks exact metadata,
+capacity, storage identity, cached views, repeated aliases, subsequent insertion
+order, two-way isolation and rejection of malformed metadata. It passed against
+both baseline production code and the optimized code. All nine CardGraphClone
+checks, the full 1,092 BotSim selftests (including CloneActionProbe), and nine
+NNTrain policy evaluation checks passed in the isolated publishing snapshot
+`out/audit/clone-empty-publish-20261102`. NNTrain retains existing CS8632 warnings.
+Snapshot sources were compared with intended working bytes, with unrelated local
+probe edits restored to HEAD in the snapshot and left untouched in the checkout.
+
+The DeepSeek worker supplied a private source-review checklist through the
+`deepseek-worker` skill. The primary independently checked its useful metadata,
+closure-boundary and alias suggestions against code and regressions. Worker
+claims were not used as rule evidence or substitutes for measurements.
+
+Next measured target: the complex fixture's independently mutable database
+reverse index still allocates about 339 MB per profiling run. Investigate its
+copy cost while preserving capacity, enumeration, mutability and isolation;
+sharing or dropping the warmed index is outside the accepted clone contract.

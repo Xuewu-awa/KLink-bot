@@ -257,6 +257,72 @@ internal static partial class SelfTest
         return null;
     }
 
+    private static string? CardGraphEmptyStorageMetadata(CardDatabase db)
+    {
+        const BindingFlags flags = BindingFlags.Instance | BindingFlags.NonPublic;
+        foreach(var comparer in new IEqualityComparer<string>[] { EqualityComparer<string>.Default,
+            StringComparer.Ordinal, StringComparer.OrdinalIgnoreCase })
+        for(int mode=0; mode<5; mode++)
+        {
+            var root=CloneTestCard(1);
+            var map=new Dictionary<string,object?>(comparer);
+            var set=new HashSet<string>(comparer);
+            if(mode>0) { map.EnsureCapacity(17); set.EnsureCapacity(17); }
+            if(mode>1) { map["old"]=root; set.Add("old"); map.Remove("old"); set.Remove("old"); }
+            if(mode>2) { map.Clear(); set.Clear(); }
+            if(mode>3) { map.TrimExcess(); set.TrimExcess(); }
+            // Materialized views must not retain the source owner on a clone.
+            _=map.Keys; _=map.Values;
+            root.BlueprintVariables["map"]=root.BlueprintVariables["alias"]=map;
+            root.BlueprintVariables["set"]=set;
+            var copy=CardGraphClone.Create(new[]{root}).Roots[0];
+            var cm=(Dictionary<string,object?>)copy.BlueprintVariables["map"]!;
+            var cs=(HashSet<string>)copy.BlueprintVariables["set"]!;
+            if(ReferenceEquals(map,cm) || ReferenceEquals(set,cs)
+                || !ReferenceEquals(cm,copy.BlueprintVariables["alias"])) return "empty graph identity/alias";
+            foreach(var pair in new[]{(Source:(object)map,Copy:(object)cm),(Source:(object)set,Copy:(object)cs)})
+            {
+                var type=pair.Source.GetType();
+                foreach(string name in new[]{"_count","_freeCount","_freeList","_version","_fastModMultiplier","_comparer"})
+                {
+                    var field=type.GetField(name,flags)!;
+                    if(!Equals(field.GetValue(pair.Source),field.GetValue(pair.Copy))) return "empty metadata: "+name;
+                }
+                foreach(string name in new[]{"_buckets","_entries"})
+                {
+                    var field=type.GetField(name,flags)!;
+                    var a=(Array?)field.GetValue(pair.Source); var b=(Array?)field.GetValue(pair.Copy);
+                    if((a is null)!=(b is null) || (a is not null && (ReferenceEquals(a,b) || a.Length!=b!.Length)))
+                        return "empty storage: "+name;
+                }
+            }
+            if(typeof(Dictionary<string,object?>).GetField("_keys",flags)!.GetValue(cm) is not null
+                || typeof(Dictionary<string,object?>).GetField("_values",flags)!.GetValue(cm) is not null)
+                return "source cached views retained";
+            if(map.EnsureCapacity(0)!=cm.EnsureCapacity(0) || set.EnsureCapacity(0)!=cs.EnsureCapacity(0))
+                return "empty capacity lost";
+            foreach(string key in new[]{"A","a","B","b","é","É"})
+            { map[key]=key; cm[key]=key; set.Add(key); cs.Add(key); }
+            if(!map.SequenceEqual(cm) || !set.SequenceEqual(cs)) return "empty continuation/comparer";
+            cm["copy-only"]=1; cs.Add("copy-only");
+            map["source-only"]=2; set.Add("source-only");
+            if(map.ContainsKey("copy-only") || set.Contains("copy-only") || cm.ContainsKey("source-only") || cs.Contains("source-only"))
+                return "empty storage mutation leaked";
+        }
+        foreach(bool isSet in new[]{false,true})
+        foreach(string badField in new[]{"_freeList","_freeCount","_count","_buckets"})
+        {
+            var root=CloneTestCard(1);
+            object value=isSet ? new HashSet<string>() : new Dictionary<string,object?>();
+            root.BlueprintVariables["corrupt"]=value;
+            value.GetType().GetField(badField,flags)!.SetValue(value,
+                badField=="_buckets" ? (object)new int[3] : badField=="_freeList" ? -2 : 1);
+            try { CardGraphClone.Create(new[]{root}); return "invalid empty metadata accepted: "+badField; }
+            catch(NotSupportedException) { }
+        }
+        return null;
+    }
+
     private static string? CardGraphContainerContinuation(CardDatabase db)
     {
         // Rebuilding contents passes initial equality, but fails the first insertion.
