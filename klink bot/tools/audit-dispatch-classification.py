@@ -2,10 +2,12 @@
 """Classify Blueprint IR callsites for the headless KLink simulator.
 
 This report deliberately counts callsites, rather than only comparing names.
-An unregistered name can still be a card-local function and therefore execute
-correctly through KismetVm's local-function fallback.  UI, campaign, tutorial,
-and client-only calls are reported separately because they are outside the
-headless rules kernel's scope.
+It uses a conservative static coverage model: direct dispatch keys are matched
+by name, while local and entrypoint fallbacks must be provable same-card calls.
+It does not validate dispatch argument/output compatibility, runtime PvP
+reachability, or semantic correctness. UI, campaign, tutorial, and client-only
+calls are reported separately because they are outside the headless rules
+kernel's scope.
 """
 
 from __future__ import annotations
@@ -162,7 +164,11 @@ def build_report(args: argparse.Namespace) -> dict[str, Any]:
                 stat["entrypoint_calls"] += 1
             else:
                 stat["local_calls"] += 1
-            if fn in local_names:
+            is_same_card_receiver = (
+                step.get("recv") is None
+                or isinstance(step.get("recv"), dict) and step["recv"].get("self") is True
+            )
+            if fn in local_names and is_same_card_receiver:
                 stat["local_fallback_calls"] += 1
                 stat["scope_fallback_calls"][scope] += 1
             elif (fn in entrypoint_names and not step.get("outs")
@@ -233,6 +239,12 @@ def build_report(args: argparse.Namespace) -> dict[str, Any]:
             "excluded_categories": ["campaign_ui", "test_card"],
             "note": "Scope uses name-based heuristics. UI, campaign, tutorial, test-card and client-only calls are inventory only. This report does not prove PvP reachability or semantic correctness.",
         },
+        "coverage_model": {
+            "direct_dispatch": "A matching registration key is counted by name only; argument, receiver and output compatibility are not checked.",
+            "local_fallback": "Counted only when the call has no receiver or an explicit same-card self receiver.",
+            "entrypoint_fallback": "Counted only for an explicit same-card self call with no output slots.",
+            "limitation": "A zero static gap is an index-level coverage result, not proof of complete rules semantics or PvP reachability.",
+        },
         "inputs": {"ir": str(ir_path), "bp_json": str(bp_path), "dispatch": str(dispatch_path), "vm": str(vm_path)},
         "summary": {
             "card_count": total_cards,
@@ -260,8 +272,9 @@ def markdown(report: dict[str, Any]) -> str:
         f"- 卡/程序条目：{summary['card_count']}",
         f"- IR call 调用点：{summary['callsite_count']}",
         f"- 唯一调用名：{summary['unique_function_count']}",
-        f"- 无头规则静态缺口候选：{summary['headless_gap_functions']} 种 / {summary['headless_gap_calls']} 个调用点",
+        f"- 机械覆盖模型下的无头静态缺口候选：{summary['headless_gap_functions']} 种 / {summary['headless_gap_calls']} 个调用点",
         f"- 其中未知语义 unknown_gameplay：{summary['unknown_gameplay_functions']} 种 / {summary['unknown_gameplay_calls']} 个调用点", "",
+        "覆盖仅按派发名称、可证实的本卡局部函数或符合条件的本卡无输出入口计数；不验证参数/输出兼容性、PvP 可达性或完整语义。", "",
         "## 分类统计", "", "| 分类 | 函数数 |", "|---|---:|",
     ]
     for category, count in summary["category_function_counts"].items():
