@@ -34,7 +34,8 @@ public static class CloneActionProbe
         IReadOnlyList<string> left, IReadOnlyList<string> right, ulong seed,
         IReadOnlyList<ConfirmedRoot> prefix, MatchEngine reference, ActionProbeLimits limits,
         Action<MatchEngine,int>? afterRebuild = null, Action<MatchEngine,int>? afterApply = null,
-        bool reverse = false, Action<MatchEngine>? afterBaseline = null, CloneProbeProfile? profile = null)
+        bool reverse = false, Action<MatchEngine>? afterBaseline = null, CloneProbeProfile? profile = null,
+        bool useUtf8Snapshots = false)
     {
         using var totalProfile = profile?.Measure("total");
         if (limits.MaxCandidates <= 0 || limits.MaxPrefixRoots < 0 || limits.MaxTotalPrefixRoots < 0)
@@ -72,8 +73,9 @@ public static class CloneActionProbe
                 request = new MainActionPolicyAdapter(reference,vectors).DescribeCandidates(actor);
             if (!request.Observation.All(float.IsFinite) || request.Candidates.Any(c=>!c.Features.All(float.IsFinite)))
             { errors.Add("nonfinite_request"); return Report(); }
-            string expectedRequest = JsonSerializer.Serialize(request), snapshot = reference.State.SnapshotJson(),
-                trace = Trace(reference), clock = Clock(reference), diagnostics = Diagnostics(reference);
+            string expectedRequest = JsonSerializer.Serialize(request);
+            using var snapshot = new ProbeSnapshotComparison(reference.State,useUtf8Snapshots,profile);
+            string trace = Trace(reference), clock = Clock(reference), diagnostics = Diagnostics(reference);
             if (prefix.Count > limits.MaxPrefixRoots || request.Candidates.Count > limits.MaxCandidates
                 || (long)prefix.Count*request.Candidates.Count > limits.MaxTotalPrefixRoots)
             { errors.Add("probe_work_limit"); return Report(); }
@@ -126,7 +128,7 @@ public static class CloneActionProbe
                         {
                             bool matches;
                             using (profile?.Measure("comparison.state"))
-                                matches = clock==Clock(probe) && snapshot==probe.State.SnapshotJson() && trace==Trace(probe);
+                                matches = clock==Clock(probe) && snapshot.Matches(probe.State) && trace==Trace(probe);
                             if (matches)
                             {
                                 using var requestProfile = profile?.Measure("comparison.request");
@@ -186,7 +188,7 @@ public static class CloneActionProbe
             // Detect observable cross-instance contamination; do not silently use
             // earlier labels if the reference changed anywhere during the batch.
             using var referenceCheckProfile = profile?.Measure("reference_check");
-            if (clock!=Clock(reference) || snapshot!=reference.State.SnapshotJson() || trace!=Trace(reference)
+            if (clock!=Clock(reference) || !snapshot.Matches(reference.State) || trace!=Trace(reference)
                 || expectedRequest!=JsonSerializer.Serialize(new MainActionPolicyAdapter(reference,vectors).DescribeCandidates(actor))
                 || diagnostics!=Diagnostics(reference) || Health(reference) is not null)
             {

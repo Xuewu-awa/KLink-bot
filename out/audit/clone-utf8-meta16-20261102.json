@@ -1,0 +1,577 @@
+{
+  "scope": "Bounded engineering fixtures; equal Unknown is not semantic coverage; no default change or PvP certification.",
+  "replayContract": "simulator-executability/experimental-v2;fresh-engine-per-candidate;choice=first-index/v1;not-legal-mask",
+  "cloneContract": "simulator-executability/experimental-v2;owned-prefix-once;idle-clone-per-candidate;choice=first-index/v1;not-legal-mask",
+  "seed": 1,
+  "leftDeck": "\u82F1\u65E5",
+  "rightDeck": "\u65E5\u6FB3\u5FEB\u653B",
+  "steps": 16,
+  "repeats": 3,
+  "vectors": "empty execution-only map",
+  "runtime": ".NET 10.0.12",
+  "architecture": "X64",
+  "profileScope": "one separate clone run per prefix; total includes stages; comparison includes comparison.state/request; unlisted work remains in total; elapsed/allocated, not peak memory",
+  "snapshotMode": "exact-utf8-stream/reused-batch-buffer",
+  "snapshotProfileScope": "snapshot.build/serialize include capture and checks; nested in comparison.state/reference_check where applicable; serialize includes equality and capture buffer allocation",
+  "cloneProfile": {
+    "reference_request": {
+      "Count": 16,
+      "Milliseconds": 0.4454,
+      "AllocatedBytes": 1081664
+    },
+    "snapshot.build": {
+      "Count": 892,
+      "Milliseconds": 465.0348000000003,
+      "AllocatedBytes": 816764808
+    },
+    "snapshot.serialize": {
+      "Count": 892,
+      "Milliseconds": 187.0859999999998,
+      "AllocatedBytes": 5395584
+    },
+    "baseline_replay": {
+      "Count": 16,
+      "Milliseconds": 36.8088,
+      "AllocatedBytes": 47460968
+    },
+    "engine_clone": {
+      "Count": 860,
+      "Milliseconds": 2093.1364999999996,
+      "AllocatedBytes": 1981996448
+    },
+    "comparison.state": {
+      "Count": 860,
+      "Milliseconds": 667.3791999999993,
+      "AllocatedBytes": 810953872
+    },
+    "comparison.request": {
+      "Count": 860,
+      "Milliseconds": 272.9273,
+      "AllocatedBytes": 128366256
+    },
+    "comparison": {
+      "Count": 860,
+      "Milliseconds": 940.8706999999994,
+      "AllocatedBytes": 939388928
+    },
+    "root_execution": {
+      "Count": 860,
+      "Milliseconds": 192.11149999999984,
+      "AllocatedBytes": 277410864
+    },
+    "evidence": {
+      "Count": 860,
+      "Milliseconds": 1.1756999999999984,
+      "AllocatedBytes": 830608
+    },
+    "reference_check": {
+      "Count": 16,
+      "Milliseconds": 12.714400000000001,
+      "AllocatedBytes": 16981264
+    },
+    "total": {
+      "Count": 16,
+      "Milliseconds": 3293.2733,
+      "AllocatedBytes": 3286892560
+    }
+  },
+  "stringCloneProfile": {
+    "reference_request": {
+      "Count": 16,
+      "Milliseconds": 0.2932,
+      "AllocatedBytes": 1081664
+    },
+    "snapshot.build": {
+      "Count": 892,
+      "Milliseconds": 623.6177999999994,
+      "AllocatedBytes": 816765104
+    },
+    "snapshot.serialize": {
+      "Count": 892,
+      "Milliseconds": 229.22809999999973,
+      "AllocatedBytes": 286647480
+    },
+    "baseline_replay": {
+      "Count": 16,
+      "Milliseconds": 40.482,
+      "AllocatedBytes": 47457872
+    },
+    "engine_clone": {
+      "Count": 860,
+      "Milliseconds": 2551.384600000001,
+      "AllocatedBytes": 1981992408
+    },
+    "comparison.state": {
+      "Count": 860,
+      "Milliseconds": 837.0619000000007,
+      "AllocatedBytes": 1087091832
+    },
+    "comparison.request": {
+      "Count": 860,
+      "Milliseconds": 274.2964000000005,
+      "AllocatedBytes": 128366256
+    },
+    "comparison": {
+      "Count": 860,
+      "Milliseconds": 1111.9356,
+      "AllocatedBytes": 1215526888
+    },
+    "root_execution": {
+      "Count": 860,
+      "Milliseconds": 204.4878,
+      "AllocatedBytes": 277419288
+    },
+    "evidence": {
+      "Count": 860,
+      "Milliseconds": 1.149599999999998,
+      "AllocatedBytes": 830608
+    },
+    "reference_check": {
+      "Count": 16,
+      "Milliseconds": 44.6881,
+      "AllocatedBytes": 22097024
+    },
+    "total": {
+      "Count": 16,
+      "Milliseconds": 3972.3229,
+      "AllocatedBytes": 3568146040
+    }
+  },
+  "stringCloneMs": 11704.9043,
+  "stringCloneBytes": 10703613024,
+  "mismatches": 0,
+  "determinate": 815,
+  "unknown": 45,
+  "replayMs": 16586.879999999997,
+  "cloneMs": 10245.152600000001,
+  "replayBytes": 14847799288,
+  "cloneBytes": 9859791592,
+  "rows": [
+    {
+      "step": 0,
+      "mismatch": null,
+      "candidates": 16,
+      "reasons": {
+        "simulator_returned_true": 4,
+        "simulator_returned_false": 12
+      },
+      "counts": {
+        "Accepted": 4,
+        "Rejected": 12
+      },
+      "replayEngines": 16,
+      "cloneEngines": 1,
+      "ClonesCreated": 16,
+      "replayRoots": 0,
+      "cloneRoots": 0,
+      "replayErrors": [],
+      "cloneErrors": [],
+      "replayMs": 130.73680000000002,
+      "cloneMs": 152.25,
+      "replayBytes": 93354336,
+      "cloneBytes": 101677432,
+      "stringCloneMs": 152.06740000000002,
+      "stringCloneBytes": 117668680
+    },
+    {
+      "step": 1,
+      "mismatch": null,
+      "candidates": 27,
+      "reasons": {
+        "simulator_returned_true": 1,
+        "simulator_returned_false": 26
+      },
+      "counts": {
+        "Accepted": 1,
+        "Rejected": 26
+      },
+      "replayEngines": 27,
+      "cloneEngines": 1,
+      "ClonesCreated": 27,
+      "replayRoots": 27,
+      "cloneRoots": 1,
+      "replayErrors": [],
+      "cloneErrors": [],
+      "replayMs": 310.0608,
+      "cloneMs": 256.8929,
+      "replayBytes": 166382368,
+      "cloneBytes": 168841664,
+      "stringCloneMs": 354.525,
+      "stringCloneBytes": 195533792
+    },
+    {
+      "step": 2,
+      "mismatch": null,
+      "candidates": 25,
+      "reasons": {
+        "simulator_returned_true": 9,
+        "simulator_returned_false": 16
+      },
+      "counts": {
+        "Accepted": 9,
+        "Rejected": 16
+      },
+      "replayEngines": 25,
+      "cloneEngines": 1,
+      "ClonesCreated": 25,
+      "replayRoots": 50,
+      "cloneRoots": 2,
+      "replayErrors": [],
+      "cloneErrors": [],
+      "replayMs": 86.6056,
+      "cloneMs": 90.7698,
+      "replayBytes": 170526512,
+      "cloneBytes": 160199888,
+      "stringCloneMs": 92.3284,
+      "stringCloneBytes": 184984040
+    },
+    {
+      "step": 3,
+      "mismatch": null,
+      "candidates": 33,
+      "reasons": {
+        "simulator_returned_true": 1,
+        "simulator_returned_false": 32
+      },
+      "counts": {
+        "Accepted": 1,
+        "Rejected": 32
+      },
+      "replayEngines": 33,
+      "cloneEngines": 1,
+      "ClonesCreated": 33,
+      "replayRoots": 99,
+      "cloneRoots": 3,
+      "replayErrors": [],
+      "cloneErrors": [],
+      "replayMs": 175.6983,
+      "cloneMs": 111.18970000000002,
+      "replayBytes": 232701584,
+      "cloneBytes": 207157720,
+      "stringCloneMs": 119.0413,
+      "stringCloneBytes": 239568568
+    },
+    {
+      "step": 4,
+      "mismatch": null,
+      "candidates": 38,
+      "reasons": {
+        "simulator_returned_true": 21,
+        "simulator_returned_false": 17
+      },
+      "counts": {
+        "Accepted": 21,
+        "Rejected": 17
+      },
+      "replayEngines": 38,
+      "cloneEngines": 1,
+      "ClonesCreated": 38,
+      "replayRoots": 152,
+      "cloneRoots": 4,
+      "replayErrors": [],
+      "cloneErrors": [],
+      "replayMs": 217.4224,
+      "cloneMs": 141.0714,
+      "replayBytes": 296024712,
+      "cloneBytes": 251770560,
+      "stringCloneMs": 143.99530000000001,
+      "stringCloneBytes": 288949808
+    },
+    {
+      "step": 5,
+      "mismatch": null,
+      "candidates": 45,
+      "reasons": {
+        "simulator_returned_true": 1,
+        "simulator_returned_false": 44
+      },
+      "counts": {
+        "Accepted": 1,
+        "Rejected": 44
+      },
+      "replayEngines": 45,
+      "cloneEngines": 1,
+      "ClonesCreated": 45,
+      "replayRoots": 225,
+      "cloneRoots": 5,
+      "replayErrors": [],
+      "cloneErrors": [],
+      "replayMs": 225.1598,
+      "cloneMs": 154.46179999999998,
+      "replayBytes": 360495976,
+      "cloneBytes": 291848304,
+      "stringCloneMs": 233.8312,
+      "stringCloneBytes": 335706704
+    },
+    {
+      "step": 6,
+      "mismatch": null,
+      "candidates": 45,
+      "reasons": {
+        "simulator_returned_true": 14,
+        "simulator_returned_false": 23,
+        "choice_policy_dependent": 6,
+        "unimplemented_call": 2
+      },
+      "counts": {
+        "Accepted": 14,
+        "Rejected": 23,
+        "Unknown": 8
+      },
+      "replayEngines": 45,
+      "cloneEngines": 1,
+      "ClonesCreated": 45,
+      "replayRoots": 270,
+      "cloneRoots": 6,
+      "replayErrors": [],
+      "cloneErrors": [],
+      "replayMs": 225.44230000000002,
+      "cloneMs": 267.5929,
+      "replayBytes": 461253952,
+      "cloneBytes": 368017936,
+      "stringCloneMs": 307.36580000000004,
+      "stringCloneBytes": 411871952
+    },
+    {
+      "step": 7,
+      "mismatch": null,
+      "candidates": 52,
+      "reasons": {
+        "simulator_returned_true": 6,
+        "simulator_returned_false": 44,
+        "unimplemented_call": 2
+      },
+      "counts": {
+        "Accepted": 6,
+        "Rejected": 44,
+        "Unknown": 2
+      },
+      "replayEngines": 52,
+      "cloneEngines": 1,
+      "ClonesCreated": 52,
+      "replayRoots": 364,
+      "cloneRoots": 7,
+      "replayErrors": [],
+      "cloneErrors": [],
+      "replayMs": 227.93099999999998,
+      "cloneMs": 196.828,
+      "replayBytes": 470126664,
+      "cloneBytes": 341506376,
+      "stringCloneMs": 201.8949,
+      "stringCloneBytes": 392033984
+    },
+    {
+      "step": 8,
+      "mismatch": null,
+      "candidates": 52,
+      "reasons": {
+        "simulator_returned_true": 1,
+        "simulator_returned_false": 51
+      },
+      "counts": {
+        "Accepted": 1,
+        "Rejected": 51
+      },
+      "replayEngines": 52,
+      "cloneEngines": 1,
+      "ClonesCreated": 52,
+      "replayRoots": 416,
+      "cloneRoots": 8,
+      "replayErrors": [],
+      "cloneErrors": [],
+      "replayMs": 228.5994,
+      "cloneMs": 184.68,
+      "replayBytes": 473772280,
+      "cloneBytes": 341623176,
+      "stringCloneMs": 188.8383,
+      "stringCloneBytes": 392147216
+    },
+    {
+      "step": 9,
+      "mismatch": null,
+      "candidates": 59,
+      "reasons": {
+        "simulator_returned_true": 33,
+        "simulator_returned_false": 26
+      },
+      "counts": {
+        "Accepted": 33,
+        "Rejected": 26
+      },
+      "replayEngines": 59,
+      "cloneEngines": 1,
+      "ClonesCreated": 59,
+      "replayRoots": 531,
+      "cloneRoots": 9,
+      "replayErrors": [],
+      "cloneErrors": [],
+      "replayMs": 327.8696,
+      "cloneMs": 227.76709999999997,
+      "replayBytes": 589252080,
+      "cloneBytes": 404901184,
+      "stringCloneMs": 283.0955,
+      "stringCloneBytes": 462101832
+    },
+    {
+      "step": 10,
+      "mismatch": null,
+      "candidates": 65,
+      "reasons": {
+        "simulator_returned_true": 13,
+        "simulator_returned_false": 52
+      },
+      "counts": {
+        "Accepted": 13,
+        "Rejected": 52
+      },
+      "replayEngines": 65,
+      "cloneEngines": 1,
+      "ClonesCreated": 65,
+      "replayRoots": 650,
+      "cloneRoots": 10,
+      "replayErrors": [],
+      "cloneErrors": [],
+      "replayMs": 307.9575,
+      "cloneMs": 298.68870000000004,
+      "replayBytes": 665412104,
+      "cloneBytes": 438492904,
+      "stringCloneMs": 299.78950000000003,
+      "stringCloneBytes": 501418992
+    },
+    {
+      "step": 11,
+      "mismatch": null,
+      "candidates": 78,
+      "reasons": {
+        "simulator_returned_true": 3,
+        "simulator_returned_false": 75
+      },
+      "counts": {
+        "Accepted": 3,
+        "Rejected": 75
+      },
+      "replayEngines": 78,
+      "cloneEngines": 1,
+      "ClonesCreated": 78,
+      "replayRoots": 858,
+      "cloneRoots": 11,
+      "replayErrors": [],
+      "cloneErrors": [],
+      "replayMs": 485.6232,
+      "cloneMs": 330.1502,
+      "replayBytes": 837495736,
+      "cloneBytes": 531078584,
+      "stringCloneMs": 498.5571,
+      "stringCloneBytes": 607318816
+    },
+    {
+      "step": 12,
+      "mismatch": null,
+      "candidates": 78,
+      "reasons": {
+        "simulator_returned_true": 1,
+        "simulator_returned_false": 77
+      },
+      "counts": {
+        "Accepted": 1,
+        "Rejected": 77
+      },
+      "replayEngines": 78,
+      "cloneEngines": 1,
+      "ClonesCreated": 78,
+      "replayRoots": 936,
+      "cloneRoots": 12,
+      "replayErrors": [],
+      "cloneErrors": [],
+      "replayMs": 733.7683,
+      "cloneMs": 308.1627,
+      "replayBytes": 855090088,
+      "cloneBytes": 531770208,
+      "stringCloneMs": 406.9534,
+      "stringCloneBytes": 608013704
+    },
+    {
+      "step": 13,
+      "mismatch": null,
+      "candidates": 75,
+      "reasons": {
+        "simulator_returned_true": 36,
+        "choice_policy_dependent": 21,
+        "simulator_returned_false": 14,
+        "unimplemented_call": 4
+      },
+      "counts": {
+        "Accepted": 36,
+        "Unknown": 25,
+        "Rejected": 14
+      },
+      "replayEngines": 75,
+      "cloneEngines": 1,
+      "ClonesCreated": 75,
+      "replayRoots": 975,
+      "cloneRoots": 13,
+      "replayErrors": [],
+      "cloneErrors": [],
+      "replayMs": 731.2121,
+      "cloneMs": 613.7365,
+      "replayBytes": 1147634328,
+      "cloneBytes": 793970024,
+      "stringCloneMs": 671.9884,
+      "stringCloneBytes": 867358920
+    },
+    {
+      "step": 14,
+      "mismatch": null,
+      "candidates": 91,
+      "reasons": {
+        "simulator_returned_true": 1,
+        "simulator_returned_false": 80,
+        "choice_policy_dependent": 10
+      },
+      "counts": {
+        "Accepted": 1,
+        "Rejected": 80,
+        "Unknown": 10
+      },
+      "replayEngines": 91,
+      "cloneEngines": 1,
+      "ClonesCreated": 91,
+      "replayRoots": 1274,
+      "cloneRoots": 14,
+      "replayErrors": [],
+      "cloneErrors": [],
+      "replayMs": 2632.8955,
+      "cloneMs": 925.4751,
+      "replayBytes": 2585878224,
+      "cloneBytes": 1081900536,
+      "stringCloneMs": 1020.1206999999999,
+      "stringCloneBytes": 1171812920
+    },
+    {
+      "step": 15,
+      "mismatch": null,
+      "candidates": 81,
+      "reasons": {
+        "simulator_returned_true": 1,
+        "simulator_returned_false": 80
+      },
+      "counts": {
+        "Accepted": 1,
+        "Rejected": 80
+      },
+      "replayEngines": 81,
+      "cloneEngines": 1,
+      "ClonesCreated": 81,
+      "replayRoots": 1215,
+      "cloneRoots": 15,
+      "replayErrors": [],
+      "cloneErrors": [],
+      "replayMs": 9539.8974,
+      "cloneMs": 5985.4358,
+      "replayBytes": 5442398344,
+      "cloneBytes": 3845035096,
+      "stringCloneMs": 6730.5121,
+      "stringCloneBytes": 3927123096
+    }
+  ]
+}

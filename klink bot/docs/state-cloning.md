@@ -554,3 +554,87 @@ unchanged.
 All 1,089 BotSim selftests and nine NNTrain policy evaluation selftests passed in
 that snapshot; the four targeted CloneActionProbe cases also passed. Existing
 NNTrain CS8632 warnings remain.
+
+### Opt-in UTF-8 snapshot comparison (2026-11-02)
+
+`probe-actions-clone --utf8-snapshots` enables an experimental exact-byte snapshot
+comparison. Public `CloneActionProbe.Run` and CLI runs without this flag retain
+string JSON comparison; the replay path remains unchanged. The snapshot schema,
+clock, action trace, candidate request, VM health and final reference-contamination
+checks are retained. This is an engineering optimization, not new PvP evidence.
+
+`ProbeSnapshotComparison` builds the same `MatchSnapshot` and uses the same shared
+`GameState.SnapshotJsonOptions` and generic snapshot type. It captures an owned
+UTF-8 baseline once and serializes each checked snapshot into a batch-local
+`MemoryStream`. It compares the entire written byte span with `SequenceEqual`,
+without a digest or field subset. Both length and position reset before every
+write, including after an earlier serialization exception. No engine state is
+restored or cached. The scratch buffer retains its largest capacity until the
+synchronous batch ends; it is disposed on normal, budget and exception exits.
+Allocated-byte reductions do not establish a peak-memory reduction.
+
+The helper also supports the original string path. Profiling now splits
+`snapshot.build` from `snapshot.serialize`; both include initial capture and all
+checks. They nest inside the existing comparison/reference scopes where applicable.
+Serialization includes equality checking and capture buffer allocation. Do not sum
+these scopes with their parents. The ordinary snapshot API and other callers are
+unchanged.
+
+With the flag, each benchmark prefix validates replay against forward/reversed
+UTF-8 clone successors, compares the complete clone report with the string clone,
+and verifies both separately profiled reports. Timed runs rotate replay, UTF-8 clone
+and string clone order over three repetitions. The same-run `stringCloneMs` and
+`stringCloneBytes` are the control for this optimization; prior reports are not
+timing controls. Profiling overhead and validation serialization are excluded from
+timed totals. Runtime, fixture restrictions and Unknown semantics remain as above.
+
+Regression cases compare against `GameState.SnapshotJson()` for card scalar edits,
+ordered destroyed-ID lists, canonical dictionary order, nested card references,
+nulls, Chinese/emoji/escaped strings, scratch growth and shrinkage, and recovery
+after a NaN serialization failure. Whole-report comparisons cover root-observer
+exceptions, prefix mismatch, budgets, unsupported ops, nested choices, and reference
+mutations to snapshot fields, RNG, action trace and VM diagnostics. Forward and
+reversed observed successors are checked against replay. These tests preserve the
+existing bounded snapshot coverage; they do not prove private-state equivalence.
+
+The DeepSeek worker supplied a source-only field/order/options checklist. The
+primary agent verified the relevant snapshot and nested card projections, retained
+the existing companion checks, and implemented/ran the regressions. Its proposed
+API behaviors were hypotheses to test, not game authority or performance evidence.
+The implementation reuses the options instance and generic snapshot type directly;
+it does not rely on a manual field inventory or on the worker's overload labels.
+
+Four same-run controls on .NET 10.0.12 x64 (three timed repeats; empty execution-only
+vectors) produced the following totals. Add `--utf8-snapshots` to the four commands
+above and change output names to `clone-utf8-plain16-20261102.json`,
+`clone-utf8-meta16-20261102.json`, `clone-utf8-gersov16-20261102.json` and
+`clone-utf8-plain32-seed2-20261102.json` respectively.
+
+| Fixture | String / UTF-8 clone ms | String / UTF-8 clone allocated bytes |
+|---|---:|---:|
+| Arado / seed 1 / 16 | 2958.5 / 2711.5 | 4,918,566,448 / 4,191,895,472 |
+| 英日–日澳快攻 / seed 1 / 16 | 11704.9 / 10245.2 | 10,703,613,024 / 9,859,791,592 |
+| 德芬车–苏澳中速 / seed 2 / 16 | 3278.0 / 2996.9 | 5,416,376,720 / 4,612,229,200 |
+| Arado / seed 2 / 32 | 9342.5 / 7660.1 | 14,082,501,416 / 12,056,988,080 |
+
+All 4,546 candidate comparisons reached the root observer and matched replay
+classification and observed successor state in both clone traversal orders. String
+and UTF-8 full reports matched: 1,477 Accepted, 3,023 Rejected and the same 46
+unresolved Unknown (37 choice-policy-dependent, nine unimplemented-call). There
+were zero batch errors or mismatches. These overlap previous engineering fixtures
+and add no unique game-rule coverage. The measured same-run reductions were
+8.3–18.0% elapsed and 7.9–14.8% allocated bytes; timing noise remains substantial.
+
+In the separate profiling passes, snapshot serialization/equality/capture allocated
+5.3–10.7 MB with the buffer versus 247.5–685.9 MB with strings. Snapshot construction
+still allocated 705.2–1,955.8 MB. Both modes construct the full snapshot on every
+check, so the buffer does not eliminate the cost of nested projections and sorting.
+Next: split graph-copy costs for the expensive 英日 fixture, then evaluate snapshot
+construction separately before attempting schema-level changes. Keep the option
+experimental while extending workload coverage.
+
+All six targeted CloneActionProbe cases, all 1,091 BotSim selftests and nine NNTrain
+policy evaluation selftests passed in a separate publishing snapshot excluding the
+pre-existing unrelated dirty probe edits. Tested source bytes match the integrated
+files; unchanged checkout data bytes were preserved for native-default hash checks.
+Existing NNTrain CS8632 warnings remain. Audit matrix certification is unchanged.

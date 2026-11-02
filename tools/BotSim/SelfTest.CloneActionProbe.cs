@@ -7,6 +7,77 @@ using KLink.Bot.Training;
 namespace KLink.Bot.Sim;
 internal static partial class SelfTest
 {
+    private static string? ProbeSnapshotUtf8Oracle(CardDatabase db)
+    {
+        var (engine,_,_)=ProbeFixture(db,2); var state=engine.State;
+        var card=state.Hq(Side.Left);
+        // Ordering, Unicode/escaping, nulls and nested values all use the existing
+        // snapshot schema/converters rather than a hand-maintained field subset.
+        card.BlueprintVariables["oracle"] = new Dictionary<string,object?> {
+            ["z"] = null, ["a"] = new object?[]{"中文🙂\"\\\n",-7,card} };
+        state.DestroyedCardIdsAll.AddRange(new[]{7,3});
+        string expected=state.SnapshotJson();
+        using var text=new ProbeSnapshotComparison(state,false);
+        using var bytes=new ProbeSnapshotComparison(state,true);
+        string? Check(string label)
+        {
+            bool oracle=expected==state.SnapshotJson();
+            return text.Matches(state)==oracle && bytes.Matches(state)==oracle ? null : label;
+        }
+        var error=Check("initial"); if(error is not null)return error;
+        card.BaseAttack++;
+        error=Check("card scalar"); if(error is not null)return error;
+        card.BaseAttack--;
+        state.DestroyedCardIdsAll.Reverse();
+        error=Check("list order"); if(error is not null)return error;
+        state.DestroyedCardIdsAll.Reverse();
+        card.BlueprintVariables["long"] = new string('界',100000);
+        error=Check("scratch growth"); if(error is not null)return error;
+        card.BlueprintVariables.Remove("long");
+        error=Check("scratch shrink and baseline immutability"); if(error is not null)return error;
+        card.BlueprintVariables["oracle"] = new Dictionary<string,object?> {
+            ["a"] = new object?[]{"中文🙂\"\\\n",-7,card}, ["z"] = null };
+        error=Check("canonical map order"); if(error is not null)return error;
+        card.BlueprintVariables["invalid"] = double.NaN;
+        Type? Throws(Action action) {try {action();return null;} catch(Exception ex) {return ex.GetType();}}
+        var original=Throws(()=>state.SnapshotJson());
+        if(original is null || Throws(()=>bytes.Matches(state))!=original || Throws(()=>text.Matches(state))!=original)
+            return "serialization exceptions differ";
+        card.BlueprintVariables.Remove("invalid");
+        return Check("reuse after serialization exception");
+    }
+
+    private static string? CloneProbeUtf8Reports(CardDatabase db)
+    {
+        var vectors=new StateEncoder.CardVecs();
+        foreach(int scenario in Enumerable.Range(0,10))
+        {
+            CloneActionProbeReport Run(bool utf8)
+            {
+                var (engine,deck,prefix)=ProbeFixture(db,2);
+                Action<MatchEngine,int>? rebuild=scenario==1 ? (e,i)=>e.State.Hq(Side.Left).BaseAttack++ : null;
+                Action<MatchEngine,int>? apply=scenario switch {
+                    2 => (e,i)=>throw new InvalidOperationException("utf8 fixture"),
+                    3 => (e,i)=>engine.State.Hq(Side.Left).BaseAttack++,
+                    4 => (e,i)=>e.Api.Vm.UnsupportedOps["utf8 fixture"]=1,
+                    5 => (e,i)=> {var h=e.State.Hq(Side.Left);e.ChooseSpawnCard!(h,new[]{h});},
+                    7 => (e,i)=>engine.State.Random.Next(10),
+                    8 => (e,i)=>engine.State.ActionLog.Clear(),
+                    9 => (e,i)=>engine.Api.Vm.UnsupportedOps["reference fixture"]=1,
+                    _ => null };
+                return CloneActionProbe.RunCore(db,vectors,deck,deck,1,prefix,engine,
+                    scenario==6 ? new(MaxCandidates:1) : new(),afterRebuild:rebuild,afterApply:apply,
+                    useUtf8Snapshots:utf8);
+            }
+            var original=Run(false);var buffered=Run(true);
+            if(JsonSerializer.Serialize(original)!=JsonSerializer.Serialize(buffered))return "report scenario "+scenario;
+            if ((scenario==3 || scenario>=7) && (!buffered.Errors.Contains("reference_changed")
+                || buffered.Candidates.Any(c=>c.Reason!="reference_changed")))return "contamination guard "+scenario;
+        }
+        var (reference,left,history)=ProbeFixture(db,2);
+        return CloneProbeBenchmark.Compare(db,vectors,left,left,1,history,reference,true);
+    }
+
     private static string? CloneProbeProfileIsObservational(CardDatabase db)
     {
         var (engine,deck,prefix)=ProbeFixture(db,2); var vectors=new StateEncoder.CardVecs();
