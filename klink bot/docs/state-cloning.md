@@ -1201,3 +1201,83 @@ versioned training admission contract. The default remains prefix replay.
 Final validation: all 1,098 BotSim selftests, nine NNTrain policy evaluation
 checks and 55 action-dataset checks pass in the isolated snapshot. Existing
 NNTrain CS8632 warnings remain; the new checks introduce no build errors.
+
+
+## Effect-heavy complete episode comparison (2026-11-02)
+
+`benchmark-clone-episodes` now accepts either `--fixture alternating|m1`
+(default remains `alternating`) or both `--left-deck NAME --right-deck NAME`
+from `MetaDecks`. Incomplete, mixed or unknown selections fail; no fallback is
+used. Version 2 reports bind the exact ordered left/right card arrays, their
+SHA-256, seed, choice policy, loaded input hashes and runtime. Meta deck names
+are fixture identifiers, not certification of current constructed legality.
+The repeated M1 fixture is deliberately synthetic and nonlegal.
+
+Reports retain warm replay and clone phase diagnostics, VM faults, unsupported
+operations, call counters, missing-call sites/omissions/capture failures,
+snapshot difference and admission rejection reasons. A rejected CloneAtIdle
+now also retains the NotSupportedException message and zero-based decision
+step. The existing injected external-selector regression checks that detail,
+the one completed clone and the absence of replay fallback. No boundary guard
+was relaxed. Other driver exceptions still retain only exception type; measured
+sample instability still aborts rather than producing a valid timing report.
+
+The private DeepSeek worker mechanically inventoried report fields, runner
+errors and clone guards. Primary review rejected its claim that missing-call
+provenance was omitted: `ActionDatasetTool.CaptureCallProvenance` explicitly
+captures all three phases and all site omission/failure fields; report JSON
+and the serialization regression independently verify the path. Its guard
+inventory was checked against source. Worker output is not rule evidence.
+
+The isolated snapshot uses HEAD source plus only the five explicit batch
+source edits, excluding unrelated local changes. Input JSON uses exact local
+bytes: Git-normalized data bytes initially failed the existing native-default
+hash contract; the run was stopped, original input bytes copied, and the
+contract passed without changing recorded hashes or bypassing validation.
+Source and input provenance is recorded in
+`out/audit/clone-heavy-source-verification-20261102.json`.
+
+All measurements below are seed 1, three alternating-order repeats per mode,
+following full warm episodes and whole-episode admission/equality checks.
+Timings are full runner wall time; allocations are current-thread managed
+bytes, not peak resident memory. Startup/loading/report IO are excluded.
+The baseline teacher must pass existing admission. Experimental clone rows
+remain explicitly denied training admission; these reports emit no dataset.
+
+| Fixture / policy | Rows / candidates | Replay / clone median ms | Replay / clone median allocated bytes |
+|---|---:|---:|---:|
+| M1 / Native | 39 / 3932 | 451.753 / 529.304 | 550404344 / 539334472 |
+| M1 / Last | 39 / 3932 | 430.265 / 484.294 | 550455944 / 539365440 |
+| 英日 vs 日澳快攻 / Native | 107 / 7556 | 8129.846 / 3428.650 | 7771806344 / 2675441664 |
+| 苏英爆破 vs 德澳老兵 / Native | 170 / 12916 | 19539.955 / 7157.307 | 19118919600 / 5516094232 |
+
+All four complete comparisons passed baseline admission and exact label/final
+snapshot/full trace/RNG fingerprint equality; every repeat was rechecked.
+M1 Native and Last produce distinct label and final snapshot hashes, so these
+are distinct exercised choice paths. Both mixed-deck runs execute local card
+programs as shown by retained `<local-ran:...>` counters, not missing calls.
+No actual unsupported clone boundary occurred in these four inputs. This is
+an observed zero for a bounded seed/fixture set, not an exhaustive boundary
+inventory. Synthetic guard injection remains a regression, not an observed
+live-deck limitation. No unsupported-state guard was removed or fallback added.
+
+Mixed-deck episodes show substantial allocation/time savings, but both short
+M1 episodes are slower with clones despite slightly fewer allocated bytes.
+There is no universal speedup claim or automatic mode switch. Shared catalog
+freezing, single-thread idle operation, fixed first-index selection and the
+existing replay-equivalent work ceiling remain necessary constraints. This
+comparison is engineering evidence only; it does not certify authoritative
+PvP rules, all cards or all private clone state. Default training stays on
+prefix replay; no audit matrix certification was refreshed.
+
+Reports: `out/audit/clone-heavy-{m1-native,m1-last,meta1,meta2}-20261102.json`.
+Next: define a separate, explicit experimental training-admission contract
+with the clone ownership/work invariants and existing whole-episode checks;
+validate its rejection paths before considering opt-in training data. Keep
+replay as the independent reference and preserve rejected episodes.
+
+Validation: isolated Release builds succeed; all 1,098 BotSim selftests, nine
+policy-evaluation checks and 63 action-dataset checks pass. New checks cover
+fixture selection/rejection and rejected-boundary/provenance serialization.
+All four report deck hashes and loaded data/binary hashes were independently
+verified against the tested snapshot. Existing NNTrain CS8632 warnings remain.

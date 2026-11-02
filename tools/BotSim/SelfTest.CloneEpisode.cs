@@ -62,7 +62,8 @@ internal static partial class SelfTest
         var unsupported=OracleActionEpisodeRunner.RunCore(db,vectors,deck,deck,1,maxRows:12,clonePlanning:true,
             beforeClone:(p,n)=>{if(n==1)p.ChooseSpawnCard=(c,cards)=>cards[0];});
         if(!unsupported.Errors.Contains("planning_clone_unsupported") || unsupported.Labels.Count!=1
-            || unsupported.PlanningClones!=1 || unsupported.PlanningPrefixRoots!=0)return "不支持克隆未显式停止/意外回退";
+            || unsupported.PlanningClones!=1 || unsupported.PlanningPrefixRoots!=0
+            || unsupported.PlanningCloneFailureStep!=1 || string.IsNullOrWhiteSpace(unsupported.PlanningCloneFailure))return "不支持克隆未显式停止/意外回退";
         var fault=OracleActionEpisodeRunner.RunCore(db,vectors,deck,deck,1,maxRows:12,clonePlanning:true,
             afterProbe:(p,n)=>{if(n==1)p.Api.Vm.UnsupportedOps["<forced-clone-fault>"]=1;});
         return fault.Errors.Contains("planning_execution_fault") && fault.Labels.Count==1

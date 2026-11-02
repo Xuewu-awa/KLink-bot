@@ -1,0 +1,309 @@
+{
+  "version": 2,
+  "kind": "KLink.ExperimentalCloneEpisodeBenchmark",
+  "seed": 1,
+  "repeats": 3,
+  "fixture": {
+    "name": "synthetic M1",
+    "left": [
+      "card_unit_120mm_m1_gun",
+      "card_unit_120mm_m1_gun",
+      "card_unit_120mm_m1_gun",
+      "card_unit_120mm_m1_gun",
+      "card_unit_120mm_m1_gun",
+      "card_unit_120mm_m1_gun",
+      "card_unit_120mm_m1_gun",
+      "card_unit_120mm_m1_gun",
+      "card_unit_120mm_m1_gun",
+      "card_unit_120mm_m1_gun",
+      "card_unit_120mm_m1_gun",
+      "card_unit_120mm_m1_gun",
+      "card_unit_120mm_m1_gun",
+      "card_unit_120mm_m1_gun",
+      "card_unit_120mm_m1_gun",
+      "card_unit_120mm_m1_gun",
+      "card_unit_120mm_m1_gun",
+      "card_unit_120mm_m1_gun",
+      "card_unit_120mm_m1_gun",
+      "card_unit_120mm_m1_gun",
+      "card_unit_120mm_m1_gun",
+      "card_unit_120mm_m1_gun",
+      "card_unit_120mm_m1_gun",
+      "card_unit_120mm_m1_gun",
+      "card_unit_120mm_m1_gun",
+      "card_unit_120mm_m1_gun",
+      "card_unit_120mm_m1_gun",
+      "card_unit_120mm_m1_gun",
+      "card_unit_120mm_m1_gun",
+      "card_unit_120mm_m1_gun",
+      "card_unit_120mm_m1_gun",
+      "card_unit_120mm_m1_gun",
+      "card_unit_120mm_m1_gun",
+      "card_unit_120mm_m1_gun",
+      "card_unit_120mm_m1_gun",
+      "card_unit_120mm_m1_gun",
+      "card_unit_120mm_m1_gun",
+      "card_unit_120mm_m1_gun",
+      "card_unit_120mm_m1_gun"
+    ],
+    "right": [
+      "card_unit_120mm_m1_gun",
+      "card_unit_120mm_m1_gun",
+      "card_unit_120mm_m1_gun",
+      "card_unit_120mm_m1_gun",
+      "card_unit_120mm_m1_gun",
+      "card_unit_120mm_m1_gun",
+      "card_unit_120mm_m1_gun",
+      "card_unit_120mm_m1_gun",
+      "card_unit_120mm_m1_gun",
+      "card_unit_120mm_m1_gun",
+      "card_unit_120mm_m1_gun",
+      "card_unit_120mm_m1_gun",
+      "card_unit_120mm_m1_gun",
+      "card_unit_120mm_m1_gun",
+      "card_unit_120mm_m1_gun",
+      "card_unit_120mm_m1_gun",
+      "card_unit_120mm_m1_gun",
+      "card_unit_120mm_m1_gun",
+      "card_unit_120mm_m1_gun",
+      "card_unit_120mm_m1_gun",
+      "card_unit_120mm_m1_gun",
+      "card_unit_120mm_m1_gun",
+      "card_unit_120mm_m1_gun",
+      "card_unit_120mm_m1_gun",
+      "card_unit_120mm_m1_gun",
+      "card_unit_120mm_m1_gun",
+      "card_unit_120mm_m1_gun",
+      "card_unit_120mm_m1_gun",
+      "card_unit_120mm_m1_gun",
+      "card_unit_120mm_m1_gun",
+      "card_unit_120mm_m1_gun",
+      "card_unit_120mm_m1_gun",
+      "card_unit_120mm_m1_gun",
+      "card_unit_120mm_m1_gun",
+      "card_unit_120mm_m1_gun",
+      "card_unit_120mm_m1_gun",
+      "card_unit_120mm_m1_gun",
+      "card_unit_120mm_m1_gun",
+      "card_unit_120mm_m1_gun"
+    ],
+    "sha256": "0A89AD7E07FED74AAFAEFC54D216F437793D5825B89635B250110135A44F31C9",
+    "scope": "Exact ordered inputs; no current constructed legality certification. Synthetic fixtures are deliberately nonlegal."
+  },
+  "chooseOnePolicy": "Native",
+  "baselineDiagnostics": {
+    "errors": [],
+    "snapshotDifference": null,
+    "planningCloneFailureStep": null,
+    "planningCloneFailure": null,
+    "teacher": {
+      "faultedPrograms": 0,
+      "unsupportedOps": {},
+      "unimplementedCalls": {},
+      "pendingSelectionCount": 0
+    },
+    "replay": {
+      "faultedPrograms": 0,
+      "unsupportedOps": {},
+      "unimplementedCalls": {},
+      "pendingSelectionCount": 0
+    },
+    "planning": {
+      "planningVmFaults": 0,
+      "planningUnsupported": {},
+      "planningCalls": {},
+      "planningPendingChoices": 0,
+      "counterScope": "Cumulative diagnostics including inherited clone prefixes; not newly executed work."
+    },
+    "missingCalls": [
+      {
+        "phase": "teacher",
+        "sites": [],
+        "sitesOmitted": 0,
+        "captureFailures": 0
+      },
+      {
+        "phase": "replay",
+        "sites": [],
+        "sitesOmitted": 0,
+        "captureFailures": 0
+      },
+      {
+        "phase": "planning",
+        "sites": [],
+        "sitesOmitted": 0,
+        "captureFailures": 0
+      }
+    ]
+  },
+  "cloneDiagnostics": {
+    "errors": [],
+    "snapshotDifference": null,
+    "planningCloneFailureStep": null,
+    "planningCloneFailure": null,
+    "teacher": {
+      "faultedPrograms": 0,
+      "unsupportedOps": {},
+      "unimplementedCalls": {},
+      "pendingSelectionCount": 0
+    },
+    "replay": {
+      "faultedPrograms": 0,
+      "unsupportedOps": {},
+      "unimplementedCalls": {},
+      "pendingSelectionCount": 0
+    },
+    "planning": {
+      "planningVmFaults": 0,
+      "planningUnsupported": {},
+      "planningCalls": {},
+      "planningPendingChoices": 0,
+      "counterScope": "Cumulative diagnostics including inherited clone prefixes; not newly executed work."
+    },
+    "missingCalls": [
+      {
+        "phase": "teacher",
+        "sites": [],
+        "sitesOmitted": 0,
+        "captureFailures": 0
+      },
+      {
+        "phase": "replay",
+        "sites": [],
+        "sitesOmitted": 0,
+        "captureFailures": 0
+      },
+      {
+        "phase": "planning",
+        "sites": [],
+        "sitesOmitted": 0,
+        "captureFailures": 0
+      }
+    ]
+  },
+  "teacher": "greedy-isolated-prefix/v3\u002Bchoose-one-explicit/v1\u002Bfirst-index/v1\u002Bafterstate-left/v1",
+  "experimentalMode": "experimental-owned-idle-clone/v1",
+  "inputsSha256": {
+    "card-effects.json": "fc335d228779a2859627ee706d85949149ca595d0cfdfbc4971541831e5a8df0",
+    "card-ir-native-defaults.json": "a4f2812716f03ded180f45603ac7b715e890c54b1bc5b4b75fe2b1ec0975d711",
+    "card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b",
+    "card-vectors.json": "b15b93cb02e7e8a712561a2da52127a5867084ecb878a6ad58539b56b1109ab9",
+    "cards.json": "3550dc76eb0414c500166875f45909077aeeb3ea4d229b9b0ba9c66a81987c4b",
+    "deck_code_ids.json": "261cfd518c1a1ce40488f141e8dbd617ff19abe0734c49319ebcd6ac5dcb257e",
+    "event-contracts.json": "e4806dd48efbfc799a27c14b3660ad76ee03cd3f13e3e4320b213c5928efb112",
+    "live-actions.json": "db413a4644afe75806e66c47e200d93c5d93e91ca03e23fca38465b7dcb4dab3",
+    "KLink.Bot.dll": "7d49153efd3a578cd7f6995867d3d7fe9ec5ed206a0229f74aa1976179f7731e",
+    "NNTrain.dll": "ec05ee1e395e3d75f6e433ea364839d300585c1894cab323e63e94f19dfeffdf"
+  },
+  "runtime": ".NET 10.0.12",
+  "scope": "Full public episode only; excludes startup, data loading, hashes, warm-up, admission, serialization, IO and training epochs. Current-thread managed allocation, not peak memory. No trainable dataset output.",
+  "baselineReasons": [],
+  "cloneAdmissionReasons": [
+    "experimental_planning_not_admitted",
+    "unverified_planning_count"
+  ],
+  "cloneHealthy": true,
+  "fingerprintsEqual": true,
+  "baselineFingerprint": {
+    "labelsSha256": "8CDADD6EFC24C53414963B9EEEAF215CE9810A1E5EAF4F09A260E0F8AC8D74AB",
+    "errors": [],
+    "comparedSteps": 39,
+    "appliedActions": 39,
+    "mainFaults": 0,
+    "mainRejections": 0,
+    "choiceFaults": 0,
+    "teacherSnapshotSha256": "7C497A42A1B211EDF9C184425566991F93EA584EB4EC84932CE64D721858E5CD",
+    "replaySnapshotSha256": "7C497A42A1B211EDF9C184425566991F93EA584EB4EC84932CE64D721858E5CD",
+    "teacherTraceSha256": "1FCAB6E0AFEA01E4F2AE503F4259BFBADCC80D8A49EC6AD2A3D859003E75AA5B",
+    "replayTraceSha256": "1FCAB6E0AFEA01E4F2AE503F4259BFBADCC80D8A49EC6AD2A3D859003E75AA5B",
+    "isFinished": true,
+    "winner": 1,
+    "state": 1286306807,
+    "consumedCount": 78
+  },
+  "cloneFingerprint": {
+    "labelsSha256": "8CDADD6EFC24C53414963B9EEEAF215CE9810A1E5EAF4F09A260E0F8AC8D74AB",
+    "errors": [],
+    "comparedSteps": 39,
+    "appliedActions": 39,
+    "mainFaults": 0,
+    "mainRejections": 0,
+    "choiceFaults": 0,
+    "teacherSnapshotSha256": "7C497A42A1B211EDF9C184425566991F93EA584EB4EC84932CE64D721858E5CD",
+    "replaySnapshotSha256": "7C497A42A1B211EDF9C184425566991F93EA584EB4EC84932CE64D721858E5CD",
+    "teacherTraceSha256": "1FCAB6E0AFEA01E4F2AE503F4259BFBADCC80D8A49EC6AD2A3D859003E75AA5B",
+    "replayTraceSha256": "1FCAB6E0AFEA01E4F2AE503F4259BFBADCC80D8A49EC6AD2A3D859003E75AA5B",
+    "isFinished": true,
+    "winner": 1,
+    "state": 1286306807,
+    "consumedCount": 78
+  },
+  "rows": 39,
+  "candidates": 3932,
+  "warmReplayWork": {
+    "mode": "replay-prefix",
+    "elapsedMs": 1155.0487,
+    "allocatedBytes": 558165064,
+    "planningPrefixRoots": 741,
+    "planningBaselineRoots": 0,
+    "planningClones": 0
+  },
+  "warmCloneWork": {
+    "mode": "experimental-owned-idle-clone/v1",
+    "elapsedMs": 1018.2838,
+    "allocatedBytes": 542700368,
+    "planningPrefixRoots": 0,
+    "planningBaselineRoots": 39,
+    "planningClones": 39
+  },
+  "samples": [
+    {
+      "mode": "replay-prefix",
+      "elapsedMs": 1268.268,
+      "allocatedBytes": 552885160,
+      "planningPrefixRoots": 741,
+      "planningBaselineRoots": 0,
+      "planningClones": 0
+    },
+    {
+      "mode": "experimental-owned-idle-clone/v1",
+      "elapsedMs": 881.1853,
+      "allocatedBytes": 539378288,
+      "planningPrefixRoots": 0,
+      "planningBaselineRoots": 39,
+      "planningClones": 39
+    },
+    {
+      "mode": "experimental-owned-idle-clone/v1",
+      "elapsedMs": 529.3042,
+      "allocatedBytes": 539334472,
+      "planningPrefixRoots": 0,
+      "planningBaselineRoots": 39,
+      "planningClones": 39
+    },
+    {
+      "mode": "replay-prefix",
+      "elapsedMs": 451.753,
+      "allocatedBytes": 550404280,
+      "planningPrefixRoots": 741,
+      "planningBaselineRoots": 0,
+      "planningClones": 0
+    },
+    {
+      "mode": "replay-prefix",
+      "elapsedMs": 449.8622,
+      "allocatedBytes": 550404344,
+      "planningPrefixRoots": 741,
+      "planningBaselineRoots": 0,
+      "planningClones": 0
+    },
+    {
+      "mode": "experimental-owned-idle-clone/v1",
+      "elapsedMs": 435.8038,
+      "allocatedBytes": 539010736,
+      "planningPrefixRoots": 0,
+      "planningBaselineRoots": 39,
+      "planningClones": 39
+    }
+  ]
+}

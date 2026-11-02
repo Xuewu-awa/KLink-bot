@@ -16,9 +16,33 @@ internal static class ActionDatasetSelfTest
     {
         int checks=0;
         void Assert(bool value,string name){if(!value)throw new InvalidOperationException(name);checks++;}
+        var fixture=CloneEpisodeBenchmark.ResolveFixture(db,new());
+        Assert(fixture.Left.Length==39 && fixture.Left.SequenceEqual(fixture.Right),"default benchmark fixture retained");
+        var m1=CloneEpisodeBenchmark.ResolveFixture(db,new(){{"fixture","m1"}});
+        Assert(m1.Left.All(c=>c=="card_unit_120mm_m1_gun") && m1.Right.Length==39,"effect fixture exact inputs");
+        var names=MetaDecks.All.Take(2).Select(d=>d.Name).ToArray();
+        var meta=CloneEpisodeBenchmark.ResolveFixture(db,new(){{"left-deck",names[0]},{"right-deck",names[1]}});
+        Assert(meta.Left.Length>0 && meta.Right.Length>0 && meta.Name.Contains(names[0]),"meta fixture explicit inputs");
+        void RejectFixture(Dictionary<string,string> opts)
+        {bool rejected=false;try{CloneEpisodeBenchmark.ResolveFixture(db,opts);}catch(ArgumentException){rejected=true;}
+            Assert(rejected,"invalid fixture cannot silently fall back");}
+        RejectFixture(new(){{"left-deck",names[0]}});
+        RejectFixture(new(){{"left-deck",names[0]},{"right-deck",names[1]},{"fixture","m1"}});
+        RejectFixture(new(){{"fixture","missing"}});
+        RejectFixture(new(){{"left-deck","missing"},{"right-deck",names[1]}});
         string[] deck=Enumerable.Range(0,39).Select(i=>i%2==0?"card_unit_arado_ar_196":"card_unit_light_infantry").ToArray();
         var episode=OracleActionEpisodeRunner.Run(db,vectors,deck,deck,1);
         Assert(ActionDatasetTool.AdmissionReasons(episode,true).Length==0,"clean oracle episode admitted");
+        var diagnostic=episode with {PlanningCloneFailure="test guard",PlanningCloneFailureStep=3,
+            Errors=new[]{"planning_clone_unsupported"}};
+        using(var doc=JsonDocument.Parse(JsonSerializer.Serialize(CloneEpisodeBenchmark.Diagnostics(diagnostic),ActionDatasetTool.Json)))
+        {
+            var root=doc.RootElement;
+            Assert(root.GetProperty("planningCloneFailureStep").GetInt32()==3
+                && root.GetProperty("planningCloneFailure").GetString()=="test guard"
+                && root.GetProperty("errors")[0].GetString()=="planning_clone_unsupported"
+                && root.GetProperty("missingCalls").GetArrayLength()==3,"rejected benchmark retains boundary and phase provenance");
+        }
         using var buffer=new StringWriter();
         var experimental=episode with {PlanningMode="experimental-owned-idle-clone/v1"};
         Assert(ActionDatasetTool.AdmissionReasons(experimental,true).Contains("experimental_planning_not_admitted")

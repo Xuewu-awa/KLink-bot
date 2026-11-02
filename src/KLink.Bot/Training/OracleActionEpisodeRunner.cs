@@ -16,6 +16,8 @@ public sealed record OracleActionEpisodeResult(MatchEngine Teacher, MatchEngine 
 {
     public string? SnapshotDifference {get;init;}
     public string PlanningMode {get;init;}="replay-prefix";
+    public string? PlanningCloneFailure {get;init;}
+    public int? PlanningCloneFailureStep {get;init;}
     public int PlanningClones {get;init;}
     public long PlanningBaselineRoots {get;init;}
     public long PlanningPrefixRoots {get;init;}
@@ -93,6 +95,7 @@ public static class OracleActionEpisodeRunner
         MatchEngine? baseline=null;
         long baselineRoots=0,baselineChoiceFaults=0;
         int clones=0;
+        string? cloneFailure=null;int? cloneFailureStep=null;
         bool SameRequest(MainActionRequest a,MainActionRequest b)=>a.Actor==b.Actor && a.Turn==b.Turn
             && a.Observation.SequenceEqual(b.Observation) && a.CoverageGaps.SequenceEqual(b.CoverageGaps)
             && a.Candidates.Count==b.Candidates.Count && a.Candidates.Zip(b.Candidates).All(p=>p.First.Command==p.Second.Command
@@ -155,7 +158,8 @@ public static class OracleActionEpisodeRunner
                     {
                         beforeClone?.Invoke(baseline!,compared);
                         try { probe=baseline!.CloneAtIdle();clones++; }
-                        catch(NotSupportedException) { errors.Add("planning_clone_unsupported");break; }
+                        catch(NotSupportedException error) { cloneFailure=error.Message;cloneFailureStep=labels.Count;
+                            errors.Add("planning_clone_unsupported");break; }
                     }
                     else probe=new MatchEngine(database,left,right,seed);
                     using(var probeChoice=new ChoicePolicyAdapter(probe,vectors,First))
@@ -296,7 +300,8 @@ public static class OracleActionEpisodeRunner
         return new(teacher,replay,labels.AsReadOnly(),errors.Distinct(StringComparer.Ordinal).ToArray(),
             (teacherChoice?.Faults??0)+(replayChoice?.Faults??0),main.Faults+teacherView.Faults,
             main.RejectedActions+teacherView.RejectedActions,main.AppliedActions,compared)
-            {PlanningMode=clonePlanning?"experimental-owned-idle-clone/v1":"replay-prefix",
+            {PlanningCloneFailure=cloneFailure,PlanningCloneFailureStep=cloneFailureStep,
+             PlanningMode=clonePlanning?"experimental-owned-idle-clone/v1":"replay-prefix",
              PlanningClones=clones,PlanningBaselineRoots=baselineRoots,
              SnapshotDifference=snapshotDifference,PlanningPrefixRoots=prefixRoots,PlanningDecisions=planningDecisions,
              PlanningVmFaults=planningVmFaults,PlanningChoiceFaults=planningChoiceFaults,PlanningPendingChoices=planningPending,

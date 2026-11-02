@@ -1088,7 +1088,7 @@ internal static class Program
               NNTrain dump-actions --games 100 --seed 1 --out actions.jsonl.gz [--choose-one-policy native|last]
               NNTrain verify-actions --data actions.jsonl.gz
               NNTrain actions-selftest
-              NNTrain benchmark-clone-episodes --out report.json [--seed 1] [--repeats 3] [--choose-one-policy native|last]
+              NNTrain benchmark-clone-episodes --out report.json [--seed 1] [--repeats 3] [--choose-one-policy native|last] [--fixture alternating|m1 OR --left-deck NAME --right-deck NAME]
             实验性完整对局克隆规划对比；不输出训练数据，克隆结果仍被数据准入拒绝。
               NNTrain benchmark-action-episodes --out benchmark.json [--seed 1] [--repeats 3]
             测量完整前缀重放教师与获准标签的内存 gzip；合成夹具，不代表合法构筑或所有卡牌。

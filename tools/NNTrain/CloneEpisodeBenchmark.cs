@@ -13,6 +13,40 @@ namespace KLink.Bot.NNTrain;
 // Full-episode comparison only. Never emits training rows or normalizes clone work counts.
 internal static class CloneEpisodeBenchmark
 {
+    internal sealed record Fixture(string Name,string[] Left,string[] Right);
+    internal static Fixture ResolveFixture(CardDatabase db,Dictionary<string,string> opts)
+    {
+        bool left=opts.TryGetValue("left-deck",out var l),right=opts.TryGetValue("right-deck",out var r);
+        if(left!=right || (left && opts.ContainsKey("fixture")))
+            throw new ArgumentException("Use both --left-deck and --right-deck, or --fixture exclusively.");
+        string[] Expand(string name)
+        {
+            var matches=MetaDecks.All.Where(d=>d.Name==name).ToArray();
+            if(matches.Length!=1)throw new ArgumentException("Unknown meta deck: "+name);
+            var cards=DeckCodeParser.Expand(DeckCodeParser.Parse(matches[0].Code),db.DeckCodeIds,out var unknown);
+            if(unknown.Count!=0)throw new InvalidDataException("Unknown codes in meta deck: "+name);
+            return cards.ToArray();
+        }
+        if(left)return new("meta: "+l+" vs "+r,Expand(l),Expand(r));
+        return opts.GetValueOrDefault("fixture","alternating") switch {
+            "alternating"=>new("synthetic alternating",Enumerable.Range(0,39).Select(i=>i%2==0
+                ?"card_unit_arado_ar_196":"card_unit_light_infantry").ToArray(),
+                Enumerable.Range(0,39).Select(i=>i%2==0?"card_unit_arado_ar_196":"card_unit_light_infantry").ToArray()),
+            "m1"=>new("synthetic M1",Enumerable.Repeat("card_unit_120mm_m1_gun",39).ToArray(),
+                Enumerable.Repeat("card_unit_120mm_m1_gun",39).ToArray()),
+            _=>throw new ArgumentException("Unknown --fixture. Use alternating or m1.")
+        };
+    }
+    internal static object Diagnostics(OracleActionEpisodeResult e)
+    {
+        object Engine(KLink.Bot.Engine.MatchEngine engine)=>new {
+            engine.Api.Vm.FaultedPrograms,engine.Api.Vm.UnsupportedOps,engine.UnimplementedCalls,engine.PendingSelectionCount};
+        return new {e.Errors,e.SnapshotDifference,e.PlanningCloneFailureStep,e.PlanningCloneFailure,
+            teacher=Engine(e.Teacher),replay=Engine(e.Replay),
+            planning=new {e.PlanningVmFaults,e.PlanningUnsupported,e.PlanningCalls,e.PlanningPendingChoices,
+                counterScope="Cumulative diagnostics including inherited clone prefixes; not newly executed work."},
+            missingCalls=ActionDatasetTool.CaptureCallProvenance(e)};
+    }
     internal static int Run(CardDatabase db,StateEncoder.CardVecs vectors,
         Dictionary<string,string> opts,string dataDir,string vectorPath)
     {
@@ -21,7 +55,7 @@ internal static class CloneEpisodeBenchmark
         if(repeats is <1 or >5)throw new ArgumentException("--repeats must be 1..5.");
         if(KismetLibrary.Default is null)throw new InvalidOperationException("Loaded IR required.");
         var policy=ActionDatasetTool.ParseChooseOnePolicy(opts.GetValueOrDefault("choose-one-policy","native"));
-        string[] deck=Enumerable.Range(0,39).Select(i=>i%2==0?"card_unit_arado_ar_196":"card_unit_light_infantry").ToArray();
+        var fixture=ResolveFixture(db,opts);
         string Hash(object value)=>Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(value,ActionDatasetTool.Json))));
         object Fingerprint(OracleActionEpisodeResult e)=>new {
             labelsSha256=Hash(e.Labels),e.Errors,e.ComparedSteps,e.AppliedActions,e.MainFaults,e.MainRejections,e.ChoiceFaults,
@@ -45,8 +79,8 @@ internal static class CloneEpisodeBenchmark
         (OracleActionEpisodeResult Episode,object Timing) Measure(bool clone)
         {
             long start=GC.GetAllocatedBytesForCurrentThread();var clock=Stopwatch.StartNew();
-            var e=clone?OracleActionEpisodeRunner.RunExperimentalClonedPlanning(db,vectors,deck,deck,seed,policy)
-                :OracleActionEpisodeRunner.Run(db,vectors,deck,deck,seed,policy);
+            var e=clone?OracleActionEpisodeRunner.RunExperimentalClonedPlanning(db,vectors,fixture.Left,fixture.Right,seed,policy)
+                :OracleActionEpisodeRunner.Run(db,vectors,fixture.Left,fixture.Right,seed,policy);
             double ms=clock.Elapsed.TotalMilliseconds;long bytes=GC.GetAllocatedBytesForCurrentThread()-start;
             return(e,new {mode=e.PlanningMode,elapsedMs=ms,allocatedBytes=bytes,e.PlanningPrefixRoots,e.PlanningBaselineRoots,e.PlanningClones});
         }
@@ -71,8 +105,11 @@ internal static class CloneEpisodeBenchmark
         string output=Path.GetFullPath(opts.GetValueOrDefault("out","clone-episode-benchmark.json"));
         Directory.CreateDirectory(Path.GetDirectoryName(output)!);
         File.WriteAllText(output,JsonSerializer.Serialize(new {
-            version=1,kind="KLink.ExperimentalCloneEpisodeBenchmark",seed,repeats,
-            fixture="39 alternating arado_ar_196/light_infantry per side; synthetic, not constructed-legal",
+            version=2,kind="KLink.ExperimentalCloneEpisodeBenchmark",seed,repeats,
+            fixture=new {fixture.Name,fixture.Left,fixture.Right,sha256=Hash(new {fixture.Left,fixture.Right}),
+                scope="Exact ordered inputs; no current constructed legality certification. Synthetic fixtures are deliberately nonlegal."},
+            chooseOnePolicy=policy.ToString(),
+            baselineDiagnostics=Diagnostics(replay.Episode),cloneDiagnostics=Diagnostics(clone.Episode),
             teacher=OracleActionEpisodeRunner.ContractFor(policy),experimentalMode=clone.Episode.PlanningMode,
             inputsSha256=ActionDatasetTool.CurrentInputs(dataDir,vectorPath),
             runtime=System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription,
