@@ -97,6 +97,14 @@ class MatrixTests(unittest.TestCase):
         self.assertIn('client_exe_not_checked',self.build(None)['partial_evidence'][0]['stale_reasons'])
         self.assertIn('client_exe_changed',self.build('different')['partial_evidence'][0]['stale_reasons'])
 
+    def test_missing_or_null_exe_binding_fails_closed(self):
+        self.registry['partial_evidence'][0].pop('client_exe_sha256')
+        self.save_registry()
+        self.assertIn('client_exe_not_bound',self.build()['partial_evidence'][0]['stale_reasons'])
+        self.registry['partial_evidence'][0]['client_exe_sha256']=None
+        self.save_registry()
+        self.assertIn('client_exe_not_bound',self.build()['partial_evidence'][0]['stale_reasons'])
+
     def test_changed_report_stale_and_historical_remaining_not_active(self):
         self.write(self.report,dict(status='fully verified',remaining=['old unresolved assertion']))
         r=self.build()

@@ -8107,19 +8107,41 @@
         null
       ],
       "status": "partial",
-      "validated_scope": "六张无 card-ir 条目的卡完成 CDO/资产字段对照；6 个类导出均无自定义函数或事件导出，静态字段与 cards.json 无不一致，内建关键词表有对应条目。结论仅为 data-only-or-native-keyword 候选，不认证整卡逻辑或 /Script/kards 原生继承闭包。",
-      "report": "out/audit/systematic-rules/six-no-ir-card-cdo-classification-20261031.json",
-      "report_sha256": "60949202a5589ef1185c83f8a4e004c4c40a624a95860a467c1d2c7fd2aed7ea",
+      "validated_scope": "六张无独立IR卡的仓库静态字段、固有关键词与实例加载已由聚焦回归检查；另以 Panzer II-A 攻击 Red Devils 验证 1 点目标税导致费用不足拒绝且无副作用、刚好足额时成功扣费。仅为局部数据/共用攻击费用路径证据，不认证六卡完整逻辑、客户端当前版本或 Shiden 原生字段语义。",
+      "report": "out/audit/systematic-rules/six-no-ir-data-and-tax-regression-20261102.json",
+      "report_sha256": "f135a38c96873a8acb419d759d7528fd1c4f82f2cee0d42d6a1ea0071be9a159",
       "source_bindings": {
-        "klink bot/tools/audit-six-no-ir-cdo.py": "7816fa1c896d34ea3b9217b54f1d47ec6a51f4f4ce333e476eb42e3289008a96",
         "klink bot/docs/cards.json": "835ec5d6f8aa267e2324e0eb3bb78a38280994e064485b2a31a95cc296939451",
         "klink bot/docs/card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b",
-        "src/KLink.Bot/Cards/CardInnateTable.cs": "9d4e25a3271a523c460cb50ece359ae7bb98379d7ccdff9412a3bdf48c2610d6"
+        "src/KLink.Bot/Cards/CardInnateTable.cs": "9d4e25a3271a523c460cb50ece359ae7bb98379d7ccdff9412a3bdf48c2610d6",
+        "src/KLink.Bot/Cards/CardDatabase.cs": "5bae70fda2cf5a45f3c2e5b74a16d6f7423f963873309bae38ffcc0d3dbde337",
+        "src/KLink.Bot/Engine/CardInstance.cs": "4c0daa74d2f97737bc3202f6f9b734da9d12ada4837635246bac221da9d74b7e",
+        "src/KLink.Bot/Effects/CardApiDispatch.cs": "b7188eace3ff3ad55eac7985b4b92e437f208e0b0e5ddc74e3cd572c0c79c7f3",
+        "src/KLink.Bot/Engine/MatchEngine.cs": "081e29917adb27ad80b41d10ed3cdd611be7b6f489139e3e2107c6606008a555",
+        "tools/BotSim/SelfTest.cs": "f5d7d1cd37f03db71fa16cb49b202b0a98f04822b55c93d4011ccc730ba84f29",
+        "klink bot/tools/audit-six-no-ir-cdo.py": "7816fa1c896d34ea3b9217b54f1d47ec6a51f4f4ce333e476eb42e3289008a96",
+        "out/audit/systematic-rules/six-no-ir-card-cdo-classification-20261031.json": "60949202a5589ef1185c83f8a4e004c4c40a624a95860a467c1d2c7fd2aed7ea"
       },
       "limitations": [
-        "无自定义 Blueprint 函数体不等于继承原生规则已完成认证。",
-        "静态 CDO 字段一致不等于所有触发时机和交互路径一致。"
-      ]
+        "This is a partial repository-data/import and shared attack-tax regression, not full per-card behavior certification.",
+        "All six cards still lack their own card IR in the reviewed extraction; this alone does not prove inherited BaseCardObject or native behavior is absent.",
+        "Only Red Devils attack-tax behavior is exercised end to end here; its non-attack target-tax paths are not certified by this test.",
+        "Some cost values asserted from the repository card table are not positively represented as serialized values in the parsed CDO records; the regression is not independent proof of those client values.",
+        "Shiden isHQDamage, isReserved, and threat_level semantics remain unresolved.",
+        "The parsed metadata version was not checked against the current installed pak/client, and the report does not certify asset-version freshness."
+      ],
+      "client_exe_sha256": null,
+      "evidence_bindings": {
+        "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Germany\\Base\\units\\card_unit_panzer_ii_a.metadata.json": "e02a67b5c694949b1c0d5739b65d6ad8672a4cf9391c71c7a35ec901bca1c771",
+        "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Japan\\Base\\units\\card_unit_15th_cavalry_regiment.metadata.json": "5c90629c94419592dcfc5b08a499ad46e2c69280a36250f0302165841c9d4ec6",
+        "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Japan\\Base\\units\\card_unit_ki_61_hien.metadata.json": "113d529c8400b1c8bdef48fbfd810241c30d92588c7f4891ff75e8783bc810a5",
+        "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Japan\\Base\\units\\card_unit_shiden.metadata.json": "d1ec1e26b1dfdc16d1aa7dae74b990aa4b4a40f76670a47268b63c39aa8ebd44",
+        "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Soviet\\Base\\units\\card_unit_554th_rifles.metadata.json": "74e26006e698e4b12c4af404ef746c70f3b2e982d4c19dae7a9852cab946b7d9",
+        "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\USA\\Legions\\units\\card_unit_red_devils.metadata.json": "9a06f2b70e43091c88fffc7fff926da7787c325f291f1eb5f8fde07c4325fd8e",
+        "out/audit/systematic-rules/six-no-ir-card-cdo-classification-20261031.json": "60949202a5589ef1185c83f8a4e004c4c40a624a95860a467c1d2c7fd2aed7ea",
+        "out/audit/six-no-ir-focused-selftest-20261102.txt": "3db09eb8067e57e7b06d35510b0240fd8a8785fa65df0206da1ccd623992e73b",
+        "out/audit/six-no-ir-full-selftest-20261102.txt": "58724c8c408bf4cf01d69cd56bb481e0ddce798c7961f816c987c83f70d86287"
+      }
     },
     {
       "id": "RULE-550/SpawnCardInHand/initial-slot",

@@ -1,0 +1,197 @@
+{
+  "schema_version": 1,
+  "report_id": "MATRIX-007/six-no-ir-data-and-tax-regression-20261102",
+  "status": "partial",
+  "authority": {
+    "primary_data": "Repository card data and the six parsed CDO metadata records bound by SHA-256.",
+    "asset_version": "The parsed metadata records match their recorded hashes, but their equivalence to the currently installed pak/client version was not checked.",
+    "replay_data_used": false
+  },
+  "card_rows_asserted_by_regression": [
+    {
+      "name": "card_unit_panzer_ii_a",
+      "attack": 1,
+      "defense": 3,
+      "kredits": 1,
+      "operationCost": 1,
+      "range": 1,
+      "faction": "Germany",
+      "type": "tank",
+      "targetTax": 0,
+      "keywords": [
+        "Blitz",
+        "Smokescreen"
+      ],
+      "heavyArmor": 0
+    },
+    {
+      "name": "card_unit_15th_cavalry_regiment",
+      "attack": 2,
+      "defense": 1,
+      "kredits": 1,
+      "operationCost": 0,
+      "range": 1,
+      "faction": "Japan",
+      "type": "infantry",
+      "targetTax": 0,
+      "keywords": [
+        "Blitz"
+      ],
+      "heavyArmor": 0
+    },
+    {
+      "name": "card_unit_ki_61_hien",
+      "attack": 5,
+      "defense": 4,
+      "kredits": 5,
+      "operationCost": 3,
+      "range": 2,
+      "faction": "Japan",
+      "type": "fighter",
+      "targetTax": 0,
+      "keywords": [
+        "Blitz"
+      ],
+      "heavyArmor": 0
+    },
+    {
+      "name": "card_unit_shiden",
+      "attack": 4,
+      "defense": 4,
+      "kredits": 5,
+      "operationCost": 3,
+      "range": 2,
+      "faction": "Japan",
+      "type": "fighter",
+      "targetTax": 0,
+      "keywords": [
+        "Ambush",
+        "Blitz",
+        "Fury"
+      ],
+      "heavyArmor": 0
+    },
+    {
+      "name": "card_unit_554th_rifles",
+      "attack": 1,
+      "defense": 1,
+      "kredits": 0,
+      "operationCost": 0,
+      "range": 1,
+      "faction": "Soviet",
+      "type": "infantry",
+      "targetTax": 0,
+      "keywords": [
+        "Blitz"
+      ],
+      "heavyArmor": 0
+    },
+    {
+      "name": "card_unit_red_devils",
+      "attack": 1,
+      "defense": 3,
+      "kredits": 1,
+      "operationCost": 1,
+      "range": 1,
+      "faction": "USA",
+      "type": "infantry",
+      "targetTax": 1,
+      "keywords": [
+        "Blitz"
+      ],
+      "heavyArmor": 0
+    }
+  ],
+  "cdo_cross_check": {
+    "report": "out/audit/systematic-rules/six-no-ir-card-cdo-classification-20261031.json",
+    "summary": {
+      "card_count": 6,
+      "missing_ir_count": 6,
+      "function_or_event_export_count": 0,
+      "cdo_static_mismatch_count": 0,
+      "candidate_data_only_or_native_keyword_count": 6
+    },
+    "compared_fields": [
+      "name",
+      "title",
+      "attack",
+      "defense",
+      "range",
+      "rarity",
+      "cardSet",
+      "faction",
+      "type"
+    ],
+    "rule_fields_by_card": {
+      "card_unit_panzer_ii_a": {
+        "hasBlitz": true,
+        "hasSmokescreen": true
+      },
+      "card_unit_15th_cavalry_regiment": {
+        "hasBlitz": true
+      },
+      "card_unit_ki_61_hien": {
+        "hasBlitz": true
+      },
+      "card_unit_shiden": {
+        "isReserved": true,
+        "hasBlitz": true,
+        "hasAmbush": true,
+        "hasFury": true,
+        "isHQDamage": true
+      },
+      "card_unit_554th_rifles": {
+        "hasBlitz": true
+      },
+      "card_unit_red_devils": {
+        "KreditsTax_AsEnemyTarget": 1,
+        "EffectType": "UASSETAPI_INVALID_ENUM_IDX_9",
+        "hasBlitz": true
+      }
+    },
+    "note": "The CDO report compares nine static fields and rule flags it actually recorded; it does not establish positive CDO values for absent serialized cost properties."
+  },
+  "validated_scope": [
+    "Focused selftest confirms the current CardDatabase entries match the assertions for the six listed stats, costs, factions/types, target taxes, and innate keyword sets, and that those keyword/tax defaults load into CardInstance.",
+    "For Red Devils, the test checks the shared attack path: with Panzer II-A at 1 kredit, the extra target tax rejects the attack without spending credits or causing damage/attack-state changes; at 2 kredits, attack succeeds and spends 2 total.",
+    "The second value in CardInnateTable entries is HeavyArmor, per the tuple declaration; it is separate from TargetTax."
+  ],
+  "test_evidence": {
+    "focused_command": "dotnet run --project tools/BotSim -c Release --no-restore -- selftest --filter \"六张无独立IR卡\" --stack",
+    "focused_log": "out/audit/six-no-ir-focused-selftest-20261102.txt",
+    "focused_result": "全部 1 项通过",
+    "full_log": "out/audit/six-no-ir-full-selftest-20261102.txt",
+    "full_result": "全部 1100 项通过"
+  },
+  "limitations": [
+    "This is a partial repository-data/import and shared attack-tax regression, not full per-card behavior certification.",
+    "All six cards still lack their own card IR in the reviewed extraction; this alone does not prove inherited BaseCardObject or native behavior is absent.",
+    "Only Red Devils attack-tax behavior is exercised end to end here; its non-attack target-tax paths are not certified by this test.",
+    "Some cost values asserted from the repository card table are not positively represented as serialized values in the parsed CDO records; the regression is not independent proof of those client values.",
+    "Shiden isHQDamage, isReserved, and threat_level semantics remain unresolved.",
+    "The parsed metadata version was not checked against the current installed pak/client, and the report does not certify asset-version freshness."
+  ],
+  "source_bindings": {
+    "klink bot/docs/cards.json": "835ec5d6f8aa267e2324e0eb3bb78a38280994e064485b2a31a95cc296939451",
+    "klink bot/docs/card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b",
+    "src/KLink.Bot/Cards/CardInnateTable.cs": "9d4e25a3271a523c460cb50ece359ae7bb98379d7ccdff9412a3bdf48c2610d6",
+    "src/KLink.Bot/Cards/CardDatabase.cs": "5bae70fda2cf5a45f3c2e5b74a16d6f7423f963873309bae38ffcc0d3dbde337",
+    "src/KLink.Bot/Engine/CardInstance.cs": "4c0daa74d2f97737bc3202f6f9b734da9d12ada4837635246bac221da9d74b7e",
+    "src/KLink.Bot/Effects/CardApiDispatch.cs": "b7188eace3ff3ad55eac7985b4b92e437f208e0b0e5ddc74e3cd572c0c79c7f3",
+    "src/KLink.Bot/Engine/MatchEngine.cs": "081e29917adb27ad80b41d10ed3cdd611be7b6f489139e3e2107c6606008a555",
+    "tools/BotSim/SelfTest.cs": "f5d7d1cd37f03db71fa16cb49b202b0a98f04822b55c93d4011ccc730ba84f29",
+    "klink bot/tools/audit-six-no-ir-cdo.py": "7816fa1c896d34ea3b9217b54f1d47ec6a51f4f4ce333e476eb42e3289008a96",
+    "out/audit/systematic-rules/six-no-ir-card-cdo-classification-20261031.json": "60949202a5589ef1185c83f8a4e004c4c40a624a95860a467c1d2c7fd2aed7ea"
+  },
+  "evidence_bindings": {
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Germany\\Base\\units\\card_unit_panzer_ii_a.metadata.json": "e02a67b5c694949b1c0d5739b65d6ad8672a4cf9391c71c7a35ec901bca1c771",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Japan\\Base\\units\\card_unit_15th_cavalry_regiment.metadata.json": "5c90629c94419592dcfc5b08a499ad46e2c69280a36250f0302165841c9d4ec6",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Japan\\Base\\units\\card_unit_ki_61_hien.metadata.json": "113d529c8400b1c8bdef48fbfd810241c30d92588c7f4891ff75e8783bc810a5",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Japan\\Base\\units\\card_unit_shiden.metadata.json": "d1ec1e26b1dfdc16d1aa7dae74b990aa4b4a40f76670a47268b63c39aa8ebd44",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\Soviet\\Base\\units\\card_unit_554th_rifles.metadata.json": "74e26006e698e4b12c4af404ef746c70f3b2e982d4c19dae7a9852cab946b7d9",
+    "D:\\Codex Workshop\\kards-install-review\\parsed\\kards\\Content\\Blueprints\\Cards\\USA\\Legions\\units\\card_unit_red_devils.metadata.json": "9a06f2b70e43091c88fffc7fff926da7787c325f291f1eb5f8fde07c4325fd8e",
+    "out/audit/systematic-rules/six-no-ir-card-cdo-classification-20261031.json": "60949202a5589ef1185c83f8a4e004c4c40a624a95860a467c1d2c7fd2aed7ea",
+    "out/audit/six-no-ir-focused-selftest-20261102.txt": "3db09eb8067e57e7b06d35510b0240fd8a8785fa65df0206da1ccd623992e73b",
+    "out/audit/six-no-ir-full-selftest-20261102.txt": "58724c8c408bf4cf01d69cd56bb481e0ddce798c7961f816c987c83f70d86287"
+  }
+}

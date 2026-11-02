@@ -166,6 +166,7 @@ internal static partial class SelfTest
         new("野战医院真实IR：完整修复返回量控制抽牌并保留来源", FieldHospitalRepairIntegration),
         new("卡库只包含当前 pak 的 2019 张卡资产，不包含 UI 辅助蓝图", CardPoolContainsOnlyLiveBattleCards),
         new("当前 CDO 的固有能力、情报、抑制例外与目标额外费用在建卡时加载", LiveNativeDefaults),
+        new("六张无独立IR卡：静态字段/固有关键词映射与Red Devils攻击目标税闭环", SixNoIrCardDataAndRedDevilsAttackTax),
         new("原生关键词读取保留基础标志或非空来源数组，不按来源值求和", NativeKeywordSourcePresence),
         new("创建回调在全局入表之后，重入创建保留入表顺序", CardConstructionPublicationOrder),
         new("原生在场谓词：全部字节位置、HQ/单位、抑制及非正防御与派发绑定", NativeBoardLocationPredicate),
@@ -31254,6 +31255,104 @@ internal static partial class SelfTest
         lethal.ReceivedAbilitiesFromCards["lethal"].Add(99);
         if (other.ReceivedAbilitiesFromCards["lethal"].Contains(99) || lethal.Definition.InnateAbilities["lethal"].Contains(99))
             return "实例之间或实例与静态定义之间共享能力来源列表";
+        return null;
+    }
+
+    private static string? SixNoIrCardDataAndRedDevilsAttackTax(CardDatabase db)
+    {
+        // Pak CDO/card JSON evidence cross-checked in the six-card review.
+        // This validates imported fields and shared tax plumbing only; the cards
+        // have no card-specific IR in the current extraction, so this does not certify
+        // inherited/native or complete per-card behavior.
+        (string Name, int Attack, int Defense, int Kredits, int OperationCost, int Range,
+            string Faction, string Type, int TargetTax, string[] Keywords)[] expected =
+        [
+            ("card_unit_panzer_ii_a", 1, 3, 1, 1, 1, "Germany", "tank", 0,
+                [Keyword.Blitz, Keyword.Smokescreen]),
+            ("card_unit_15th_cavalry_regiment", 2, 1, 1, 0, 1, "Japan", "infantry", 0,
+                [Keyword.Blitz]),
+            ("card_unit_ki_61_hien", 5, 4, 5, 3, 2, "Japan", "fighter", 0,
+                [Keyword.Blitz]),
+            ("card_unit_shiden", 4, 4, 5, 3, 2, "Japan", "fighter", 0,
+                [Keyword.Ambush, Keyword.Blitz, Keyword.Fury]),
+            ("card_unit_554th_rifles", 1, 1, 0, 0, 1, "Soviet", "infantry", 0,
+                [Keyword.Blitz]),
+            ("card_unit_red_devils", 1, 3, 1, 1, 1, "USA", "infantry", 1,
+                [Keyword.Blitz]),
+        ];
+
+        var (_, state) = EmptyBoard(db);
+        for (int i = 0; i < expected.Length; i++)
+        {
+            var item = expected[i];
+            var definition = db.Find(item.Name);
+            if (definition is null) return $"卡库中缺少 {item.Name}";
+            if (definition.Attack != item.Attack || definition.Defense != item.Defense
+                || definition.Kredits != item.Kredits || definition.OperationCost != item.OperationCost
+                || definition.Range != item.Range || definition.Faction != item.Faction
+                || definition.Type != item.Type || definition.TargetTax != item.TargetTax
+                || !definition.Keywords.ToHashSet(StringComparer.Ordinal).SetEquals(item.Keywords))
+            {
+                return $"{item.Name} 的静态卡表字段不匹配：{definition.Attack}/{definition.Defense}/"
+                     + $"{definition.Kredits}/{definition.OperationCost}/{definition.Range}/"
+                     + $"{definition.Faction}/{definition.Type}/tax={definition.TargetTax}/"
+                     + $"keywords=[{string.Join(",", definition.Keywords)}]";
+            }
+
+            var instance = state.CreateWithId(item.Name, Side.Left, 60 + i,
+                CardLocation.HandLeft, i);
+            if (instance.KreditsTaxAsEnemyTarget != item.TargetTax
+                || !instance.Keywords.SetEquals(item.Keywords))
+            {
+                return $"{item.Name} 建立实例后默认目标税/关键词不匹配："
+                     + $"tax={instance.KreditsTaxAsEnemyTarget}, keywords=[{string.Join(",", instance.Keywords)}]";
+            }
+        }
+
+        const string attackerName = "card_unit_panzer_ii_a";
+        const string targetName = "card_unit_red_devils";
+
+        // Panzer II-A costs 1 operation kredit; Red Devils' imported CDO tax
+        // adds exactly one more when the enemy targets/attacks it.
+        {
+            var (lowEngine, lowState) = EmptyBoard(db);
+            lowState.ActiveSide = Side.Left;
+            lowState.SetKredits(Side.Left, 1);
+            var attacker = lowState.CreateWithId(attackerName, Side.Left, 60,
+                CardLocation.BoardFrontline, 0);
+            attacker.EnteredPlayOnTurn = -99;
+            var target = PlaceUnit(lowState, targetName, Side.Right, 61, 1);
+            int targetDefense = target.Defense;
+            var gate = lowEngine.Api.CanSelectAsTarget(attacker, target, byPlayFromHand: false);
+            if (target.KreditsTaxAsEnemyTarget != 1 || gate.Can || gate.Reason != "cost_extra_to_target")
+                return $"Red Devils 默认 +1 税未使 1 点余额下的攻击目标被拒：tax={target.KreditsTaxAsEnemyTarget}, gate={gate.Describe()}";
+            if (lowEngine.Attack(attacker, target, out _) || lowState.Kredits(Side.Left) != 1
+                || lowState.OperationKreditsSpentThisTurn != 0 || attacker.AttacksThisTurn != 0
+                || target.Defense != targetDefense)
+                return "Red Devils 目标税拒绝后，攻击/费用/伤害状态仍发生了变化";
+        }
+
+        // At exactly 2 credits, pay 1 operation cost + 1 Red Devils tax.
+        {
+            var (enoughEngine, enoughState) = EmptyBoard(db);
+            enoughState.ActiveSide = Side.Left;
+            enoughState.SetKredits(Side.Left, 2);
+            var attacker = enoughState.CreateWithId(attackerName, Side.Left, 60,
+                CardLocation.BoardFrontline, 0);
+            attacker.EnteredPlayOnTurn = -99;
+            var target = PlaceUnit(enoughState, targetName, Side.Right, 61, 1);
+            var gate = enoughEngine.Api.CanSelectAsTarget(attacker, target, byPlayFromHand: false);
+            if (!gate.Can)
+                return $"Red Devils 默认 +1 税在 2 点余额时错误拒绝攻击：{gate.Describe()}";
+            if (!enoughEngine.Attack(attacker, target, out string reason))
+                return $"Red Devils 默认 +1 税在 2 点余额时未能完成攻击：{reason}";
+            if (enoughState.Kredits(Side.Left) != 0
+                || enoughState.OperationKreditsSpentThisTurn != 2
+                || attacker.AttacksThisTurn != 1)
+                return $"攻击未按 1 行动费 + 1 目标税扣费：余额={enoughState.Kredits(Side.Left)}, "
+                     + $"本回合行动费={enoughState.OperationKreditsSpentThisTurn}, attacks={attacker.AttacksThisTurn}";
+        }
+
         return null;
     }
 

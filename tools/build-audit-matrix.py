@@ -186,6 +186,8 @@ def build(repo, review_path, client_sha256=None):
             reasons.append('report_changed_or_missing')
         if client_sha256 is None:
             reasons.append('client_exe_not_checked')
+        elif not unit.get('client_exe_sha256'):
+            reasons.append('client_exe_not_bound')
         elif client_sha256 != unit['client_exe_sha256']:
             reasons.append('client_exe_changed')
         for path, expected in unit['source_bindings'].items():
