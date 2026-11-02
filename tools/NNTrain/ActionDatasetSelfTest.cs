@@ -20,6 +20,10 @@ internal static class ActionDatasetSelfTest
         var episode=OracleActionEpisodeRunner.Run(db,vectors,deck,deck,1);
         Assert(ActionDatasetTool.AdmissionReasons(episode,true).Length==0,"clean oracle episode admitted");
         using var buffer=new StringWriter();
+        var experimental=episode with {PlanningMode="experimental-owned-idle-clone/v1"};
+        Assert(ActionDatasetTool.AdmissionReasons(experimental,true).Contains("experimental_planning_not_admitted")
+            && ActionDatasetTool.WriteAdmittedLabels(buffer,0,experimental,true)==0 && buffer.ToString()=="",
+            "experimental clone mode cannot emit training rows even with valid replay counters");
         var rejected=episode with {Errors=new[]{"forced_late_failure"}};
         Assert(ActionDatasetTool.WriteAdmittedLabels(buffer,0,rejected,true)==0 && buffer.ToString()=="",
             "rejected episode cannot leak its buffered prefix");

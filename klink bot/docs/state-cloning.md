@@ -1116,3 +1116,88 @@ collection-clone micro-optimization. A non-default full-episode clone planning
 experiment must first match the current teacher's admitted labels and outcomes,
 retain explicit unsupported-state/rejection handling and demonstrate measured
 benefit before any default training-path integration.
+
+### Full-episode experimental clone planning (2026-11-02)
+
+`OracleActionEpisodeRunner.RunExperimentalClonedPlanning` is a diagnostic-only
+entry point. A third owned execution baseline starts independently from the
+same decks/seed, then advances only by confirmed roots. Its fixed first-index
+choice adapter is attached only for Start/root execution and disposed before
+cloning. Each decision clones that idle baseline and attaches a new fixed
+first-index adapter to the disposable planner. Greedy queries and Last-branch
+hand mutations stay on that planner. Teacher and replay adapters remain owned
+and attached throughout; neither live execution engine is cloned.
+
+The existing clock, full trace, snapshot, candidate/request, unique action,
+post-root and health checks remain. The third baseline is also compared after
+every root. Unsupported clone boundaries stop with `planning_clone_unsupported`,
+without replay fallback. Other construction exceptions remain driver errors.
+Replay-equivalent decision/work ceilings are retained for bounded comparisons;
+actual replay-root count remains zero. Separate baseline-root and clone counts
+report actual work. Diagnostic dictionaries may include inherited clone prefix
+counters plus baseline counters; they are conservative health/provenance counts,
+not independent executed work or cross-mode performance metrics.
+
+The result has mode `experimental-owned-idle-clone/v1`. Dataset admission rejects
+all non-default modes with `experimental_planning_not_admitted`; clone results
+also fail the existing triangular replay-root invariant. Counts are never
+rewritten to make these results admissible. Existing `dump-actions`, teacher
+contracts and dataset schemas retain prefix replay. No training rows are emitted
+by the new benchmark and no model is trained from the experimental path.
+
+Command: `NNTrain benchmark-clone-episodes --seed 1 --repeats 3 --out report.json`.
+The command loads real vectors and IR, warms one replay and one clone episode,
+then alternates measured mode order across three repeats. Every measured run
+must match the replay warm-up fingerprint and pass its corresponding health
+checks. The fingerprint includes complete serialized labels (candidate commands,
+features, observations and afterstates), errors, root statistics, final snapshots,
+full traces, winner and replay RNG state/count. Diagnostic work counts differ
+by design and are outside that equality fingerprint. Clone health independently
+checks actual work counts, faults, missing implementation calls, pending choices,
+finished state and finite afterstates; it does not grant dataset admission.
+
+Full-episode results on .NET 10.0.12 x64, using the same synthetic 39-card mixed
+Arado/light-infantry fixture and seed/decks as the preceding benchmark:
+
+| Seed | Rows / candidates | Replay ms / clone ms | Replay / clone managed bytes |
+|---|---:|---:|---:|
+| 1 | 256 / 6,189 | 5,087.0 / 4,304.0 | 6,643,450,208 / 4,190,220,088 |
+| 2 | 135 / 4,073 | 1,990.2 / 1,818.0 | 2,465,541,776 / 1,928,319,192 |
+
+Values are medians of three runs per mode. Allocation falls 36.93% / 21.79%;
+observed time falls 15.39% / 8.65%. Replay applies 32,640 / 9,045 prefix roots;
+clone applies zero prefix roots, with 256 / 135 baseline roots and as many
+clones. Both mode fingerprints match exactly for each seed. Measured scope is
+full runner execution only: startup, loading, warm-up, health verification,
+hashing/serialization, file I/O and optimizer epochs are excluded. Allocation is
+current-thread cumulative managed bytes, not peak memory. These timings are
+load dependent and do not establish speedup across card pools or training epochs.
+The repeated-unit fixture is not constructed-legal. Existing partial candidate
+clone-probe measurements use a different path and cannot substitute for these.
+
+Additional regressions cover full episodes with empty vectors (seeds 1/2),
+a 16-root complex English/Japanese versus Japanese/Australian query-side-effect
+fixture, native/Last M1 gun branches (20 roots), discarded planner pollution,
+preplanning snapshot divergence, unsupported selectors without fallback and
+retained planner faults. The complex and branch fixtures are bounded prefixes,
+not claims of full-episode equivalence. A forged experimental mode retaining
+otherwise valid replay counters is still denied row output.
+
+The DeepSeek worker inventoried private copied clone/choice/Oracle/Greedy source.
+The primary verified selector lifecycle and rejection conditions against actual
+source and independently checked VM clone counter inheritance. Source audit
+verifies 174 tracked source files in the isolated tested snapshot, preserving
+unrelated dirty files outside it. Reports: `out/audit/clone-episode-seed{1,2}-20261102.json`
+and `out/audit/clone-episode-source-verification-20261102.json`.
+This remains simulator engineering evidence, with frozen shared catalogs/IR and
+single-thread idle boundaries. Observable agreement does not prove all VM-private
+state, all cards, shared-static isolation or authoritative PvP equivalence.
+No game-rule certification or audit matrix refresh follows from these results.
+
+Next: expand full-episode comparisons to effect-heavy admitted fixtures and
+inventory real unsupported clone boundaries before designing a separately
+versioned training admission contract. The default remains prefix replay.
+
+Final validation: all 1,098 BotSim selftests, nine NNTrain policy evaluation
+checks and 55 action-dataset checks pass in the isolated snapshot. Existing
+NNTrain CS8632 warnings remain; the new checks introduce no build errors.

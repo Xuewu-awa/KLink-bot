@@ -1,0 +1,132 @@
+{
+  "version": 1,
+  "kind": "KLink.ExperimentalCloneEpisodeBenchmark",
+  "seed": 2,
+  "repeats": 3,
+  "fixture": "39 alternating arado_ar_196/light_infantry per side; synthetic, not constructed-legal",
+  "teacher": "greedy-isolated-prefix/v3\u002Bchoose-one-explicit/v1\u002Bfirst-index/v1\u002Bafterstate-left/v1",
+  "experimentalMode": "experimental-owned-idle-clone/v1",
+  "inputsSha256": {
+    "card-effects.json": "fc335d228779a2859627ee706d85949149ca595d0cfdfbc4971541831e5a8df0",
+    "card-ir-native-defaults.json": "a4f2812716f03ded180f45603ac7b715e890c54b1bc5b4b75fe2b1ec0975d711",
+    "card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b",
+    "card-vectors.json": "b15b93cb02e7e8a712561a2da52127a5867084ecb878a6ad58539b56b1109ab9",
+    "cards.json": "3550dc76eb0414c500166875f45909077aeeb3ea4d229b9b0ba9c66a81987c4b",
+    "deck_code_ids.json": "261cfd518c1a1ce40488f141e8dbd617ff19abe0734c49319ebcd6ac5dcb257e",
+    "event-contracts.json": "e4806dd48efbfc799a27c14b3660ad76ee03cd3f13e3e4320b213c5928efb112",
+    "live-actions.json": "db413a4644afe75806e66c47e200d93c5d93e91ca03e23fca38465b7dcb4dab3",
+    "KLink.Bot.dll": "2d7dd71537c3293f15cfd30f953b745a3aded4520a2257f872825bc02964665c",
+    "NNTrain.dll": "b0804e4a2a7f512a54f9b3aeb6233f19de8abb677863ef09145a2c135263fdd6"
+  },
+  "runtime": ".NET 10.0.12",
+  "scope": "Full public episode only; excludes startup, data loading, hashes, warm-up, admission, serialization, IO and training epochs. Current-thread managed allocation, not peak memory. No trainable dataset output.",
+  "baselineReasons": [],
+  "cloneAdmissionReasons": [
+    "experimental_planning_not_admitted",
+    "unverified_planning_count"
+  ],
+  "cloneHealthy": true,
+  "fingerprintsEqual": true,
+  "baselineFingerprint": {
+    "labelsSha256": "455312094C24F32FF5F051C9E1F63A46313BBB653C36A0F99017D5C82B5CA2CE",
+    "errors": [],
+    "comparedSteps": 135,
+    "appliedActions": 135,
+    "mainFaults": 0,
+    "mainRejections": 0,
+    "choiceFaults": 0,
+    "teacherSnapshotSha256": "5C68BDA82C10C5FDC46B3471971F3AB1A8478AC04B228ECE5696CFAD022E61E6",
+    "replaySnapshotSha256": "5C68BDA82C10C5FDC46B3471971F3AB1A8478AC04B228ECE5696CFAD022E61E6",
+    "teacherTraceSha256": "4CEA209D74EA11534A5AE69EEAFD4FAEC5027AE7407489129AF82E8B4034BAE0",
+    "replayTraceSha256": "4CEA209D74EA11534A5AE69EEAFD4FAEC5027AE7407489129AF82E8B4034BAE0",
+    "isFinished": true,
+    "winner": 2,
+    "state": 812651264,
+    "consumedCount": 78
+  },
+  "cloneFingerprint": {
+    "labelsSha256": "455312094C24F32FF5F051C9E1F63A46313BBB653C36A0F99017D5C82B5CA2CE",
+    "errors": [],
+    "comparedSteps": 135,
+    "appliedActions": 135,
+    "mainFaults": 0,
+    "mainRejections": 0,
+    "choiceFaults": 0,
+    "teacherSnapshotSha256": "5C68BDA82C10C5FDC46B3471971F3AB1A8478AC04B228ECE5696CFAD022E61E6",
+    "replaySnapshotSha256": "5C68BDA82C10C5FDC46B3471971F3AB1A8478AC04B228ECE5696CFAD022E61E6",
+    "teacherTraceSha256": "4CEA209D74EA11534A5AE69EEAFD4FAEC5027AE7407489129AF82E8B4034BAE0",
+    "replayTraceSha256": "4CEA209D74EA11534A5AE69EEAFD4FAEC5027AE7407489129AF82E8B4034BAE0",
+    "isFinished": true,
+    "winner": 2,
+    "state": 812651264,
+    "consumedCount": 78
+  },
+  "rows": 135,
+  "candidates": 4073,
+  "warmReplayWork": {
+    "mode": "replay-prefix",
+    "elapsedMs": 3599.2224,
+    "allocatedBytes": 2475316360,
+    "planningPrefixRoots": 9045,
+    "planningBaselineRoots": 0,
+    "planningClones": 0
+  },
+  "warmCloneWork": {
+    "mode": "experimental-owned-idle-clone/v1",
+    "elapsedMs": 1767.8676,
+    "allocatedBytes": 1929388528,
+    "planningPrefixRoots": 0,
+    "planningBaselineRoots": 135,
+    "planningClones": 135
+  },
+  "samples": [
+    {
+      "mode": "replay-prefix",
+      "elapsedMs": 1990.2104,
+      "allocatedBytes": 2465547968,
+      "planningPrefixRoots": 9045,
+      "planningBaselineRoots": 0,
+      "planningClones": 0
+    },
+    {
+      "mode": "experimental-owned-idle-clone/v1",
+      "elapsedMs": 2069.9606,
+      "allocatedBytes": 1928324880,
+      "planningPrefixRoots": 0,
+      "planningBaselineRoots": 135,
+      "planningClones": 135
+    },
+    {
+      "mode": "experimental-owned-idle-clone/v1",
+      "elapsedMs": 1817.9944,
+      "allocatedBytes": 1928316152,
+      "planningPrefixRoots": 0,
+      "planningBaselineRoots": 135,
+      "planningClones": 135
+    },
+    {
+      "mode": "replay-prefix",
+      "elapsedMs": 2276.0931,
+      "allocatedBytes": 2465540608,
+      "planningPrefixRoots": 9045,
+      "planningBaselineRoots": 0,
+      "planningClones": 0
+    },
+    {
+      "mode": "replay-prefix",
+      "elapsedMs": 1845.7001,
+      "allocatedBytes": 2465541776,
+      "planningPrefixRoots": 9045,
+      "planningBaselineRoots": 0,
+      "planningClones": 0
+    },
+    {
+      "mode": "experimental-owned-idle-clone/v1",
+      "elapsedMs": 1715.1704,
+      "allocatedBytes": 1928319192,
+      "planningPrefixRoots": 0,
+      "planningBaselineRoots": 135,
+      "planningClones": 135
+    }
+  ]
+}

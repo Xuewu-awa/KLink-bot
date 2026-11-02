@@ -15,6 +15,9 @@ public sealed record OracleActionEpisodeResult(MatchEngine Teacher, MatchEngine 
     long MainFaults, long MainRejections, long AppliedActions, int ComparedSteps)
 {
     public string? SnapshotDifference {get;init;}
+    public string PlanningMode {get;init;}="replay-prefix";
+    public int PlanningClones {get;init;}
+    public long PlanningBaselineRoots {get;init;}
     public long PlanningPrefixRoots {get;init;}
     public int PlanningDecisions {get;init;}
     public long PlanningVmFaults {get;init;}
@@ -56,6 +59,13 @@ public static class OracleActionEpisodeRunner
         OracleChooseOnePolicy chooseOnePolicy=OracleChooseOnePolicy.Native)
         => RunCore(database,vectors,left,right,seed,chooseOnePolicy:chooseOnePolicy);
 
+    /// <summary>Diagnostic only; its result is deliberately rejected by dataset admission.
+    /// No replay fallback on unsupported clone state. Uses fixed first-index choices.</summary>
+    public static OracleActionEpisodeResult RunExperimentalClonedPlanning(CardDatabase database,
+        StateEncoder.CardVecs vectors,IReadOnlyList<string> left,IReadOnlyList<string> right,ulong seed,
+        OracleChooseOnePolicy chooseOnePolicy=OracleChooseOnePolicy.Native)
+        => RunCore(database,vectors,left,right,seed,chooseOnePolicy:chooseOnePolicy,clonePlanning:true);
+
     // Test seams stay internal: production callers cannot mutate a collecting episode.
     internal static OracleActionEpisodeResult RunCore(CardDatabase database, StateEncoder.CardVecs vectors,
         IReadOnlyList<string> left, IReadOnlyList<string> right, ulong seed,
@@ -66,7 +76,8 @@ public static class OracleActionEpisodeRunner
         int maxPlanningPrefixRoots=MaxPlanningPrefixRoots,
         Action<MatchEngine,int>? beforeProbe=null,
         Action<MatchEngine,int>? afterProbe=null,
-        OracleChooseOnePolicy chooseOnePolicy=OracleChooseOnePolicy.Native)
+        OracleChooseOnePolicy chooseOnePolicy=OracleChooseOnePolicy.Native,
+        bool clonePlanning=false, Action<MatchEngine,int>? beforeClone=null)
     {
         _=ContractFor(chooseOnePolicy);
         var teacher=new MatchEngine(database,left,right,seed);var replay=new MatchEngine(database,left,right,seed);
@@ -79,6 +90,9 @@ public static class OracleActionEpisodeRunner
         var planningSites=new Dictionary<KismetMissingCallSite,long>();
         long planningSitesOmitted=0,planningCaptureFailures=0;
         string? snapshotDifference=null;
+        MatchEngine? baseline=null;
+        long baselineRoots=0,baselineChoiceFaults=0;
+        int clones=0;
         bool SameRequest(MainActionRequest a,MainActionRequest b)=>a.Actor==b.Actor && a.Turn==b.Turn
             && a.Observation.SequenceEqual(b.Observation) && a.CoverageGaps.SequenceEqual(b.CoverageGaps)
             && a.Candidates.Count==b.Candidates.Count && a.Candidates.Zip(b.Candidates).All(p=>p.First.Command==p.Second.Command
@@ -105,6 +119,13 @@ public static class OracleActionEpisodeRunner
             static int First(PolicyChoiceRequest request)=>request.Options.Count==0 && request.CanCancel?-1:0;
             teacherChoice=new(teacher,vectors,First);replayChoice=new(replay,vectors,First);
             teacher.Start();replay.Start();
+            if(clonePlanning)
+            {
+                baseline=new MatchEngine(database,left.ToArray(),right.ToArray(),seed);
+                using var initialChoice=new ChoicePolicyAdapter(baseline,vectors,First);
+                try { baseline.Start(); }
+                finally { baselineChoiceFaults+=initialChoice.Faults; }
+            }
             if(!SameClock(teacher,replay) || !SameTrace(0,0) || !SameSnapshot())errors.Add("initial_trace_mismatch");
 
             for(int turnCall=0;turnCall<500 && !teacher.State.IsFinished && errors.Count==0;turnCall++)
@@ -123,17 +144,26 @@ public static class OracleActionEpisodeRunner
                     if(!request.Observation.All(float.IsFinite) || request.Candidates.Any(c=>!c.Features.All(float.IsFinite)))
                     {errors.Add("nonfinite_action_observation");break;}
                     int t=teacher.State.ActionLog.Count,r=replay.State.ActionLog.Count;
-                    if(prefixRoots+labels.Count>maxPlanningPrefixRoots){errors.Add("planning_work_limit");break;}
+                    // Keep the replay-equivalent decision ceiling for comparable bounded runs,
+                    // but report only actual work: zero replay roots for the clone path.
+                    if((clonePlanning?(long)labels.Count*(labels.Count+1)/2:prefixRoots+labels.Count)>maxPlanningPrefixRoots){errors.Add("planning_work_limit");break;}
                     MainActionCommand? command=null;
-                    // Never copy a partial snapshot back into an execution engine. Rebuild all
-                    // engine/VM private state by executing the confirmed root prefix instead.
-                    var probe=new MatchEngine(database,left,right,seed);
+                    // Diagnostic clones come from a third owned engine with no selectors.
+                    // Never detach callbacks from either teacher or replay execution engine.
+                    MatchEngine probe;
+                    if(clonePlanning)
+                    {
+                        beforeClone?.Invoke(baseline!,compared);
+                        try { probe=baseline!.CloneAtIdle();clones++; }
+                        catch(NotSupportedException) { errors.Add("planning_clone_unsupported");break; }
+                    }
+                    else probe=new MatchEngine(database,left,right,seed);
                     using(var probeChoice=new ChoicePolicyAdapter(probe,vectors,First))
                     {
                         try
                         {
-                            probe.Start();
-                            foreach(var label in labels)
+                            if(!clonePlanning)probe.Start();
+                            foreach(var label in clonePlanning?Enumerable.Empty<OracleActionLabel>():labels)
                             {
                                 prefixRoots++;
                                 if(!MainActionPolicyAdapter.ApplyRoot(probe,label.Request.Actor,label.Request.Candidates[label.ChosenIndex].Command))
@@ -207,6 +237,21 @@ public static class OracleActionEpisodeRunner
                         return select is null?index:select(current,index);
                     });
                     if(!applied.Accepted){errors.Add("main_action_rejected");break;}
+                    if(baseline is not null)
+                    {
+                        using var baselineChoice=new ChoicePolicyAdapter(baseline,vectors,First);
+                        baselineRoots++;
+                        try
+                        {
+                            if(!MainActionPolicyAdapter.ApplyRoot(baseline,actor,command))
+                                errors.Add("planning_baseline_rejected");
+                        }
+                        finally { baselineChoiceFaults+=baselineChoice.Faults; }
+                        if(!SameClock(teacher,baseline) || !SameFullTrace(teacher,baseline)
+                            || teacher.State.SnapshotJson()!=baseline.State.SnapshotJson())
+                            errors.Add("planning_baseline_mismatch");
+                        if(errors.Count!=0)break;
+                    }
                     afterRoot?.Invoke(teacher,replay,compared);
                     if(!SameClock(teacher,replay) || !SameTrace(t,r)){errors.Add("root_trace_mismatch");break;}
                     if(!SameSnapshot()){errors.Add("root_snapshot_mismatch");break;}
@@ -224,11 +269,36 @@ public static class OracleActionEpisodeRunner
             if(labels.Count==0)errors.Add("no_action_rows");
         }
         catch(Exception error)when(error is not OutOfMemoryException){errors.Add("driver_exception:"+error.GetType().Name);}
-        finally{teacherChoice?.Dispose();replayChoice?.Dispose();}
+        finally
+        {
+            teacherChoice?.Dispose();replayChoice?.Dispose();
+            if(baseline is not null)
+            {
+                planningVmFaults+=baseline.Api.Vm.FaultedPrograms;
+                planningChoiceFaults+=baselineChoiceFaults;
+                planningPending=Math.Max(planningPending,baseline.PendingSelectionCount);
+                foreach(var pair in baseline.Api.Vm.UnsupportedOps)
+                    planningUnsupported[pair.Key]=planningUnsupported.GetValueOrDefault(pair.Key)+pair.Value;
+                foreach(var pair in baseline.UnimplementedCalls)
+                    planningCalls[pair.Key]=planningCalls.GetValueOrDefault(pair.Key)+pair.Value;
+                foreach(var pair in baseline.Api.Vm.MissingCallSites)
+                {
+                    if(planningSites.TryGetValue(pair.Key,out long count))planningSites[pair.Key]=count+pair.Value;
+                    else if(planningSites.Count<KismetVm.MaxMissingCallSites)planningSites.Add(pair.Key,pair.Value);
+                    else planningSitesOmitted+=pair.Value;
+                }
+                planningSitesOmitted+=baseline.Api.Vm.MissingCallSitesOmitted;
+                planningCaptureFailures+=baseline.Api.Vm.MissingCallSiteCaptureFailures;
+                if(planningVmFaults+planningChoiceFaults!=0 || planningPending!=0 || planningUnsupported.Any(p=>p.Value>0))
+                    errors.Add("planning_execution_fault");
+            }
+        }
         return new(teacher,replay,labels.AsReadOnly(),errors.Distinct(StringComparer.Ordinal).ToArray(),
             (teacherChoice?.Faults??0)+(replayChoice?.Faults??0),main.Faults+teacherView.Faults,
             main.RejectedActions+teacherView.RejectedActions,main.AppliedActions,compared)
-            {SnapshotDifference=snapshotDifference,PlanningPrefixRoots=prefixRoots,PlanningDecisions=planningDecisions,
+            {PlanningMode=clonePlanning?"experimental-owned-idle-clone/v1":"replay-prefix",
+             PlanningClones=clones,PlanningBaselineRoots=baselineRoots,
+             SnapshotDifference=snapshotDifference,PlanningPrefixRoots=prefixRoots,PlanningDecisions=planningDecisions,
              PlanningVmFaults=planningVmFaults,PlanningChoiceFaults=planningChoiceFaults,PlanningPendingChoices=planningPending,
              PlanningUnsupported=planningUnsupported,PlanningCalls=planningCalls,
              PlanningMissingCallSites=planningSites.Select(p=>new OracleMissingCallCount(p.Key,p.Value)).ToArray(),

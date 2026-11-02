@@ -1,0 +1,18 @@
+{
+  "baseCommit": "231830afa097cfa595c5064201588eb29598b895",
+  "verifiedTrackedSourceFiles": 174,
+  "changedSourceSha256": {
+    "src/KLink.Bot/Training/OracleActionEpisodeRunner.cs": "f19812c854460d63c551d13ba386a7e49f06040cb02023e41add1d5fec61b969",
+    "tools/NNTrain/ActionDatasetTool.cs": "11fc3dabe9990f3180ae16f55bc2ef6736c75c17dbfe0d78d971fc398b65b359",
+    "tools/NNTrain/ActionDatasetSelfTest.cs": "d130b7e59f966e88beb5c07031de835d40b4e8472941523b68fae8fa63fdfca6",
+    "tools/NNTrain/Program.cs": "d88c62ca13433afb980c5370d730a65b333c6403eef9226547b793059a357bb6",
+    "tools/NNTrain/CloneEpisodeBenchmark.cs": "fca02d880b5d5952c9b58178cfdba81e63ac3645522f9f0f63e1c2cd27f8a9cc",
+    "tools/BotSim/SelfTest.cs": "50b421e43124c71e8b1c133e8a1db6f4bbebef00683019eb71c33f87db12b006",
+    "tools/BotSim/SelfTest.CloneEpisode.cs": "28e7c1478dd8ca580bc849036fc99fd5f956c2e5056f5aef80d976fb8afefef8"
+  },
+  "excludedUnrelatedDirtyFiles": [
+    "src/KLink.Bot/Training/IsolatedActionProbe.cs",
+    "tools/BotSim/ActionProbeSmoke.cs",
+    "tools/BotSim/SelfTest.IsolatedActionProbe.cs"
+  ]
+}

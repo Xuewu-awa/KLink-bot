@@ -68,6 +68,7 @@ internal static class ActionDatasetTool
     internal static string[] AdmissionReasons(OracleActionEpisodeResult result,bool irLoaded)
     {
         var reasons=new List<string>(result.Errors);
+        if(result.PlanningMode!="replay-prefix")reasons.Add("experimental_planning_not_admitted");
         foreach(var engine in new[]{result.Teacher,result.Replay})
             reasons.AddRange(TrainingAdmission.Check(engine.State.IsFinished,engine.State.Winner,engine.Api.Vm.FaultedPrograms,
                 engine.Api.Vm.UnsupportedOps,engine.UnimplementedCalls,irLoaded,result.Labels.Count,true,
