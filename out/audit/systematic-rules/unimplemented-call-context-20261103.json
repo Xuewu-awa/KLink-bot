@@ -1,0 +1,2600 @@
+{
+  "schema_version": 1,
+  "report_id": "RULE-KISMET-UNIMPLEMENTED-CALL-CONTEXT-20261103",
+  "status": "static_context_complete; client_semantics_unconfirmed",
+  "scope": "All current card-ir.json call sites for Format, GetDisplayName, PrintString and GetOrSpawnActor; usage and current headless downstream wiring only.",
+  "counts": {
+    "total_call_sites": 61,
+    "by_name": {
+      "Format": 57,
+      "GetDisplayName": 1,
+      "GetOrSpawnActor": 1,
+      "PrintString": 2
+    },
+    "by_classification": {
+      "actor setup in Brawl/test-labelled asset": 1,
+      "campaign-status flow (scope hint; not PvP certification)": 54,
+      "debug output call": 2,
+      "display/debug text only in this local": 1,
+      "text passed as optional spawned-card text": 2,
+      "text passed to a text-decoration call": 1
+    }
+  },
+  "call_sites": [
+    {
+      "name": "Format",
+      "card": "card_event_carrier_battle",
+      "scope_hint": "gameplay_unknown",
+      "program": "steps",
+      "step_index": 22,
+      "instruction_i": 680,
+      "byte_offset": 680,
+      "producer_context": {
+        "op": "set",
+        "dst": "CallFunc_Format_ReturnValue",
+        "dst_scope": "local",
+        "src": {
+          "math": "Format",
+          "args": [
+            {
+              "str": "null"
+            },
+            {
+              "var": "K2Node_MakeArray_Array",
+              "scope": "local",
+              "element_type": "Struct"
+            }
+          ]
+        },
+        "i": 680,
+        "bo": 680
+      },
+      "consumer_context": [
+        {
+          "step_index": 23,
+          "instruction_i": 754,
+          "op": "set",
+          "function_or_math": "Conv_TextToString",
+          "snippet": "{\"op\":\"set\",\"dst\":\"CallFunc_Conv_TextToString_ReturnValue\",\"dst_scope\":\"local\",\"src\":{\"math\":\"Conv_TextToString\",\"args\":[{\"var\":\"CallFunc_Format_ReturnValue\",\"scope\":\"local\"}]},\"i\":754,\"bo\":754}"
+        }
+      ],
+      "classification": "text passed as optional spawned-card text",
+      "current_headless_downstream_effect": "Output passes through Conv_TextToString to SpawnCardInHandBySide arg 6 (newCardText). Current headless path conditionally places a non-empty value in ZActionDrawCardFromDeck action receipt; no CardInstance rule field is written by this text argument.",
+      "client_semantics_status": "not established by SDK declaration or current static files"
+    },
+    {
+      "name": "Format",
+      "card": "card_event_seize_the_initiative",
+      "scope_hint": "gameplay_unknown",
+      "program": "steps",
+      "step_index": 22,
+      "instruction_i": 684,
+      "byte_offset": 684,
+      "producer_context": {
+        "op": "set",
+        "dst": "CallFunc_Format_ReturnValue",
+        "dst_scope": "local",
+        "src": {
+          "math": "Format",
+          "args": [
+            {
+              "str": "null"
+            },
+            {
+              "var": "K2Node_MakeArray_Array",
+              "scope": "local",
+              "element_type": "Struct"
+            }
+          ]
+        },
+        "i": 684,
+        "bo": 684
+      },
+      "consumer_context": [
+        {
+          "step_index": 23,
+          "instruction_i": 764,
+          "op": "set",
+          "function_or_math": "Conv_TextToString",
+          "snippet": "{\"op\":\"set\",\"dst\":\"CallFunc_Conv_TextToString_ReturnValue\",\"dst_scope\":\"local\",\"src\":{\"math\":\"Conv_TextToString\",\"args\":[{\"var\":\"CallFunc_Format_ReturnValue\",\"scope\":\"local\"}]},\"i\":764,\"bo\":764}"
+        }
+      ],
+      "classification": "text passed as optional spawned-card text",
+      "current_headless_downstream_effect": "Output passes through Conv_TextToString to SpawnCardInHandBySide arg 6 (newCardText). Current headless path conditionally places a non-empty value in ZActionDrawCardFromDeck action receipt; no CardInstance rule field is written by this text argument.",
+      "client_semantics_status": "not established by SDK declaration or current static files"
+    },
+    {
+      "name": "Format",
+      "card": "card_location_british_scen1",
+      "scope_hint": "campaign_ui",
+      "program": "steps",
+      "step_index": 79,
+      "instruction_i": 3075,
+      "byte_offset": 3075,
+      "producer_context": {
+        "op": "set",
+        "dst": "CallFunc_Format_ReturnValue",
+        "dst_scope": "local",
+        "src": {
+          "math": "Format",
+          "args": [
+            {
+              "str": "null"
+            },
+            {
+              "var": "K2Node_MakeArray_Array",
+              "scope": "local",
+              "element_type": "Struct"
+            }
+          ]
+        },
+        "i": 3075,
+        "bo": 3075
+      },
+      "consumer_context": [
+        {
+          "step_index": 80,
+          "instruction_i": 3125,
+          "op": "call",
+          "function_or_math": "UpdateCampaignStarStatus",
+          "snippet": "{\"op\":\"call\",\"fn\":\"UpdateCampaignStarStatus\",\"args\":[{\"int\":2},{\"var\":\"CallFunc_Format_ReturnValue\",\"scope\":\"local\"},{\"math\":\"__SwitchValue\",\"args\":[{\"var\":\"Temp_bool_Variable\",\"scope\":\"local\"},{\"var\":\"K2Node_Select_Default\",\"scope\":\"local\"},{\"bool\":false},{\"var\":\"Temp_byte_Variable_1\",\"scope\":\"local\"},{\"bool\":true},{\"var\":\"Temp_byte_Variable\",\"scope\":\"local\"}]}],\"outs\":[],\"recv\":{\"var\":\"cardFunction\",\"scope\":\"instance\"},\"i\":3125,\"bo\":3125}"
+        }
+      ],
+      "classification": "campaign-status flow (scope hint; not PvP certification)",
+      "current_headless_downstream_effect": "Output is consumed by UpdateCampaignStarStatus in the represented campaign asset. Current headless dispatch for that function is a no-op; PvP reachability is not inferred.",
+      "client_semantics_status": "not established by SDK declaration or current static files"
+    },
+    {
+      "name": "Format",
+      "card": "card_location_british_scen2",
+      "scope_hint": "campaign_ui",
+      "program": "steps",
+      "step_index": 182,
+      "instruction_i": 6578,
+      "byte_offset": 6578,
+      "producer_context": {
+        "op": "set",
+        "dst": "CallFunc_Format_ReturnValue",
+        "dst_scope": "local",
+        "src": {
+          "math": "Format",
+          "args": [
+            {
+              "str": "null"
+            },
+            {
+              "var": "K2Node_MakeArray_Array",
+              "scope": "local",
+              "element_type": "Struct"
+            }
+          ]
+        },
+        "i": 6578,
+        "bo": 6578
+      },
+      "consumer_context": [
+        {
+          "step_index": 183,
+          "instruction_i": 6629,
+          "op": "call",
+          "function_or_math": "UpdateCampaignStarStatus",
+          "snippet": "{\"op\":\"call\",\"fn\":\"UpdateCampaignStarStatus\",\"args\":[{\"int\":3},{\"var\":\"CallFunc_Format_ReturnValue\",\"scope\":\"local\"},{\"math\":\"__SwitchValue\",\"args\":[{\"var\":\"Temp_bool_Variable\",\"scope\":\"local\"},{\"var\":\"K2Node_Select_Default\",\"scope\":\"local\"},{\"bool\":false},{\"var\":\"Temp_byte_Variable_1\",\"scope\":\"local\"},{\"bool\":true},{\"var\":\"Temp_byte_Variable\",\"scope\":\"local\"}]}],\"outs\":[],\"recv\":{\"var\":\"cardFunction\",\"scope\":\"instance\"},\"i\":6629,\"bo\":6629}"
+        }
+      ],
+      "classification": "campaign-status flow (scope hint; not PvP certification)",
+      "current_headless_downstream_effect": "Output is consumed by UpdateCampaignStarStatus in the represented campaign asset. Current headless dispatch for that function is a no-op; PvP reachability is not inferred.",
+      "client_semantics_status": "not established by SDK declaration or current static files"
+    },
+    {
+      "name": "Format",
+      "card": "card_location_british_scen3",
+      "scope_hint": "campaign_ui",
+      "program": "steps",
+      "step_index": 132,
+      "instruction_i": 6031,
+      "byte_offset": 6031,
+      "producer_context": {
+        "op": "set",
+        "dst": "CallFunc_Format_ReturnValue",
+        "dst_scope": "local",
+        "src": {
+          "math": "Format",
+          "args": [
+            {
+              "str": "null"
+            },
+            {
+              "var": "K2Node_MakeArray_Array",
+              "scope": "local",
+              "element_type": "Struct"
+            }
+          ]
+        },
+        "i": 6031,
+        "bo": 6031
+      },
+      "consumer_context": [
+        {
+          "step_index": 133,
+          "instruction_i": 6081,
+          "op": "call",
+          "function_or_math": "UpdateCampaignStarStatus",
+          "snippet": "{\"op\":\"call\",\"fn\":\"UpdateCampaignStarStatus\",\"args\":[{\"int\":2},{\"var\":\"CallFunc_Format_ReturnValue\",\"scope\":\"local\"},{\"math\":\"__SwitchValue\",\"args\":[{\"var\":\"Temp_bool_Variable\",\"scope\":\"local\"},{\"var\":\"K2Node_Select_Default\",\"scope\":\"local\"},{\"bool\":false},{\"var\":\"Temp_byte_Variable_1\",\"scope\":\"local\"},{\"bool\":true},{\"var\":\"Temp_byte_Variable\",\"scope\":\"local\"}]}],\"outs\":[],\"recv\":{\"var\":\"cardFunction\",\"scope\":\"instance\"},\"i\":6081,\"bo\":6081}"
+        }
+      ],
+      "classification": "campaign-status flow (scope hint; not PvP certification)",
+      "current_headless_downstream_effect": "Output is consumed by UpdateCampaignStarStatus in the represented campaign asset. Current headless dispatch for that function is a no-op; PvP reachability is not inferred.",
+      "client_semantics_status": "not established by SDK declaration or current static files"
+    },
+    {
+      "name": "Format",
+      "card": "card_location_british_scen4",
+      "scope_hint": "campaign_ui",
+      "program": "steps",
+      "step_index": 188,
+      "instruction_i": 6877,
+      "byte_offset": 6877,
+      "producer_context": {
+        "op": "set",
+        "dst": "CallFunc_Format_ReturnValue",
+        "dst_scope": "local",
+        "src": {
+          "math": "Format",
+          "args": [
+            {
+              "str": "null"
+            },
+            {
+              "var": "K2Node_MakeArray_Array",
+              "scope": "local",
+              "element_type": "Struct"
+            }
+          ]
+        },
+        "i": 6877,
+        "bo": 6877
+      },
+      "consumer_context": [
+        {
+          "step_index": 189,
+          "instruction_i": 6928,
+          "op": "call",
+          "function_or_math": "UpdateCampaignStarStatus",
+          "snippet": "{\"op\":\"call\",\"fn\":\"UpdateCampaignStarStatus\",\"args\":[{\"int\":3},{\"var\":\"CallFunc_Format_ReturnValue\",\"scope\":\"local\"},{\"math\":\"__SwitchValue\",\"args\":[{\"var\":\"Temp_bool_Variable\",\"scope\":\"local\"},{\"var\":\"K2Node_Select_Default\",\"scope\":\"local\"},{\"bool\":false},{\"var\":\"Temp_byte_Variable_1\",\"scope\":\"local\"},{\"bool\":true},{\"var\":\"Temp_byte_Variable\",\"scope\":\"local\"}]}],\"outs\":[],\"recv\":{\"var\":\"cardFunction\",\"scope\":\"instance\"},\"i\":6928,\"bo\":6928}"
+        }
+      ],
+      "classification": "campaign-status flow (scope hint; not PvP certification)",
+      "current_headless_downstream_effect": "Output is consumed by UpdateCampaignStarStatus in the represented campaign asset. Current headless dispatch for that function is a no-op; PvP reachability is not inferred.",
+      "client_semantics_status": "not established by SDK declaration or current static files"
+    },
+    {
+      "name": "Format",
+      "card": "card_location_british_scen5",
+      "scope_hint": "campaign_ui",
+      "program": "steps",
+      "step_index": 202,
+      "instruction_i": 7661,
+      "byte_offset": 7661,
+      "producer_context": {
+        "op": "set",
+        "dst": "CallFunc_Format_ReturnValue",
+        "dst_scope": "local",
+        "src": {
+          "math": "Format",
+          "args": [
+            {
+              "str": "null"
+            },
+            {
+              "var": "K2Node_MakeArray_Array",
+              "scope": "local",
+              "element_type": "Struct"
+            }
+          ]
+        },
+        "i": 7661,
+        "bo": 7661
+      },
+      "consumer_context": [
+        {
+          "step_index": 205,
+          "instruction_i": 7764,
+          "op": "call",
+          "function_or_math": "UpdateCampaignStarStatus",
+          "snippet": "{\"op\":\"call\",\"fn\":\"UpdateCampaignStarStatus\",\"args\":[{\"int\":1},{\"var\":\"CallFunc_Format_ReturnValue\",\"scope\":\"local\"},{\"math\":\"__SwitchValue\",\"args\":[{\"var\":\"Temp_bool_Variable\",\"scope\":\"local\"},{\"var\":\"K2Node_Select_Default\",\"scope\":\"local\"},{\"bool\":false},{\"var\":\"Temp_byte_Variable_1\",\"scope\":\"local\"},{\"bool\":true},{\"var\":\"Temp_byte_Variable\",\"scope\":\"local\"}]}],\"outs\":[],\"recv\":{\"var\":\"cardFunction\",\"scope\":\"instance\"},\"i\":7764,\"bo\":7764}"
+        }
+      ],
+      "classification": "campaign-status flow (scope hint; not PvP certification)",
+      "current_headless_downstream_effect": "Output is consumed by UpdateCampaignStarStatus in the represented campaign asset. Current headless dispatch for that function is a no-op; PvP reachability is not inferred.",
+      "client_semantics_status": "not established by SDK declaration or current static files"
+    },
+    {
+      "name": "Format",
+      "card": "card_location_british_scen5",
+      "scope_hint": "campaign_ui",
+      "program": "steps",
+      "step_index": 231,
+      "instruction_i": 8662,
+      "byte_offset": 8662,
+      "producer_context": {
+        "op": "set",
+        "dst": "CallFunc_Format_ReturnValue_1",
+        "dst_scope": "local",
+        "src": {
+          "math": "Format",
+          "args": [
+            {
+              "str": "null"
+            },
+            {
+              "var": "K2Node_MakeArray_Array_1",
+              "scope": "local",
+              "element_type": "Struct"
+            }
+          ]
+        },
+        "i": 8662,
+        "bo": 8662
+      },
+      "consumer_context": [
+        {
+          "step_index": 232,
+          "instruction_i": 8712,
+          "op": "call",
+          "function_or_math": "UpdateCampaignStarStatus",
+          "snippet": "{\"op\":\"call\",\"fn\":\"UpdateCampaignStarStatus\",\"args\":[{\"int\":2},{\"var\":\"CallFunc_Format_ReturnValue_1\",\"scope\":\"local\"},{\"int\":1}],\"outs\":[],\"recv\":{\"var\":\"cardFunction\",\"scope\":\"instance\"},\"i\":8712,\"bo\":8712}"
+        }
+      ],
+      "classification": "campaign-status flow (scope hint; not PvP certification)",
+      "current_headless_downstream_effect": "Output is consumed by UpdateCampaignStarStatus in the represented campaign asset. Current headless dispatch for that function is a no-op; PvP reachability is not inferred.",
+      "client_semantics_status": "not established by SDK declaration or current static files"
+    },
+    {
+      "name": "Format",
+      "card": "card_location_british_scen5",
+      "scope_hint": "campaign_ui",
+      "program": "steps",
+      "step_index": 273,
+      "instruction_i": 9937,
+      "byte_offset": 9937,
+      "producer_context": {
+        "op": "set",
+        "dst": "CallFunc_Format_ReturnValue_2",
+        "dst_scope": "local",
+        "src": {
+          "math": "Format",
+          "args": [
+            {
+              "str": "null"
+            },
+            {
+              "var": "K2Node_MakeArray_Array_2",
+              "scope": "local",
+              "element_type": "Struct"
+            }
+          ]
+        },
+        "i": 9937,
+        "bo": 9937
+      },
+      "consumer_context": [
+        {
+          "step_index": 275,
+          "instruction_i": 10020,
+          "op": "call",
+          "function_or_math": "UpdateCampaignStarStatus",
+          "snippet": "{\"op\":\"call\",\"fn\":\"UpdateCampaignStarStatus\",\"args\":[{\"int\":3},{\"var\":\"CallFunc_Format_ReturnValue_2\",\"scope\":\"local\"},{\"math\":\"__SwitchValue\",\"args\":[{\"var\":\"Temp_bool_Variable_1\",\"scope\":\"local\"},{\"var\":\"K2Node_Select_Default_1\",\"scope\":\"local\"},{\"bool\":false},{\"var\":\"Temp_byte_Variable_3\",\"scope\":\"local\"},{\"bool\":true},{\"var\":\"Temp_byte_Variable_2\",\"scope\":\"local\"}]}],\"outs\":[],\"recv\":{\"var\":\"cardFunction\",\"scope\":\"instance\"},\"i\":10020,\"bo\":10020}"
+        }
+      ],
+      "classification": "campaign-status flow (scope hint; not PvP certification)",
+      "current_headless_downstream_effect": "Output is consumed by UpdateCampaignStarStatus in the represented campaign asset. Current headless dispatch for that function is a no-op; PvP reachability is not inferred.",
+      "client_semantics_status": "not established by SDK declaration or current static files"
+    },
+    {
+      "name": "Format",
+      "card": "card_location_german_scen1",
+      "scope_hint": "campaign_ui",
+      "program": "steps",
+      "step_index": 49,
+      "instruction_i": 1893,
+      "byte_offset": 1893,
+      "producer_context": {
+        "op": "set",
+        "dst": "CallFunc_Format_ReturnValue_1",
+        "dst_scope": "local",
+        "src": {
+          "math": "Format",
+          "args": [
+            {
+              "str": "null"
+            },
+            {
+              "var": "K2Node_MakeArray_Array_1",
+              "scope": "local",
+              "element_type": "Struct"
+            }
+          ]
+        },
+        "i": 1893,
+        "bo": 1893
+      },
+      "consumer_context": [
+        {
+          "step_index": 50,
+          "instruction_i": 1943,
+          "op": "call",
+          "function_or_math": "UpdateCampaignStarStatus",
+          "snippet": "{\"op\":\"call\",\"fn\":\"UpdateCampaignStarStatus\",\"args\":[{\"int\":3},{\"var\":\"CallFunc_Format_ReturnValue_1\",\"scope\":\"local\"},{\"int\":0}],\"outs\":[],\"recv\":{\"var\":\"cardFunction\",\"scope\":\"instance\"},\"i\":1943,\"bo\":1943}"
+        }
+      ],
+      "classification": "campaign-status flow (scope hint; not PvP certification)",
+      "current_headless_downstream_effect": "Output is consumed by UpdateCampaignStarStatus in the represented campaign asset. Current headless dispatch for that function is a no-op; PvP reachability is not inferred.",
+      "client_semantics_status": "not established by SDK declaration or current static files"
+    },
+    {
+      "name": "Format",
+      "card": "card_location_german_scen1",
+      "scope_hint": "campaign_ui",
+      "program": "steps",
+      "step_index": 116,
+      "instruction_i": 4364,
+      "byte_offset": 4364,
+      "producer_context": {
+        "op": "set",
+        "dst": "CallFunc_Format_ReturnValue",
+        "dst_scope": "local",
+        "src": {
+          "math": "Format",
+          "args": [
+            {
+              "str": "null"
+            },
+            {
+              "var": "K2Node_MakeArray_Array",
+              "scope": "local",
+              "element_type": "Struct"
+            }
+          ]
+        },
+        "i": 4364,
+        "bo": 4364
+      },
+      "consumer_context": [
+        {
+          "step_index": 118,
+          "instruction_i": 4485,
+          "op": "call",
+          "function_or_math": "UpdateCampaignStarStatus",
+          "snippet": "{\"op\":\"call\",\"fn\":\"UpdateCampaignStarStatus\",\"args\":[{\"int\":1},{\"math\":\"__SwitchValue\",\"args\":[{\"var\":\"Temp_byte_Variable_4\",\"scope\":\"local\"},{\"var\":\"K2Node_Select_Default_1\",\"scope\":\"local\"},{\"int\":0},{\"var\":\"CallFunc_Format_ReturnValue\",\"scope\":\"local\"},{\"int\":1},{\"var\":\"Temp_text_Variable_6\",\"scope\":\"local\"},{\"int\":2},{\"var\":\"Temp_text_Variable_5\",\"scope\":\"local\"},{\"int\":3},{\"var\":\"Temp_text_Variable_4\",\"scope\":\"local\"}]},{\"math\":\"__SwitchValue\",\"args\":[{\"var\":\"Temp_bool_Variable\",\"scope\":\"local\"},{\"var\":\"K2Node_Select_Default\",\"scope\":\"local\"},{\"bool\":false},{\"var\":\"Temp_byte_Variable_1\",\"scope\":\"local\"},{\"bool\":true},{\"var\":\"Temp_byte_Variable\",\"scope\":\"local\"}]}],\"outs\":[],\"recv\":{\"var\":\"cardFunction\",\"scope\":\"instance\"},\"i\":4485,\"bo\":4485}"
+        },
+        {
+          "step_index": 143,
+          "instruction_i": 5347,
+          "op": "call",
+          "function_or_math": "UpdateCampaignStarStatus",
+          "snippet": "{\"op\":\"call\",\"fn\":\"UpdateCampaignStarStatus\",\"args\":[{\"int\":2},{\"var\":\"CallFunc_Format_ReturnValue\",\"scope\":\"local\"},{\"int\":0}],\"outs\":[],\"recv\":{\"var\":\"cardFunction\",\"scope\":\"instance\"},\"i\":5347,\"bo\":5347}"
+        },
+        {
+          "step_index": 160,
+          "instruction_i": 5875,
+          "op": "call",
+          "function_or_math": "UpdateCampaignStarStatus",
+          "snippet": "{\"op\":\"call\",\"fn\":\"UpdateCampaignStarStatus\",\"args\":[{\"int\":2},{\"var\":\"CallFunc_Format_ReturnValue\",\"scope\":\"local\"},{\"int\":2}],\"outs\":[],\"recv\":{\"var\":\"cardFunction\",\"scope\":\"instance\"},\"i\":5875,\"bo\":5875}"
+        }
+      ],
+      "classification": "campaign-status flow (scope hint; not PvP certification)",
+      "current_headless_downstream_effect": "Output is consumed by UpdateCampaignStarStatus in the represented campaign asset. Current headless dispatch for that function is a no-op; PvP reachability is not inferred.",
+      "client_semantics_status": "not established by SDK declaration or current static files"
+    },
+    {
+      "name": "Format",
+      "card": "card_location_german_scen1",
+      "scope_hint": "campaign_ui",
+      "program": "steps",
+      "step_index": 142,
+      "instruction_i": 5297,
+      "byte_offset": 5297,
+      "producer_context": {
+        "op": "set",
+        "dst": "CallFunc_Format_ReturnValue",
+        "dst_scope": "local",
+        "src": {
+          "math": "Format",
+          "args": [
+            {
+              "str": "null"
+            },
+            {
+              "var": "K2Node_MakeArray_Array",
+              "scope": "local",
+              "element_type": "Struct"
+            }
+          ]
+        },
+        "i": 5297,
+        "bo": 5297
+      },
+      "consumer_context": [
+        {
+          "step_index": 143,
+          "instruction_i": 5347,
+          "op": "call",
+          "function_or_math": "UpdateCampaignStarStatus",
+          "snippet": "{\"op\":\"call\",\"fn\":\"UpdateCampaignStarStatus\",\"args\":[{\"int\":2},{\"var\":\"CallFunc_Format_ReturnValue\",\"scope\":\"local\"},{\"int\":0}],\"outs\":[],\"recv\":{\"var\":\"cardFunction\",\"scope\":\"instance\"},\"i\":5347,\"bo\":5347}"
+        },
+        {
+          "step_index": 160,
+          "instruction_i": 5875,
+          "op": "call",
+          "function_or_math": "UpdateCampaignStarStatus",
+          "snippet": "{\"op\":\"call\",\"fn\":\"UpdateCampaignStarStatus\",\"args\":[{\"int\":2},{\"var\":\"CallFunc_Format_ReturnValue\",\"scope\":\"local\"},{\"int\":2}],\"outs\":[],\"recv\":{\"var\":\"cardFunction\",\"scope\":\"instance\"},\"i\":5875,\"bo\":5875}"
+        }
+      ],
+      "classification": "campaign-status flow (scope hint; not PvP certification)",
+      "current_headless_downstream_effect": "Output is consumed by UpdateCampaignStarStatus in the represented campaign asset. Current headless dispatch for that function is a no-op; PvP reachability is not inferred.",
+      "client_semantics_status": "not established by SDK declaration or current static files"
+    },
+    {
+      "name": "Format",
+      "card": "card_location_german_scen1",
+      "scope_hint": "campaign_ui",
+      "program": "steps",
+      "step_index": 159,
+      "instruction_i": 5825,
+      "byte_offset": 5825,
+      "producer_context": {
+        "op": "set",
+        "dst": "CallFunc_Format_ReturnValue",
+        "dst_scope": "local",
+        "src": {
+          "math": "Format",
+          "args": [
+            {
+              "str": "null"
+            },
+            {
+              "var": "K2Node_MakeArray_Array",
+              "scope": "local",
+              "element_type": "Struct"
+            }
+          ]
+        },
+        "i": 5825,
+        "bo": 5825
+      },
+      "consumer_context": [
+        {
+          "step_index": 160,
+          "instruction_i": 5875,
+          "op": "call",
+          "function_or_math": "UpdateCampaignStarStatus",
+          "snippet": "{\"op\":\"call\",\"fn\":\"UpdateCampaignStarStatus\",\"args\":[{\"int\":2},{\"var\":\"CallFunc_Format_ReturnValue\",\"scope\":\"local\"},{\"int\":2}],\"outs\":[],\"recv\":{\"var\":\"cardFunction\",\"scope\":\"instance\"},\"i\":5875,\"bo\":5875}"
+        }
+      ],
+      "classification": "campaign-status flow (scope hint; not PvP certification)",
+      "current_headless_downstream_effect": "Output is consumed by UpdateCampaignStarStatus in the represented campaign asset. Current headless dispatch for that function is a no-op; PvP reachability is not inferred.",
+      "client_semantics_status": "not established by SDK declaration or current static files"
+    },
+    {
+      "name": "Format",
+      "card": "card_location_german_scen1",
+      "scope_hint": "campaign_ui",
+      "program": "steps",
+      "step_index": 176,
+      "instruction_i": 6357,
+      "byte_offset": 6357,
+      "producer_context": {
+        "op": "set",
+        "dst": "CallFunc_Format_ReturnValue_2",
+        "dst_scope": "local",
+        "src": {
+          "math": "Format",
+          "args": [
+            {
+              "str": "null"
+            },
+            {
+              "var": "K2Node_MakeArray_Array_2",
+              "scope": "local",
+              "element_type": "Struct"
+            }
+          ]
+        },
+        "i": 6357,
+        "bo": 6357
+      },
+      "consumer_context": [
+        {
+          "step_index": 177,
+          "instruction_i": 6408,
+          "op": "call",
+          "function_or_math": "UpdateCampaignStarStatus",
+          "snippet": "{\"op\":\"call\",\"fn\":\"UpdateCampaignStarStatus\",\"args\":[{\"int\":3},{\"var\":\"CallFunc_Format_ReturnValue_2\",\"scope\":\"local\"},{\"math\":\"__SwitchValue\",\"args\":[{\"var\":\"Temp_bool_Variable_1\",\"scope\":\"local\"},{\"var\":\"K2Node_Select_Default_2\",\"scope\":\"local\"},{\"bool\":false},{\"var\":\"Temp_byte_Variable_3\",\"scope\":\"local\"},{\"bool\":true},{\"var\":\"Temp_byte_Variable_2\",\"scope\":\"local\"}]}],\"outs\":[],\"recv\":{\"var\":\"cardFunction\",\"scope\":\"instance\"},\"i\":6408,\"bo\":6408}"
+        }
+      ],
+      "classification": "campaign-status flow (scope hint; not PvP certification)",
+      "current_headless_downstream_effect": "Output is consumed by UpdateCampaignStarStatus in the represented campaign asset. Current headless dispatch for that function is a no-op; PvP reachability is not inferred.",
+      "client_semantics_status": "not established by SDK declaration or current static files"
+    },
+    {
+      "name": "Format",
+      "card": "card_location_german_scen2",
+      "scope_hint": "campaign_ui",
+      "program": "steps",
+      "step_index": 83,
+      "instruction_i": 3196,
+      "byte_offset": 3196,
+      "producer_context": {
+        "op": "set",
+        "dst": "CallFunc_Format_ReturnValue",
+        "dst_scope": "local",
+        "src": {
+          "math": "Format",
+          "args": [
+            {
+              "str": "null"
+            },
+            {
+              "var": "K2Node_MakeArray_Array",
+              "scope": "local",
+              "element_type": "Struct"
+            }
+          ]
+        },
+        "i": 3196,
+        "bo": 3196
+      },
+      "consumer_context": [
+        {
+          "step_index": 84,
+          "instruction_i": 3246,
+          "op": "call",
+          "function_or_math": "UpdateCampaignStarStatus",
+          "snippet": "{\"op\":\"call\",\"fn\":\"UpdateCampaignStarStatus\",\"args\":[{\"int\":1},{\"var\":\"CallFunc_Format_ReturnValue\",\"scope\":\"local\"},{\"math\":\"__SwitchValue\",\"args\":[{\"var\":\"Temp_bool_Variable\",\"scope\":\"local\"},{\"var\":\"K2Node_Select_Default\",\"scope\":\"local\"},{\"bool\":false},{\"var\":\"Temp_byte_Variable_1\",\"scope\":\"local\"},{\"bool\":true},{\"var\":\"Temp_byte_Variable\",\"scope\":\"local\"}]}],\"outs\":[],\"recv\":{\"var\":\"cardFunction\",\"scope\":\"instance\"},\"i\":3246,\"bo\":3246}"
+        }
+      ],
+      "classification": "campaign-status flow (scope hint; not PvP certification)",
+      "current_headless_downstream_effect": "Output is consumed by UpdateCampaignStarStatus in the represented campaign asset. Current headless dispatch for that function is a no-op; PvP reachability is not inferred.",
+      "client_semantics_status": "not established by SDK declaration or current static files"
+    },
+    {
+      "name": "Format",
+      "card": "card_location_german_scen2",
+      "scope_hint": "campaign_ui",
+      "program": "steps",
+      "step_index": 144,
+      "instruction_i": 5456,
+      "byte_offset": 5456,
+      "producer_context": {
+        "op": "set",
+        "dst": "CallFunc_Format_ReturnValue_1",
+        "dst_scope": "local",
+        "src": {
+          "math": "Format",
+          "args": [
+            {
+              "str": "null"
+            },
+            {
+              "var": "K2Node_MakeArray_Array_1",
+              "scope": "local",
+              "element_type": "Struct"
+            }
+          ]
+        },
+        "i": 5456,
+        "bo": 5456
+      },
+      "consumer_context": [
+        {
+          "step_index": 147,
+          "instruction_i": 5579,
+          "op": "call",
+          "function_or_math": "UpdateCampaignStarStatus",
+          "snippet": "{\"op\":\"call\",\"fn\":\"UpdateCampaignStarStatus\",\"args\":[{\"int\":2},{\"var\":\"CallFunc_Format_ReturnValue_1\",\"scope\":\"local\"},{\"math\":\"__SwitchValue\",\"args\":[{\"var\":\"Temp_bool_Variable_1\",\"scope\":\"local\"},{\"var\":\"K2Node_Select_Default_1\",\"scope\":\"local\"},{\"bool\":false},{\"var\":\"Temp_byte_Variable_3\",\"scope\":\"local\"},{\"bool\":true},{\"var\":\"Temp_byte_Variable_2\",\"scope\":\"local\"}]}],\"outs\":[],\"recv\":{\"var\":\"cardFunction\",\"scope\":\"instance\"},\"i\":5579,\"bo\":5579}"
+        }
+      ],
+      "classification": "campaign-status flow (scope hint; not PvP certification)",
+      "current_headless_downstream_effect": "Output is consumed by UpdateCampaignStarStatus in the represented campaign asset. Current headless dispatch for that function is a no-op; PvP reachability is not inferred.",
+      "client_semantics_status": "not established by SDK declaration or current static files"
+    },
+    {
+      "name": "Format",
+      "card": "card_location_german_scen2_ai",
+      "scope_hint": "campaign_ui",
+      "program": "steps",
+      "step_index": 27,
+      "instruction_i": 940,
+      "byte_offset": 940,
+      "producer_context": {
+        "op": "set",
+        "dst": "CallFunc_Format_ReturnValue_1",
+        "dst_scope": "local",
+        "src": {
+          "math": "Format",
+          "args": [
+            {
+              "str": "null"
+            },
+            {
+              "var": "K2Node_MakeArray_Array_1",
+              "scope": "local",
+              "element_type": "Struct"
+            }
+          ]
+        },
+        "i": 940,
+        "bo": 940
+      },
+      "consumer_context": [
+        {
+          "step_index": 28,
+          "instruction_i": 989,
+          "op": "call",
+          "function_or_math": "UpdateCampaignStarStatus",
+          "snippet": "{\"op\":\"call\",\"fn\":\"UpdateCampaignStarStatus\",\"args\":[{\"int\":3},{\"var\":\"CallFunc_Format_ReturnValue_1\",\"scope\":\"local\"},{\"int\":1}],\"outs\":[],\"recv\":{\"var\":\"cardFunction\",\"scope\":\"instance\"},\"i\":989,\"bo\":989}"
+        }
+      ],
+      "classification": "campaign-status flow (scope hint; not PvP certification)",
+      "current_headless_downstream_effect": "Output is consumed by UpdateCampaignStarStatus in the represented campaign asset. Current headless dispatch for that function is a no-op; PvP reachability is not inferred.",
+      "client_semantics_status": "not established by SDK declaration or current static files"
+    },
+    {
+      "name": "Format",
+      "card": "card_location_german_scen2_ai",
+      "scope_hint": "campaign_ui",
+      "program": "steps",
+      "step_index": 45,
+      "instruction_i": 1501,
+      "byte_offset": 1501,
+      "producer_context": {
+        "op": "set",
+        "dst": "CallFunc_Format_ReturnValue",
+        "dst_scope": "local",
+        "src": {
+          "math": "Format",
+          "args": [
+            {
+              "str": "null"
+            },
+            {
+              "var": "K2Node_MakeArray_Array",
+              "scope": "local",
+              "element_type": "Struct"
+            }
+          ]
+        },
+        "i": 1501,
+        "bo": 1501
+      },
+      "consumer_context": [
+        {
+          "step_index": 46,
+          "instruction_i": 1550,
+          "op": "call",
+          "function_or_math": "UpdateCampaignStarStatus",
+          "snippet": "{\"op\":\"call\",\"fn\":\"UpdateCampaignStarStatus\",\"args\":[{\"int\":3},{\"var\":\"CallFunc_Format_ReturnValue\",\"scope\":\"local\"},{\"int\":1}],\"outs\":[],\"recv\":{\"var\":\"cardFunction\",\"scope\":\"instance\"},\"i\":1550,\"bo\":1550}"
+        }
+      ],
+      "classification": "campaign-status flow (scope hint; not PvP certification)",
+      "current_headless_downstream_effect": "Output is consumed by UpdateCampaignStarStatus in the represented campaign asset. Current headless dispatch for that function is a no-op; PvP reachability is not inferred.",
+      "client_semantics_status": "not established by SDK declaration or current static files"
+    },
+    {
+      "name": "Format",
+      "card": "card_location_german_scen3",
+      "scope_hint": "campaign_ui",
+      "program": "steps",
+      "step_index": 384,
+      "instruction_i": 13665,
+      "byte_offset": 13665,
+      "producer_context": {
+        "op": "set",
+        "dst": "CallFunc_Format_ReturnValue_1",
+        "dst_scope": "local",
+        "src": {
+          "math": "Format",
+          "args": [
+            {
+              "str": "null"
+            },
+            {
+              "var": "K2Node_MakeArray_Array_1",
+              "scope": "local",
+              "element_type": "Struct"
+            }
+          ]
+        },
+        "i": 13665,
+        "bo": 13665
+      },
+      "consumer_context": [
+        {
+          "step_index": 385,
+          "instruction_i": 13715,
+          "op": "call",
+          "function_or_math": "UpdateCampaignStarStatus",
+          "snippet": "{\"op\":\"call\",\"fn\":\"UpdateCampaignStarStatus\",\"args\":[{\"int\":1},{\"var\":\"CallFunc_Format_ReturnValue_1\",\"scope\":\"local\"},{\"int\":0}],\"outs\":[],\"recv\":{\"var\":\"cardFunction\",\"scope\":\"instance\"},\"i\":13715,\"bo\":13715}"
+        }
+      ],
+      "classification": "campaign-status flow (scope hint; not PvP certification)",
+      "current_headless_downstream_effect": "Output is consumed by UpdateCampaignStarStatus in the represented campaign asset. Current headless dispatch for that function is a no-op; PvP reachability is not inferred.",
+      "client_semantics_status": "not established by SDK declaration or current static files"
+    },
+    {
+      "name": "Format",
+      "card": "card_location_german_scen3",
+      "scope_hint": "campaign_ui",
+      "program": "steps",
+      "step_index": 406,
+      "instruction_i": 14327,
+      "byte_offset": 14327,
+      "producer_context": {
+        "op": "set",
+        "dst": "CallFunc_Format_ReturnValue",
+        "dst_scope": "local",
+        "src": {
+          "math": "Format",
+          "args": [
+            {
+              "str": "null"
+            },
+            {
+              "var": "K2Node_MakeArray_Array",
+              "scope": "local",
+              "element_type": "Struct"
+            }
+          ]
+        },
+        "i": 14327,
+        "bo": 14327
+      },
+      "consumer_context": [
+        {
+          "step_index": 409,
+          "instruction_i": 14430,
+          "op": "call",
+          "function_or_math": "UpdateCampaignStarStatus",
+          "snippet": "{\"op\":\"call\",\"fn\":\"UpdateCampaignStarStatus\",\"args\":[{\"int\":3},{\"var\":\"CallFunc_Format_ReturnValue\",\"scope\":\"local\"},{\"math\":\"__SwitchValue\",\"args\":[{\"var\":\"Temp_bool_Variable_1\",\"scope\":\"local\"},{\"var\":\"K2Node_Select_Default\",\"scope\":\"local\"},{\"bool\":false},{\"var\":\"Temp_byte_Variable_1\",\"scope\":\"local\"},{\"bool\":true},{\"var\":\"Temp_byte_Variable\",\"scope\":\"local\"}]}],\"outs\":[],\"recv\":{\"var\":\"cardFunction\",\"scope\":\"instance\"},\"i\":14430,\"bo\":14430}"
+        }
+      ],
+      "classification": "campaign-status flow (scope hint; not PvP certification)",
+      "current_headless_downstream_effect": "Output is consumed by UpdateCampaignStarStatus in the represented campaign asset. Current headless dispatch for that function is a no-op; PvP reachability is not inferred.",
+      "client_semantics_status": "not established by SDK declaration or current static files"
+    },
+    {
+      "name": "Format",
+      "card": "card_location_german_scen3",
+      "scope_hint": "campaign_ui",
+      "program": "steps",
+      "step_index": 441,
+      "instruction_i": 15503,
+      "byte_offset": 15503,
+      "producer_context": {
+        "op": "set",
+        "dst": "CallFunc_Format_ReturnValue_2",
+        "dst_scope": "local",
+        "src": {
+          "math": "Format",
+          "args": [
+            {
+              "str": "null"
+            },
+            {
+              "var": "K2Node_MakeArray_Array_2",
+              "scope": "local",
+              "element_type": "Struct"
+            }
+          ]
+        },
+        "i": 15503,
+        "bo": 15503
+      },
+      "consumer_context": [
+        {
+          "step_index": 444,
+          "instruction_i": 15626,
+          "op": "call",
+          "function_or_math": "UpdateCampaignStarStatus",
+          "snippet": "{\"op\":\"call\",\"fn\":\"UpdateCampaignStarStatus\",\"args\":[{\"int\":2},{\"var\":\"CallFunc_Format_ReturnValue_2\",\"scope\":\"local\"},{\"math\":\"__SwitchValue\",\"args\":[{\"var\":\"Temp_bool_Variable\",\"scope\":\"local\"},{\"var\":\"K2Node_Select_Default_1\",\"scope\":\"local\"},{\"bool\":false},{\"var\":\"Temp_byte_Variable_3\",\"scope\":\"local\"},{\"bool\":true},{\"var\":\"Temp_byte_Variable_2\",\"scope\":\"local\"}]}],\"outs\":[],\"recv\":{\"var\":\"cardFunction\",\"scope\":\"instance\"},\"i\":15626,\"bo\":15626}"
+        }
+      ],
+      "classification": "campaign-status flow (scope hint; not PvP certification)",
+      "current_headless_downstream_effect": "Output is consumed by UpdateCampaignStarStatus in the represented campaign asset. Current headless dispatch for that function is a no-op; PvP reachability is not inferred.",
+      "client_semantics_status": "not established by SDK declaration or current static files"
+    },
+    {
+      "name": "Format",
+      "card": "card_location_german_scen4",
+      "scope_hint": "campaign_ui",
+      "program": "steps",
+      "step_index": 110,
+      "instruction_i": 4298,
+      "byte_offset": 4298,
+      "producer_context": {
+        "op": "set",
+        "dst": "CallFunc_Format_ReturnValue",
+        "dst_scope": "local",
+        "src": {
+          "math": "Format",
+          "args": [
+            {
+              "str": "null"
+            },
+            {
+              "var": "K2Node_MakeArray_Array",
+              "scope": "local",
+              "element_type": "Struct"
+            }
+          ]
+        },
+        "i": 4298,
+        "bo": 4298
+      },
+      "consumer_context": [
+        {
+          "step_index": 111,
+          "instruction_i": 4348,
+          "op": "call",
+          "function_or_math": "UpdateCampaignStarStatus",
+          "snippet": "{\"op\":\"call\",\"fn\":\"UpdateCampaignStarStatus\",\"args\":[{\"int\":1},{\"var\":\"CallFunc_Format_ReturnValue\",\"scope\":\"local\"},{\"math\":\"__SwitchValue\",\"args\":[{\"var\":\"Temp_bool_Variable\",\"scope\":\"local\"},{\"var\":\"K2Node_Select_Default\",\"scope\":\"local\"},{\"bool\":false},{\"var\":\"Temp_byte_Variable_1\",\"scope\":\"local\"},{\"bool\":true},{\"var\":\"Temp_byte_Variable\",\"scope\":\"local\"}]}],\"outs\":[],\"recv\":{\"var\":\"cardFunction\",\"scope\":\"instance\"},\"i\":4348,\"bo\":4348}"
+        }
+      ],
+      "classification": "campaign-status flow (scope hint; not PvP certification)",
+      "current_headless_downstream_effect": "Output is consumed by UpdateCampaignStarStatus in the represented campaign asset. Current headless dispatch for that function is a no-op; PvP reachability is not inferred.",
+      "client_semantics_status": "not established by SDK declaration or current static files"
+    },
+    {
+      "name": "Format",
+      "card": "card_location_german_scen4",
+      "scope_hint": "campaign_ui",
+      "program": "steps",
+      "step_index": 150,
+      "instruction_i": 5709,
+      "byte_offset": 5709,
+      "producer_context": {
+        "op": "set",
+        "dst": "CallFunc_Format_ReturnValue_1",
+        "dst_scope": "local",
+        "src": {
+          "math": "Format",
+          "args": [
+            {
+              "str": "null"
+            },
+            {
+              "var": "K2Node_MakeArray_Array_1",
+              "scope": "local",
+              "element_type": "Struct"
+            }
+          ]
+        },
+        "i": 5709,
+        "bo": 5709
+      },
+      "consumer_context": [
+        {
+          "step_index": 151,
+          "instruction_i": 5775,
+          "op": "call",
+          "function_or_math": "UpdateCampaignStarStatus",
+          "snippet": "{\"op\":\"call\",\"fn\":\"UpdateCampaignStarStatus\",\"args\":[{\"int\":3},{\"var\":\"CallFunc_Format_ReturnValue_1\",\"scope\":\"local\"},{\"math\":\"__SwitchValue\",\"args\":[{\"var\":\"Temp_bool_Variable_1\",\"scope\":\"local\"},{\"var\":\"K2Node_Select_Default_1\",\"scope\":\"local\"},{\"bool\":false},{\"var\":\"Temp_byte_Variable_3\",\"scope\":\"local\"},{\"bool\":true},{\"var\":\"Temp_byte_Variable_2\",\"scope\":\"local\"}]}],\"outs\":[],\"recv\":{\"var\":\"cardFunction\",\"scope\":\"instance\"},\"i\":5775,\"bo\":5775}"
+        }
+      ],
+      "classification": "campaign-status flow (scope hint; not PvP certification)",
+      "current_headless_downstream_effect": "Output is consumed by UpdateCampaignStarStatus in the represented campaign asset. Current headless dispatch for that function is a no-op; PvP reachability is not inferred.",
+      "client_semantics_status": "not established by SDK declaration or current static files"
+    },
+    {
+      "name": "Format",
+      "card": "card_location_german_scen5",
+      "scope_hint": "campaign_ui",
+      "program": "steps",
+      "step_index": 158,
+      "instruction_i": 6196,
+      "byte_offset": 6196,
+      "producer_context": {
+        "op": "set",
+        "dst": "CallFunc_Format_ReturnValue",
+        "dst_scope": "local",
+        "src": {
+          "math": "Format",
+          "args": [
+            {
+              "str": "null"
+            },
+            {
+              "var": "K2Node_MakeArray_Array",
+              "scope": "local",
+              "element_type": "Struct"
+            }
+          ]
+        },
+        "i": 6196,
+        "bo": 6196
+      },
+      "consumer_context": [
+        {
+          "step_index": 159,
+          "instruction_i": 6246,
+          "op": "call",
+          "function_or_math": "UpdateCampaignStarStatus",
+          "snippet": "{\"op\":\"call\",\"fn\":\"UpdateCampaignStarStatus\",\"args\":[{\"int\":2},{\"var\":\"CallFunc_Format_ReturnValue\",\"scope\":\"local\"},{\"math\":\"__SwitchValue\",\"args\":[{\"var\":\"Temp_bool_Variable_1\",\"scope\":\"local\"},{\"var\":\"K2Node_Select_Default\",\"scope\":\"local\"},{\"bool\":false},{\"var\":\"Temp_byte_Variable_3\",\"scope\":\"local\"},{\"bool\":true},{\"var\":\"Temp_byte_Variable_2\",\"scope\":\"local\"}]}],\"outs\":[],\"recv\":{\"var\":\"cardFunction\",\"scope\":\"instance\"},\"i\":6246,\"bo\":6246}"
+        }
+      ],
+      "classification": "campaign-status flow (scope hint; not PvP certification)",
+      "current_headless_downstream_effect": "Output is consumed by UpdateCampaignStarStatus in the represented campaign asset. Current headless dispatch for that function is a no-op; PvP reachability is not inferred.",
+      "client_semantics_status": "not established by SDK declaration or current static files"
+    },
+    {
+      "name": "Format",
+      "card": "card_location_german_scen5",
+      "scope_hint": "campaign_ui",
+      "program": "steps",
+      "step_index": 193,
+      "instruction_i": 7351,
+      "byte_offset": 7351,
+      "producer_context": {
+        "op": "set",
+        "dst": "CallFunc_Format_ReturnValue_2",
+        "dst_scope": "local",
+        "src": {
+          "math": "Format",
+          "args": [
+            {
+              "str": "null"
+            },
+            {
+              "var": "K2Node_MakeArray_Array_2",
+              "scope": "local",
+              "element_type": "Struct"
+            }
+          ]
+        },
+        "i": 7351,
+        "bo": 7351
+      },
+      "consumer_context": [
+        {
+          "step_index": 194,
+          "instruction_i": 7417,
+          "op": "call",
+          "function_or_math": "UpdateCampaignStarStatus",
+          "snippet": "{\"op\":\"call\",\"fn\":\"UpdateCampaignStarStatus\",\"args\":[{\"int\":1},{\"var\":\"CallFunc_Format_ReturnValue_2\",\"scope\":\"local\"},{\"math\":\"__SwitchValue\",\"args\":[{\"var\":\"Temp_bool_Variable\",\"scope\":\"local\"},{\"var\":\"K2Node_Select_Default_1\",\"scope\":\"local\"},{\"bool\":false},{\"var\":\"Temp_byte_Variable_1\",\"scope\":\"local\"},{\"bool\":true},{\"var\":\"Temp_byte_Variable\",\"scope\":\"local\"}]}],\"outs\":[],\"recv\":{\"var\":\"cardFunction\",\"scope\":\"instance\"},\"i\":7417,\"bo\":7417}"
+        }
+      ],
+      "classification": "campaign-status flow (scope hint; not PvP certification)",
+      "current_headless_downstream_effect": "Output is consumed by UpdateCampaignStarStatus in the represented campaign asset. Current headless dispatch for that function is a no-op; PvP reachability is not inferred.",
+      "client_semantics_status": "not established by SDK declaration or current static files"
+    },
+    {
+      "name": "Format",
+      "card": "card_location_german_scen5",
+      "scope_hint": "campaign_ui",
+      "program": "steps",
+      "step_index": 208,
+      "instruction_i": 7921,
+      "byte_offset": 7921,
+      "producer_context": {
+        "op": "set",
+        "dst": "CallFunc_Format_ReturnValue_1",
+        "dst_scope": "local",
+        "src": {
+          "math": "Format",
+          "args": [
+            {
+              "str": "null"
+            },
+            {
+              "var": "K2Node_MakeArray_Array_1",
+              "scope": "local",
+              "element_type": "Struct"
+            }
+          ]
+        },
+        "i": 7921,
+        "bo": 7921
+      },
+      "consumer_context": [
+        {
+          "step_index": 209,
+          "instruction_i": 7972,
+          "op": "call",
+          "function_or_math": "UpdateCampaignStarStatus",
+          "snippet": "{\"op\":\"call\",\"fn\":\"UpdateCampaignStarStatus\",\"args\":[{\"int\":3},{\"var\":\"CallFunc_Format_ReturnValue_1\",\"scope\":\"local\"},{\"int\":0}],\"outs\":[],\"recv\":{\"var\":\"cardFunction\",\"scope\":\"instance\"},\"i\":7972,\"bo\":7972}"
+        }
+      ],
+      "classification": "campaign-status flow (scope hint; not PvP certification)",
+      "current_headless_downstream_effect": "Output is consumed by UpdateCampaignStarStatus in the represented campaign asset. Current headless dispatch for that function is a no-op; PvP reachability is not inferred.",
+      "client_semantics_status": "not established by SDK declaration or current static files"
+    },
+    {
+      "name": "Format",
+      "card": "card_location_japan_scen1",
+      "scope_hint": "campaign_ui",
+      "program": "steps",
+      "step_index": 109,
+      "instruction_i": 4301,
+      "byte_offset": 4301,
+      "producer_context": {
+        "op": "set",
+        "dst": "CallFunc_Format_ReturnValue",
+        "dst_scope": "local",
+        "src": {
+          "math": "Format",
+          "args": [
+            {
+              "str": "null"
+            },
+            {
+              "var": "K2Node_MakeArray_Array",
+              "scope": "local",
+              "element_type": "Struct"
+            }
+          ]
+        },
+        "i": 4301,
+        "bo": 4301
+      },
+      "consumer_context": [
+        {
+          "step_index": 110,
+          "instruction_i": 4351,
+          "op": "call",
+          "function_or_math": "UpdateCampaignStarStatus",
+          "snippet": "{\"op\":\"call\",\"fn\":\"UpdateCampaignStarStatus\",\"args\":[{\"int\":1},{\"var\":\"CallFunc_Format_ReturnValue\",\"scope\":\"local\"},{\"math\":\"__SwitchValue\",\"args\":[{\"var\":\"Temp_bool_Variable\",\"scope\":\"local\"},{\"var\":\"K2Node_Select_Default_1\",\"scope\":\"local\"},{\"bool\":false},{\"var\":\"Temp_byte_Variable_1\",\"scope\":\"local\"},{\"bool\":true},{\"var\":\"Temp_byte_Variable\",\"scope\":\"local\"}]}],\"outs\":[],\"recv\":{\"var\":\"cardFunction\",\"scope\":\"instance\"},\"i\":4351,\"bo\":4351}"
+        },
+        {
+          "step_index": 130,
+          "instruction_i": 5011,
+          "op": "call",
+          "function_or_math": "UpdateCampaignStarStatus",
+          "snippet": "{\"op\":\"call\",\"fn\":\"UpdateCampaignStarStatus\",\"args\":[{\"int\":3},{\"var\":\"CallFunc_Format_ReturnValue\",\"scope\":\"local\"},{\"math\":\"__SwitchValue\",\"args\":[{\"var\":\"Temp_bool_Variable_2\",\"scope\":\"local\"},{\"var\":\"K2Node_Select_Default\",\"scope\":\"local\"},{\"bool\":false},{\"var\":\"Temp_byte_Variable_5\",\"scope\":\"local\"},{\"bool\":true},{\"var\":\"Temp_byte_Variable_4\",\"scope\":\"local\"}]}],\"outs\":[],\"recv\":{\"var\":\"cardFunction\",\"scope\":\"instance\"},\"i\":5011,\"bo\":5011}"
+        }
+      ],
+      "classification": "campaign-status flow (scope hint; not PvP certification)",
+      "current_headless_downstream_effect": "Output is consumed by UpdateCampaignStarStatus in the represented campaign asset. Current headless dispatch for that function is a no-op; PvP reachability is not inferred.",
+      "client_semantics_status": "not established by SDK declaration or current static files"
+    },
+    {
+      "name": "Format",
+      "card": "card_location_japan_scen1",
+      "scope_hint": "campaign_ui",
+      "program": "steps",
+      "step_index": 129,
+      "instruction_i": 4961,
+      "byte_offset": 4961,
+      "producer_context": {
+        "op": "set",
+        "dst": "CallFunc_Format_ReturnValue",
+        "dst_scope": "local",
+        "src": {
+          "math": "Format",
+          "args": [
+            {
+              "str": "null"
+            },
+            {
+              "var": "K2Node_MakeArray_Array",
+              "scope": "local",
+              "element_type": "Struct"
+            }
+          ]
+        },
+        "i": 4961,
+        "bo": 4961
+      },
+      "consumer_context": [
+        {
+          "step_index": 130,
+          "instruction_i": 5011,
+          "op": "call",
+          "function_or_math": "UpdateCampaignStarStatus",
+          "snippet": "{\"op\":\"call\",\"fn\":\"UpdateCampaignStarStatus\",\"args\":[{\"int\":3},{\"var\":\"CallFunc_Format_ReturnValue\",\"scope\":\"local\"},{\"math\":\"__SwitchValue\",\"args\":[{\"var\":\"Temp_bool_Variable_2\",\"scope\":\"local\"},{\"var\":\"K2Node_Select_Default\",\"scope\":\"local\"},{\"bool\":false},{\"var\":\"Temp_byte_Variable_5\",\"scope\":\"local\"},{\"bool\":true},{\"var\":\"Temp_byte_Variable_4\",\"scope\":\"local\"}]}],\"outs\":[],\"recv\":{\"var\":\"cardFunction\",\"scope\":\"instance\"},\"i\":5011,\"bo\":5011}"
+        }
+      ],
+      "classification": "campaign-status flow (scope hint; not PvP certification)",
+      "current_headless_downstream_effect": "Output is consumed by UpdateCampaignStarStatus in the represented campaign asset. Current headless dispatch for that function is a no-op; PvP reachability is not inferred.",
+      "client_semantics_status": "not established by SDK declaration or current static files"
+    },
+    {
+      "name": "Format",
+      "card": "card_location_japan_scen1",
+      "scope_hint": "campaign_ui",
+      "program": "steps",
+      "step_index": 159,
+      "instruction_i": 5999,
+      "byte_offset": 5999,
+      "producer_context": {
+        "op": "set",
+        "dst": "CallFunc_Format_ReturnValue_1",
+        "dst_scope": "local",
+        "src": {
+          "math": "Format",
+          "args": [
+            {
+              "str": "null"
+            },
+            {
+              "var": "K2Node_MakeArray_Array_1",
+              "scope": "local",
+              "element_type": "Struct"
+            }
+          ]
+        },
+        "i": 5999,
+        "bo": 5999
+      },
+      "consumer_context": [
+        {
+          "step_index": 160,
+          "instruction_i": 6050,
+          "op": "call",
+          "function_or_math": "UpdateCampaignStarStatus",
+          "snippet": "{\"op\":\"call\",\"fn\":\"UpdateCampaignStarStatus\",\"args\":[{\"int\":2},{\"var\":\"CallFunc_Format_ReturnValue_1\",\"scope\":\"local\"},{\"math\":\"__SwitchValue\",\"args\":[{\"var\":\"Temp_bool_Variable_1\",\"scope\":\"local\"},{\"var\":\"K2Node_Select_Default_2\",\"scope\":\"local\"},{\"bool\":false},{\"var\":\"Temp_byte_Variable_3\",\"scope\":\"local\"},{\"bool\":true},{\"var\":\"Temp_byte_Variable_2\",\"scope\":\"local\"}]}],\"outs\":[],\"recv\":{\"var\":\"cardFunction\",\"scope\":\"instance\"},\"i\":6050,\"bo\":6050}"
+        }
+      ],
+      "classification": "campaign-status flow (scope hint; not PvP certification)",
+      "current_headless_downstream_effect": "Output is consumed by UpdateCampaignStarStatus in the represented campaign asset. Current headless dispatch for that function is a no-op; PvP reachability is not inferred.",
+      "client_semantics_status": "not established by SDK declaration or current static files"
+    },
+    {
+      "name": "Format",
+      "card": "card_location_japan_scen2",
+      "scope_hint": "campaign_ui",
+      "program": "steps",
+      "step_index": 169,
+      "instruction_i": 6663,
+      "byte_offset": 6663,
+      "producer_context": {
+        "op": "set",
+        "dst": "CallFunc_Format_ReturnValue",
+        "dst_scope": "local",
+        "src": {
+          "math": "Format",
+          "args": [
+            {
+              "str": "null"
+            },
+            {
+              "var": "K2Node_MakeArray_Array",
+              "scope": "local",
+              "element_type": "Struct"
+            }
+          ]
+        },
+        "i": 6663,
+        "bo": 6663
+      },
+      "consumer_context": [
+        {
+          "step_index": 170,
+          "instruction_i": 6713,
+          "op": "call",
+          "function_or_math": "UpdateCampaignStarStatus",
+          "snippet": "{\"op\":\"call\",\"fn\":\"UpdateCampaignStarStatus\",\"args\":[{\"int\":1},{\"var\":\"CallFunc_Format_ReturnValue\",\"scope\":\"local\"},{\"math\":\"__SwitchValue\",\"args\":[{\"var\":\"Temp_bool_Variable\",\"scope\":\"local\"},{\"var\":\"K2Node_Select_Default_1\",\"scope\":\"local\"},{\"bool\":false},{\"var\":\"Temp_byte_Variable_5\",\"scope\":\"local\"},{\"bool\":true},{\"var\":\"Temp_byte_Variable_4\",\"scope\":\"local\"}]}],\"outs\":[],\"recv\":{\"var\":\"cardFunction\",\"scope\":\"instance\"},\"i\":6713,\"bo\":6713}"
+        }
+      ],
+      "classification": "campaign-status flow (scope hint; not PvP certification)",
+      "current_headless_downstream_effect": "Output is consumed by UpdateCampaignStarStatus in the represented campaign asset. Current headless dispatch for that function is a no-op; PvP reachability is not inferred.",
+      "client_semantics_status": "not established by SDK declaration or current static files"
+    },
+    {
+      "name": "Format",
+      "card": "card_location_japan_scen2",
+      "scope_hint": "campaign_ui",
+      "program": "steps",
+      "step_index": 188,
+      "instruction_i": 7290,
+      "byte_offset": 7290,
+      "producer_context": {
+        "op": "set",
+        "dst": "CallFunc_Format_ReturnValue_1",
+        "dst_scope": "local",
+        "src": {
+          "math": "Format",
+          "args": [
+            {
+              "str": "null"
+            },
+            {
+              "var": "K2Node_MakeArray_Array_1",
+              "scope": "local",
+              "element_type": "Struct"
+            }
+          ]
+        },
+        "i": 7290,
+        "bo": 7290
+      },
+      "consumer_context": [
+        {
+          "step_index": 191,
+          "instruction_i": 7394,
+          "op": "call",
+          "function_or_math": "UpdateCampaignStarStatus",
+          "snippet": "{\"op\":\"call\",\"fn\":\"UpdateCampaignStarStatus\",\"args\":[{\"int\":3},{\"var\":\"CallFunc_Format_ReturnValue_1\",\"scope\":\"local\"},{\"math\":\"__SwitchValue\",\"args\":[{\"var\":\"Temp_bool_Variable_1\",\"scope\":\"local\"},{\"var\":\"K2Node_Select_Default_2\",\"scope\":\"local\"},{\"bool\":false},{\"var\":\"Temp_byte_Variable_7\",\"scope\":\"local\"},{\"bool\":true},{\"var\":\"Temp_byte_Variable_6\",\"scope\":\"local\"}]}],\"outs\":[],\"recv\":{\"var\":\"cardFunction\",\"scope\":\"instance\"},\"i\":7394,\"bo\":7394}"
+        }
+      ],
+      "classification": "campaign-status flow (scope hint; not PvP certification)",
+      "current_headless_downstream_effect": "Output is consumed by UpdateCampaignStarStatus in the represented campaign asset. Current headless dispatch for that function is a no-op; PvP reachability is not inferred.",
+      "client_semantics_status": "not established by SDK declaration or current static files"
+    },
+    {
+      "name": "Format",
+      "card": "card_location_japan_scen3",
+      "scope_hint": "campaign_ui",
+      "program": "steps",
+      "step_index": 106,
+      "instruction_i": 3755,
+      "byte_offset": 3755,
+      "producer_context": {
+        "op": "set",
+        "dst": "CallFunc_Format_ReturnValue",
+        "dst_scope": "local",
+        "src": {
+          "math": "Format",
+          "args": [
+            {
+              "str": "null"
+            },
+            {
+              "var": "K2Node_MakeArray_Array",
+              "scope": "local",
+              "element_type": "Struct"
+            }
+          ]
+        },
+        "i": 3755,
+        "bo": 3755
+      },
+      "consumer_context": [
+        {
+          "step_index": 107,
+          "instruction_i": 3805,
+          "op": "call",
+          "function_or_math": "UpdateCampaignStarStatus",
+          "snippet": "{\"op\":\"call\",\"fn\":\"UpdateCampaignStarStatus\",\"args\":[{\"int\":2},{\"var\":\"CallFunc_Format_ReturnValue\",\"scope\":\"local\"},{\"math\":\"__SwitchValue\",\"args\":[{\"var\":\"Temp_bool_Variable_1\",\"scope\":\"local\"},{\"var\":\"K2Node_Select_Default\",\"scope\":\"local\"},{\"bool\":false},{\"var\":\"Temp_byte_Variable_3\",\"scope\":\"local\"},{\"bool\":true},{\"var\":\"Temp_byte_Variable_2\",\"scope\":\"local\"}]}],\"outs\":[],\"recv\":{\"var\":\"cardFunction\",\"scope\":\"instance\"},\"i\":3805,\"bo\":3805}"
+        }
+      ],
+      "classification": "campaign-status flow (scope hint; not PvP certification)",
+      "current_headless_downstream_effect": "Output is consumed by UpdateCampaignStarStatus in the represented campaign asset. Current headless dispatch for that function is a no-op; PvP reachability is not inferred.",
+      "client_semantics_status": "not established by SDK declaration or current static files"
+    },
+    {
+      "name": "Format",
+      "card": "card_location_japan_scen3",
+      "scope_hint": "campaign_ui",
+      "program": "steps",
+      "step_index": 143,
+      "instruction_i": 5032,
+      "byte_offset": 5032,
+      "producer_context": {
+        "op": "set",
+        "dst": "CallFunc_Format_ReturnValue_1",
+        "dst_scope": "local",
+        "src": {
+          "math": "Format",
+          "args": [
+            {
+              "str": "null"
+            },
+            {
+              "var": "K2Node_MakeArray_Array_1",
+              "scope": "local",
+              "element_type": "Struct"
+            }
+          ]
+        },
+        "i": 5032,
+        "bo": 5032
+      },
+      "consumer_context": [
+        {
+          "step_index": 144,
+          "instruction_i": 5083,
+          "op": "call",
+          "function_or_math": "UpdateCampaignStarStatus",
+          "snippet": "{\"op\":\"call\",\"fn\":\"UpdateCampaignStarStatus\",\"args\":[{\"int\":3},{\"var\":\"CallFunc_Format_ReturnValue_1\",\"scope\":\"local\"},{\"math\":\"__SwitchValue\",\"args\":[{\"var\":\"Temp_bool_Variable\",\"scope\":\"local\"},{\"var\":\"K2Node_Select_Default_1\",\"scope\":\"local\"},{\"bool\":false},{\"var\":\"Temp_byte_Variable_1\",\"scope\":\"local\"},{\"bool\":true},{\"var\":\"Temp_byte_Variable\",\"scope\":\"local\"}]}],\"outs\":[],\"recv\":{\"var\":\"cardFunction\",\"scope\":\"instance\"},\"i\":5083,\"bo\":5083}"
+        }
+      ],
+      "classification": "campaign-status flow (scope hint; not PvP certification)",
+      "current_headless_downstream_effect": "Output is consumed by UpdateCampaignStarStatus in the represented campaign asset. Current headless dispatch for that function is a no-op; PvP reachability is not inferred.",
+      "client_semantics_status": "not established by SDK declaration or current static files"
+    },
+    {
+      "name": "Format",
+      "card": "card_location_japan_scen4",
+      "scope_hint": "campaign_ui",
+      "program": "steps",
+      "step_index": 147,
+      "instruction_i": 6044,
+      "byte_offset": 6044,
+      "producer_context": {
+        "op": "set",
+        "dst": "CallFunc_Format_ReturnValue",
+        "dst_scope": "local",
+        "src": {
+          "math": "Format",
+          "args": [
+            {
+              "str": "null"
+            },
+            {
+              "var": "K2Node_MakeArray_Array",
+              "scope": "local",
+              "element_type": "Struct"
+            }
+          ]
+        },
+        "i": 6044,
+        "bo": 6044
+      },
+      "consumer_context": [
+        {
+          "step_index": 149,
+          "instruction_i": 6113,
+          "op": "call",
+          "function_or_math": "UpdateCampaignStarStatus",
+          "snippet": "{\"op\":\"call\",\"fn\":\"UpdateCampaignStarStatus\",\"args\":[{\"int\":1},{\"var\":\"CallFunc_Format_ReturnValue\",\"scope\":\"local\"},{\"math\":\"__SwitchValue\",\"args\":[{\"var\":\"Temp_bool_Variable\",\"scope\":\"local\"},{\"var\":\"K2Node_Select_Default\",\"scope\":\"local\"},{\"bool\":false},{\"var\":\"Temp_byte_Variable_1\",\"scope\":\"local\"},{\"bool\":true},{\"var\":\"Temp_byte_Variable\",\"scope\":\"local\"}]}],\"outs\":[],\"recv\":{\"var\":\"cardFunction\",\"scope\":\"instance\"},\"i\":6113,\"bo\":6113}"
+        }
+      ],
+      "classification": "campaign-status flow (scope hint; not PvP certification)",
+      "current_headless_downstream_effect": "Output is consumed by UpdateCampaignStarStatus in the represented campaign asset. Current headless dispatch for that function is a no-op; PvP reachability is not inferred.",
+      "client_semantics_status": "not established by SDK declaration or current static files"
+    },
+    {
+      "name": "Format",
+      "card": "card_location_japan_scen4",
+      "scope_hint": "campaign_ui",
+      "program": "steps",
+      "step_index": 179,
+      "instruction_i": 7168,
+      "byte_offset": 7168,
+      "producer_context": {
+        "op": "set",
+        "dst": "CallFunc_Format_ReturnValue_1",
+        "dst_scope": "local",
+        "src": {
+          "math": "Format",
+          "args": [
+            {
+              "str": "null"
+            },
+            {
+              "var": "K2Node_MakeArray_Array_1",
+              "scope": "local",
+              "element_type": "Struct"
+            }
+          ]
+        },
+        "i": 7168,
+        "bo": 7168
+      },
+      "consumer_context": [
+        {
+          "step_index": 180,
+          "instruction_i": 7232,
+          "op": "call",
+          "function_or_math": "UpdateCampaignStarStatus",
+          "snippet": "{\"op\":\"call\",\"fn\":\"UpdateCampaignStarStatus\",\"args\":[{\"int\":2},{\"var\":\"CallFunc_Format_ReturnValue_1\",\"scope\":\"local\"},{\"math\":\"__SwitchValue\",\"args\":[{\"var\":\"Temp_bool_Variable_1\",\"scope\":\"local\"},{\"var\":\"K2Node_Select_Default_1\",\"scope\":\"local\"},{\"bool\":false},{\"var\":\"Temp_byte_Variable_3\",\"scope\":\"local\"},{\"bool\":true},{\"var\":\"Temp_byte_Variable_2\",\"scope\":\"local\"}]}],\"outs\":[],\"recv\":{\"var\":\"cardFunction\",\"scope\":\"instance\"},\"i\":7232,\"bo\":7232}"
+        }
+      ],
+      "classification": "campaign-status flow (scope hint; not PvP certification)",
+      "current_headless_downstream_effect": "Output is consumed by UpdateCampaignStarStatus in the represented campaign asset. Current headless dispatch for that function is a no-op; PvP reachability is not inferred.",
+      "client_semantics_status": "not established by SDK declaration or current static files"
+    },
+    {
+      "name": "Format",
+      "card": "card_location_japan_scen5",
+      "scope_hint": "campaign_ui",
+      "program": "steps",
+      "step_index": 126,
+      "instruction_i": 5298,
+      "byte_offset": 5298,
+      "producer_context": {
+        "op": "set",
+        "dst": "CallFunc_Format_ReturnValue",
+        "dst_scope": "local",
+        "src": {
+          "math": "Format",
+          "args": [
+            {
+              "str": "null"
+            },
+            {
+              "var": "K2Node_MakeArray_Array",
+              "scope": "local",
+              "element_type": "Struct"
+            }
+          ]
+        },
+        "i": 5298,
+        "bo": 5298
+      },
+      "consumer_context": [
+        {
+          "step_index": 127,
+          "instruction_i": 5348,
+          "op": "call",
+          "function_or_math": "UpdateCampaignStarStatus",
+          "snippet": "{\"op\":\"call\",\"fn\":\"UpdateCampaignStarStatus\",\"args\":[{\"int\":1},{\"var\":\"CallFunc_Format_ReturnValue\",\"scope\":\"local\"},{\"int\":0}],\"outs\":[],\"recv\":{\"var\":\"cardFunction\",\"scope\":\"instance\"},\"i\":5348,\"bo\":5348}"
+        }
+      ],
+      "classification": "campaign-status flow (scope hint; not PvP certification)",
+      "current_headless_downstream_effect": "Output is consumed by UpdateCampaignStarStatus in the represented campaign asset. Current headless dispatch for that function is a no-op; PvP reachability is not inferred.",
+      "client_semantics_status": "not established by SDK declaration or current static files"
+    },
+    {
+      "name": "Format",
+      "card": "card_location_japan_scen5",
+      "scope_hint": "campaign_ui",
+      "program": "steps",
+      "step_index": 150,
+      "instruction_i": 6004,
+      "byte_offset": 6004,
+      "producer_context": {
+        "op": "set",
+        "dst": "CallFunc_Format_ReturnValue_1",
+        "dst_scope": "local",
+        "src": {
+          "math": "Format",
+          "args": [
+            {
+              "str": "null"
+            },
+            {
+              "var": "K2Node_MakeArray_Array_1",
+              "scope": "local",
+              "element_type": "Struct"
+            }
+          ]
+        },
+        "i": 6004,
+        "bo": 6004
+      },
+      "consumer_context": [
+        {
+          "step_index": 153,
+          "instruction_i": 6107,
+          "op": "call",
+          "function_or_math": "UpdateCampaignStarStatus",
+          "snippet": "{\"op\":\"call\",\"fn\":\"UpdateCampaignStarStatus\",\"args\":[{\"int\":1},{\"var\":\"CallFunc_Format_ReturnValue_1\",\"scope\":\"local\"},{\"math\":\"__SwitchValue\",\"args\":[{\"var\":\"Temp_bool_Variable\",\"scope\":\"local\"},{\"var\":\"K2Node_Select_Default\",\"scope\":\"local\"},{\"bool\":false},{\"var\":\"Temp_byte_Variable_1\",\"scope\":\"local\"},{\"bool\":true},{\"var\":\"Temp_byte_Variable\",\"scope\":\"local\"}]}],\"outs\":[],\"recv\":{\"var\":\"cardFunction\",\"scope\":\"instance\"},\"i\":6107,\"bo\":6107}"
+        }
+      ],
+      "classification": "campaign-status flow (scope hint; not PvP certification)",
+      "current_headless_downstream_effect": "Output is consumed by UpdateCampaignStarStatus in the represented campaign asset. Current headless dispatch for that function is a no-op; PvP reachability is not inferred.",
+      "client_semantics_status": "not established by SDK declaration or current static files"
+    },
+    {
+      "name": "Format",
+      "card": "card_location_soviet_scen1",
+      "scope_hint": "campaign_ui",
+      "program": "steps",
+      "step_index": 218,
+      "instruction_i": 8740,
+      "byte_offset": 8740,
+      "producer_context": {
+        "op": "set",
+        "dst": "CallFunc_Format_ReturnValue_1",
+        "dst_scope": "local",
+        "src": {
+          "math": "Format",
+          "args": [
+            {
+              "str": "null"
+            },
+            {
+              "var": "K2Node_MakeArray_Array_1",
+              "scope": "local",
+              "element_type": "Struct"
+            }
+          ]
+        },
+        "i": 8740,
+        "bo": 8740
+      },
+      "consumer_context": [
+        {
+          "step_index": 221,
+          "instruction_i": 8843,
+          "op": "call",
+          "function_or_math": "UpdateCampaignStarStatus",
+          "snippet": "{\"op\":\"call\",\"fn\":\"UpdateCampaignStarStatus\",\"args\":[{\"int\":3},{\"var\":\"CallFunc_Format_ReturnValue_1\",\"scope\":\"local\"},{\"math\":\"__SwitchValue\",\"args\":[{\"var\":\"Temp_bool_Variable_1\",\"scope\":\"local\"},{\"var\":\"K2Node_Select_Default_1\",\"scope\":\"local\"},{\"bool\":false},{\"var\":\"Temp_byte_Variable_3\",\"scope\":\"local\"},{\"bool\":true},{\"var\":\"Temp_byte_Variable_2\",\"scope\":\"local\"}]}],\"outs\":[],\"recv\":{\"var\":\"cardFunction\",\"scope\":\"instance\"},\"i\":8843,\"bo\":8843}"
+        }
+      ],
+      "classification": "campaign-status flow (scope hint; not PvP certification)",
+      "current_headless_downstream_effect": "Output is consumed by UpdateCampaignStarStatus in the represented campaign asset. Current headless dispatch for that function is a no-op; PvP reachability is not inferred.",
+      "client_semantics_status": "not established by SDK declaration or current static files"
+    },
+    {
+      "name": "Format",
+      "card": "card_location_soviet_scen1",
+      "scope_hint": "campaign_ui",
+      "program": "steps",
+      "step_index": 239,
+      "instruction_i": 9398,
+      "byte_offset": 9398,
+      "producer_context": {
+        "op": "set",
+        "dst": "CallFunc_Format_ReturnValue",
+        "dst_scope": "local",
+        "src": {
+          "math": "Format",
+          "args": [
+            {
+              "str": "null"
+            },
+            {
+              "var": "K2Node_MakeArray_Array",
+              "scope": "local",
+              "element_type": "Struct"
+            }
+          ]
+        },
+        "i": 9398,
+        "bo": 9398
+      },
+      "consumer_context": [
+        {
+          "step_index": 242,
+          "instruction_i": 9501,
+          "op": "call",
+          "function_or_math": "UpdateCampaignStarStatus",
+          "snippet": "{\"op\":\"call\",\"fn\":\"UpdateCampaignStarStatus\",\"args\":[{\"int\":1},{\"var\":\"CallFunc_Format_ReturnValue\",\"scope\":\"local\"},{\"math\":\"__SwitchValue\",\"args\":[{\"var\":\"Temp_bool_Variable\",\"scope\":\"local\"},{\"var\":\"K2Node_Select_Default_2\",\"scope\":\"local\"},{\"bool\":false},{\"var\":\"Temp_byte_Variable_1\",\"scope\":\"local\"},{\"bool\":true},{\"var\":\"Temp_byte_Variable\",\"scope\":\"local\"}]}],\"outs\":[],\"recv\":{\"var\":\"cardFunction\",\"scope\":\"instance\"},\"i\":9501,\"bo\":9501}"
+        }
+      ],
+      "classification": "campaign-status flow (scope hint; not PvP certification)",
+      "current_headless_downstream_effect": "Output is consumed by UpdateCampaignStarStatus in the represented campaign asset. Current headless dispatch for that function is a no-op; PvP reachability is not inferred.",
+      "client_semantics_status": "not established by SDK declaration or current static files"
+    },
+    {
+      "name": "Format",
+      "card": "card_location_soviet_scen2",
+      "scope_hint": "campaign_ui",
+      "program": "steps",
+      "step_index": 160,
+      "instruction_i": 6242,
+      "byte_offset": 6242,
+      "producer_context": {
+        "op": "set",
+        "dst": "CallFunc_Format_ReturnValue",
+        "dst_scope": "local",
+        "src": {
+          "math": "Format",
+          "args": [
+            {
+              "str": "null"
+            },
+            {
+              "var": "K2Node_MakeArray_Array",
+              "scope": "local",
+              "element_type": "Struct"
+            }
+          ]
+        },
+        "i": 6242,
+        "bo": 6242
+      },
+      "consumer_context": [
+        {
+          "step_index": 161,
+          "instruction_i": 6292,
+          "op": "call",
+          "function_or_math": "UpdateCampaignStarStatus",
+          "snippet": "{\"op\":\"call\",\"fn\":\"UpdateCampaignStarStatus\",\"args\":[{\"int\":1},{\"var\":\"CallFunc_Format_ReturnValue\",\"scope\":\"local\"},{\"int\":0}],\"outs\":[],\"recv\":{\"var\":\"cardFunction\",\"scope\":\"instance\"},\"i\":6292,\"bo\":6292}"
+        }
+      ],
+      "classification": "campaign-status flow (scope hint; not PvP certification)",
+      "current_headless_downstream_effect": "Output is consumed by UpdateCampaignStarStatus in the represented campaign asset. Current headless dispatch for that function is a no-op; PvP reachability is not inferred.",
+      "client_semantics_status": "not established by SDK declaration or current static files"
+    },
+    {
+      "name": "Format",
+      "card": "card_location_soviet_scen2",
+      "scope_hint": "campaign_ui",
+      "program": "steps",
+      "step_index": 183,
+      "instruction_i": 6909,
+      "byte_offset": 6909,
+      "producer_context": {
+        "op": "set",
+        "dst": "CallFunc_Format_ReturnValue_1",
+        "dst_scope": "local",
+        "src": {
+          "math": "Format",
+          "args": [
+            {
+              "str": "null"
+            },
+            {
+              "var": "K2Node_MakeArray_Array_1",
+              "scope": "local",
+              "element_type": "Struct"
+            }
+          ]
+        },
+        "i": 6909,
+        "bo": 6909
+      },
+      "consumer_context": [
+        {
+          "step_index": 184,
+          "instruction_i": 6960,
+          "op": "call",
+          "function_or_math": "UpdateCampaignStarStatus",
+          "snippet": "{\"op\":\"call\",\"fn\":\"UpdateCampaignStarStatus\",\"args\":[{\"int\":3},{\"var\":\"CallFunc_Format_ReturnValue_1\",\"scope\":\"local\"},{\"math\":\"__SwitchValue\",\"args\":[{\"var\":\"Temp_bool_Variable\",\"scope\":\"local\"},{\"var\":\"K2Node_Select_Default\",\"scope\":\"local\"},{\"bool\":false},{\"var\":\"Temp_byte_Variable_1\",\"scope\":\"local\"},{\"bool\":true},{\"var\":\"Temp_byte_Variable\",\"scope\":\"local\"}]}],\"outs\":[],\"recv\":{\"var\":\"cardFunction\",\"scope\":\"instance\"},\"i\":6960,\"bo\":6960}"
+        }
+      ],
+      "classification": "campaign-status flow (scope hint; not PvP certification)",
+      "current_headless_downstream_effect": "Output is consumed by UpdateCampaignStarStatus in the represented campaign asset. Current headless dispatch for that function is a no-op; PvP reachability is not inferred.",
+      "client_semantics_status": "not established by SDK declaration or current static files"
+    },
+    {
+      "name": "Format",
+      "card": "card_location_soviet_scen3",
+      "scope_hint": "campaign_ui",
+      "program": "steps",
+      "step_index": 176,
+      "instruction_i": 7243,
+      "byte_offset": 7243,
+      "producer_context": {
+        "op": "set",
+        "dst": "CallFunc_Format_ReturnValue",
+        "dst_scope": "local",
+        "src": {
+          "math": "Format",
+          "args": [
+            {
+              "str": "null"
+            },
+            {
+              "var": "K2Node_MakeArray_Array",
+              "scope": "local",
+              "element_type": "Struct"
+            }
+          ]
+        },
+        "i": 7243,
+        "bo": 7243
+      },
+      "consumer_context": [
+        {
+          "step_index": 177,
+          "instruction_i": 7293,
+          "op": "call",
+          "function_or_math": "UpdateCampaignStarStatus",
+          "snippet": "{\"op\":\"call\",\"fn\":\"UpdateCampaignStarStatus\",\"args\":[{\"int\":1},{\"var\":\"CallFunc_Format_ReturnValue\",\"scope\":\"local\"},{\"math\":\"__SwitchValue\",\"args\":[{\"var\":\"Temp_bool_Variable\",\"scope\":\"local\"},{\"var\":\"K2Node_Select_Default\",\"scope\":\"local\"},{\"bool\":false},{\"var\":\"Temp_byte_Variable_1\",\"scope\":\"local\"},{\"bool\":true},{\"var\":\"Temp_byte_Variable\",\"scope\":\"local\"}]}],\"outs\":[],\"recv\":{\"var\":\"cardFunction\",\"scope\":\"instance\"},\"i\":7293,\"bo\":7293}"
+        }
+      ],
+      "classification": "campaign-status flow (scope hint; not PvP certification)",
+      "current_headless_downstream_effect": "Output is consumed by UpdateCampaignStarStatus in the represented campaign asset. Current headless dispatch for that function is a no-op; PvP reachability is not inferred.",
+      "client_semantics_status": "not established by SDK declaration or current static files"
+    },
+    {
+      "name": "Format",
+      "card": "card_location_soviet_scen4",
+      "scope_hint": "campaign_ui",
+      "program": "steps",
+      "step_index": 210,
+      "instruction_i": 7597,
+      "byte_offset": 7597,
+      "producer_context": {
+        "op": "set",
+        "dst": "CallFunc_Format_ReturnValue",
+        "dst_scope": "local",
+        "src": {
+          "math": "Format",
+          "args": [
+            {
+              "str": "null"
+            },
+            {
+              "var": "K2Node_MakeArray_Array",
+              "scope": "local",
+              "element_type": "Struct"
+            }
+          ]
+        },
+        "i": 7597,
+        "bo": 7597
+      },
+      "consumer_context": [
+        {
+          "step_index": 211,
+          "instruction_i": 7647,
+          "op": "call",
+          "function_or_math": "UpdateCampaignStarStatus",
+          "snippet": "{\"op\":\"call\",\"fn\":\"UpdateCampaignStarStatus\",\"args\":[{\"int\":1},{\"var\":\"CallFunc_Format_ReturnValue\",\"scope\":\"local\"},{\"math\":\"__SwitchValue\",\"args\":[{\"var\":\"Temp_bool_Variable\",\"scope\":\"local\"},{\"var\":\"K2Node_Select_Default\",\"scope\":\"local\"},{\"bool\":false},{\"var\":\"Temp_byte_Variable_1\",\"scope\":\"local\"},{\"bool\":true},{\"var\":\"Temp_byte_Variable\",\"scope\":\"local\"}]}],\"outs\":[],\"recv\":{\"var\":\"cardFunction\",\"scope\":\"instance\"},\"i\":7647,\"bo\":7647}"
+        }
+      ],
+      "classification": "campaign-status flow (scope hint; not PvP certification)",
+      "current_headless_downstream_effect": "Output is consumed by UpdateCampaignStarStatus in the represented campaign asset. Current headless dispatch for that function is a no-op; PvP reachability is not inferred.",
+      "client_semantics_status": "not established by SDK declaration or current static files"
+    },
+    {
+      "name": "Format",
+      "card": "card_location_soviet_scen4",
+      "scope_hint": "campaign_ui",
+      "program": "steps",
+      "step_index": 253,
+      "instruction_i": 9107,
+      "byte_offset": 9107,
+      "producer_context": {
+        "op": "set",
+        "dst": "CallFunc_Format_ReturnValue_1",
+        "dst_scope": "local",
+        "src": {
+          "math": "Format",
+          "args": [
+            {
+              "str": "null"
+            },
+            {
+              "var": "K2Node_MakeArray_Array_1",
+              "scope": "local",
+              "element_type": "Struct"
+            }
+          ]
+        },
+        "i": 9107,
+        "bo": 9107
+      },
+      "consumer_context": [
+        {
+          "step_index": 254,
+          "instruction_i": 9171,
+          "op": "call",
+          "function_or_math": "UpdateCampaignStarStatus",
+          "snippet": "{\"op\":\"call\",\"fn\":\"UpdateCampaignStarStatus\",\"args\":[{\"int\":2},{\"var\":\"CallFunc_Format_ReturnValue_1\",\"scope\":\"local\"},{\"math\":\"__SwitchValue\",\"args\":[{\"var\":\"Temp_bool_Variable_1\",\"scope\":\"local\"},{\"var\":\"K2Node_Select_Default_1\",\"scope\":\"local\"},{\"bool\":false},{\"var\":\"Temp_byte_Variable_3\",\"scope\":\"local\"},{\"bool\":true},{\"var\":\"Temp_byte_Variable_2\",\"scope\":\"local\"}]}],\"outs\":[],\"recv\":{\"var\":\"cardFunction\",\"scope\":\"instance\"},\"i\":9171,\"bo\":9171}"
+        }
+      ],
+      "classification": "campaign-status flow (scope hint; not PvP certification)",
+      "current_headless_downstream_effect": "Output is consumed by UpdateCampaignStarStatus in the represented campaign asset. Current headless dispatch for that function is a no-op; PvP reachability is not inferred.",
+      "client_semantics_status": "not established by SDK declaration or current static files"
+    },
+    {
+      "name": "Format",
+      "card": "card_location_soviet_scen5",
+      "scope_hint": "campaign_ui",
+      "program": "steps",
+      "step_index": 105,
+      "instruction_i": 3563,
+      "byte_offset": 3563,
+      "producer_context": {
+        "op": "set",
+        "dst": "CallFunc_Format_ReturnValue",
+        "dst_scope": "local",
+        "src": {
+          "math": "Format",
+          "args": [
+            {
+              "str": "null"
+            },
+            {
+              "var": "K2Node_MakeArray_Array",
+              "scope": "local",
+              "element_type": "Struct"
+            }
+          ]
+        },
+        "i": 3563,
+        "bo": 3563
+      },
+      "consumer_context": [
+        {
+          "step_index": 106,
+          "instruction_i": 3613,
+          "op": "call",
+          "function_or_math": "UpdateCampaignStarStatus",
+          "snippet": "{\"op\":\"call\",\"fn\":\"UpdateCampaignStarStatus\",\"args\":[{\"int\":1},{\"var\":\"CallFunc_Format_ReturnValue\",\"scope\":\"local\"},{\"math\":\"__SwitchValue\",\"args\":[{\"var\":\"Temp_bool_Variable\",\"scope\":\"local\"},{\"var\":\"K2Node_Select_Default\",\"scope\":\"local\"},{\"bool\":false},{\"var\":\"Temp_byte_Variable_1\",\"scope\":\"local\"},{\"bool\":true},{\"var\":\"Temp_byte_Variable\",\"scope\":\"local\"}]}],\"outs\":[],\"recv\":{\"var\":\"cardFunction\",\"scope\":\"instance\"},\"i\":3613,\"bo\":3613}"
+        }
+      ],
+      "classification": "campaign-status flow (scope hint; not PvP certification)",
+      "current_headless_downstream_effect": "Output is consumed by UpdateCampaignStarStatus in the represented campaign asset. Current headless dispatch for that function is a no-op; PvP reachability is not inferred.",
+      "client_semantics_status": "not established by SDK declaration or current static files"
+    },
+    {
+      "name": "Format",
+      "card": "card_location_soviet_scen5",
+      "scope_hint": "campaign_ui",
+      "program": "steps",
+      "step_index": 137,
+      "instruction_i": 4710,
+      "byte_offset": 4710,
+      "producer_context": {
+        "op": "set",
+        "dst": "CallFunc_Format_ReturnValue_1",
+        "dst_scope": "local",
+        "src": {
+          "math": "Format",
+          "args": [
+            {
+              "str": "null"
+            },
+            {
+              "var": "K2Node_MakeArray_Array_1",
+              "scope": "local",
+              "element_type": "Struct"
+            }
+          ]
+        },
+        "i": 4710,
+        "bo": 4710
+      },
+      "consumer_context": [
+        {
+          "step_index": 138,
+          "instruction_i": 4774,
+          "op": "call",
+          "function_or_math": "UpdateCampaignStarStatus",
+          "snippet": "{\"op\":\"call\",\"fn\":\"UpdateCampaignStarStatus\",\"args\":[{\"int\":2},{\"var\":\"CallFunc_Format_ReturnValue_1\",\"scope\":\"local\"},{\"math\":\"__SwitchValue\",\"args\":[{\"var\":\"Temp_bool_Variable_1\",\"scope\":\"local\"},{\"var\":\"K2Node_Select_Default_1\",\"scope\":\"local\"},{\"bool\":false},{\"var\":\"Temp_byte_Variable_3\",\"scope\":\"local\"},{\"bool\":true},{\"var\":\"Temp_byte_Variable_2\",\"scope\":\"local\"}]}],\"outs\":[],\"recv\":{\"var\":\"cardFunction\",\"scope\":\"instance\"},\"i\":4774,\"bo\":4774}"
+        }
+      ],
+      "classification": "campaign-status flow (scope hint; not PvP certification)",
+      "current_headless_downstream_effect": "Output is consumed by UpdateCampaignStarStatus in the represented campaign asset. Current headless dispatch for that function is a no-op; PvP reachability is not inferred.",
+      "client_semantics_status": "not established by SDK declaration or current static files"
+    },
+    {
+      "name": "Format",
+      "card": "card_location_usa_scen1",
+      "scope_hint": "campaign_ui",
+      "program": "steps",
+      "step_index": 128,
+      "instruction_i": 5014,
+      "byte_offset": 5014,
+      "producer_context": {
+        "op": "set",
+        "dst": "CallFunc_Format_ReturnValue",
+        "dst_scope": "local",
+        "src": {
+          "math": "Format",
+          "args": [
+            {
+              "str": "null"
+            },
+            {
+              "var": "K2Node_MakeArray_Array",
+              "scope": "local",
+              "element_type": "Struct"
+            }
+          ]
+        },
+        "i": 5014,
+        "bo": 5014
+      },
+      "consumer_context": [
+        {
+          "step_index": 129,
+          "instruction_i": 5065,
+          "op": "call",
+          "function_or_math": "UpdateCampaignStarStatus",
+          "snippet": "{\"op\":\"call\",\"fn\":\"UpdateCampaignStarStatus\",\"args\":[{\"int\":1},{\"var\":\"CallFunc_Format_ReturnValue\",\"scope\":\"local\"},{\"math\":\"__SwitchValue\",\"args\":[{\"var\":\"Temp_bool_Variable\",\"scope\":\"local\"},{\"var\":\"K2Node_Select_Default\",\"scope\":\"local\"},{\"bool\":false},{\"var\":\"Temp_byte_Variable_1\",\"scope\":\"local\"},{\"bool\":true},{\"var\":\"Temp_byte_Variable\",\"scope\":\"local\"}]}],\"outs\":[],\"recv\":{\"var\":\"cardFunction\",\"scope\":\"instance\"},\"i\":5065,\"bo\":5065}"
+        }
+      ],
+      "classification": "campaign-status flow (scope hint; not PvP certification)",
+      "current_headless_downstream_effect": "Output is consumed by UpdateCampaignStarStatus in the represented campaign asset. Current headless dispatch for that function is a no-op; PvP reachability is not inferred.",
+      "client_semantics_status": "not established by SDK declaration or current static files"
+    },
+    {
+      "name": "Format",
+      "card": "card_location_usa_scen2",
+      "scope_hint": "campaign_ui",
+      "program": "steps",
+      "step_index": 119,
+      "instruction_i": 4940,
+      "byte_offset": 4940,
+      "producer_context": {
+        "op": "set",
+        "dst": "CallFunc_Format_ReturnValue",
+        "dst_scope": "local",
+        "src": {
+          "math": "Format",
+          "args": [
+            {
+              "str": "null"
+            },
+            {
+              "var": "K2Node_MakeArray_Array",
+              "scope": "local",
+              "element_type": "Struct"
+            }
+          ]
+        },
+        "i": 4940,
+        "bo": 4940
+      },
+      "consumer_context": [
+        {
+          "step_index": 122,
+          "instruction_i": 5044,
+          "op": "call",
+          "function_or_math": "UpdateCampaignStarStatus",
+          "snippet": "{\"op\":\"call\",\"fn\":\"UpdateCampaignStarStatus\",\"args\":[{\"int\":1},{\"var\":\"CallFunc_Format_ReturnValue\",\"scope\":\"local\"},{\"math\":\"__SwitchValue\",\"args\":[{\"var\":\"Temp_bool_Variable\",\"scope\":\"local\"},{\"var\":\"K2Node_Select_Default\",\"scope\":\"local\"},{\"bool\":false},{\"var\":\"Temp_byte_Variable_1\",\"scope\":\"local\"},{\"bool\":true},{\"var\":\"Temp_byte_Variable\",\"scope\":\"local\"}]}],\"outs\":[],\"recv\":{\"var\":\"cardFunction\",\"scope\":\"instance\"},\"i\":5044,\"bo\":5044}"
+        }
+      ],
+      "classification": "campaign-status flow (scope hint; not PvP certification)",
+      "current_headless_downstream_effect": "Output is consumed by UpdateCampaignStarStatus in the represented campaign asset. Current headless dispatch for that function is a no-op; PvP reachability is not inferred.",
+      "client_semantics_status": "not established by SDK declaration or current static files"
+    },
+    {
+      "name": "Format",
+      "card": "card_location_usa_scen2",
+      "scope_hint": "campaign_ui",
+      "program": "steps",
+      "step_index": 140,
+      "instruction_i": 5668,
+      "byte_offset": 5668,
+      "producer_context": {
+        "op": "set",
+        "dst": "CallFunc_Format_ReturnValue_1",
+        "dst_scope": "local",
+        "src": {
+          "math": "Format",
+          "args": [
+            {
+              "str": "null"
+            },
+            {
+              "var": "K2Node_MakeArray_Array_1",
+              "scope": "local",
+              "element_type": "Struct"
+            }
+          ]
+        },
+        "i": 5668,
+        "bo": 5668
+      },
+      "consumer_context": [
+        {
+          "step_index": 141,
+          "instruction_i": 5719,
+          "op": "call",
+          "function_or_math": "UpdateCampaignStarStatus",
+          "snippet": "{\"op\":\"call\",\"fn\":\"UpdateCampaignStarStatus\",\"args\":[{\"int\":2},{\"var\":\"CallFunc_Format_ReturnValue_1\",\"scope\":\"local\"},{\"math\":\"__SwitchValue\",\"args\":[{\"var\":\"Temp_bool_Variable_1\",\"scope\":\"local\"},{\"var\":\"K2Node_Select_Default_1\",\"scope\":\"local\"},{\"bool\":false},{\"var\":\"Temp_byte_Variable_3\",\"scope\":\"local\"},{\"bool\":true},{\"var\":\"Temp_byte_Variable_2\",\"scope\":\"local\"}]}],\"outs\":[],\"recv\":{\"var\":\"cardFunction\",\"scope\":\"instance\"},\"i\":5719,\"bo\":5719}"
+        }
+      ],
+      "classification": "campaign-status flow (scope hint; not PvP certification)",
+      "current_headless_downstream_effect": "Output is consumed by UpdateCampaignStarStatus in the represented campaign asset. Current headless dispatch for that function is a no-op; PvP reachability is not inferred.",
+      "client_semantics_status": "not established by SDK declaration or current static files"
+    },
+    {
+      "name": "Format",
+      "card": "card_location_usa_scen3",
+      "scope_hint": "campaign_ui",
+      "program": "steps",
+      "step_index": 144,
+      "instruction_i": 5274,
+      "byte_offset": 5274,
+      "producer_context": {
+        "op": "set",
+        "dst": "CallFunc_Format_ReturnValue",
+        "dst_scope": "local",
+        "src": {
+          "math": "Format",
+          "args": [
+            {
+              "str": "null"
+            },
+            {
+              "var": "K2Node_MakeArray_Array",
+              "scope": "local",
+              "element_type": "Struct"
+            }
+          ]
+        },
+        "i": 5274,
+        "bo": 5274
+      },
+      "consumer_context": [
+        {
+          "step_index": 145,
+          "instruction_i": 5324,
+          "op": "call",
+          "function_or_math": "UpdateCampaignStarStatus",
+          "snippet": "{\"op\":\"call\",\"fn\":\"UpdateCampaignStarStatus\",\"args\":[{\"int\":3},{\"var\":\"CallFunc_Format_ReturnValue\",\"scope\":\"local\"},{\"int\":0}],\"outs\":[],\"recv\":{\"var\":\"cardFunction\",\"scope\":\"instance\"},\"i\":5324,\"bo\":5324}"
+        },
+        {
+          "step_index": 165,
+          "instruction_i": 5938,
+          "op": "call",
+          "function_or_math": "UpdateCampaignStarStatus",
+          "snippet": "{\"op\":\"call\",\"fn\":\"UpdateCampaignStarStatus\",\"args\":[{\"int\":1},{\"var\":\"CallFunc_Format_ReturnValue\",\"scope\":\"local\"},{\"math\":\"__SwitchValue\",\"args\":[{\"var\":\"Temp_bool_Variable\",\"scope\":\"local\"},{\"var\":\"K2Node_Select_Default\",\"scope\":\"local\"},{\"bool\":false},{\"var\":\"Temp_byte_Variable_1\",\"scope\":\"local\"},{\"bool\":true},{\"var\":\"Temp_byte_Variable\",\"scope\":\"local\"}]}],\"outs\":[],\"recv\":{\"var\":\"cardFunction\",\"scope\":\"instance\"},\"i\":5938,\"bo\":5938}"
+        }
+      ],
+      "classification": "campaign-status flow (scope hint; not PvP certification)",
+      "current_headless_downstream_effect": "Output is consumed by UpdateCampaignStarStatus in the represented campaign asset. Current headless dispatch for that function is a no-op; PvP reachability is not inferred.",
+      "client_semantics_status": "not established by SDK declaration or current static files"
+    },
+    {
+      "name": "Format",
+      "card": "card_location_usa_scen3",
+      "scope_hint": "campaign_ui",
+      "program": "steps",
+      "step_index": 164,
+      "instruction_i": 5888,
+      "byte_offset": 5888,
+      "producer_context": {
+        "op": "set",
+        "dst": "CallFunc_Format_ReturnValue",
+        "dst_scope": "local",
+        "src": {
+          "math": "Format",
+          "args": [
+            {
+              "str": "null"
+            },
+            {
+              "var": "K2Node_MakeArray_Array",
+              "scope": "local",
+              "element_type": "Struct"
+            }
+          ]
+        },
+        "i": 5888,
+        "bo": 5888
+      },
+      "consumer_context": [
+        {
+          "step_index": 165,
+          "instruction_i": 5938,
+          "op": "call",
+          "function_or_math": "UpdateCampaignStarStatus",
+          "snippet": "{\"op\":\"call\",\"fn\":\"UpdateCampaignStarStatus\",\"args\":[{\"int\":1},{\"var\":\"CallFunc_Format_ReturnValue\",\"scope\":\"local\"},{\"math\":\"__SwitchValue\",\"args\":[{\"var\":\"Temp_bool_Variable\",\"scope\":\"local\"},{\"var\":\"K2Node_Select_Default\",\"scope\":\"local\"},{\"bool\":false},{\"var\":\"Temp_byte_Variable_1\",\"scope\":\"local\"},{\"bool\":true},{\"var\":\"Temp_byte_Variable\",\"scope\":\"local\"}]}],\"outs\":[],\"recv\":{\"var\":\"cardFunction\",\"scope\":\"instance\"},\"i\":5938,\"bo\":5938}"
+        }
+      ],
+      "classification": "campaign-status flow (scope hint; not PvP certification)",
+      "current_headless_downstream_effect": "Output is consumed by UpdateCampaignStarStatus in the represented campaign asset. Current headless dispatch for that function is a no-op; PvP reachability is not inferred.",
+      "client_semantics_status": "not established by SDK declaration or current static files"
+    },
+    {
+      "name": "Format",
+      "card": "card_location_usa_scen3",
+      "scope_hint": "campaign_ui",
+      "program": "steps",
+      "step_index": 195,
+      "instruction_i": 6993,
+      "byte_offset": 6993,
+      "producer_context": {
+        "op": "set",
+        "dst": "CallFunc_Format_ReturnValue_1",
+        "dst_scope": "local",
+        "src": {
+          "math": "Format",
+          "args": [
+            {
+              "str": "null"
+            },
+            {
+              "var": "K2Node_MakeArray_Array_1",
+              "scope": "local",
+              "element_type": "Struct"
+            }
+          ]
+        },
+        "i": 6993,
+        "bo": 6993
+      },
+      "consumer_context": [
+        {
+          "step_index": 196,
+          "instruction_i": 7057,
+          "op": "call",
+          "function_or_math": "UpdateCampaignStarStatus",
+          "snippet": "{\"op\":\"call\",\"fn\":\"UpdateCampaignStarStatus\",\"args\":[{\"int\":2},{\"var\":\"CallFunc_Format_ReturnValue_1\",\"scope\":\"local\"},{\"math\":\"__SwitchValue\",\"args\":[{\"var\":\"Temp_bool_Variable_1\",\"scope\":\"local\"},{\"var\":\"K2Node_Select_Default_1\",\"scope\":\"local\"},{\"bool\":false},{\"var\":\"Temp_byte_Variable_3\",\"scope\":\"local\"},{\"bool\":true},{\"var\":\"Temp_byte_Variable_2\",\"scope\":\"local\"}]}],\"outs\":[],\"recv\":{\"var\":\"cardFunction\",\"scope\":\"instance\"},\"i\":7057,\"bo\":7057}"
+        }
+      ],
+      "classification": "campaign-status flow (scope hint; not PvP certification)",
+      "current_headless_downstream_effect": "Output is consumed by UpdateCampaignStarStatus in the represented campaign asset. Current headless dispatch for that function is a no-op; PvP reachability is not inferred.",
+      "client_semantics_status": "not established by SDK declaration or current static files"
+    },
+    {
+      "name": "Format",
+      "card": "card_location_usa_scen4",
+      "scope_hint": "campaign_ui",
+      "program": "steps",
+      "step_index": 191,
+      "instruction_i": 6879,
+      "byte_offset": 6879,
+      "producer_context": {
+        "op": "set",
+        "dst": "CallFunc_Format_ReturnValue_1",
+        "dst_scope": "local",
+        "src": {
+          "math": "Format",
+          "args": [
+            {
+              "str": "null"
+            },
+            {
+              "var": "K2Node_MakeArray_Array_1",
+              "scope": "local",
+              "element_type": "Struct"
+            }
+          ]
+        },
+        "i": 6879,
+        "bo": 6879
+      },
+      "consumer_context": [
+        {
+          "step_index": 193,
+          "instruction_i": 6954,
+          "op": "call",
+          "function_or_math": "UpdateCampaignStarStatus",
+          "snippet": "{\"op\":\"call\",\"fn\":\"UpdateCampaignStarStatus\",\"args\":[{\"int\":1},{\"var\":\"CallFunc_Format_ReturnValue_1\",\"scope\":\"local\"},{\"math\":\"__SwitchValue\",\"args\":[{\"var\":\"Temp_bool_Variable\",\"scope\":\"local\"},{\"var\":\"K2Node_Select_Default\",\"scope\":\"local\"},{\"bool\":false},{\"var\":\"Temp_byte_Variable_1\",\"scope\":\"local\"},{\"bool\":true},{\"var\":\"Temp_byte_Variable\",\"scope\":\"local\"}]}],\"outs\":[],\"recv\":{\"var\":\"cardFunction\",\"scope\":\"instance\"},\"i\":6954,\"bo\":6954}"
+        }
+      ],
+      "classification": "campaign-status flow (scope hint; not PvP certification)",
+      "current_headless_downstream_effect": "Output is consumed by UpdateCampaignStarStatus in the represented campaign asset. Current headless dispatch for that function is a no-op; PvP reachability is not inferred.",
+      "client_semantics_status": "not established by SDK declaration or current static files"
+    },
+    {
+      "name": "Format",
+      "card": "card_location_usa_scen4",
+      "scope_hint": "campaign_ui",
+      "program": "steps",
+      "step_index": 206,
+      "instruction_i": 7433,
+      "byte_offset": 7433,
+      "producer_context": {
+        "op": "set",
+        "dst": "CallFunc_Format_ReturnValue",
+        "dst_scope": "local",
+        "src": {
+          "math": "Format",
+          "args": [
+            {
+              "str": "null"
+            },
+            {
+              "var": "K2Node_MakeArray_Array",
+              "scope": "local",
+              "element_type": "Struct"
+            }
+          ]
+        },
+        "i": 7433,
+        "bo": 7433
+      },
+      "consumer_context": [
+        {
+          "step_index": 209,
+          "instruction_i": 7537,
+          "op": "call",
+          "function_or_math": "UpdateCampaignStarStatus",
+          "snippet": "{\"op\":\"call\",\"fn\":\"UpdateCampaignStarStatus\",\"args\":[{\"int\":2},{\"var\":\"CallFunc_Format_ReturnValue\",\"scope\":\"local\"},{\"math\":\"__SwitchValue\",\"args\":[{\"var\":\"Temp_bool_Variable_1\",\"scope\":\"local\"},{\"var\":\"K2Node_Select_Default_1\",\"scope\":\"local\"},{\"bool\":false},{\"var\":\"Temp_byte_Variable_3\",\"scope\":\"local\"},{\"bool\":true},{\"var\":\"Temp_byte_Variable_2\",\"scope\":\"local\"}]}],\"outs\":[],\"recv\":{\"var\":\"cardFunction\",\"scope\":\"instance\"},\"i\":7537,\"bo\":7537}"
+        }
+      ],
+      "classification": "campaign-status flow (scope hint; not PvP certification)",
+      "current_headless_downstream_effect": "Output is consumed by UpdateCampaignStarStatus in the represented campaign asset. Current headless dispatch for that function is a no-op; PvP reachability is not inferred.",
+      "client_semantics_status": "not established by SDK declaration or current static files"
+    },
+    {
+      "name": "Format",
+      "card": "card_location_usa_scen5",
+      "scope_hint": "campaign_ui",
+      "program": "steps",
+      "step_index": 120,
+      "instruction_i": 4632,
+      "byte_offset": 4632,
+      "producer_context": {
+        "op": "set",
+        "dst": "CallFunc_Format_ReturnValue",
+        "dst_scope": "local",
+        "src": {
+          "math": "Format",
+          "args": [
+            {
+              "str": "null"
+            },
+            {
+              "var": "K2Node_MakeArray_Array",
+              "scope": "local",
+              "element_type": "Struct"
+            }
+          ]
+        },
+        "i": 4632,
+        "bo": 4632
+      },
+      "consumer_context": [
+        {
+          "step_index": 121,
+          "instruction_i": 4682,
+          "op": "call",
+          "function_or_math": "UpdateCampaignStarStatus",
+          "snippet": "{\"op\":\"call\",\"fn\":\"UpdateCampaignStarStatus\",\"args\":[{\"int\":1},{\"var\":\"CallFunc_Format_ReturnValue\",\"scope\":\"local\"},{\"math\":\"__SwitchValue\",\"args\":[{\"var\":\"Temp_bool_Variable\",\"scope\":\"local\"},{\"var\":\"K2Node_Select_Default\",\"scope\":\"local\"},{\"bool\":false},{\"var\":\"Temp_byte_Variable_1\",\"scope\":\"local\"},{\"bool\":true},{\"var\":\"Temp_byte_Variable\",\"scope\":\"local\"}]}],\"outs\":[],\"recv\":{\"var\":\"cardFunction\",\"scope\":\"instance\"},\"i\":4682,\"bo\":4682}"
+        }
+      ],
+      "classification": "campaign-status flow (scope hint; not PvP certification)",
+      "current_headless_downstream_effect": "Output is consumed by UpdateCampaignStarStatus in the represented campaign asset. Current headless dispatch for that function is a no-op; PvP reachability is not inferred.",
+      "client_semantics_status": "not established by SDK declaration or current static files"
+    },
+    {
+      "name": "Format",
+      "card": "card_location_usa_scen5",
+      "scope_hint": "campaign_ui",
+      "program": "steps",
+      "step_index": 147,
+      "instruction_i": 5607,
+      "byte_offset": 5607,
+      "producer_context": {
+        "op": "set",
+        "dst": "CallFunc_Format_ReturnValue_1",
+        "dst_scope": "local",
+        "src": {
+          "math": "Format",
+          "args": [
+            {
+              "str": "null"
+            },
+            {
+              "var": "K2Node_MakeArray_Array_1",
+              "scope": "local",
+              "element_type": "Struct"
+            }
+          ]
+        },
+        "i": 5607,
+        "bo": 5607
+      },
+      "consumer_context": [
+        {
+          "step_index": 152,
+          "instruction_i": 5801,
+          "op": "call",
+          "function_or_math": "UpdateCampaignStarStatus",
+          "snippet": "{\"op\":\"call\",\"fn\":\"UpdateCampaignStarStatus\",\"args\":[{\"int\":2},{\"var\":\"CallFunc_Format_ReturnValue_1\",\"scope\":\"local\"},{\"math\":\"__SwitchValue\",\"args\":[{\"var\":\"Temp_bool_Variable_1\",\"scope\":\"local\"},{\"var\":\"K2Node_Select_Default_1\",\"scope\":\"local\"},{\"bool\":false},{\"var\":\"Temp_byte_Variable_3\",\"scope\":\"local\"},{\"bool\":true},{\"var\":\"Temp_byte_Variable_2\",\"scope\":\"local\"}]}],\"outs\":[],\"recv\":{\"var\":\"cardFunction\",\"scope\":\"instance\"},\"i\":5801,\"bo\":5801}"
+        }
+      ],
+      "classification": "campaign-status flow (scope hint; not PvP certification)",
+      "current_headless_downstream_effect": "Output is consumed by UpdateCampaignStarStatus in the represented campaign asset. Current headless dispatch for that function is a no-op; PvP reachability is not inferred.",
+      "client_semantics_status": "not established by SDK declaration or current static files"
+    },
+    {
+      "name": "Format",
+      "card": "card_unit_115th_separate_btn",
+      "scope_hint": "gameplay_unknown",
+      "program": "steps",
+      "step_index": 71,
+      "instruction_i": 2725,
+      "byte_offset": 2725,
+      "producer_context": {
+        "op": "set",
+        "dst": "CallFunc_Format_ReturnValue",
+        "dst_scope": "local",
+        "src": {
+          "math": "Format",
+          "args": [
+            {
+              "str": "null"
+            },
+            {
+              "var": "K2Node_MakeArray_Array",
+              "scope": "local",
+              "element_type": "Struct"
+            }
+          ]
+        },
+        "i": 2725,
+        "bo": 2725
+      },
+      "consumer_context": [
+        {
+          "step_index": 72,
+          "instruction_i": 2810,
+          "op": "call",
+          "function_or_math": "AddNumberToText",
+          "snippet": "{\"op\":\"call\",\"fn\":\"AddNumberToText\",\"args\":[{\"var\":\"cardID\",\"scope\":\"instance\"},{\"var\":\"CallFunc_Format_ReturnValue\",\"scope\":\"local\"},{\"int\":0},{\"var\":\"CallFunc_AddNumberToText_qqq_1\",\"scope\":\"local\"}],\"outs\":[{\"param\":3,\"slot\":\"CallFunc_AddNumberToText_qqq_1\"}],\"recv\":{\"var\":\"cardFunction\",\"scope\":\"instance\"},\"i\":2810,\"bo\":2810}"
+        }
+      ],
+      "classification": "text passed to a text-decoration call",
+      "current_headless_downstream_effect": "Output is passed to AddNumberToText arg 1. Current dispatch is a no-op; output parameter is not consumed by later rule-state calls.",
+      "client_semantics_status": "not established by SDK declaration or current static files"
+    },
+    {
+      "name": "GetDisplayName",
+      "card": "card_unit_75th_rifle_regiment",
+      "scope_hint": "gameplay_unknown",
+      "program": "locals.SpawnCopy",
+      "step_index": 0,
+      "instruction_i": 0,
+      "byte_offset": 0,
+      "producer_context": {
+        "op": "set",
+        "dst": "CallFunc_GetDisplayName_ReturnValue",
+        "dst_scope": "local",
+        "src": {
+          "math": "GetDisplayName",
+          "args": [
+            {
+              "self": true
+            }
+          ]
+        },
+        "i": 0,
+        "bo": 0
+      },
+      "consumer_context": [
+        {
+          "step_index": 1,
+          "instruction_i": 29,
+          "op": "set",
+          "function_or_math": "Concat_StrStr",
+          "snippet": "{\"op\":\"set\",\"dst\":\"CallFunc_Concat_StrStr_ReturnValue\",\"dst_scope\":\"local\",\"src\":{\"math\":\"Concat_StrStr\",\"args\":[{\"var\":\"CallFunc_GetDisplayName_ReturnValue\",\"scope\":\"local\"},{\"str\":\" is duplicating a card\"}]},\"i\":29,\"bo\":41}"
+        }
+      ],
+      "classification": "display/debug text only in this local",
+      "current_headless_downstream_effect": "Return value flows to Concat_StrStr and then PrintString; no gameplay-state call consumes it.",
+      "client_semantics_status": "not established by SDK declaration or current static files"
+    },
+    {
+      "name": "GetOrSpawnActor",
+      "card": "card_brawl_test1",
+      "scope_hint": "brawl_or_test",
+      "program": "locals.getSkirmishBP",
+      "step_index": 4,
+      "instruction_i": 67,
+      "byte_offset": 67,
+      "producer_context": {
+        "op": "set",
+        "dst": "CallFunc_GetOrSpawnActor_ReturnValue",
+        "dst_scope": "local",
+        "src": {
+          "math": "GetOrSpawnActor",
+          "args": [
+            {
+              "self": true
+            },
+            {
+              "obj": "/Game/Blueprints/BP_SkirmishMode.BP_SkirmishMode_C"
+            }
+          ]
+        },
+        "i": 67,
+        "bo": 67
+      },
+      "consumer_context": [
+        {
+          "step_index": 5,
+          "instruction_i": 97,
+          "op": "set",
+          "function_or_math": null,
+          "snippet": "{\"op\":\"set\",\"dst\":\"skirmishMode\",\"dst_scope\":\"instance\",\"src\":{\"var\":\"CallFunc_GetOrSpawnActor_ReturnValue\",\"scope\":\"local\"},\"i\":97,\"bo\":97}"
+        }
+      ],
+      "classification": "actor setup in Brawl/test-labelled asset",
+      "current_headless_downstream_effect": "Result is assigned to the card instance skirmishMode field and used to initialize skirmish context. This is an actual represented state write, but the asset is labeled brawl/test and PvP applicability is unproven.",
+      "client_semantics_status": "not established by SDK declaration or current static files"
+    },
+    {
+      "name": "PrintString",
+      "card": "card_location_german_scen5",
+      "scope_hint": "campaign_ui",
+      "program": "steps",
+      "step_index": 77,
+      "instruction_i": 3203,
+      "byte_offset": 3203,
+      "producer_context": {
+        "op": "math",
+        "fn": "PrintString",
+        "args": [
+          {
+            "none": true
+          },
+          {
+            "var": "CallFunc_Concat_StrStr_ReturnValue",
+            "scope": "local"
+          },
+          {
+            "bool": true
+          },
+          {
+            "bool": true
+          },
+          {
+            "struct": "/Script/CoreUObject.LinearColor",
+            "array": []
+          },
+          {
+            "float": 2.0
+          },
+          {
+            "name": "None"
+          }
+        ],
+        "outs": [],
+        "i": 3203,
+        "bo": 3203
+      },
+      "consumer_context": [],
+      "classification": "debug output call",
+      "current_headless_downstream_effect": "PrintString has no outputs; the represented function has no later data dependency on its result.",
+      "client_semantics_status": "not established by SDK declaration or current static files"
+    },
+    {
+      "name": "PrintString",
+      "card": "card_unit_75th_rifle_regiment",
+      "scope_hint": "gameplay_unknown",
+      "program": "locals.SpawnCopy",
+      "step_index": 2,
+      "instruction_i": 90,
+      "byte_offset": 122,
+      "producer_context": {
+        "op": "math",
+        "fn": "PrintString",
+        "args": [
+          {
+            "self": true
+          },
+          {
+            "var": "CallFunc_Concat_StrStr_ReturnValue",
+            "scope": "local"
+          },
+          {
+            "bool": true
+          },
+          {
+            "bool": true
+          },
+          {
+            "struct": "/Script/CoreUObject.LinearColor",
+            "array": []
+          },
+          {
+            "float": 2.0
+          },
+          {
+            "name": "None"
+          }
+        ],
+        "outs": [],
+        "i": 90,
+        "bo": 122
+      },
+      "consumer_context": [],
+      "classification": "debug output call",
+      "current_headless_downstream_effect": "PrintString has no outputs; the represented function has no later data dependency on its result.",
+      "client_semantics_status": "not established by SDK declaration or current static files"
+    }
+  ],
+  "evidence": {
+    "ir_sha256": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b",
+    "sources": [
+      "klink bot/docs/card-ir.json",
+      "out/audit/deepseek-math-catalog-20261103/worker/result.json",
+      "src/KLink.Bot/Effects/Blueprint/KismetVm.cs",
+      "src/KLink.Bot/Effects/CardApiDispatch.cs",
+      "src/KLink.Bot/Effects/CardApi.cs",
+      "UE4SS CXXHeaderDump Engine.hpp, kards.hpp, BP_CardFunctions.hpp"
+    ],
+    "observations": [
+      "The current VM default branch records missing math names and returns null.",
+      "Current headless handlers for AddNumberToText and UpdateCampaignStarStatus return null.",
+      "SpawnCardInHandBySide forwards arg 6 as newCardText; SpawnCardInHand includes only non-empty newCardText in an action receipt.",
+      "GetOrSpawnActor is assigned to card_unit_75th... skirmishMode in card_brawl_test1.getSkirmishBP."
+    ],
+    "sdk_signatures": [
+      "UKismetTextLibrary::Format(FText InPattern, TArray<FFormatArgumentData> InArgs)",
+      "UKismetSystemLibrary::GetDisplayName(const UObject* Object)",
+      "UKismetSystemLibrary::PrintString(...)",
+      "UKismetSystemLibrary::GetOrSpawnActor(UObject* WorldContextObject, TSubclassOf<AActor> ActorClass)",
+      "BP_CardFunctions::AddNumberToText(int32 CardID, FText& numberText, EStatsTextColor Color, int32& qqq)",
+      "BP_CardFunctions::SpawnCardInHandBySide(..., FString newCardText, FText& campaignName, ...)"
+    ]
+  },
+  "limitations": [
+    "Static IR does not prove PvP eligibility or runtime reachability.",
+    "The SDK headers contain declarations, not native bodies.",
+    "The report describes current headless implementation wiring, not client semantic equivalence.",
+    "Campaign/brawl/test asset names are triage hints and not authoritative PvP exclusion evidence.",
+    "No production rule implementation was changed."
+  ],
+  "recommendations": [
+    "Keep the four call names outside full semantic certification pending native or controlled current-client evidence.",
+    "The two gameplay-unknown Format outputs are routed only to spawned-card text receipt or AddNumberToText in current headless code; keep client text semantics explicitly unresolved.",
+    "Treat campaign status and Brawl actor setup as separate scope candidates; do not claim global PvP exclusion without an authoritative denominator.",
+    "Do not replace current text/debug stubs with guessed behavior."
+  ]
+}
