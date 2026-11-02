@@ -877,3 +877,88 @@ profiling run, exceeding the API pool's 657 MB. Investigate intermediate snapsho
 materialization while preserving the exact schema, ordering, null and numeric
 encoding and comparison contract. Any implementation requires fresh equivalence
 checks and measurements; the default probe mode remains unchanged.
+
+
+## Empty buff-ledger snapshot projections (2026-11-02)
+
+`CardInstance.Snapshot()` now checks once whether its concrete BuffsBySource
+ledger is empty. In that case, its 24 ledger projections return five empty
+string arrays, 18 fresh string/int dictionaries and one fresh string/string-array
+dictionary directly. This avoids constructing filtering and sorting pipelines
+for an input with no elements. Mutable dictionaries remain independent for every
+field and every capture, with the same default comparer as the original
+ToDictionary calls. No snapshot schema, field order, null handling, numeric or
+string encoding, card data or gameplay behavior changed.
+
+All 24 nonempty projection expressions remain byte-identical to baseline,
+including explicit zero-entry presence and the three armor maps that retain
+source enumeration order. A nonempty ledger whose filtered results are empty
+still uses those original expressions. Snapshot capture continues to require
+caller-owned state without concurrent mutation; this change adds no atomic or
+thread-safe capture contract. Other snapshot projections and record property
+initializers are unchanged, so their allocation cost remains.
+
+Fresh before/after benchmarks use baseline `a1cada7`, .NET 10.0.12 x64, seed 1,
+16 prefixes and three timed repeats, with `probe-actions-clone --utf8-snapshots
+--steps 16 --repeats 3`; the control adds `--plain`. Reports are
+`out/audit/snapshot-empty-{meta,plain}16-{before,after}-20261102.json`.
+Both isolated snapshots use exact checkout card-data bytes. The final tested
+production source differs from the measured implementation only by two comments.
+
+| Timed path allocation, three repeats | Before bytes | After bytes | Reduction |
+|---|---:|---:|---:|
+| Complex clone path | 7,330,091,488 | 5,918,091,072 | 19.26% |
+| Arado clone path | 3,717,919,496 | 2,615,263,400 | 29.66% |
+| Complex replay path | 14,848,467,304 | 12,460,160,600 | 16.08% |
+| Arado replay path | 6,984,341,640 | 5,881,202,392 | 15.79% |
+
+These totals include comparison and action execution. Separate single profiling
+runs attribute the following allocations; nested scopes overlap and cannot be
+summed with their parents.
+
+| Profile stage | Complex before / after bytes | Control before / after bytes |
+|---|---:|---:|
+| snapshot.build | 816,764,672 / 396,429,328 | 705,176,752 / 337,454,512 |
+| snapshot.serialize | 5,395,584 / 5,395,584 | 5,279,216 / 5,279,216 |
+| engine_clone | 1,139,278,824 / 1,139,460,888 | 334,623,424 / 334,879,360 |
+| clone.api.pool (nested in engine_clone) | 656,794,640 / 656,793,440 | 205,088 / 205,088 |
+
+Snapshot construction allocation falls 51.46% / 52.15%. The clone adapter itself
+is unchanged. Timed clone totals were 8,460.7 / 7,422.5 ms for the complex fixture
+and 2,505.4 / 2,174.3 ms for the control; replay totals were 12,604.1 / 10,776.0 ms
+and 3,884.9 / 3,858.4 ms. These sequential measurements are machine-load dependent;
+they are observed fixture timings, not a causal throughput estimate, peak-memory
+measurement or forecast for AI training.
+
+The 1,614 candidates across 32 prefixes retain identical classifications, reasons,
+engine/root counts and zero batch errors before/after. Each run also reports zero
+mismatches against simulator replay classification and observed successors in
+both clone orders; string/UTF-8 and profiled/unprofiled report checks pass. These
+are engineering fixtures, not authoritative replay rule evidence or additional
+PvP certification. No audit matrix evidence was refreshed.
+
+The new regression freezes all 24 baseline projection expressions from
+`a1cada7`. It checks exact JSON against those projections for empty, sparse and
+combined ledgers, independent zero/null presence, negative values, unsorted
+sources and both duration slots. It also checks empty array identity, dictionary
+comparers, independent captures and mutation isolation in both directions.
+The regression passes on baseline production and optimized production. The
+final isolated snapshot `out/audit/snapshot-empty-publish-20261102` passes all
+1,095 BotSim selftests and nine NNTrain policy evaluation checks; NNTrain retains
+existing CS8632 warnings. Unrelated local probe edits remain excluded from that
+snapshot and untouched in the checkout.
+
+The DeepSeek worker supplied a private field/type/comparer review through the
+`deepseek-worker` skill. The primary verified its 24-field inventory and useful
+fresh-dictionary and ordering points against source and regressions. Its claim
+of predicate invocations on empty input is incorrect: there are no elements, so
+predicates/selectors are not invoked. Its broad exception claim was not adopted;
+unchanged snapshot projections can still throw, and their exception behavior is
+covered by the existing UTF-8 oracle. The retained empty dictionaries still
+allocate; the demonstrated saving is from skipped intermediate LINQ work.
+
+Next measured target: the complex API pool clone still allocates about 657 MB,
+now exceeding snapshot.build's 396 MB. Inspect that graph's container traversal
+while preserving destination ownership, source aliases, default values and the
+existing supported-payload boundaries. Sharing mutable pool entries or expanding
+rule certification is outside this performance change.

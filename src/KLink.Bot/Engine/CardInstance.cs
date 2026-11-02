@@ -985,7 +985,12 @@ public sealed partial class CardInstance
     public override string ToString()
         => $"[{CardId}]{Name}@{Location}#{LocationNumber}" + (Definition.IsUnit ? $" {Attack}/{Defense}" : "");
 
-    public CardSnapshot Snapshot() => new(
+    public CardSnapshot Snapshot()
+    {
+        // Snapshot capture observes caller-owned state without concurrent mutation.
+        // Skip empty-ledger iterators, but keep every mutable result independent.
+        bool noBuffSources = BuffsBySource.Count == 0;
+        return new(
         CardId, Name, Owner, Location, LocationNumber, IsGold,
         Attack, Defense, MaxDefense, KreditCost, OperationCost,
         EnteredPlayOnTurn, OperationsUsedThisTurn, HasAttackedThisTurn, HasMovedThisTurn,
@@ -1022,74 +1027,74 @@ public sealed partial class CardInstance
             IsBeingGuarded = IsBeingGuarded,
             IntrinsicGuard = Keywords.Contains(Keyword.Guard),
             IntrinsicSmokescreen = Keywords.Contains(Keyword.Smokescreen),
-            SuppressLedgerSources = BuffsBySource.Where(kv => kv.Value.HasSuppressLedgerEntry)
+            SuppressLedgerSources = noBuffSources ? Array.Empty<string>() : BuffsBySource.Where(kv => kv.Value.HasSuppressLedgerEntry)
                 .OrderBy(kv => kv.Key.SourceCardId).ThenBy(kv => kv.Key.Temporary)
                 .Select(kv => $"{kv.Key.SourceCardId}/{kv.Key.Temporary}").ToArray(),
-            AttackZeroEntrySources = BuffsBySource.Where(kv => kv.Value.HasZeroAttackEntry && kv.Value.Attack == 0)
+            AttackZeroEntrySources = noBuffSources ? Array.Empty<string>() : BuffsBySource.Where(kv => kv.Value.HasZeroAttackEntry && kv.Value.Attack == 0)
                 .OrderBy(kv => kv.Key.SourceCardId).ThenBy(kv => kv.Key.Temporary)
                 .Select(kv => $"{kv.Key.SourceCardId}/{kv.Key.Temporary}").ToArray(),
-            AttackSetValuesBySource = BuffsBySource.Where(kv => kv.Value.AttackSetValue.HasValue)
+            AttackSetValuesBySource = noBuffSources ? new Dictionary<string, int>() : BuffsBySource.Where(kv => kv.Value.AttackSetValue.HasValue)
                 .OrderBy(kv => kv.Key.SourceCardId).ThenBy(kv => kv.Key.Temporary)
                 .ToDictionary(kv => $"{kv.Key.SourceCardId}/{kv.Key.Temporary}", kv => kv.Value.AttackSetValue!.Value),
-            AttackEmptyDetailsBySource = BuffsBySource.Where(kv => kv.Value.AttackEmptyDetail.HasValue)
+            AttackEmptyDetailsBySource = noBuffSources ? new Dictionary<string, int>() : BuffsBySource.Where(kv => kv.Value.AttackEmptyDetail.HasValue)
                 .OrderBy(kv => kv.Key.SourceCardId).ThenBy(kv => kv.Key.Temporary)
                 .ToDictionary(kv => $"{kv.Key.SourceCardId}/{kv.Key.Temporary}", kv => kv.Value.AttackEmptyDetail!.Value),
-            DefenseZeroEntrySources = BuffsBySource.Where(kv => kv.Value.HasZeroDefenseEntry && kv.Value.Defense == 0)
+            DefenseZeroEntrySources = noBuffSources ? Array.Empty<string>() : BuffsBySource.Where(kv => kv.Value.HasZeroDefenseEntry && kv.Value.Defense == 0)
                 .OrderBy(kv => kv.Key.SourceCardId).ThenBy(kv => kv.Key.Temporary)
                 .Select(kv => $"{kv.Key.SourceCardId}/{kv.Key.Temporary}").ToArray(),
-            DefenseSetValuesBySource = BuffsBySource.Where(kv => kv.Value.DefenseSetValue.HasValue)
+            DefenseSetValuesBySource = noBuffSources ? new Dictionary<string, int>() : BuffsBySource.Where(kv => kv.Value.DefenseSetValue.HasValue)
                 .OrderBy(kv => kv.Key.SourceCardId).ThenBy(kv => kv.Key.Temporary)
                 .ToDictionary(kv => $"{kv.Key.SourceCardId}/{kv.Key.Temporary}", kv => kv.Value.DefenseSetValue!.Value),
-            AlpineBuffsBySource = BuffsBySource.Where(kv => kv.Value.Alpine != 0)
+            AlpineBuffsBySource = noBuffSources ? new Dictionary<string, int>() : BuffsBySource.Where(kv => kv.Value.Alpine != 0)
                 .OrderBy(kv => kv.Key.SourceCardId).ThenBy(kv => kv.Key.Temporary)
                 .ToDictionary(kv => $"{kv.Key.SourceCardId}/{kv.Key.Temporary}", kv => kv.Value.Alpine),
-            GuardBuffsBySource = BuffsBySource.Where(kv => kv.Value.Guard != 0)
+            GuardBuffsBySource = noBuffSources ? new Dictionary<string, int>() : BuffsBySource.Where(kv => kv.Value.Guard != 0)
                 .OrderBy(kv => kv.Key.SourceCardId).ThenBy(kv => kv.Key.Temporary)
                 .ToDictionary(kv => $"{kv.Key.SourceCardId}/{kv.Key.Temporary}", kv => kv.Value.Guard),
-            KreditCostZeroEntrySources = BuffsBySource.Where(kv => kv.Value.HasZeroKreditCostEntry && kv.Value.KreditCost == 0)
+            KreditCostZeroEntrySources = noBuffSources ? Array.Empty<string>() : BuffsBySource.Where(kv => kv.Value.HasZeroKreditCostEntry && kv.Value.KreditCost == 0)
                 .OrderBy(kv => kv.Key.SourceCardId).ThenBy(kv => kv.Key.Temporary)
                 .Select(kv => $"{kv.Key.SourceCardId}/{kv.Key.Temporary}").ToArray(),
-            PermanentHeavyArmorBySource = BuffsBySource.Where(kv => kv.Value.HeavyArmor != 0)
+            PermanentHeavyArmorBySource = noBuffSources ? new Dictionary<string, int>() : BuffsBySource.Where(kv => kv.Value.HeavyArmor != 0)
                 .ToDictionary(kv => $"{kv.Key.SourceCardId}/{kv.Key.Temporary}", kv => kv.Value.HeavyArmor),
-            TemporaryHeavyArmorBySource = BuffsBySource.Where(kv => kv.Value.TemporaryHeavyArmorGive != 0)
+            TemporaryHeavyArmorBySource = noBuffSources ? new Dictionary<string, int>() : BuffsBySource.Where(kv => kv.Value.TemporaryHeavyArmorGive != 0)
                 .ToDictionary(kv => $"{kv.Key.SourceCardId}/{kv.Key.Temporary}", kv => kv.Value.TemporaryHeavyArmorGive),
-            HeavyArmorSetValuesBySource = BuffsBySource.Where(kv => kv.Value.HeavyArmorSetValue.HasValue)
+            HeavyArmorSetValuesBySource = noBuffSources ? new Dictionary<string, int>() : BuffsBySource.Where(kv => kv.Value.HeavyArmorSetValue.HasValue)
                 .ToDictionary(kv => $"{kv.Key.SourceCardId}/{kv.Key.Temporary}", kv => kv.Value.HeavyArmorSetValue!.Value),
-            HeavyArmorEmptyDetailsBySource = BuffsBySource.Where(kv => kv.Value.HeavyArmorEmptyDetail.HasValue)
+            HeavyArmorEmptyDetailsBySource = noBuffSources ? new Dictionary<string, int>() : BuffsBySource.Where(kv => kv.Value.HeavyArmorEmptyDetail.HasValue)
                 .OrderBy(kv => kv.Key.SourceCardId).ThenBy(kv => kv.Key.Temporary)
                 .ToDictionary(kv => $"{kv.Key.SourceCardId}/{kv.Key.Temporary}", kv => kv.Value.HeavyArmorEmptyDetail!.Value),
-            DefenseEmptyDetailsBySource = BuffsBySource.Where(kv => kv.Value.DefenseEmptyDetail.HasValue)
+            DefenseEmptyDetailsBySource = noBuffSources ? new Dictionary<string, int>() : BuffsBySource.Where(kv => kv.Value.DefenseEmptyDetail.HasValue)
                 .OrderBy(kv => kv.Key.SourceCardId).ThenBy(kv => kv.Key.Temporary)
                 .ToDictionary(kv => $"{kv.Key.SourceCardId}/{kv.Key.Temporary}", kv => kv.Value.DefenseEmptyDetail!.Value),
-            KreditCostEmptyDetailsBySource = BuffsBySource.Where(kv => kv.Value.KreditCostEmptyDetail.HasValue)
+            KreditCostEmptyDetailsBySource = noBuffSources ? new Dictionary<string, int>() : BuffsBySource.Where(kv => kv.Value.KreditCostEmptyDetail.HasValue)
                 .OrderBy(kv => kv.Key.SourceCardId).ThenBy(kv => kv.Key.Temporary)
                 .ToDictionary(kv => $"{kv.Key.SourceCardId}/{kv.Key.Temporary}", kv => kv.Value.KreditCostEmptyDetail!.Value),
-            KreditCostSetValuesBySource = BuffsBySource.Where(kv => kv.Value.KreditCostSetValue.HasValue)
+            KreditCostSetValuesBySource = noBuffSources ? new Dictionary<string, int>() : BuffsBySource.Where(kv => kv.Value.KreditCostSetValue.HasValue)
                 .OrderBy(kv => kv.Key.SourceCardId).ThenBy(kv => kv.Key.Temporary)
                 .ToDictionary(kv => $"{kv.Key.SourceCardId}/{kv.Key.Temporary}", kv => kv.Value.KreditCostSetValue!.Value),
-            OperationCostZeroEntrySources = BuffsBySource.Where(kv => kv.Value.HasZeroOperationCostEntry && kv.Value.OperationCost == 0)
+            OperationCostZeroEntrySources = noBuffSources ? Array.Empty<string>() : BuffsBySource.Where(kv => kv.Value.HasZeroOperationCostEntry && kv.Value.OperationCost == 0)
                 .OrderBy(kv => kv.Key.SourceCardId).ThenBy(kv => kv.Key.Temporary)
                 .Select(kv => $"{kv.Key.SourceCardId}/{kv.Key.Temporary}").ToArray(),
-            OperationCostSetValuesBySource = BuffsBySource.Where(kv => kv.Value.OperationCostSetValue.HasValue)
+            OperationCostSetValuesBySource = noBuffSources ? new Dictionary<string, int>() : BuffsBySource.Where(kv => kv.Value.OperationCostSetValue.HasValue)
                 .OrderBy(kv => kv.Key.SourceCardId).ThenBy(kv => kv.Key.Temporary)
                 .ToDictionary(kv => $"{kv.Key.SourceCardId}/{kv.Key.Temporary}", kv => kv.Value.OperationCostSetValue!.Value),
-            SmokescreenBuffsBySource = BuffsBySource.Where(kv => kv.Value.Smokescreen != 0)
+            SmokescreenBuffsBySource = noBuffSources ? new Dictionary<string, int>() : BuffsBySource.Where(kv => kv.Value.Smokescreen != 0)
                 .OrderBy(kv => kv.Key.SourceCardId).ThenBy(kv => kv.Key.Temporary)
                 .ToDictionary(kv => $"{kv.Key.SourceCardId}/{kv.Key.Temporary}", kv => kv.Value.Smokescreen),
-            PinnedBuffsBySource = BuffsBySource.Where(kv => kv.Value.Pinned != 0)
+            PinnedBuffsBySource = noBuffSources ? new Dictionary<string, int>() : BuffsBySource.Where(kv => kv.Value.Pinned != 0)
                 .OrderBy(kv => kv.Key.SourceCardId).ThenBy(kv => kv.Key.Temporary)
                 .ToDictionary(kv => $"{kv.Key.SourceCardId}/{kv.Key.Temporary}", kv => kv.Value.Pinned),
-            DestructionBuffsBySource = BuffsBySource.Where(kv => kv.Value.Destruction != 0)
+            DestructionBuffsBySource = noBuffSources ? new Dictionary<string, int>() : BuffsBySource.Where(kv => kv.Value.Destruction != 0)
                 .OrderBy(kv => kv.Key.SourceCardId).ThenBy(kv => kv.Key.Temporary)
                 .ToDictionary(kv => $"{kv.Key.SourceCardId}/{kv.Key.Temporary}", kv => kv.Value.Destruction),
-            CustomAbilityBuffDetails = BuffsBySource.Where(kv => kv.Value.CustomAbilityDetails.Count > 0)
+            CustomAbilityBuffDetails = noBuffSources ? new Dictionary<string, string[]>() : BuffsBySource.Where(kv => kv.Value.CustomAbilityDetails.Count > 0)
                 .OrderBy(kv => kv.Key.SourceCardId).ThenBy(kv => kv.Key.Temporary)
                 .ToDictionary(kv => $"{kv.Key.SourceCardId}/{kv.Key.Temporary}",
                     kv => kv.Value.CustomAbilityDetails.OrderBy(x => x, StringComparer.Ordinal).ToArray()),
-            BlitzBuffsBySource = BuffsBySource.Where(kv => kv.Value.Blitz != 0)
+            BlitzBuffsBySource = noBuffSources ? new Dictionary<string, int>() : BuffsBySource.Where(kv => kv.Value.Blitz != 0)
                 .OrderBy(kv => kv.Key.SourceCardId).ThenBy(kv => kv.Key.Temporary)
                 .ToDictionary(kv => $"{kv.Key.SourceCardId}/{kv.Key.Temporary}", kv => kv.Value.Blitz),
-            FuryBuffsBySource = BuffsBySource.Where(kv => kv.Value.Fury != 0)
+            FuryBuffsBySource = noBuffSources ? new Dictionary<string, int>() : BuffsBySource.Where(kv => kv.Value.Fury != 0)
                 .OrderBy(kv => kv.Key.SourceCardId).ThenBy(kv => kv.Key.Temporary)
                 .ToDictionary(kv => $"{kv.Key.SourceCardId}/{kv.Key.Temporary}", kv => kv.Value.Fury),
             HasBeenAttackedThisTurn = HasBeenAttackedThisTurn,
@@ -1115,6 +1120,7 @@ public sealed partial class CardInstance
                     kv => kv.Value.Select(v => v is CardInstance card ? card.CardId : v is int id ? id : 0)
                         .OrderBy(id => id).ToArray(), StringComparer.Ordinal),
         };
+    }
 
     // Blueprint references become IDs; collections are copied recursively so
     // later execution cannot alter a saved determinism/audit snapshot.

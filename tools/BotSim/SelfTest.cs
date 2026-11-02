@@ -20,6 +20,7 @@ internal static partial class SelfTest
 
     private static readonly List<Case> Cases = new()
     {
+        new("Snapshot: empty buff projection legacy bytes comparers and isolation", SnapshotEmptyBuffProjection),
         new("CloneActionProbe: UTF8 snapshot oracle ordering growth and exceptions", ProbeSnapshotUtf8Oracle),
         new("CloneActionProbe: UTF8 reports faults contamination choices and successors", CloneProbeUtf8Reports),
         new("CloneActionProbe: profiling preserves outcomes and unwinds", CloneProbeProfileIsObservational),

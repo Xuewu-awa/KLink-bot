@@ -1,0 +1,696 @@
+{
+  "scope": "Bounded engineering fixtures; equal Unknown is not semantic coverage; no default change or PvP certification.",
+  "replayContract": "simulator-executability/experimental-v2;fresh-engine-per-candidate;choice=first-index/v1;not-legal-mask",
+  "cloneContract": "simulator-executability/experimental-v2;owned-prefix-once;idle-clone-per-candidate;choice=first-index/v1;not-legal-mask",
+  "seed": 1,
+  "leftDeck": "plain-arado",
+  "rightDeck": "plain-arado",
+  "steps": 16,
+  "repeats": 3,
+  "vectors": "empty execution-only map",
+  "runtime": ".NET 10.0.12",
+  "architecture": "X64",
+  "profileScope": "one separate clone run per prefix; total includes stages; comparison includes comparison.state/request; unlisted work remains in total; elapsed/allocated, not peak memory",
+  "graphProfileScope": "clone.* are nested in engine_clone; state/api children nest in their parents; first traversal owns memoized nodes, later aliases cost only lookups; scopes are not additive with parents; instrumentation overhead remains in parent measurements",
+  "snapshotMode": "exact-utf8-stream/reused-batch-buffer",
+  "snapshotProfileScope": "snapshot.build/serialize include capture and checks; nested in comparison.state/reference_check where applicable; serialize includes equality and capture buffer allocation",
+  "cloneProfile": {
+    "reference_request": {
+      "Count": 16,
+      "Milliseconds": 1.3852,
+      "AllocatedBytes": 976376
+    },
+    "snapshot.build": {
+      "Count": 786,
+      "Milliseconds": 105.77139999999996,
+      "AllocatedBytes": 337454512
+    },
+    "snapshot.serialize": {
+      "Count": 786,
+      "Milliseconds": 146.49459999999985,
+      "AllocatedBytes": 5279216
+    },
+    "baseline_replay": {
+      "Count": 16,
+      "Milliseconds": 12.507200000000001,
+      "AllocatedBytes": 21771760
+    },
+    "clone.boundary": {
+      "Count": 754,
+      "Milliseconds": 0.21019999999999697,
+      "AllocatedBytes": 144768
+    },
+    "clone.database": {
+      "Count": 754,
+      "Milliseconds": 0.1222000000000014,
+      "AllocatedBytes": 96512
+    },
+    "clone.state.cards": {
+      "Count": 754,
+      "Milliseconds": 170.05420000000004,
+      "AllocatedBytes": 233940928
+    },
+    "clone.state.indexes": {
+      "Count": 754,
+      "Milliseconds": 13.169999999999993,
+      "AllocatedBytes": 16823216
+    },
+    "clone.state.history": {
+      "Count": 754,
+      "Milliseconds": 20.616000000000028,
+      "AllocatedBytes": 48533368
+    },
+    "clone.state.locations": {
+      "Count": 754,
+      "Milliseconds": 0.41770000000000457,
+      "AllocatedBytes": 120640
+    },
+    "clone.state": {
+      "Count": 754,
+      "Milliseconds": 206.5274000000002,
+      "AllocatedBytes": 301300664
+    },
+    "clone.metadata": {
+      "Count": 754,
+      "Milliseconds": 0.8079000000000063,
+      "AllocatedBytes": 606712
+    },
+    "clone.api.dispatch": {
+      "Count": 754,
+      "Milliseconds": 10.707799999999994,
+      "AllocatedBytes": 26908752
+    },
+    "clone.api.transient": {
+      "Count": 754,
+      "Milliseconds": 2.040900000000015,
+      "AllocatedBytes": 1073696
+    },
+    "clone.api.pool": {
+      "Count": 754,
+      "Milliseconds": 0.4803000000000012,
+      "AllocatedBytes": 205088
+    },
+    "clone.api.gcs": {
+      "Count": 754,
+      "Milliseconds": 0.7863000000000043,
+      "AllocatedBytes": 410176
+    },
+    "clone.api.vm": {
+      "Count": 754,
+      "Milliseconds": 0.9887000000000037,
+      "AllocatedBytes": 886704
+    },
+    "clone.api": {
+      "Count": 754,
+      "Milliseconds": 15.782899999999982,
+      "AllocatedBytes": 31945456
+    },
+    "engine_clone": {
+      "Count": 754,
+      "Milliseconds": 224.06930000000025,
+      "AllocatedBytes": 334879360
+    },
+    "comparison.state": {
+      "Count": 754,
+      "Milliseconds": 256.4483999999999,
+      "AllocatedBytes": 341032168
+    },
+    "comparison.request": {
+      "Count": 754,
+      "Milliseconds": 189.5063000000001,
+      "AllocatedBytes": 102726576
+    },
+    "comparison": {
+      "Count": 754,
+      "Milliseconds": 446.33730000000037,
+      "AllocatedBytes": 443819064
+    },
+    "root_execution": {
+      "Count": 754,
+      "Milliseconds": 38.46119999999993,
+      "AllocatedBytes": 47661168
+    },
+    "evidence": {
+      "Count": 754,
+      "Milliseconds": 0.7161999999999931,
+      "AllocatedBytes": 723840
+    },
+    "reference_check": {
+      "Count": 16,
+      "Milliseconds": 12.0337,
+      "AllocatedBytes": 8995680
+    },
+    "total": {
+      "Count": 16,
+      "Milliseconds": 749.0244000000001,
+      "AllocatedBytes": 872515000
+    }
+  },
+  "stringCloneProfile": {
+    "reference_request": {
+      "Count": 16,
+      "Milliseconds": 0.2904,
+      "AllocatedBytes": 976376
+    },
+    "snapshot.build": {
+      "Count": 786,
+      "Milliseconds": 132.90490000000017,
+      "AllocatedBytes": 337454512
+    },
+    "snapshot.serialize": {
+      "Count": 786,
+      "Milliseconds": 182.45930000000007,
+      "AllocatedBytes": 247496624
+    },
+    "baseline_replay": {
+      "Count": 16,
+      "Milliseconds": 12.804900000000002,
+      "AllocatedBytes": 21770952
+    },
+    "clone.boundary": {
+      "Count": 754,
+      "Milliseconds": 0.247999999999997,
+      "AllocatedBytes": 144768
+    },
+    "clone.database": {
+      "Count": 754,
+      "Milliseconds": 0.1271000000000013,
+      "AllocatedBytes": 96512
+    },
+    "clone.state.cards": {
+      "Count": 754,
+      "Milliseconds": 184.92670000000007,
+      "AllocatedBytes": 233940928
+    },
+    "clone.state.indexes": {
+      "Count": 754,
+      "Milliseconds": 14.838199999999969,
+      "AllocatedBytes": 16823216
+    },
+    "clone.state.history": {
+      "Count": 754,
+      "Milliseconds": 22.480899999999984,
+      "AllocatedBytes": 48533368
+    },
+    "clone.state.locations": {
+      "Count": 754,
+      "Milliseconds": 0.42400000000000393,
+      "AllocatedBytes": 120640
+    },
+    "clone.state": {
+      "Count": 754,
+      "Milliseconds": 226.35879999999995,
+      "AllocatedBytes": 301300664
+    },
+    "clone.metadata": {
+      "Count": 754,
+      "Milliseconds": 0.7931000000000049,
+      "AllocatedBytes": 606712
+    },
+    "clone.api.dispatch": {
+      "Count": 754,
+      "Milliseconds": 11.26769999999999,
+      "AllocatedBytes": 26908752
+    },
+    "clone.api.transient": {
+      "Count": 754,
+      "Milliseconds": 2.010200000000014,
+      "AllocatedBytes": 1073696
+    },
+    "clone.api.pool": {
+      "Count": 754,
+      "Milliseconds": 0.5213999999999992,
+      "AllocatedBytes": 205088
+    },
+    "clone.api.gcs": {
+      "Count": 754,
+      "Milliseconds": 0.8109000000000046,
+      "AllocatedBytes": 410176
+    },
+    "clone.api.vm": {
+      "Count": 754,
+      "Milliseconds": 1.0659999999999994,
+      "AllocatedBytes": 886704
+    },
+    "clone.api": {
+      "Count": 754,
+      "Milliseconds": 16.5199,
+      "AllocatedBytes": 31945456
+    },
+    "engine_clone": {
+      "Count": 754,
+      "Milliseconds": 245.96970000000027,
+      "AllocatedBytes": 334879360
+    },
+    "comparison.state": {
+      "Count": 754,
+      "Milliseconds": 320.66570000000013,
+      "AllocatedBytes": 578218568
+    },
+    "comparison.request": {
+      "Count": 754,
+      "Milliseconds": 193.2945000000001,
+      "AllocatedBytes": 102726576
+    },
+    "comparison": {
+      "Count": 754,
+      "Milliseconds": 514.3681,
+      "AllocatedBytes": 681005464
+    },
+    "root_execution": {
+      "Count": 754,
+      "Milliseconds": 40.287899999999986,
+      "AllocatedBytes": 47659552
+    },
+    "evidence": {
+      "Count": 754,
+      "Milliseconds": 0.7735999999999963,
+      "AllocatedBytes": 723840
+    },
+    "reference_check": {
+      "Count": 16,
+      "Milliseconds": 11.377800000000002,
+      "AllocatedBytes": 14028176
+    },
+    "total": {
+      "Count": 16,
+      "Milliseconds": 839.7762,
+      "AllocatedBytes": 1114729984
+    }
+  },
+  "stringCloneMs": 2512.4544,
+  "stringCloneBytes": 3342165512,
+  "mismatches": 0,
+  "determinate": 754,
+  "unknown": 0,
+  "replayMs": 3858.4462000000003,
+  "cloneMs": 2174.3352,
+  "replayBytes": 5881202392,
+  "cloneBytes": 2615263400,
+  "rows": [
+    {
+      "step": 0,
+      "mismatch": null,
+      "candidates": 13,
+      "reasons": {
+        "simulator_returned_true": 13
+      },
+      "counts": {
+        "Accepted": 13
+      },
+      "replayEngines": 13,
+      "cloneEngines": 1,
+      "ClonesCreated": 13,
+      "replayRoots": 0,
+      "cloneRoots": 0,
+      "replayErrors": [],
+      "cloneErrors": [],
+      "replayMs": 72.223,
+      "cloneMs": 65.7422,
+      "replayBytes": 55341216,
+      "cloneBytes": 40491248,
+      "stringCloneMs": 69.17909999999999,
+      "stringCloneBytes": 53693744
+    },
+    {
+      "step": 1,
+      "mismatch": null,
+      "candidates": 19,
+      "reasons": {
+        "simulator_returned_true": 1,
+        "simulator_returned_false": 18
+      },
+      "counts": {
+        "Accepted": 1,
+        "Rejected": 18
+      },
+      "replayEngines": 19,
+      "cloneEngines": 1,
+      "ClonesCreated": 19,
+      "replayRoots": 19,
+      "cloneRoots": 1,
+      "replayErrors": [],
+      "cloneErrors": [],
+      "replayMs": 114.74000000000001,
+      "cloneMs": 125.37740000000001,
+      "replayBytes": 79854168,
+      "cloneBytes": 56074032,
+      "stringCloneMs": 125.1567,
+      "stringCloneBytes": 74937696
+    },
+    {
+      "step": 2,
+      "mismatch": null,
+      "candidates": 25,
+      "reasons": {
+        "simulator_returned_true": 25
+      },
+      "counts": {
+        "Accepted": 25
+      },
+      "replayEngines": 25,
+      "cloneEngines": 1,
+      "ClonesCreated": 25,
+      "replayRoots": 50,
+      "cloneRoots": 2,
+      "replayErrors": [],
+      "cloneErrors": [],
+      "replayMs": 201.0692,
+      "cloneMs": 150.4689,
+      "replayBytes": 131400720,
+      "cloneBytes": 90135152,
+      "stringCloneMs": 146.1069,
+      "stringCloneBytes": 114901800
+    },
+    {
+      "step": 3,
+      "mismatch": null,
+      "candidates": 33,
+      "reasons": {
+        "simulator_returned_true": 1,
+        "simulator_returned_false": 32
+      },
+      "counts": {
+        "Accepted": 1,
+        "Rejected": 32
+      },
+      "replayEngines": 33,
+      "cloneEngines": 1,
+      "ClonesCreated": 33,
+      "replayRoots": 99,
+      "cloneRoots": 3,
+      "replayErrors": [],
+      "cloneErrors": [],
+      "replayMs": 110.93180000000001,
+      "cloneMs": 71.0453,
+      "replayBytes": 174638952,
+      "cloneBytes": 97439648,
+      "stringCloneMs": 77.6473,
+      "stringCloneBytes": 129513344
+    },
+    {
+      "step": 4,
+      "mismatch": null,
+      "candidates": 28,
+      "reasons": {
+        "simulator_returned_true": 28
+      },
+      "counts": {
+        "Accepted": 28
+      },
+      "replayEngines": 28,
+      "cloneEngines": 1,
+      "ClonesCreated": 28,
+      "replayRoots": 112,
+      "cloneRoots": 4,
+      "replayErrors": [],
+      "cloneErrors": [],
+      "replayMs": 92.7098,
+      "cloneMs": 62.821799999999996,
+      "replayBytes": 162024456,
+      "cloneBytes": 86232232,
+      "stringCloneMs": 111.49599999999998,
+      "stringCloneBytes": 113589848
+    },
+    {
+      "step": 5,
+      "mismatch": null,
+      "candidates": 33,
+      "reasons": {
+        "simulator_returned_true": 26,
+        "simulator_returned_false": 7
+      },
+      "counts": {
+        "Accepted": 26,
+        "Rejected": 7
+      },
+      "replayEngines": 33,
+      "cloneEngines": 1,
+      "ClonesCreated": 33,
+      "replayRoots": 165,
+      "cloneRoots": 5,
+      "replayErrors": [],
+      "cloneErrors": [],
+      "replayMs": 190.7149,
+      "cloneMs": 75.5076,
+      "replayBytes": 194491080,
+      "cloneBytes": 101441592,
+      "stringCloneMs": 80.3515,
+      "stringCloneBytes": 133519088
+    },
+    {
+      "step": 6,
+      "mismatch": null,
+      "candidates": 36,
+      "reasons": {
+        "simulator_returned_true": 1,
+        "simulator_returned_false": 35
+      },
+      "counts": {
+        "Accepted": 1,
+        "Rejected": 35
+      },
+      "replayEngines": 36,
+      "cloneEngines": 1,
+      "ClonesCreated": 36,
+      "replayRoots": 216,
+      "cloneRoots": 6,
+      "replayErrors": [],
+      "cloneErrors": [],
+      "replayMs": 98.4454,
+      "cloneMs": 74.20790000000001,
+      "replayBytes": 214003648,
+      "cloneBytes": 114406440,
+      "stringCloneMs": 83.1813,
+      "stringCloneBytes": 149318256
+    },
+    {
+      "step": 7,
+      "mismatch": null,
+      "candidates": 52,
+      "reasons": {
+        "simulator_returned_true": 52
+      },
+      "counts": {
+        "Accepted": 52
+      },
+      "replayEngines": 52,
+      "cloneEngines": 1,
+      "ClonesCreated": 52,
+      "replayRoots": 364,
+      "cloneRoots": 7,
+      "replayErrors": [],
+      "cloneErrors": [],
+      "replayMs": 269.1153,
+      "cloneMs": 139.5847,
+      "replayBytes": 362908512,
+      "cloneBytes": 198177376,
+      "stringCloneMs": 143.61599999999999,
+      "stringCloneBytes": 248187448
+    },
+    {
+      "step": 8,
+      "mismatch": null,
+      "candidates": 59,
+      "reasons": {
+        "simulator_returned_true": 50,
+        "simulator_returned_false": 9
+      },
+      "counts": {
+        "Accepted": 50,
+        "Rejected": 9
+      },
+      "replayEngines": 59,
+      "cloneEngines": 1,
+      "ClonesCreated": 59,
+      "replayRoots": 472,
+      "cloneRoots": 8,
+      "replayErrors": [],
+      "cloneErrors": [],
+      "replayMs": 272.2258,
+      "cloneMs": 153.8009,
+      "replayBytes": 450004584,
+      "cloneBytes": 222645008,
+      "stringCloneMs": 165.55700000000002,
+      "stringCloneBytes": 279265520
+    },
+    {
+      "step": 9,
+      "mismatch": null,
+      "candidates": 64,
+      "reasons": {
+        "simulator_returned_true": 1,
+        "simulator_returned_false": 63
+      },
+      "counts": {
+        "Accepted": 1,
+        "Rejected": 63
+      },
+      "replayEngines": 64,
+      "cloneEngines": 1,
+      "ClonesCreated": 64,
+      "replayRoots": 576,
+      "cloneRoots": 9,
+      "replayErrors": [],
+      "cloneErrors": [],
+      "replayMs": 256.0534,
+      "cloneMs": 172.88569999999999,
+      "replayBytes": 503907744,
+      "cloneBytes": 213405272,
+      "stringCloneMs": 166.52360000000002,
+      "stringCloneBytes": 274752008
+    },
+    {
+      "step": 10,
+      "mismatch": null,
+      "candidates": 55,
+      "reasons": {
+        "simulator_returned_true": 55
+      },
+      "counts": {
+        "Accepted": 55
+      },
+      "replayEngines": 55,
+      "cloneEngines": 1,
+      "ClonesCreated": 55,
+      "replayRoots": 550,
+      "cloneRoots": 10,
+      "replayErrors": [],
+      "cloneErrors": [],
+      "replayMs": 251.3825,
+      "cloneMs": 158.4764,
+      "replayBytes": 458985488,
+      "cloneBytes": 188944600,
+      "stringCloneMs": 152.7284,
+      "stringCloneBytes": 241796736
+    },
+    {
+      "step": 11,
+      "mismatch": null,
+      "candidates": 57,
+      "reasons": {
+        "simulator_returned_true": 28,
+        "simulator_returned_false": 29
+      },
+      "counts": {
+        "Accepted": 28,
+        "Rejected": 29
+      },
+      "replayEngines": 57,
+      "cloneEngines": 1,
+      "ClonesCreated": 57,
+      "replayRoots": 627,
+      "cloneRoots": 11,
+      "replayErrors": [],
+      "cloneErrors": [],
+      "replayMs": 403.0544,
+      "cloneMs": 178.151,
+      "replayBytes": 480274456,
+      "cloneBytes": 194169760,
+      "stringCloneMs": 190.2869,
+      "stringCloneBytes": 248916432
+    },
+    {
+      "step": 12,
+      "mismatch": null,
+      "candidates": 57,
+      "reasons": {
+        "simulator_returned_true": 19,
+        "simulator_returned_false": 38
+      },
+      "counts": {
+        "Accepted": 19,
+        "Rejected": 38
+      },
+      "replayEngines": 57,
+      "cloneEngines": 1,
+      "ClonesCreated": 57,
+      "replayRoots": 684,
+      "cloneRoots": 12,
+      "replayErrors": [],
+      "cloneErrors": [],
+      "replayMs": 230.0921,
+      "cloneMs": 139.4264,
+      "replayBytes": 487924008,
+      "cloneBytes": 193879744,
+      "stringCloneMs": 143.6946,
+      "stringCloneBytes": 248625048
+    },
+    {
+      "step": 13,
+      "mismatch": null,
+      "candidates": 57,
+      "reasons": {
+        "simulator_returned_true": 1,
+        "simulator_returned_false": 56
+      },
+      "counts": {
+        "Accepted": 1,
+        "Rejected": 56
+      },
+      "replayEngines": 57,
+      "cloneEngines": 1,
+      "ClonesCreated": 57,
+      "replayRoots": 741,
+      "cloneRoots": 13,
+      "replayErrors": [],
+      "cloneErrors": [],
+      "replayMs": 243.753,
+      "cloneMs": 145.8444,
+      "replayBytes": 494418008,
+      "cloneBytes": 192447448,
+      "stringCloneMs": 253.3356,
+      "stringCloneBytes": 247193696
+    },
+    {
+      "step": 14,
+      "mismatch": null,
+      "candidates": 81,
+      "reasons": {
+        "simulator_returned_true": 81
+      },
+      "counts": {
+        "Accepted": 81
+      },
+      "replayEngines": 81,
+      "cloneEngines": 1,
+      "ClonesCreated": 81,
+      "replayRoots": 1134,
+      "cloneRoots": 14,
+      "replayErrors": [],
+      "cloneErrors": [],
+      "replayMs": 490.08680000000004,
+      "cloneMs": 232.7622,
+      "replayBytes": 783307664,
+      "cloneBytes": 321043576,
+      "stringCloneMs": 311.1944,
+      "stringCloneBytes": 398441088
+    },
+    {
+      "step": 15,
+      "mismatch": null,
+      "candidates": 85,
+      "reasons": {
+        "simulator_returned_true": 31,
+        "simulator_returned_false": 54
+      },
+      "counts": {
+        "Accepted": 31,
+        "Rejected": 54
+      },
+      "replayEngines": 85,
+      "cloneEngines": 1,
+      "ClonesCreated": 85,
+      "replayRoots": 1275,
+      "cloneRoots": 15,
+      "replayErrors": [],
+      "cloneErrors": [],
+      "replayMs": 561.8488,
+      "cloneMs": 228.23239999999998,
+      "replayBytes": 847717688,
+      "cloneBytes": 304330272,
+      "stringCloneMs": 292.39910000000003,
+      "stringCloneBytes": 385513760
+    }
+  ]
+}
