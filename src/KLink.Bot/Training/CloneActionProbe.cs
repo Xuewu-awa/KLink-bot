@@ -116,7 +116,7 @@ public static class CloneActionProbe
                 {
                     phase = "clone";
                     using (profile?.Measure("engine_clone"))
-                    { probe = baseline.CloneAtIdle(); clones++; }
+                    { probe = baseline.CloneAtIdle(profile); clones++; }
                     choices = new ChoicePolicyAdapter(probe,vectors,r=>r.Options.Count==0 && r.CanCancel ? -1 : 0);
                     string? failure = Health(probe,choices);
                     if (failure is null)

@@ -34,8 +34,13 @@ public sealed partial class MatchEngine
     /// </summary>
     public MatchEngine CloneAtIdle()
     {
-        ValidateCloneBoundary();
-        return new MatchEngine(this, new CardGraphClone(includeState: true, requireRegisteredDatabase: true));
+        return CloneAtIdle(null);
+    }
+
+    internal MatchEngine CloneAtIdle(CloneStageProfile? profile)
+    {
+        using (profile?.Measure("clone.boundary")) ValidateCloneBoundary();
+        return new MatchEngine(this, new CardGraphClone(includeState: true, requireRegisteredDatabase: true) { Profile = profile });
     }
 
     private void ValidateCloneBoundary()
@@ -73,19 +78,22 @@ public sealed partial class MatchEngine
     private MatchEngine(MatchEngine source, CardGraphClone context)
     {
         context.RegisterStateCopy(source, this);
-        _db = source._db.CloneView(context);
-        State = context.Copy(source.State);
-        LeftDeckList = context.Copy(source.LeftDeckList);
-        RightDeckList = context.Copy(source.RightDeckList);
-        Log = context.Copy(source.Log);
-        _actionId = source._actionId;
-        _currentActionLogStart = source._currentActionLogStart;
-        OutOfRangeAttacksRejected = source.OutOfRangeAttacksRejected;
-        EnforceGeneratedCardTrust = source.EnforceGeneratedCardTrust;
-        BlockUntrustedOrders = source.BlockUntrustedOrders;
-        LastHandTarget = source.LastHandTarget; // sealed records with immutable scalar/string data
-        LastPick = source.LastPick;
-        Api = new CardApi(this, source.Api, context);
+        using (context.Profile?.Measure("clone.database")) _db = source._db.CloneView(context);
+        using (context.Profile?.Measure("clone.state")) State = context.Copy(source.State);
+        using (context.Profile?.Measure("clone.metadata"))
+        {
+            LeftDeckList = context.Copy(source.LeftDeckList);
+            RightDeckList = context.Copy(source.RightDeckList);
+            Log = context.Copy(source.Log);
+            _actionId = source._actionId;
+            _currentActionLogStart = source._currentActionLogStart;
+            OutOfRangeAttacksRejected = source.OutOfRangeAttacksRejected;
+            EnforceGeneratedCardTrust = source.EnforceGeneratedCardTrust;
+            BlockUntrustedOrders = source.BlockUntrustedOrders;
+            LastHandTarget = source.LastHandTarget; // sealed records with immutable scalar/string data
+            LastPick = source.LastPick;
+        }
+        using (context.Profile?.Measure("clone.api")) Api = new CardApi(this, source.Api, context);
         State.CardMoved = FireLocationMoved;
         State.CardCreated = FireCardCreated;
         State.CardCreationModifiers = FireCardCreationModifiers;

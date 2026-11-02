@@ -20,20 +20,29 @@ public sealed partial class CardApi
 
         _engine = destination;
         context.RegisterStateCopy(source, this);
-        _dispatch = BuildDispatch();
-        _playedCardBroadcastDone = context.Copy(source._playedCardBroadcastDone);
-        _triggerBuffers = context.Copy(source._triggerBuffers);
-        TriggerTrace = context.Copy(source.TriggerTrace);
-        AuraTrace = context.Copy(source.AuraTrace);
-        _staticPoolDb = context.Copy(source._staticPoolDb);
-        _staticPool = context.Copy(source._staticPool);
-        _staticPoolReservationPolicy = source._staticPoolReservationPolicy;
-        _staticPoolBlacklistPolicy = source._staticPoolBlacklistPolicy;
-        _staticPoolVariants = context.Copy(source._staticPoolVariants);
-        _staticPoolGeneration = source._staticPoolGeneration;
-        _gcsPurityCache = context.Copy(source._gcsPurityCache);
-        _gcsCache = context.Copy(source._gcsCache);
-        Vm = new Blueprint.KismetVm(this, source.Vm, context);
+        using (context.Profile?.Measure("clone.api.dispatch")) _dispatch = BuildDispatch();
+        using (context.Profile?.Measure("clone.api.transient"))
+        {
+            _playedCardBroadcastDone = context.Copy(source._playedCardBroadcastDone);
+            _triggerBuffers = context.Copy(source._triggerBuffers);
+            TriggerTrace = context.Copy(source.TriggerTrace);
+            AuraTrace = context.Copy(source.AuraTrace);
+        }
+        using (context.Profile?.Measure("clone.api.pool"))
+        {
+            _staticPoolDb = context.Copy(source._staticPoolDb);
+            _staticPool = context.Copy(source._staticPool);
+            _staticPoolReservationPolicy = source._staticPoolReservationPolicy;
+            _staticPoolBlacklistPolicy = source._staticPoolBlacklistPolicy;
+            _staticPoolVariants = context.Copy(source._staticPoolVariants);
+            _staticPoolGeneration = source._staticPoolGeneration;
+        }
+        using (context.Profile?.Measure("clone.api.gcs"))
+        {
+            _gcsPurityCache = context.Copy(source._gcsPurityCache);
+            _gcsCache = context.Copy(source._gcsCache);
+        }
+        using (context.Profile?.Measure("clone.api.vm")) Vm = new Blueprint.KismetVm(this, source.Vm, context);
         // The three active-scope fields remain zero/false after the gate above.
     }
 }

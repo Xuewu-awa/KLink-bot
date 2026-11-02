@@ -129,6 +129,7 @@ internal static class CloneProbeBenchmark
             runtime=System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription,
             architecture=System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture.ToString(),
             profileScope="one separate clone run per prefix; total includes stages; comparison includes comparison.state/request; unlisted work remains in total; elapsed/allocated, not peak memory",
+            graphProfileScope="clone.* are nested in engine_clone; state/api children nest in their parents; first traversal owns memoized nodes, later aliases cost only lookups; scopes are not additive with parents; instrumentation overhead remains in parent measurements",
             snapshotMode=utf8?"exact-utf8-stream/reused-batch-buffer":"string-json",
             snapshotProfileScope="snapshot.build/serialize include capture and checks; nested in comparison.state/reference_check where applicable; serialize includes equality and capture buffer allocation",
             cloneProfile=profile.Samples,stringCloneProfile=stringProfile?.Samples,

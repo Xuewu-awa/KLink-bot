@@ -89,12 +89,37 @@ internal static partial class SelfTest
             var measured=CloneActionProbe.RunCore(db,vectors,deck,deck,1,prefix,engine,new(),afterApply:hook,profile:profile);
             if(JsonSerializer.Serialize(plain)!=JsonSerializer.Serialize(measured))return "profiling changed outcomes";
             var samples=profile.Samples;
+            foreach (var stage in new[]{"boundary","database","state","metadata","api",
+                "state.cards","state.indexes","state.history","state.locations",
+                "api.dispatch","api.transient","api.pool","api.gcs","api.vm"})
+                if (!samples.TryGetValue("clone."+stage,out var part) || part.Count!=measured.ClonesCreated)
+                    return "graph stage count: "+stage;
             if(samples["total"].Count!=1 || samples["baseline_replay"].Count!=1
                 || samples["engine_clone"].Count!=measured.ClonesCreated
                 || samples["comparison"].Count!=measured.Candidates.Count
                 || samples["root_execution"].Count!=measured.Candidates.Count
                 || samples["evidence"].Count!=measured.Candidates.Count
                 || samples.Values.Any(v=>v.Milliseconds<0 || v.AllocatedBytes<0))return "profiling count/unwind";
+        }
+        // Rejected boundary and failed graph construction must unwind measured scopes too.
+        foreach (bool graphFault in new[]{false,true})
+        {
+            Action<MatchEngine> poison = graphFault
+                ? e=>e.State.Hq(Side.Left).BlueprintVariables["unsupported-profile-payload"]=new object()
+                : e=>e.ChooseSpawnCard=(s,c)=>s;
+            var plain=CloneActionProbe.RunCore(db,vectors,deck,deck,1,prefix,engine,new(),afterBaseline:poison);
+            var profile=new CloneProbeProfile();
+            var measured=CloneActionProbe.RunCore(db,vectors,deck,deck,1,prefix,engine,new(),afterBaseline:poison,profile:profile);
+            if(JsonSerializer.Serialize(plain)!=JsonSerializer.Serialize(measured)
+                || measured.ClonesCreated!=0 || measured.Candidates.Count==0
+                || measured.Candidates.Any(c=>c.Reason!="probe_exception:NotSupportedException"))
+                return "graph failure profiling changed outcomes";
+            var samples=profile.Samples;
+            foreach(var stage in graphFault ? new[]{"engine_clone","clone.boundary","clone.state","clone.state.cards"}
+                : new[]{"engine_clone","clone.boundary"})
+                if(samples[stage].Count!=measured.Candidates.Count) return "graph failure unwind: "+stage;
+            if(samples.ContainsKey("clone.api") || (!graphFault && samples.ContainsKey("clone.state")))
+                return "profiling entered rejected scope";
         }
         var limited=new CloneProbeProfile();
         var rejected=CloneActionProbe.RunCore(db,vectors,deck,deck,1,prefix,engine,new(MaxCandidates:1),profile:limited);

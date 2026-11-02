@@ -66,36 +66,46 @@ public sealed partial class GameState
 
         // Use one memo for all indexes, historical cards, detached HQs, queues
         // and VM payloads. Rebuilding indexes from ById would lose other roots.
-        _cardsBySide = context.Copy(source._cardsBySide);
-        _pendingDeckRemovals = context.Copy(source._pendingDeckRemovals);
-        _byCardId = context.Copy(source._byCardId);
-        _battleCardOrder = context.Copy(source._battleCardOrder);
-        _autoPlayerCardIds = context.Copy(source._autoPlayerCardIds);
-        _waitPlayFromHandCards = context.Copy(source._waitPlayFromHandCards);
-        _buffsToRemoveEndOfTurn = context.Copy(source._buffsToRemoveEndOfTurn);
-        _kreditSlotsLost = context.Copy(source._kreditSlotsLost);
-        GameplayRestrictions = context.Copy(source.GameplayRestrictions);
-        GameplaySideEffects = context.Copy(source.GameplaySideEffects);
-        TriggerQueue = context.Copy(source.TriggerQueue);
-        DestroyedCardIdsByTurn = context.Copy(source.DestroyedCardIdsByTurn);
-        DestroyedCardIdsAll = context.Copy(source.DestroyedCardIdsAll);
-        _destroyedBySide = context.Copy(source._destroyedBySide);
-        _kredits = context.Copy(source._kredits);
-        _maxKredits = context.Copy(source._maxKredits);
-        _hqDamagedThisTurn = context.Copy(source._hqDamagedThisTurn);
-        _fatigue = context.Copy(source._fatigue);
-        ActiveBondFactions = context.Copy(source.ActiveBondFactions);
-        FrontlineLimiters = context.Copy(source.FrontlineLimiters);
-        _nextCardId = context.Copy(source._nextCardId);
-        ActionLog = context.Copy(source.ActionLog);
-        CardsPlayedThisTurn = context.Copy(source.CardsPlayedThisTurn);
-        CardsPlayedFromHandByTurn = context.Copy(source.CardsPlayedFromHandByTurn);
-        UnimplementedCalls = context.Copy(source.UnimplementedCalls);
-        RandomTrace = context.Copy(source.RandomTrace);
-        GeneratedCardIds = context.Copy(source.GeneratedCardIds);
-        VerifiedGeneratedCardIds = context.Copy(source.VerifiedGeneratedCardIds);
-        _locationCards = context.Copy(source._locationCards);
-        _locationCardIds = context.Copy(source._locationCardIds);
+        using (context.Profile?.Measure("clone.state.cards")) _cardsBySide = context.Copy(source._cardsBySide);
+        using (context.Profile?.Measure("clone.state.indexes"))
+        {
+            _pendingDeckRemovals = context.Copy(source._pendingDeckRemovals);
+            _byCardId = context.Copy(source._byCardId);
+            _battleCardOrder = context.Copy(source._battleCardOrder);
+            _autoPlayerCardIds = context.Copy(source._autoPlayerCardIds);
+            _waitPlayFromHandCards = context.Copy(source._waitPlayFromHandCards);
+            _buffsToRemoveEndOfTurn = context.Copy(source._buffsToRemoveEndOfTurn);
+            _kreditSlotsLost = context.Copy(source._kreditSlotsLost);
+            GameplayRestrictions = context.Copy(source.GameplayRestrictions);
+            GameplaySideEffects = context.Copy(source.GameplaySideEffects);
+            TriggerQueue = context.Copy(source.TriggerQueue);
+            DestroyedCardIdsByTurn = context.Copy(source.DestroyedCardIdsByTurn);
+            DestroyedCardIdsAll = context.Copy(source.DestroyedCardIdsAll);
+            _destroyedBySide = context.Copy(source._destroyedBySide);
+            _kredits = context.Copy(source._kredits);
+            _maxKredits = context.Copy(source._maxKredits);
+            _hqDamagedThisTurn = context.Copy(source._hqDamagedThisTurn);
+            _fatigue = context.Copy(source._fatigue);
+            ActiveBondFactions = context.Copy(source.ActiveBondFactions);
+            FrontlineLimiters = context.Copy(source.FrontlineLimiters);
+            _nextCardId = context.Copy(source._nextCardId);
+        }
+        using (context.Profile?.Measure("clone.state.history"))
+        {
+            ActionLog = context.Copy(source.ActionLog);
+            CardsPlayedThisTurn = context.Copy(source.CardsPlayedThisTurn);
+            CardsPlayedFromHandByTurn = context.Copy(source.CardsPlayedFromHandByTurn);
+            UnimplementedCalls = context.Copy(source.UnimplementedCalls);
+            RandomTrace = context.Copy(source.RandomTrace);
+            GeneratedCardIds = context.Copy(source.GeneratedCardIds);
+            VerifiedGeneratedCardIds = context.Copy(source.VerifiedGeneratedCardIds);
+        }
+        using (context.Profile?.Measure("clone.state.locations"))
+        {
+            _locationCards = context.Copy(source._locationCards);
+            _locationCardIds = context.Copy(source._locationCardIds);
+
+        }
 
         // Rebuilt by a future destination engine; never copy source captures.
         CardMoved = null;

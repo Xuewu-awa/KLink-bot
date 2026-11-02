@@ -14,6 +14,8 @@ public sealed partial class CardGraphClone
     public IReadOnlyList<CardInstance> Roots { get; private set; } = [];
     public IReadOnlyDictionary<CardInstance, CardInstance> Cards { get; }
 
+    internal CloneStageProfile? Profile { get; init; }
+
     private readonly bool _includeState;
     private readonly bool _requireRegisteredDatabase;
 

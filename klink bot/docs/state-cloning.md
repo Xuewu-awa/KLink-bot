@@ -638,3 +638,88 @@ policy evaluation selftests passed in a separate publishing snapshot excluding t
 pre-existing unrelated dirty probe edits. Tested source bytes match the integrated
 files; unchanged checkout data bytes were preserved for native-default hash checks.
 Existing NNTrain CS8632 warnings remain. Audit matrix certification is unchanged.
+
+
+## Coarse engine graph profiling (2026-11-02)
+
+The separate diagnostic pass now splits `engine_clone` into `clone.boundary`,
+`clone.database`, `clone.state`, `clone.metadata` and `clone.api`. State children
+measure the first `_cardsBySide` traversal, remaining indexes, historical/log data,
+and location indexes. API children measure dispatch rebuilding, transient
+buffers/traces, static pool and variants, GCS caches, and persistent VM state.
+The internal `CloneStageProfile` supplies the same timing/allocation scope used by
+`CloneProbeProfile`, without an Engine dependency on Training. The public clone
+entry point passes a null profile; ordinary and timed probe runs collect no stages.
+No clone payload, whitelist, traversal order, memo, callback or isolation rule changed.
+
+All children include recursively reached objects at that point in the existing
+traversal. A later reference to a memoized object is only a lookup, so a stage is
+an attribution to the first traversal, not an intrinsic size for that component.
+Parent scopes include children, scope bookkeeping and unlisted constructor work;
+never sum parents and children. These are elapsed time and current-thread allocated
+bytes, not object counts or peak/retained memory. No per-node timers are added.
+
+Run from the publishing snapshot with the same command options as above:
+
+```powershell
+dotnet run --project tools/BotSim -c Release --no-build -- probe-actions-clone --utf8-snapshots --steps 16 --repeats 3 --out 'D:/Codex Workshop/KLink-bot/out/audit/clone-graph-meta16-20261102.json'
+dotnet run --project tools/BotSim -c Release --no-build -- probe-actions-clone --utf8-snapshots --plain --steps 16 --repeats 3 --out 'D:/Codex Workshop/KLink-bot/out/audit/clone-graph-plain16-20261102.json'
+```
+
+The two reports use .NET 10.0.12 x64, seed 1 and empty execution-only vectors.
+The table is from one separate UTF-8 profiling run per prefix, not timed-repeat
+sums. Parent rows are explicitly marked; remaining small scopes are in the reports.
+
+| Stage | 英日–日澳快攻 ms / allocated bytes | Arado ms / allocated bytes |
+|---|---:|---:|
+| engine_clone (parent) | 1955.7 / 1,982,482,544 | 231.8 / 492,636,528 |
+| clone.database | 218.8 / 338,956,976 | 0.1 / 96,512 |
+| clone.state (parent) | 319.8 / 532,476,552 | 213.3 / 457,260,296 |
+| clone.state.cards | 271.7 / 438,769,464 | 177.2 / 382,405,328 |
+| clone.state.indexes | 15.1 / 20,553,808 | 12.5 / 17,767,440 |
+| clone.state.history | 30.9 / 70,868,592 | 21.9 / 55,084,376 |
+| clone.api (parent) | 1414.8 / 1,109,320,728 | 16.8 / 33,742,992 |
+| clone.api.pool | 1393.2 / 1,071,512,104 | 0.4 / 476,528 |
+| clone.api.dispatch | 14.5 / 30,691,680 | 11.4 / 26,908,752 |
+
+For this complex fixture, pool copying accounts for 54.0% of clone allocation
+and 71.2% of clone elapsed time; database view copying accounts for 17.1% of
+allocation and the first state-card traversal 22.1%. `CloneView` copies the warmed
+mutable `_codeByName` dictionary. The Arado control has an unwarmed reverse index
+and no materialized static pool at these prefixes, so its state-card traversal
+accounts for 77.6% of clone allocation. These workload-dependent differences
+explain why snapshot serialization alone could not address the complex fixture.
+Timing is noisy and this change makes no speedup claim.
+
+Across 32 prefixes, all 1,614 candidate comparisons matched replay classification
+and observed successors with both clone orders, with zero batch errors: 559 Accepted,
+1,010 Rejected, 45 Unknown. The complex fixture retains 37 choice-policy-dependent
+and eight unimplemented-call Unknown; the control has no Unknown. String/UTF-8 and
+profiled/unprofiled reports also matched. These are overlapping engineering
+fixtures, not additional PvP certification or an authoritative replay oracle.
+
+The DeepSeek worker provided a packet-only source inventory. The primary checked
+its relevant claims against the clone constructors, `EnsureStaticPool`, the slot
+adapter and pool isolation regressions. Its suggestion that target dictionaries
+resize while filling is incorrect here: the adapter installs copied backing slots
+directly. Its suggested per-card/per-container timing boundaries would overlap and
+add overhead, so they were not adopted. Unmeasured dominance claims were not used.
+
+Decision: retain deep copying. Pool templates are mutable `CardInstance` objects;
+blueprint variables, trigger buffers, filtered lists and cache entries can alias
+those same objects and form cycles. Existing regressions exercise mutations in
+both directions and repeated cloning, so sharing or rebuilding the pool would
+break the supported graph contract. The reverse index also remains independently
+mutable. A bounded next optimization is to evaluate reducing delegate/reflection
+allocation when copying empty containers while preserving exact capacity, slots,
+free chains, comparers and the single memo. This requires its own measurements and
+continuation/isolation checks before integration. Snapshot construction remains a
+separate measured target; no schema or default probe mode changed.
+
+Validation in `out/audit/clone-graph-publish-20261102` passed all six targeted
+CloneActionProbe cases, all 1,091 BotSim selftests and nine NNTrain policy evaluation
+checks. The existing observational-profile regression now also checks every graph
+stage count and unwinding after both an idle-boundary rejection and unsupported
+payload failure inside state traversal. The isolated snapshot excludes unrelated
+local probe edits and preserves unchanged checkout data bytes. NNTrain retains its
+existing CS8632 warnings. No audit matrix certification was changed.
