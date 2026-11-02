@@ -1465,3 +1465,40 @@ handling and reported coverage. Sampling can miss rare or correlated errors;
 passing sampled checks cannot certify individual unsampled games. No sampling
 policy is implemented or authorized as equivalent to v6, and the existing v6
 contract continues to require a complete independent reference for every game.
+
+### Reference reconstruction detail (2026-11-02)
+
+Additional temporary timers in the isolated snapshot measured the same 苏英爆破
+vs 德澳老兵 fixture, seed 1, native choices. A first instrumented run measured
+23.67 seconds for the reference: 17.53 seconds in prefix root replay, 0.02 in
+probe construction, 0.15 in probe start, 0.84 in the subsequent clock, trace,
+snapshot and candidate checks, and 0.44 in greedy selection. Other reference
+work is outside these timers. A second run with a timer around every root took
+23.73 seconds for the reference and attributed root execution as follows:
+
+| Root kind | Replayed calls | Time in calls, seconds |
+| --- | ---: | ---: |
+| Play | 8,586 | 15.70 |
+| End turn | 3,197 | 1.50 |
+| Attack | 1,785 | 0.66 |
+| Move | 797 | 0.04 |
+
+Both runs accepted all 170 rows; clone and reference fingerprints matched the
+earlier seed-1 run. The timers are diagnostic, not a speed comparison: these
+are single runs, with different instrumentation and per-call timer overhead.
+The second probe source SHA256 was
+`e64e152941c671df9542fa62d0a5b26052af7d707a90c648fcbb3c35857afe46`,
+and the instrumented KLink.Bot DLL SHA256 was
+`36574f47c0c7432ac9e3b509b15e0e8af545dc94c79438a23b927340c2d5c6cb`.
+The source and outputs remain in the local `out/audit/clone-pipeline-profile-20261102`
+snapshot; they are not production artifacts. Existing nullable build warnings
+appeared on the first build. No production code or admission policy was changed.
+
+The replay invokes the same `ApplyRoot` dispatch as live execution. A play
+performs availability and target queries as well as effect resolution; these
+queries can mutate state. Neither cached results nor skipped checks are justified
+by the observed timing. The next bounded investigation should profile the
+play path itself across different fixtures, then validate any candidate against
+the complete reference, including side effects, fault counters and rejected
+actions. The DeepSeek inventory job timed out; these findings were checked directly
+against the source and instrumented run rather than relying on its output.
