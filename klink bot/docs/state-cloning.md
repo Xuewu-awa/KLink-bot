@@ -80,10 +80,39 @@ BotSim selftest passed 1,065 cases, and NNTrain policy-evaluation-selftest passe
 all nine cases. These checks do not establish complete PvP rule coverage or an
 evaluation throughput improvement.
 
+## VM payload validation
+
+Two additional integration cases exercise the actual KismetVm. One runs a
+synthetic program through VM producers for card/null values, heterogeneous
+arrays, typed auto-seeded lists, map/set aliases, ability and choice projections,
+buff-expiry arrays, board lists and kredit-combination table rows. It checks
+reference remapping, nested storage isolation and continued VM list mutation.
+The other executes the loaded `card_event_pams.GetChooseSpawnCards` program and
+checks its persisted `PossibleCards` list, output alias, candidate order, shared
+static template identity and detached mutable candidate payloads.
+
+A deliberately persisted private GameplayTagContainerRef is rejected explicitly.
+This owner-linked handle is outside the whitelist; the synthetic rejection case
+does not establish that current card IR persists it. A parsed scan of the current
+1,709 card IR entries found 1,486 instance assignments with 322 distinct
+destination names and no direct assignment source containing GameplayTags.
+Assignments alone do not cover in-place mutations or indirect value propagation.
+
+Injected locals/events, every dispatch return and every reachable real card path
+are not exhaustively covered. A DeepSeek source-inventory job timed out after
+writing a draft; its key producer paths were checked against source, but the draft
+is not a completed independent audit. These tests validate simulator engineering,
+not authoritative game rules, GameState/engine cloning or evaluation speed.
+
+Validation on 2026-11-02: all eight targeted CardGraphClone cases passed;
+the complete BotSim selftest passed all 1,067 cases. This batch adds tests and
+documentation only; it does not expand the production payload whitelist.
+
 ## Remaining implementation boundaries
 
-1. Card graph: supported container continuation above is implemented. Coverage
-   of actual persisted VM payloads remains open; unsupported values still fail.
+1. Card graph: supported container continuation above is implemented. VM producer
+   checks below cover selected persisted payloads; exhaustive coverage of actual
+   card execution paths and dynamic inputs remains open. Unsupported values fail.
 2. GameState: retain side/id indexes, battle order, HQ bindings, queues,
    histories, allocators, policies, RNG and admission diagnostics. Rebind callbacks
    to the destination engine. SnapshotJson is an observation format, not a restore
