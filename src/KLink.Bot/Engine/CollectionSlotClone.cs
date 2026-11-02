@@ -76,6 +76,8 @@ internal static class CollectionSlotClone
         private readonly FieldInfo _buckets, _entries, _count, _freeCount, _freeList, _hash, _next, _key;
         private readonly FieldInfo? _value, _keysView, _valuesView;
         private readonly bool _map;
+        private readonly Func<object, int> _readCount, _readFreeCount, _readFreeList;
+        private readonly Action<object, object, Array?, int[]?> _copyStorage;
         private readonly Func<Array, int, int>? _stringNext;
         private readonly Func<Array, int, uint>? _stringHash;
         internal FieldInfo Comparer { get; }
@@ -123,6 +125,10 @@ internal static class CollectionSlotClone
                 _keysView = Get("_keys", type.GetNestedType("KeyCollection")!.MakeGenericType(type.GenericTypeArguments));
                 _valuesView = Get("_values", type.GetNestedType("ValueCollection")!.MakeGenericType(type.GenericTypeArguments));
             }
+            _readCount = ReadScalar<int>(_count);
+            _readFreeCount = ReadScalar<int>(_freeCount);
+            _readFreeList = ReadScalar<int>(_freeList);
+            _copyStorage = BuildStorageCopy(type);
             if (_map && keyType == typeof(string) && valueType == typeof(string))
             {
                 // Typed reads of the reviewed Entry fields avoid boxing each entry
@@ -130,6 +136,37 @@ internal static class CollectionSlotClone
                 _stringNext = ReadEntryField<int>(_next);
                 _stringHash = ReadEntryField<uint>(_hash);
             }
+        }
+
+        // These accessors are compiled only after the exact runtime layout checks.
+        // Typed field reads/copies avoid boxing metadata for every graph container.
+        private static Func<object, T> ReadScalar<T>(FieldInfo field)
+        {
+            var source = Expression.Parameter(typeof(object), "source");
+            return Expression.Lambda<Func<object, T>>(
+                Expression.Field(Expression.Convert(source, field.DeclaringType!), field), source).Compile();
+        }
+
+        private Action<object, object, Array?, int[]?> BuildStorageCopy(Type type)
+        {
+            var source = Expression.Parameter(typeof(object), "source");
+            var target = Expression.Parameter(typeof(object), "target");
+            var entries = Expression.Parameter(typeof(Array), "entries");
+            var buckets = Expression.Parameter(typeof(int[]), "buckets");
+            var from = Expression.Convert(source, type);
+            var to = Expression.Convert(target, type);
+            var assignments = new List<Expression>();
+            foreach (var scalar in _scalars.Append(Comparer))
+                assignments.Add(Expression.Assign(Expression.Field(to, scalar), Expression.Field(from, scalar)));
+            assignments.Add(Expression.Assign(Expression.Field(to, _entries), Expression.Convert(entries, _entries.FieldType)));
+            assignments.Add(Expression.Assign(Expression.Field(to, _buckets), buckets));
+            // Cached views capture the source owner. The destination recreates them lazily.
+            foreach (var view in new[] { _keysView, _valuesView })
+                if (view is not null)
+                    assignments.Add(Expression.Assign(Expression.Field(to, view), Expression.Constant(null, view.FieldType)));
+            assignments.Add(Expression.Empty());
+            return Expression.Lambda<Action<object, object, Array?, int[]?>>(
+                Expression.Block(assignments), source, target, entries, buckets).Compile();
         }
 
         private Func<Array, int, T> ReadEntryField<T>(FieldInfo field)
@@ -146,24 +183,16 @@ internal static class CollectionSlotClone
         internal bool TryCopyUnallocated(object source, object target)
         {
             if (_entries.GetValue(source) is not null) return false;
-            int freeList = (int)_freeList.GetValue(source)!;
-            if (_buckets.GetValue(source) is not null || (int)_count.GetValue(source)! != 0
-                || (int)_freeCount.GetValue(source)! != 0 || (freeList != 0 && freeList != -1))
+            int freeList = _readFreeList(source);
+            if (_buckets.GetValue(source) is not null || _readCount(source) != 0
+                || _readFreeCount(source) != 0 || (freeList != 0 && freeList != -1))
                 throw new NotSupportedException("Invalid unallocated collection metadata.");
             CopyStorage(source, target, null, null);
             return true;
         }
 
         private void CopyStorage(object source, object target, Array? entries, int[]? buckets)
-        {
-            foreach (var scalar in _scalars) scalar.SetValue(target, scalar.GetValue(source));
-            Comparer.SetValue(target, Comparer.GetValue(source));
-            _entries.SetValue(target, entries);
-            _buckets.SetValue(target, buckets);
-            // Cached views capture their owning dictionary; rebuild lazily on target.
-            _keysView?.SetValue(target, null);
-            _valuesView?.SetValue(target, null);
-        }
+            => _copyStorage(source, target, entries, buckets);
 
         internal void Copy(object source, object target, Func<object?, object?>? key,
             Func<object?, object?>? value, Func<object?, uint>? hash, bool preserveStringSlots = false)
@@ -172,9 +201,9 @@ internal static class CollectionSlotClone
                 throw new NotSupportedException("Raw slot copying requires immutable string keys and values.");
             var sourceEntries = (Array?)_entries.GetValue(source);
             var sourceBuckets = (int[]?)_buckets.GetValue(source);
-            int count = (int)_count.GetValue(source)!;
-            int freeCount = (int)_freeCount.GetValue(source)!;
-            int freeList = (int)_freeList.GetValue(source)!;
+            int count = _readCount(source);
+            int freeCount = _readFreeCount(source);
+            int freeList = _readFreeList(source);
             if (count < 0 || freeCount < 0 || freeCount > count
                 || (sourceEntries is null) != (sourceBuckets is null)
                 || count > (sourceEntries?.Length ?? 0)

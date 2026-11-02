@@ -262,7 +262,7 @@ internal static partial class SelfTest
         const BindingFlags flags = BindingFlags.Instance | BindingFlags.NonPublic;
         foreach(var comparer in new IEqualityComparer<string>[] { EqualityComparer<string>.Default,
             StringComparer.Ordinal, StringComparer.OrdinalIgnoreCase })
-        for(int mode=0; mode<5; mode++)
+        for(int mode=0; mode<7; mode++)
         {
             var root=CloneTestCard(1);
             var map=new Dictionary<string,object?>(comparer);
@@ -271,6 +271,14 @@ internal static partial class SelfTest
             if(mode>1) { map["old"]=root; set.Add("old"); map.Remove("old"); set.Remove("old"); }
             if(mode>2) { map.Clear(); set.Clear(); }
             if(mode>3) { map.TrimExcess(); set.TrimExcess(); }
+            if(mode>4)
+            {
+                foreach(string key in new[]{"A","a","B","b","retained"}) { map[key]=root; set.Add(key); }
+                if(mode>5) { map.Remove("B"); set.Remove("B"); }
+                // Copy raw signed versions, including overflow-boundary values.
+                typeof(Dictionary<string,object?>).GetField("_version",flags)!.SetValue(map, int.MinValue);
+                typeof(HashSet<string>).GetField("_version",flags)!.SetValue(set, int.MaxValue);
+            }
             // Materialized views must not retain the source owner on a clone.
             _=map.Keys; _=map.Values;
             root.BlueprintVariables["map"]=root.BlueprintVariables["alias"]=map;
@@ -301,6 +309,11 @@ internal static partial class SelfTest
                 return "source cached views retained";
             if(map.EnsureCapacity(0)!=cm.EnsureCapacity(0) || set.EnsureCapacity(0)!=cs.EnsureCapacity(0))
                 return "empty capacity lost";
+            if(mode>4)
+            {
+                if(!ReferenceEquals(cm["retained"],copy)) return "populated metadata graph remap";
+                map["retained"]=cm["retained"]="retained";
+            }
             foreach(string key in new[]{"A","a","B","b","é","É"})
             { map[key]=key; cm[key]=key; set.Add(key); cs.Add(key); }
             if(!map.SequenceEqual(cm) || !set.SequenceEqual(cs)) return "empty continuation/comparer";

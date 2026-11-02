@@ -962,3 +962,94 @@ now exceeding snapshot.build's 396 MB. Inspect that graph's container traversal
 while preserving destination ownership, source aliases, default values and the
 existing supported-payload boundaries. Sharing mutable pool entries or expanding
 rule certification is outside this performance change.
+
+
+## Typed collection metadata copies (2026-11-02)
+
+`CollectionSlotClone.Layout` now caches three typed integer getters and one
+field-to-field storage-copy action per closed generic layout. They are compiled
+only after the existing .NET 10 x64 field-name/type checks. The getters replace
+boxed reflection reads of `_count`, `_freeCount` and `_freeList`; the action
+copies the five scalar fields (`_fastModMultiplier`, `_count`, `_freeList`,
+`_freeCount`, `_version`), the exact raw comparer reference and the supplied
+entries/buckets references, then resets map-only cached views to null. Read and
+assignment order remain unchanged. Array buffers still belong to the destination;
+no mutable pool templates are shared. The existing entry remapping, capacity,
+free-chain, occupied-slot and immutable-string bucket checks remain unchanged.
+
+This removes per-container metadata boxing and reflection dispatch, including
+on never-allocated containers. It does not remove dictionary/array allocations,
+per-entry reflection on the general path, or graph memoization. The accessors are
+cached through the existing Lazy layout cache. Compilation now applies to all
+admitted layouts, rather than only the existing string-map entry readers. This
+batch validates normal .NET 10.0.12 x64 JIT execution. No NativeAOT, trimming or
+dynamic-code-disabled compatibility is certified; the repository project files
+contain no AOT/trimming configuration. Benchmarks warm both paths, so cold layout
+compilation cost and retained compiled-code memory are outside these numbers.
+
+The existing metadata regression now also covers populated maps/sets, deletion
+holes, graph remapping and signed version extremes (`int.MinValue` and
+`int.MaxValue`). It still checks raw metadata/comparer equality, independent array
+buffers, cleared cached views, insertion continuation, aliases, two-way mutation
+isolation and malformed unallocated metadata rejection. All nine CardGraphClone
+cases pass with this expanded regression on baseline and optimized production.
+
+Fresh before/after reports use baseline `4d4f4d5`, seed 1, .NET 10.0.12 x64,
+`probe-actions-clone --utf8-snapshots --steps 16 --repeats 3`; the control adds
+`--plain`. Reports: `out/audit/slot-metadata-{meta,plain}16-{before,after}-20261102.json`.
+The isolated directories are `out/audit/slot-metadata-before-20261102` and
+`out/audit/slot-metadata-publish-20261102`. They use identical checkout catalog and
+IR bytes and exclude the unrelated local action-probe edits.
+
+| Timed path, three repeats | Before bytes | After bytes | Reduction |
+|---|---:|---:|---:|
+| Complex clone path | 5,918,526,824 | 4,678,666,256 | 20.95% |
+| Arado clone path | 2,615,379,128 | 2,304,131,352 | 11.90% |
+| Complex replay path | 12,470,506,456 | 12,460,724,976 | 0.08% |
+| Arado replay path | 5,881,062,632 | 5,881,593,032 | -0.01% |
+
+| Separate profile stage | Complex before / after bytes | Control before / after bytes |
+|---|---:|---:|
+| clone.api.pool | 656,793,400 / 374,453,008 | 205,088 / 60,320 |
+| engine_clone | 1,139,469,312 / 726,311,152 | 334,927,744 / 231,094,272 |
+| clone.state.cards | 261,301,728 / 138,957,360 | 233,951,680 / 136,666,816 |
+| snapshot.build | 396,429,328 / 396,429,328 | 337,454,512 / 337,454,512 |
+| snapshot.serialize | 5,395,584 / 5,395,584 | 5,279,216 / 5,279,216 |
+
+Complex pool-stage allocation falls 42.99%. The metadata change applies to all
+admitted graph containers, so state-card cloning also benefits. Profile stages
+nest and cannot be added to their parents. Timed complex clone/replay values are
+8,422.6 / 6,436.3 ms and 13,519.3 / 11,488.9 ms; control values are
+2,331.3 / 1,944.7 ms and 3,728.2 / 3,599.0 ms. These sequential fixture timings
+are machine-load dependent: replay time also changes despite near-stable replay
+allocation. They are not a causal speedup estimate, peak-memory measurement or
+forecast for training throughput.
+
+All 32 invariant rows match before/after: candidate classifications/reasons,
+engine/root counts, clone counts and errors. Complex has 815 determinate and
+45 Unknown candidates; control has 754 determinate and zero Unknown, totaling
+1,614 candidates. Each run independently reports zero observed-successor and
+classification mismatches against simulator replay, including reverse clone
+order; string/UTF-8 and profiled/unprofiled checks pass. Reports contain no
+cross-version full-successor hashes. These engineering fixtures establish no
+new PvP rule authority or card certification; no audit matrix was refreshed.
+
+The DeepSeek worker reviewed a private baseline source copy. The primary checked
+its inventory against baseline bytes and the implementation. Its comparer,
+view-owner, buffer ownership and compilation-scope observations were useful.
+Its claim of ten scalar boxes per storage copy double-counts reads and writes:
+there are five scalar GetValue boxing operations, and SetValue consumes those
+objects. Its warning about wrong-instance exception differences does not apply
+to the exact-type internal callers. No new guarantee is made for concurrent
+mutation, invalid internal callers or unreviewed runtimes. Worker output is not
+authoritative game-rule evidence.
+
+Final validation in the isolated optimized snapshot: all 1,095 BotSim selftests
+and nine NNTrain policy evaluation checks pass; NNTrain retains existing CS8632
+warnings. The intended production/test bytes match that tested snapshot.
+
+Next, measure the clone probe at a representative training call site before
+selecting another micro-optimization. The complex profile now spends about
+374 MB in pool cloning and 396 MB in snapshot construction; these measurements
+alone do not identify actual training throughput or justify changing the default
+probe/admission contract.
