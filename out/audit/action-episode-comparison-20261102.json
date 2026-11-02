@@ -1,0 +1,91 @@
+{
+  "source": {
+    "before": {
+      "baseCommit": "a1cada7dc2ee7cd43feec439f3d7e6ea5ddf6bc6",
+      "checkedSourceFiles": 173,
+      "benchmarkHostSha256": "b9b1ad024c9c08d45b4d64cf8e6b2ce35fdc6dcfd435eedc23b25a039e76bd5e",
+      "programSha256": "d2a72c8b7da7742901b9cc788d780bd8751334aec45d7fb3fbfbff1a9004724c"
+    },
+    "after": {
+      "baseCommit": "c7a4203fd3c877d40eadefc4a77ae0fc035c08e7",
+      "checkedSourceFiles": 173,
+      "benchmarkHostSha256": "b9b1ad024c9c08d45b4d64cf8e6b2ce35fdc6dcfd435eedc23b25a039e76bd5e",
+      "programSha256": "d2a72c8b7da7742901b9cc788d780bd8751334aec45d7fb3fbfbff1a9004724c"
+    }
+  },
+  "changedProductionFiles": [
+    "src/KLink.Bot/Engine/CardInstance.cs",
+    "src/KLink.Bot/Engine/CollectionSlotClone.cs"
+  ],
+  "comparisonOrder": [
+    "seed1-before",
+    "seed1-after",
+    "seed2-after",
+    "seed2-before"
+  ],
+  "samplesPerProcess": 3,
+  "warmFullEpisodesPerProcess": 1,
+  "summary": [
+    {
+      "seed": 1,
+      "rows": 256,
+      "candidates": 6189,
+      "planningPrefixRoots": 32640,
+      "fingerprintsEqual": true,
+      "dataInputsEqualCurrentLocal": true,
+      "metrics": {
+        "episodeMs": {
+          "beforeMedian": 5543.3694,
+          "afterMedian": 5168.4793,
+          "changePercent": -6.762856179131771
+        },
+        "totalMs": {
+          "beforeMedian": 5579.0259,
+          "afterMedian": 5215.3578,
+          "changePercent": -6.518487394009053
+        },
+        "episodeBytes": {
+          "beforeMedian": 7842315656,
+          "afterMedian": 6643661352,
+          "changePercent": -15.284443480452525
+        },
+        "totalBytes": {
+          "beforeMedian": 7852745720,
+          "afterMedian": 6654095880,
+          "changePercent": -15.264085744520962
+        }
+      }
+    },
+    {
+      "seed": 2,
+      "rows": 135,
+      "candidates": 4073,
+      "planningPrefixRoots": 9045,
+      "fingerprintsEqual": true,
+      "dataInputsEqualCurrentLocal": true,
+      "metrics": {
+        "episodeMs": {
+          "beforeMedian": 2216.3325,
+          "afterMedian": 1779.7274,
+          "changePercent": -19.699440404361713
+        },
+        "totalMs": {
+          "beforeMedian": 2242.9636,
+          "afterMedian": 1808.791,
+          "changePercent": -19.35709522883029
+        },
+        "episodeBytes": {
+          "beforeMedian": 3098205664,
+          "afterMedian": 2465637816,
+          "changePercent": -20.417232314503963
+        },
+        "totalBytes": {
+          "beforeMedian": 3104897400,
+          "afterMedian": 2472329552,
+          "changePercent": -20.37322869348276
+        }
+      }
+    }
+  ],
+  "limitations": "Synthetic repeated-unit deck only; no CloneActionProbe invocation. Timings sequential and machine-load dependent. Current-thread allocations are not peak memory. Fingerprints cover serialized observations/labels/final snapshots/traces/RNG, not full VM-private state or authoritative game-rule equivalence."
+}

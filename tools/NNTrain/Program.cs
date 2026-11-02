@@ -116,6 +116,7 @@ internal static class Program
             {
                 "evaluate-policy" => PolicyMatchEvaluation.Run(opts, db, vecs, dataDir, FindDir("card-vectors.json")),
                 "actions-selftest" => ActionDatasetSelfTest.Run(db,vecs),
+                "benchmark-action-episodes" => ActionEpisodeBenchmark.Run(db,vecs,opts,dataDir,Path.Combine(FindDir("card-vectors.json"),"card-vectors.json")),
                 "action-model-selftest" => ActionModelSelfTest.Run(),
                 "train-actions" => ActionModelTool.Train(opts,dataDir,Path.Combine(FindDir("card-vectors.json"),"card-vectors.json")),
                 "verify-action-model" => ActionModelTool.Verify(opts,dataDir,Path.Combine(FindDir("card-vectors.json"),"card-vectors.json")),
@@ -1086,6 +1087,8 @@ internal static class Program
               NNTrain dump-actions --games 100 --seed 1 --out actions.jsonl.gz [--choose-one-policy native|last]
               NNTrain verify-actions --data actions.jsonl.gz
               NNTrain actions-selftest
+              NNTrain benchmark-action-episodes --out benchmark.json [--seed 1] [--repeats 3]
+            测量完整前缀重放教师与获准标签的内存 gzip；合成夹具，不代表合法构筑或所有卡牌。
               NNTrain action-model-selftest
               NNTrain evaluate-policy --model win-model.bin --training-data original.bin --plan frozen.json
                        --matchup L,R --seed N --out result.json [--max-steps 1000] [--max-seconds 60]

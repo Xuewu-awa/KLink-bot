@@ -1,0 +1,76 @@
+{
+  "version": 1,
+  "kind": "KLink.ActionEpisodeBenchmark",
+  "seed": 1,
+  "repeats": 3,
+  "fixture": "39 alternating arado_ar_196/light_infantry per side; synthetic, not constructed-legal",
+  "teacher": "greedy-isolated-prefix/v3\u002Bchoose-one-explicit/v1\u002Bfirst-index/v1\u002Bafterstate-left/v1",
+  "inputsSha256": {
+    "card-effects.json": "fc335d228779a2859627ee706d85949149ca595d0cfdfbc4971541831e5a8df0",
+    "card-ir-native-defaults.json": "a4f2812716f03ded180f45603ac7b715e890c54b1bc5b4b75fe2b1ec0975d711",
+    "card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b",
+    "card-vectors.json": "b15b93cb02e7e8a712561a2da52127a5867084ecb878a6ad58539b56b1109ab9",
+    "cards.json": "3550dc76eb0414c500166875f45909077aeeb3ea4d229b9b0ba9c66a81987c4b",
+    "deck_code_ids.json": "261cfd518c1a1ce40488f141e8dbd617ff19abe0734c49319ebcd6ac5dcb257e",
+    "event-contracts.json": "e4806dd48efbfc799a27c14b3660ad76ee03cd3f13e3e4320b213c5928efb112",
+    "live-actions.json": "db413a4644afe75806e66c47e200d93c5d93e91ca03e23fca38465b7dcb4dab3",
+    "KLink.Bot.dll": "daf72df39dd9aaefc6b2f1d1cce10d17d34172c228e96a337f92ae80a6b99774",
+    "NNTrain.dll": "67f8a1019d9080442a2391e4847bfbd27a25f9c5b2df506f9ee2006649951108"
+  },
+  "runtime": ".NET 10.0.12",
+  "architecture": "X64",
+  "scope": "Full public Oracle episode plus admission and admitted-row UTF8/gzip in memory. Excludes startup, input loading, hashes, warm-up, file IO, header/manifest and optimizer epochs. Allocation is current-thread managed bytes, not peak memory.",
+  "admitted": true,
+  "fingerprint": {
+    "rows": 256,
+    "bufferedRows": 256,
+    "candidates": 6189,
+    "reasons": [],
+    "labelsSha256": "FAD7A770DEC28F0FA4CF22509EB504E3937EC4FD62AE234D9691C58ACED7945C",
+    "errors": [],
+    "comparedSteps": 256,
+    "appliedActions": 256,
+    "planningDecisions": 256,
+    "planningPrefixRoots": 32640,
+    "mainFaults": 0,
+    "mainRejections": 0,
+    "choiceFaults": 0,
+    "planningVmFaults": 0,
+    "planningChoiceFaults": 0,
+    "planningPendingChoices": 0,
+    "teacherSnapshotSha256": "C10744C0C925CC51583CD95DB3A51B2A5D6165D364AF6AAC15D85512141CFC55",
+    "replaySnapshotSha256": "C10744C0C925CC51583CD95DB3A51B2A5D6165D364AF6AAC15D85512141CFC55",
+    "teacherTraceSha256": "CB465DAE7DD7AC7E5BD686F59C7432F232F9E5D14B2672F886779F433595C803",
+    "replayTraceSha256": "CB465DAE7DD7AC7E5BD686F59C7432F232F9E5D14B2672F886779F433595C803",
+    "isFinished": true,
+    "winner": 2,
+    "randomState": 1286306807,
+    "randomConsumed": 78
+  },
+  "samples": [
+    {
+      "episodeMs": 5468.3189,
+      "totalMs": 5499.2694,
+      "episodeBytes": 7842320432,
+      "totalBytes": 7852750496,
+      "rows": 256,
+      "compressedBytes": 234128
+    },
+    {
+      "episodeMs": 5543.3694,
+      "totalMs": 5579.0259,
+      "episodeBytes": 7842315656,
+      "totalBytes": 7852745720,
+      "rows": 256,
+      "compressedBytes": 234128
+    },
+    {
+      "episodeMs": 6202.3336,
+      "totalMs": 6229.9112,
+      "episodeBytes": 7842314416,
+      "totalBytes": 7852744480,
+      "rows": 256,
+      "compressedBytes": 234128
+    }
+  ]
+}

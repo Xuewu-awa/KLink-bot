@@ -1053,3 +1053,66 @@ selecting another micro-optimization. The complex profile now spends about
 374 MB in pool cloning and 396 MB in snapshot construction; these measurements
 alone do not identify actual training throughput or justify changing the default
 probe/admission contract.
+
+### Actual action-label call path measurement (2026-11-02)
+
+Source inspection confirms `ActionDatasetTool.Dump` calls the public
+`OracleActionEpisodeRunner.Run`, which rebuilds a fresh planning engine and
+replays every confirmed prefix for each decision. It does not call
+`CloneActionProbe`. Consequently collection-clone microbenchmarks above are
+not evidence of current `dump-actions` throughput. The empty-buff snapshot
+change can affect this path directly.
+
+`NNTrain benchmark-action-episodes --seed 1 --repeats 3 --out report.json`
+now measures this public runner with the loaded card database, IR and real card
+vectors. Each process warms one full episode and then measures three full
+episodes, including existing admission and admitted-row UTF-8/gzip into memory.
+It uses 39 alternating Arado Ar 196 / light infantry cards per side, copied
+from the existing admitted action-data regression fixture. This is a synthetic
+engineering fixture, not a legal constructed deck or representative card pool.
+No default teacher, admission contract, dataset schema or training policy changes.
+
+The measured total excludes startup, data loading, fingerprints, warm-up,
+file I/O, dataset header/manifest and model training. Managed allocation is
+current-thread allocated bytes, not resident/peak memory. Canonical uncompressed
+label hashes use LF; compressed byte identity is not the equality oracle.
+Each repeat must match the warm-up fingerprint, including admission reasons,
+all serialized candidate features/commands, observations, chosen indices,
+afterstates, final teacher/replay snapshots, full action traces and replay RNG.
+Rejected episodes retain diagnostics and exit 2; they cannot emit admitted rows.
+
+Comparison uses isolated sources with identical benchmark host bytes and data.
+The baseline has the two affected production files from `a1cada7`; optimized
+has production at `c7a4203`. Other source/test files are held at `c7a4203`.
+Execution order is seed 1 baseline/optimized, then seed 2 optimized/baseline.
+Each table entry is the median of three measured full episodes:
+
+| Seed | Rows / candidates / prefix roots | Total ms before / after | Total managed bytes before / after |
+|---|---:|---:|---:|
+| 1 | 256 / 6,189 / 32,640 | 5,579.0 / 5,215.4 | 7,852,745,720 / 6,654,095,880 |
+| 2 | 135 / 4,073 / 9,045 | 2,243.0 / 1,808.8 | 3,104,897,400 / 2,472,329,552 |
+
+Allocation falls 15.26% and 20.37%; observed elapsed medians fall 6.52% and
+19.36%. Sequential timings depend on machine load and are not a causal estimate
+or a projection for all decks, data generation or optimizer throughput.
+Cross-version fingerprints match exactly for both seeds, and all JSON input
+hashes match each other and current local input files. This is simulator
+consistency, not comparison against authoritative client execution or proof of
+private VM-state equivalence. No PvP certification or audit matrix refresh.
+
+Durable reports are `out/audit/action-episode-seed{1,2}-{before,after}-20261102.json`
+and `out/audit/action-episode-comparison-20261102.json`, including host hashes,
+source verification counts, sample values and measured scope. The DeepSeek
+worker's private call-site inventory was independently checked against source;
+it is not game-rule authority.
+
+Validation: all 1,095 BotSim selftests, nine NNTrain policy evaluation checks
+and 54 action-dataset checks pass in the isolated optimized snapshot. Invalid
+repeat count is rejected. Existing CS8632 warnings remain. Tested production
+and benchmark source bytes match the intended published files.
+
+Next priority is the quadratic prefix replay (n(n-1)/2 roots), not another
+collection-clone micro-optimization. A non-default full-episode clone planning
+experiment must first match the current teacher's admitted labels and outcomes,
+retain explicit unsupported-state/rejection handling and demonstrate measured
+benefit before any default training-path integration.
