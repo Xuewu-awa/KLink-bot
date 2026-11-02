@@ -10,7 +10,7 @@ internal static partial class SelfTest
     {
         foreach(var side in new[]{Side.Left,Side.Right})
         foreach(bool hand in new[]{false,true})
-        for(int mutation=0;mutation<25;mutation++)
+        for(int mutation=0;mutation<31;mutation++)
         {
             var (engine,state)=EmptyBoard(db);state.ActiveSide=side.Opposite();
             var source=state.CreateWithId(PlainUnit,side,60,side.HqOf(),0);
@@ -18,6 +18,7 @@ internal static partial class SelfTest
             var hidden=state.CreateWithId(PlainUnit,side.Opposite(),80,side.Opposite().HandOf(),0);
             // Real offered templates need not be registered battle objects.
             var offered=new CardInstance{CardId=900,Name=PlainUnit,Definition=db.Find(PlainUnit)!,Owner=side};
+            offered.BlueprintVariables["text"]="初始\"\\\n";
             var offers=new List<CardInstance>{own,offered};
             var traceData=new Dictionary<string,object?>{{"text","初始\"\\\n"}};
             var traceParts=new[]{new SubAction("choice-test",new[]{ActionValue2.Str("text","初始\"\\\n")})};
@@ -56,6 +57,12 @@ internal static partial class SelfTest
                     case 22:state.StopAttack=!state.StopAttack;break;
                     case 23:state.SetupSidesInBattle(state.ClientSide.Opposite());break;
                     case 24:offered.BlueprintVariables["text"]="变更\"\\\n";break;
+                    case 25:traceData["text"]=new string('x',20_000)+"🚀";break;
+                    case 26:traceData["text"]="";break;
+                    case 27:state.ActionLog.Clear();break;
+                    case 28:own.BlueprintVariables["large"]=new string('x',20_000)+"🚀";break;
+                    case 29:offered.BlueprintVariables.Clear();break;
+                    case 30:traceData["extra"]=new[]{"\0\t\r\n", "字é🚀"};break;
                 }
                 after=state.SnapshotJson();return 1;
             }))
@@ -80,16 +87,17 @@ internal static partial class SelfTest
         foreach(var side in new[]{Side.Left,Side.Right})
         foreach(bool hand in new[]{false,true})
         foreach(bool cancel in new[]{false,true})
+        foreach(string text in new[]{"", "保持\"\\\n\0\t\r字é🚀", "\uD800", new string('x',20_000)+"🚀"})
         {
             if(cancel && !hand)continue;
             var (engine,state)=EmptyBoard(db);state.ActiveSide=side.Opposite();
             var source=state.CreateWithId(PlainUnit,side,60,side.HqOf(),0);
             var a=new CardInstance{CardId=900,Name=source.Name,Definition=source.Definition,Owner=side};
             var b=new CardInstance{CardId=901,Name=source.Name,Definition=source.Definition,Owner=side};
-            a.BlueprintVariables["text"]="保持\"\\\n";
+            a.BlueprintVariables["text"]=text;
             state.ActionLog.Add(new GameAction(1,"choice-test",side,0,
-                new[]{new SubAction("choice-test",new[]{ActionValue2.Str("text","保持\"\\\n")})},
-                new Dictionary<string,object?>{{"text","保持\"\\\n"}}));
+                new[]{new SubAction("choice-test",new[]{ActionValue2.Str("text",text)})},
+                new Dictionary<string,object?>{{"text",text}}));
             string traceBefore=System.Text.Json.JsonSerializer.Serialize(state.ActionLog);
             var offers=new[]{a,b};string before=state.SnapshotJson();ulong rng=state.Random.State;
             using var adapter=new ChoicePolicyAdapter(engine,new StateEncoder.CardVecs(),_=>cancel?-1:1);
@@ -101,6 +109,35 @@ internal static partial class SelfTest
             if(adapter.CompletedChoices!=2 || adapter.Faults!=0 || state.SnapshotJson()!=before || state.Random.State!=rng
                 || System.Text.Json.JsonSerializer.Serialize(state.ActionLog)!=traceBefore)
                 return "纯选择计数或状态变化";
+        }
+        // Serialization failures before or after callback must still fault the adapter.
+        foreach(bool hand in new[]{false,true})
+        foreach(bool invalidBefore in new[]{false,true})
+        {
+            var (engine,state)=EmptyBoard(db);
+            var source=state.CreateWithId(PlainUnit,Side.Left,60,Side.Left.HqOf(),0);
+            var data=new Dictionary<string,object?>{{"value","valid"}};
+            Action unsupported=()=>{};
+            if(invalidBefore)data["value"]=unsupported;
+            state.ActionLog.Add(new GameAction(1,"choice-test",Side.Left,0,Array.Empty<SubAction>(),data));
+            int invocations=0;bool inject=true;
+            using var adapter=new ChoicePolicyAdapter(engine,new StateEncoder.CardVecs(),_=>
+            {invocations++;if(inject)data["value"]=unsupported;return 0;});
+            bool threw=false;
+            try
+            {
+                if(hand)_=engine.PickHandTargetId!(source,new[]{source});
+                else _=engine.ChooseSpawnCard!(source,new[]{source});
+            }
+            catch(NotSupportedException){threw=true;}
+            if(!threw || adapter.Faults!=1 || adapter.CompletedChoices!=0 || invocations!=(invalidBefore?0:1))
+                return "选择边界序列化异常未计入故障";
+            data["value"]="valid";inject=false;
+            if(hand ? engine.PickHandTargetId!(source,new[]{source})!=source.CardId
+                : !ReferenceEquals(engine.ChooseSpawnCard!(source,new[]{source}),source))
+                return "序列化异常后纯选择结果变化";
+            if(adapter.Faults!=1 || adapter.CompletedChoices!=1 || invocations!=(invalidBefore?1:2))
+                return "序列化异常后选择状态未重置";
         }
         return null;
     }

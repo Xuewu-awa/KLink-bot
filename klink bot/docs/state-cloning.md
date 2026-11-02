@@ -1578,3 +1578,90 @@ The bounded DeepSeek field-comparison job timed out with no delivered review.
 The primary agent checked the field mapping and read order directly; no worker
 approval was assumed. This performance-only change does not refresh rule audit
 fingerprints or expand any card's certified evidence scope.
+
+### Exact UTF-8 choice boundaries (2026-11-02)
+
+This follow-up replaces the preceding section's three JSON strings with three
+complete UTF-8 JSON byte arrays. `Boundary.Matches` compares their contents with
+`SequenceEqual`; it does not compare array identities or hashes. Snapshot
+serialization retains the declared snapshot type and `SnapshotJsonOptions`;
+trace and details retain their existing default serializer options. The
+snapshot, RNG, trace and details read order, all captured fields, detached-card
+coverage, offer identity/order checks, request re-description, handler ownership
+and fault handling remain intact. This removes UTF-8-to-string decoding without
+caching, sampling, skipping fields or reducing independent reference work.
+The detector still provides neither rollback, complete callback isolation nor
+protection against concurrent mutation.
+
+Temporary instrumentation of the HEAD implementation split boundary capture
+within independent-reference prefix execution into these components:
+
+| Case | Captures | Snapshot build, ms | Snapshot serialization, ms | Trace serialization, ms | Details, ms |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| meta1-seed2 | 1,126 | 506.260 | 497.154 | 325.102 | 104.454 |
+| meta2-seed1 | 4,072 | 1,562.926 | 1,378.959 | 1,079.475 | 236.080 |
+
+These are diagnostic timings from instrumented single runs, not production
+speedup measurements. Snapshot construction remains a substantial cost and was
+not changed in this batch.
+
+The separate uninstrumented benchmark again ran the complete paired-v6 producer,
+including each game's independent full reference, admission, gzip output and
+verification. Six cases, three repeats and two implementations produced 36
+successful fresh-process samples. Before/after execution order was reversed in
+the second repeat. Every sample accepted its one game. Within each case,
+decompressed training rows after the provenance header, complete game quality
+records, clone/reference row/snapshot/trace fingerprints, RNG state/consumption
+and non-DLL input hashes were identical across implementations and repeats.
+The two instrumented game quality records also matched both this benchmark and
+the previous benchmark.
+
+| Case | Before median, seconds | After median, seconds | Time reduction |
+| --- | ---: | ---: | ---: |
+| m1-native | 3.825 | 3.775 | 1.3% |
+| m1-last | 3.723 | 3.757 | -0.9% |
+| meta1-seed1 | 14.172 | 13.681 | 3.5% |
+| meta1-seed2 | 12.467 | 12.332 | 1.1% |
+| meta2-seed1 | 26.150 | 24.622 | 5.8% |
+| meta2-seed2 | 20.205 | 19.315 | 4.4% |
+
+`meta1` is 英日 vs 日澳快攻; `meta2` is 苏英爆破 vs 德澳老兵.
+The lightweight cases have mixed results, including a small regression; this is
+not evidence of a uniform speedup. Three repeats of six fixed workloads do not
+estimate whole-corpus throughput or improved AI strength. Process startup is
+included; OS caches and machine load were uncontrolled, and the worker review
+overlapped the beginning of the benchmark.
+
+Validation uses isolated source snapshots of
+`19fac74b4195a575df3b55926cb3a8a9bf404101`. All 181 tracked files under
+`src`, `tools/BotSim`, `tools/NNTrain` and `NuGet.config` were checked against that
+revision. Both snapshots differ only in the expanded choice test; the after
+snapshot additionally contains the adapter change. The changed source files
+match the working tree byte for byte. Unrelated dirty files and temporary
+profiling code were excluded. Release builds of BotSim and NNTrain succeeded;
+NNTrain retains the same ten existing CS8632 warnings in both snapshots.
+
+All five focused choice-interface tests pass before and after. The after
+snapshot passes the complete 1,098-test BotSim suite. The mutation test now covers
+124 scenarios across both sides and both choice routes, including growing and
+shrinking serialized payloads, clearing trace/template collections, control
+characters and supplementary Unicode. Its 24 pure-choice scenarios each invoke
+the adapter twice and cover cancellation where supported, empty and large
+strings, escaped text and a lone surrogate. Four additional scenarios verify
+serialization failure before or after the callback, fault/completion counts and
+successful recovery after removing the unsupported value.
+
+The compact result with source/build/test/input/binary hashes, all sample timings
+and per-case fingerprints is
+`out/audit/choice-utf8-measurements-20261102.json`. Raw local datasets, manifests,
+logs and isolated sources remain under `out/audit/choice-components-20261102`.
+Use the preceding section's benchmark command with fresh isolated roots and a
+new output directory to repeat the measurement.
+
+A bounded DeepSeek worker delivered a static field/order and serialization-risk
+inventory. The primary agent independently checked the 14 detail fields, read
+order, snapshot implementation and serializer options. Incorrect worker claims
+about old pure-case counts and surrogate coverage were not adopted. This review
+is advisory, not rule authority or performance validation. This batch does not
+refresh rule-audit fingerprints, certify further cards or establish authentic
+KARDS rule parity.

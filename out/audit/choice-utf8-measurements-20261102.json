@@ -1,0 +1,1849 @@
+{
+  "date": "2026-11-02",
+  "scope": "Fresh-process full paired-v6 producer including admission, gzip serialization and verification; no timer instrumentation. Simulator consistency, not KARDS rule certification.",
+  "sourceProvenance": {
+    "head": "19fac74b4195a575df3b55926cb3a8a9bf404101",
+    "trackedSourceFiles": 181,
+    "snapshots": {
+      "before": {
+        "changedFromHead": [
+          "tools/BotSim/SelfTest.ChoicePolicyMutation.cs"
+        ],
+        "sourceTreeSha256": "7adc50c1d9bb910692bf2c7fc89f1b21283702f80ce4c5a93fe59655b11bf3ba",
+        "changedSha256": {
+          "tools/BotSim/SelfTest.ChoicePolicyMutation.cs": "6a275fbf571ebdf2e45703854c207c07b272120768b360223f892b45038dabb0"
+        }
+      },
+      "after": {
+        "changedFromHead": [
+          "src/KLink.Bot/Training/ChoicePolicyAdapter.cs",
+          "tools/BotSim/SelfTest.ChoicePolicyMutation.cs"
+        ],
+        "sourceTreeSha256": "45bd47f2f9abb1255dfb89c7c5b3ade074d3108f3fc40a8f1fa8131471b24860",
+        "changedSha256": {
+          "src/KLink.Bot/Training/ChoicePolicyAdapter.cs": "1b078699a37c86a9182c9c550717e495cdd82f9f37da63fc9e526cdde7bdecac",
+          "tools/BotSim/SelfTest.ChoicePolicyMutation.cs": "6a275fbf571ebdf2e45703854c207c07b272120768b360223f892b45038dabb0"
+        }
+      }
+    },
+    "tests": {
+      "before-focused": {
+        "result": "全部 5 项通过",
+        "logSha256": "d14e5a8e3e651bd3bccf6cc57104af0ee1af75534f1d10f16b36d7099436baf5"
+      },
+      "after-focused": {
+        "result": "全部 5 项通过",
+        "logSha256": "d14e5a8e3e651bd3bccf6cc57104af0ee1af75534f1d10f16b36d7099436baf5"
+      },
+      "after-full": {
+        "result": "全部 1098 项通过",
+        "logSha256": "038f112042f92be743a21b87e6801c2496879cb31b885ba29c9f928fc8ea472e"
+      }
+    },
+    "builds": {
+      "before-botsim": {
+        "warnings": 0,
+        "errors": 0,
+        "logSha256": "8552985a277f8c12d741030b7fc96305a557a3a45b5547eac331eeb6ed63ddc8"
+      },
+      "before-nntrain": {
+        "warnings": 10,
+        "errors": 0,
+        "logSha256": "f8cf2f25f3129c903a7ad959c7be1d7cfc8436e78280a0e44a4c26e7f96989b1"
+      },
+      "after-botsim": {
+        "warnings": 0,
+        "errors": 0,
+        "logSha256": "a872464d19f96b7e6f4a9472e75bc3718d8864bfb91e3e98ac5efd68f04376f7"
+      },
+      "after-nntrain": {
+        "warnings": 10,
+        "errors": 0,
+        "logSha256": "2d5c1a8d25d0e0a2b73486c1091f29de683857b6bc730fd0f4b2e3eaedc1fcec"
+      }
+    }
+  },
+  "profile": {
+    "meta1-seed2": {
+      "referencePrefixChoiceOnly": {
+        "choice.snapshot.build": {
+          "calls": 1126,
+          "milliseconds": 506.26
+        },
+        "choice.snapshot.serialize": {
+          "calls": 1126,
+          "milliseconds": 497.154
+        },
+        "choice.trace": {
+          "calls": 1126,
+          "milliseconds": 325.102
+        },
+        "choice.details": {
+          "calls": 1126,
+          "milliseconds": 104.454
+        }
+      },
+      "logSha256": "3bf04e665427b40dbcdf11a98cbe608ffae4a50fb28b27b621c3d506f0b8a1e0",
+      "manifestSha256": "dd117b966aed18a6eb9e2e0bf8445521bef99de8bc88a3981ccd1d0804ced9b5",
+      "matchesPreviousAndCurrentGameQuality": true
+    },
+    "meta2-seed1": {
+      "referencePrefixChoiceOnly": {
+        "choice.snapshot.build": {
+          "calls": 4072,
+          "milliseconds": 1562.926
+        },
+        "choice.snapshot.serialize": {
+          "calls": 4072,
+          "milliseconds": 1378.959
+        },
+        "choice.trace": {
+          "calls": 4072,
+          "milliseconds": 1079.475
+        },
+        "choice.details": {
+          "calls": 4072,
+          "milliseconds": 236.08
+        }
+      },
+      "logSha256": "3b031e3b72dc9769d3740bb06f3bf1346c8fe25c5d0ab7c52f104e1986c19794",
+      "manifestSha256": "991a4c507b7fd6c9371bbe7c1673b6545888f6cba95f4988a10a8bbbd0492bb8",
+      "matchesPreviousAndCurrentGameQuality": true
+    }
+  },
+  "repeats": 3,
+  "summary": [
+    {
+      "fixture": "m1-native",
+      "medianSeconds": {
+        "before": 3.8248784001916647,
+        "after": 3.774611399974674
+      },
+      "reductionPercent": 1.3142117201548675
+    },
+    {
+      "fixture": "m1-last",
+      "medianSeconds": {
+        "before": 3.72257939982228,
+        "after": 3.757089899852872
+      },
+      "reductionPercent": -0.9270588031578209
+    },
+    {
+      "fixture": "meta1-seed1",
+      "medianSeconds": {
+        "before": 14.17204919992946,
+        "after": 13.681108700111508
+      },
+      "reductionPercent": 3.464146171750493
+    },
+    {
+      "fixture": "meta1-seed2",
+      "medianSeconds": {
+        "before": 12.46730689983815,
+        "after": 12.332440000027418
+      },
+      "reductionPercent": 1.0817644972907714
+    },
+    {
+      "fixture": "meta2-seed1",
+      "medianSeconds": {
+        "before": 26.15014379983768,
+        "after": 24.62206370010972
+      },
+      "reductionPercent": 5.8434864122523305
+    },
+    {
+      "fixture": "meta2-seed2",
+      "medianSeconds": {
+        "before": 20.20515689998865,
+        "after": 19.314755799947307
+      },
+      "reductionPercent": 4.406801216385725
+    }
+  ],
+  "inputsSha256": {
+    "card-effects.json": "fc335d228779a2859627ee706d85949149ca595d0cfdfbc4971541831e5a8df0",
+    "card-ir-native-defaults.json": "a4f2812716f03ded180f45603ac7b715e890c54b1bc5b4b75fe2b1ec0975d711",
+    "card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b",
+    "card-vectors.json": "b15b93cb02e7e8a712561a2da52127a5867084ecb878a6ad58539b56b1109ab9",
+    "cards.json": "3550dc76eb0414c500166875f45909077aeeb3ea4d229b9b0ba9c66a81987c4b",
+    "deck_code_ids.json": "261cfd518c1a1ce40488f141e8dbd617ff19abe0734c49319ebcd6ac5dcb257e",
+    "event-contracts.json": "e4806dd48efbfc799a27c14b3660ad76ee03cd3f13e3e4320b213c5928efb112",
+    "live-actions.json": "db413a4644afe75806e66c47e200d93c5d93e91ca03e23fca38465b7dcb4dab3"
+  },
+  "binarySha256": {
+    "before": {
+      "NNTrain.dll": "fa161c57ce06dcc25f9f0d832a37014d5c5f7cfad81e6bcf82e449e1119b4c24",
+      "KLink.Bot.dll": "20e4022e6c4c8d559d747e63ce10642f8099062127bee402e07a9b87c4db66e3"
+    },
+    "after": {
+      "NNTrain.dll": "90ae5fdd61ea3b11622579176bc3af8f1a005829be9e06caa23ba5fe7d1374b5",
+      "KLink.Bot.dll": "cd36bd2dfbb76ccdfa8ef0abab4d18f5d60bcfd3a049a990efca674506856fe1"
+    }
+  },
+  "benchmarkScriptSha256": "590efcc03bd8d5d65c9394fe7d0b38ef54de92a2b9ec303ebf506958c293879f",
+  "rawReportSha256": "f14207caf119e1c3143f5efa0f5e366183ff2954a358135a5dddf0132f129efa",
+  "rawArtifacts": "out/audit/choice-components-20261102",
+  "fixtures": {
+    "m1-native": {
+      "rows": 39,
+      "rowBytesSha256": "8635ee2a07ab4295e728ff4b1838fb57e6078d28bd6c132b4d34b3b13eced610",
+      "games": [
+        {
+          "game": 0,
+          "seed": 1,
+          "leftDeck": "synthetic M1",
+          "rightDeck": "synthetic M1",
+          "accepted": true,
+          "finished": true,
+          "winner": 1,
+          "bufferedRows": 39,
+          "writtenRows": 39,
+          "comparedSteps": 39,
+          "planningPrefixRoots": 0,
+          "planningDecisions": 39,
+          "mainFaults": 0,
+          "mainRejections": 0,
+          "appliedActions": 39,
+          "choiceFaults": 0,
+          "pendingChoices": 0,
+          "vmFaults": 0,
+          "unsupported": {},
+          "calls": {},
+          "missingCallProvenance": [
+            {
+              "phase": "teacher",
+              "sites": [],
+              "sitesOmitted": 0,
+              "captureFailures": 0
+            },
+            {
+              "phase": "replay",
+              "sites": [],
+              "sitesOmitted": 0,
+              "captureFailures": 0
+            },
+            {
+              "phase": "planning",
+              "sites": [],
+              "sitesOmitted": 0,
+              "captureFailures": 0
+            }
+          ],
+          "reasons": [],
+          "cloneEvidence": {
+            "identity": {
+              "seed": 1,
+              "orderedDecksSha256": "0A89AD7E07FED74AAFAEFC54D216F437793D5825B89635B250110135A44F31C9",
+              "teacher": "greedy-isolated-prefix/v3+choose-one-explicit/v1+first-index/v1+afterstate-left/v1"
+            },
+            "referenceIdentity": {
+              "seed": 1,
+              "orderedDecksSha256": "0A89AD7E07FED74AAFAEFC54D216F437793D5825B89635B250110135A44F31C9",
+              "teacher": "greedy-isolated-prefix/v3+choose-one-explicit/v1+first-index/v1+afterstate-left/v1"
+            },
+            "left": [
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun"
+            ],
+            "right": [
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun"
+            ],
+            "clones": 39,
+            "baselineRoots": 39,
+            "verifiedRoots": 39,
+            "initialVerified": true,
+            "finalVerified": true,
+            "boundaryFailure": null,
+            "boundaryFailureStep": null,
+            "cloneFingerprint": {
+              "rowsSha256": "8635EE2A07AB4295E728FF4B1838FB57E6078D28BD6C132B4D34B3B13ECED610",
+              "snapshotSha256": "C9312FE74DE3F1144582ADB0858BB6502F3724FDAAA671428A41A11939262DCC",
+              "traceSha256": "762771F2BA1324AE589B77E55F1B86D9F43E240D517213002C7F3AC46A444A0C",
+              "randomState": 1286306807,
+              "randomConsumed": 78
+            },
+            "referenceFingerprint": {
+              "rowsSha256": "8635EE2A07AB4295E728FF4B1838FB57E6078D28BD6C132B4D34B3B13ECED610",
+              "snapshotSha256": "C9312FE74DE3F1144582ADB0858BB6502F3724FDAAA671428A41A11939262DCC",
+              "traceSha256": "762771F2BA1324AE589B77E55F1B86D9F43E240D517213002C7F3AC46A444A0C",
+              "randomState": 1286306807,
+              "randomConsumed": 78
+            },
+            "reference": {
+              "game": 0,
+              "seed": 1,
+              "leftDeck": "synthetic M1",
+              "rightDeck": "synthetic M1",
+              "accepted": true,
+              "finished": true,
+              "winner": 1,
+              "bufferedRows": 39,
+              "writtenRows": 39,
+              "comparedSteps": 39,
+              "planningPrefixRoots": 741,
+              "planningDecisions": 39,
+              "mainFaults": 0,
+              "mainRejections": 0,
+              "appliedActions": 39,
+              "choiceFaults": 0,
+              "pendingChoices": 0,
+              "vmFaults": 0,
+              "unsupported": {},
+              "calls": {},
+              "missingCallProvenance": [
+                {
+                  "phase": "teacher",
+                  "sites": [],
+                  "sitesOmitted": 0,
+                  "captureFailures": 0
+                },
+                {
+                  "phase": "replay",
+                  "sites": [],
+                  "sitesOmitted": 0,
+                  "captureFailures": 0
+                },
+                {
+                  "phase": "planning",
+                  "sites": [],
+                  "sitesOmitted": 0,
+                  "captureFailures": 0
+                }
+              ],
+              "reasons": [],
+              "snapshotDifference": null
+            }
+          },
+          "snapshotDifference": null
+        }
+      ]
+    },
+    "m1-last": {
+      "rows": 39,
+      "rowBytesSha256": "03a4fe081bf37ef982955b1eb1ad21ea022825597bc8403f700e0cb5b9b902ab",
+      "games": [
+        {
+          "game": 0,
+          "seed": 1,
+          "leftDeck": "synthetic M1",
+          "rightDeck": "synthetic M1",
+          "accepted": true,
+          "finished": true,
+          "winner": 1,
+          "bufferedRows": 39,
+          "writtenRows": 39,
+          "comparedSteps": 39,
+          "planningPrefixRoots": 0,
+          "planningDecisions": 39,
+          "mainFaults": 0,
+          "mainRejections": 0,
+          "appliedActions": 39,
+          "choiceFaults": 0,
+          "pendingChoices": 0,
+          "vmFaults": 0,
+          "unsupported": {},
+          "calls": {},
+          "missingCallProvenance": [
+            {
+              "phase": "teacher",
+              "sites": [],
+              "sitesOmitted": 0,
+              "captureFailures": 0
+            },
+            {
+              "phase": "replay",
+              "sites": [],
+              "sitesOmitted": 0,
+              "captureFailures": 0
+            },
+            {
+              "phase": "planning",
+              "sites": [],
+              "sitesOmitted": 0,
+              "captureFailures": 0
+            }
+          ],
+          "reasons": [],
+          "cloneEvidence": {
+            "identity": {
+              "seed": 1,
+              "orderedDecksSha256": "0A89AD7E07FED74AAFAEFC54D216F437793D5825B89635B250110135A44F31C9",
+              "teacher": "greedy-isolated-prefix/v3+choose-one-last/v1+first-index/v1+afterstate-left/v1"
+            },
+            "referenceIdentity": {
+              "seed": 1,
+              "orderedDecksSha256": "0A89AD7E07FED74AAFAEFC54D216F437793D5825B89635B250110135A44F31C9",
+              "teacher": "greedy-isolated-prefix/v3+choose-one-last/v1+first-index/v1+afterstate-left/v1"
+            },
+            "left": [
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun"
+            ],
+            "right": [
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun",
+              "card_unit_120mm_m1_gun"
+            ],
+            "clones": 39,
+            "baselineRoots": 39,
+            "verifiedRoots": 39,
+            "initialVerified": true,
+            "finalVerified": true,
+            "boundaryFailure": null,
+            "boundaryFailureStep": null,
+            "cloneFingerprint": {
+              "rowsSha256": "03A4FE081BF37EF982955B1EB1AD21EA022825597BC8403F700E0CB5B9B902AB",
+              "snapshotSha256": "83735D579A1D359615F068164242FBEA529992562BF8E3E392C71F1F2B9341D3",
+              "traceSha256": "218E5F646D4DAAB374361A383E95B1234A2A836180CC26D6CF958C6F02877A02",
+              "randomState": 1286306807,
+              "randomConsumed": 78
+            },
+            "referenceFingerprint": {
+              "rowsSha256": "03A4FE081BF37EF982955B1EB1AD21EA022825597BC8403F700E0CB5B9B902AB",
+              "snapshotSha256": "83735D579A1D359615F068164242FBEA529992562BF8E3E392C71F1F2B9341D3",
+              "traceSha256": "218E5F646D4DAAB374361A383E95B1234A2A836180CC26D6CF958C6F02877A02",
+              "randomState": 1286306807,
+              "randomConsumed": 78
+            },
+            "reference": {
+              "game": 0,
+              "seed": 1,
+              "leftDeck": "synthetic M1",
+              "rightDeck": "synthetic M1",
+              "accepted": true,
+              "finished": true,
+              "winner": 1,
+              "bufferedRows": 39,
+              "writtenRows": 39,
+              "comparedSteps": 39,
+              "planningPrefixRoots": 741,
+              "planningDecisions": 39,
+              "mainFaults": 0,
+              "mainRejections": 0,
+              "appliedActions": 39,
+              "choiceFaults": 0,
+              "pendingChoices": 0,
+              "vmFaults": 0,
+              "unsupported": {},
+              "calls": {},
+              "missingCallProvenance": [
+                {
+                  "phase": "teacher",
+                  "sites": [],
+                  "sitesOmitted": 0,
+                  "captureFailures": 0
+                },
+                {
+                  "phase": "replay",
+                  "sites": [],
+                  "sitesOmitted": 0,
+                  "captureFailures": 0
+                },
+                {
+                  "phase": "planning",
+                  "sites": [],
+                  "sitesOmitted": 0,
+                  "captureFailures": 0
+                }
+              ],
+              "reasons": [],
+              "snapshotDifference": null
+            }
+          },
+          "snapshotDifference": null
+        }
+      ]
+    },
+    "meta1-seed1": {
+      "rows": 107,
+      "rowBytesSha256": "8e76e0a8b3214d1daa0946b509dbe07796f2306a95a81eb49bbce81ba293720c",
+      "games": [
+        {
+          "game": 0,
+          "seed": 1,
+          "leftDeck": "meta: 英日 vs 日澳快攻",
+          "rightDeck": "meta: 英日 vs 日澳快攻",
+          "accepted": true,
+          "finished": true,
+          "winner": 2,
+          "bufferedRows": 107,
+          "writtenRows": 107,
+          "comparedSteps": 107,
+          "planningPrefixRoots": 0,
+          "planningDecisions": 107,
+          "mainFaults": 0,
+          "mainRejections": 0,
+          "appliedActions": 107,
+          "choiceFaults": 0,
+          "pendingChoices": 0,
+          "vmFaults": 0,
+          "unsupported": {},
+          "calls": {
+            "<local-ran:didPlayBritishInfantryLastTurn>": 94,
+            "<local-ran:anyOrderPlayedThisTurn>": 50,
+            "<local-ran:ApplyTheBuff>": 95,
+            "<local-ran:RemoveTheBuff>": 67,
+            "<local-ran:GetPlayFromHandDamage>": 30,
+            "<local-ran:isSecondOrderThisTurn>": 19
+          },
+          "missingCallProvenance": [
+            {
+              "phase": "teacher",
+              "sites": [],
+              "sitesOmitted": 0,
+              "captureFailures": 0
+            },
+            {
+              "phase": "replay",
+              "sites": [],
+              "sitesOmitted": 0,
+              "captureFailures": 0
+            },
+            {
+              "phase": "planning",
+              "sites": [],
+              "sitesOmitted": 0,
+              "captureFailures": 0
+            }
+          ],
+          "reasons": [],
+          "cloneEvidence": {
+            "identity": {
+              "seed": 1,
+              "orderedDecksSha256": "85F602A1852B56E2D487FB8DD9FD5B45027B4CB368ACAF721FB0EC0178C52D56",
+              "teacher": "greedy-isolated-prefix/v3+choose-one-explicit/v1+first-index/v1+afterstate-left/v1"
+            },
+            "referenceIdentity": {
+              "seed": 1,
+              "orderedDecksSha256": "85F602A1852B56E2D487FB8DD9FD5B45027B4CB368ACAF721FB0EC0178C52D56",
+              "teacher": "greedy-isolated-prefix/v3+choose-one-explicit/v1+first-index/v1+afterstate-left/v1"
+            },
+            "left": [
+              "card_event_monty",
+              "card_event_the_commonwealth",
+              "card_unit_85_pioneer_company",
+              "card_event_honor",
+              "card_event_royal_research",
+              "card_event_wave_after_wave",
+              "card_unit_gordon_highlanders",
+              "card_event_the_land_girls",
+              "card_unit_universal_carrier",
+              "card_unit_meteor",
+              "card_event_forward_observers",
+              "card_event_forward_observers",
+              "card_unit_middlesex_regiment",
+              "card_unit_middlesex_regiment",
+              "card_event_fortification",
+              "card_event_fortification",
+              "card_event_fortification",
+              "card_unit_m3a3_honey_desert",
+              "card_unit_m3a3_honey_desert",
+              "card_unit_m3a3_honey_desert",
+              "card_unit_sally",
+              "card_unit_sally",
+              "card_unit_sally",
+              "card_unit_no_9_commando",
+              "card_unit_no_9_commando",
+              "card_unit_no_9_commando",
+              "card_event_grand_plans",
+              "card_event_grand_plans",
+              "card_event_grand_plans",
+              "card_event_protected_convoy",
+              "card_event_protected_convoy",
+              "card_event_protected_convoy",
+              "card_unit_no_46_commando",
+              "card_unit_no_46_commando",
+              "card_unit_no_46_commando",
+              "card_event_deadly_duty",
+              "card_event_deadly_duty",
+              "card_event_deadly_duty",
+              "card_event_deadly_duty"
+            ],
+            "right": [
+              "card_event_desperate_measures",
+              "card_unit_2nd_raiding_brigade",
+              "card_unit_1st_signal_regiment",
+              "card_unit_dinah_iii",
+              "card_unit_ki_30_ann",
+              "card_unit_kyoto_regiment",
+              "card_event_overpower",
+              "card_event_imperial_research",
+              "card_event_special_attack",
+              "card_unit_kawanishi_h8k",
+              "card_unit_raaf_walrus",
+              "card_event_repel_the_attack",
+              "card_event_repel_the_attack",
+              "card_event_ferocious_assault",
+              "card_event_ferocious_assault",
+              "card_unit_5th_sasebo_snlf",
+              "card_unit_5th_sasebo_snlf",
+              "card_unit_2_2nd_pioneers",
+              "card_unit_2_2nd_pioneers",
+              "card_unit_type_93",
+              "card_unit_type_93",
+              "card_unit_type_93",
+              "card_unit_yokosuka_e14y",
+              "card_unit_yokosuka_e14y",
+              "card_unit_yokosuka_e14y",
+              "card_event_task_force_44",
+              "card_event_task_force_44",
+              "card_event_task_force_44",
+              "card_unit_238th_regiment",
+              "card_unit_238th_regiment",
+              "card_unit_238th_regiment",
+              "card_unit_shibata_regiment",
+              "card_unit_shibata_regiment",
+              "card_unit_shibata_regiment",
+              "card_unit_shibata_regiment",
+              "card_unit_dingo_armored_car",
+              "card_unit_dingo_armored_car",
+              "card_unit_dingo_armored_car",
+              "card_unit_dingo_armored_car"
+            ],
+            "clones": 107,
+            "baselineRoots": 107,
+            "verifiedRoots": 107,
+            "initialVerified": true,
+            "finalVerified": true,
+            "boundaryFailure": null,
+            "boundaryFailureStep": null,
+            "cloneFingerprint": {
+              "rowsSha256": "8E76E0A8B3214D1DAA0946B509DBE07796F2306A95A81EB49BBCE81BA293720C",
+              "snapshotSha256": "DF169C431521E100812BCB8A3A6241BF5C6076BF5F9BBF4A40A21309FB186246",
+              "traceSha256": "CC52EFE0BA0992CFEF30608248D823F9985B75D86444B90D2C7C572A5B6E5EE4",
+              "randomState": 3234535816,
+              "randomConsumed": 265
+            },
+            "referenceFingerprint": {
+              "rowsSha256": "8E76E0A8B3214D1DAA0946B509DBE07796F2306A95A81EB49BBCE81BA293720C",
+              "snapshotSha256": "DF169C431521E100812BCB8A3A6241BF5C6076BF5F9BBF4A40A21309FB186246",
+              "traceSha256": "CC52EFE0BA0992CFEF30608248D823F9985B75D86444B90D2C7C572A5B6E5EE4",
+              "randomState": 3234535816,
+              "randomConsumed": 265
+            },
+            "reference": {
+              "game": 0,
+              "seed": 1,
+              "leftDeck": "meta: 英日 vs 日澳快攻",
+              "rightDeck": "meta: 英日 vs 日澳快攻",
+              "accepted": true,
+              "finished": true,
+              "winner": 2,
+              "bufferedRows": 107,
+              "writtenRows": 107,
+              "comparedSteps": 107,
+              "planningPrefixRoots": 5671,
+              "planningDecisions": 107,
+              "mainFaults": 0,
+              "mainRejections": 0,
+              "appliedActions": 107,
+              "choiceFaults": 0,
+              "pendingChoices": 0,
+              "vmFaults": 0,
+              "unsupported": {},
+              "calls": {
+                "<local-ran:didPlayBritishInfantryLastTurn>": 93,
+                "<local-ran:anyOrderPlayedThisTurn>": 49,
+                "<local-ran:ApplyTheBuff>": 92,
+                "<local-ran:RemoveTheBuff>": 64,
+                "<local-ran:GetPlayFromHandDamage>": 29,
+                "<local-ran:isSecondOrderThisTurn>": 18
+              },
+              "missingCallProvenance": [
+                {
+                  "phase": "teacher",
+                  "sites": [],
+                  "sitesOmitted": 0,
+                  "captureFailures": 0
+                },
+                {
+                  "phase": "replay",
+                  "sites": [],
+                  "sitesOmitted": 0,
+                  "captureFailures": 0
+                },
+                {
+                  "phase": "planning",
+                  "sites": [],
+                  "sitesOmitted": 0,
+                  "captureFailures": 0
+                }
+              ],
+              "reasons": [],
+              "snapshotDifference": null
+            }
+          },
+          "snapshotDifference": null
+        }
+      ]
+    },
+    "meta1-seed2": {
+      "rows": 102,
+      "rowBytesSha256": "a19d3b1ed13895b5435d7a56e8a82b110f73e61083d768eb378ffdec3be0fa9e",
+      "games": [
+        {
+          "game": 0,
+          "seed": 2,
+          "leftDeck": "meta: 英日 vs 日澳快攻",
+          "rightDeck": "meta: 英日 vs 日澳快攻",
+          "accepted": true,
+          "finished": true,
+          "winner": 2,
+          "bufferedRows": 102,
+          "writtenRows": 102,
+          "comparedSteps": 102,
+          "planningPrefixRoots": 0,
+          "planningDecisions": 102,
+          "mainFaults": 0,
+          "mainRejections": 0,
+          "appliedActions": 102,
+          "choiceFaults": 0,
+          "pendingChoices": 0,
+          "vmFaults": 0,
+          "unsupported": {},
+          "calls": {
+            "<local-ran:GetPlayFromHandDamage>": 144,
+            "<local-ran:didPlayBritishInfantryLastTurn>": 72,
+            "<local-ran:isSecondOrderThisTurn>": 54,
+            "<frontline-blocked-full>": 1
+          },
+          "missingCallProvenance": [
+            {
+              "phase": "teacher",
+              "sites": [],
+              "sitesOmitted": 0,
+              "captureFailures": 0
+            },
+            {
+              "phase": "replay",
+              "sites": [],
+              "sitesOmitted": 0,
+              "captureFailures": 0
+            },
+            {
+              "phase": "planning",
+              "sites": [],
+              "sitesOmitted": 0,
+              "captureFailures": 0
+            }
+          ],
+          "reasons": [],
+          "cloneEvidence": {
+            "identity": {
+              "seed": 2,
+              "orderedDecksSha256": "85F602A1852B56E2D487FB8DD9FD5B45027B4CB368ACAF721FB0EC0178C52D56",
+              "teacher": "greedy-isolated-prefix/v3+choose-one-explicit/v1+first-index/v1+afterstate-left/v1"
+            },
+            "referenceIdentity": {
+              "seed": 2,
+              "orderedDecksSha256": "85F602A1852B56E2D487FB8DD9FD5B45027B4CB368ACAF721FB0EC0178C52D56",
+              "teacher": "greedy-isolated-prefix/v3+choose-one-explicit/v1+first-index/v1+afterstate-left/v1"
+            },
+            "left": [
+              "card_event_monty",
+              "card_event_the_commonwealth",
+              "card_unit_85_pioneer_company",
+              "card_event_honor",
+              "card_event_royal_research",
+              "card_event_wave_after_wave",
+              "card_unit_gordon_highlanders",
+              "card_event_the_land_girls",
+              "card_unit_universal_carrier",
+              "card_unit_meteor",
+              "card_event_forward_observers",
+              "card_event_forward_observers",
+              "card_unit_middlesex_regiment",
+              "card_unit_middlesex_regiment",
+              "card_event_fortification",
+              "card_event_fortification",
+              "card_event_fortification",
+              "card_unit_m3a3_honey_desert",
+              "card_unit_m3a3_honey_desert",
+              "card_unit_m3a3_honey_desert",
+              "card_unit_sally",
+              "card_unit_sally",
+              "card_unit_sally",
+              "card_unit_no_9_commando",
+              "card_unit_no_9_commando",
+              "card_unit_no_9_commando",
+              "card_event_grand_plans",
+              "card_event_grand_plans",
+              "card_event_grand_plans",
+              "card_event_protected_convoy",
+              "card_event_protected_convoy",
+              "card_event_protected_convoy",
+              "card_unit_no_46_commando",
+              "card_unit_no_46_commando",
+              "card_unit_no_46_commando",
+              "card_event_deadly_duty",
+              "card_event_deadly_duty",
+              "card_event_deadly_duty",
+              "card_event_deadly_duty"
+            ],
+            "right": [
+              "card_event_desperate_measures",
+              "card_unit_2nd_raiding_brigade",
+              "card_unit_1st_signal_regiment",
+              "card_unit_dinah_iii",
+              "card_unit_ki_30_ann",
+              "card_unit_kyoto_regiment",
+              "card_event_overpower",
+              "card_event_imperial_research",
+              "card_event_special_attack",
+              "card_unit_kawanishi_h8k",
+              "card_unit_raaf_walrus",
+              "card_event_repel_the_attack",
+              "card_event_repel_the_attack",
+              "card_event_ferocious_assault",
+              "card_event_ferocious_assault",
+              "card_unit_5th_sasebo_snlf",
+              "card_unit_5th_sasebo_snlf",
+              "card_unit_2_2nd_pioneers",
+              "card_unit_2_2nd_pioneers",
+              "card_unit_type_93",
+              "card_unit_type_93",
+              "card_unit_type_93",
+              "card_unit_yokosuka_e14y",
+              "card_unit_yokosuka_e14y",
+              "card_unit_yokosuka_e14y",
+              "card_event_task_force_44",
+              "card_event_task_force_44",
+              "card_event_task_force_44",
+              "card_unit_238th_regiment",
+              "card_unit_238th_regiment",
+              "card_unit_238th_regiment",
+              "card_unit_shibata_regiment",
+              "card_unit_shibata_regiment",
+              "card_unit_shibata_regiment",
+              "card_unit_shibata_regiment",
+              "card_unit_dingo_armored_car",
+              "card_unit_dingo_armored_car",
+              "card_unit_dingo_armored_car",
+              "card_unit_dingo_armored_car"
+            ],
+            "clones": 102,
+            "baselineRoots": 102,
+            "verifiedRoots": 102,
+            "initialVerified": true,
+            "finalVerified": true,
+            "boundaryFailure": null,
+            "boundaryFailureStep": null,
+            "cloneFingerprint": {
+              "rowsSha256": "A19D3B1ED13895B5435D7A56E8A82B110F73E61083D768EB378FFDEC3BE0FA9E",
+              "snapshotSha256": "47405FE93BF3C8F78CA3BE9A9B3F6DB3E33C6637C0351F473E78F8A77930E3A9",
+              "traceSha256": "626B7B200EC582EFD89BF777759E1DADE89FA42C482A61D8A1A94CE61F27E2EC",
+              "randomState": 1133643996,
+              "randomConsumed": 186
+            },
+            "referenceFingerprint": {
+              "rowsSha256": "A19D3B1ED13895B5435D7A56E8A82B110F73E61083D768EB378FFDEC3BE0FA9E",
+              "snapshotSha256": "47405FE93BF3C8F78CA3BE9A9B3F6DB3E33C6637C0351F473E78F8A77930E3A9",
+              "traceSha256": "626B7B200EC582EFD89BF777759E1DADE89FA42C482A61D8A1A94CE61F27E2EC",
+              "randomState": 1133643996,
+              "randomConsumed": 186
+            },
+            "reference": {
+              "game": 0,
+              "seed": 2,
+              "leftDeck": "meta: 英日 vs 日澳快攻",
+              "rightDeck": "meta: 英日 vs 日澳快攻",
+              "accepted": true,
+              "finished": true,
+              "winner": 2,
+              "bufferedRows": 102,
+              "writtenRows": 102,
+              "comparedSteps": 102,
+              "planningPrefixRoots": 5151,
+              "planningDecisions": 102,
+              "mainFaults": 0,
+              "mainRejections": 0,
+              "appliedActions": 102,
+              "choiceFaults": 0,
+              "pendingChoices": 0,
+              "vmFaults": 0,
+              "unsupported": {},
+              "calls": {
+                "<local-ran:GetPlayFromHandDamage>": 141,
+                "<local-ran:didPlayBritishInfantryLastTurn>": 71,
+                "<local-ran:isSecondOrderThisTurn>": 53,
+                "<frontline-blocked-full>": 1
+              },
+              "missingCallProvenance": [
+                {
+                  "phase": "teacher",
+                  "sites": [],
+                  "sitesOmitted": 0,
+                  "captureFailures": 0
+                },
+                {
+                  "phase": "replay",
+                  "sites": [],
+                  "sitesOmitted": 0,
+                  "captureFailures": 0
+                },
+                {
+                  "phase": "planning",
+                  "sites": [],
+                  "sitesOmitted": 0,
+                  "captureFailures": 0
+                }
+              ],
+              "reasons": [],
+              "snapshotDifference": null
+            }
+          },
+          "snapshotDifference": null
+        }
+      ]
+    },
+    "meta2-seed1": {
+      "rows": 170,
+      "rowBytesSha256": "0619fcf12bdf9f2b8889611c3f1c8703d332da4badff341d2fab12c26c1b15e7",
+      "games": [
+        {
+          "game": 0,
+          "seed": 1,
+          "leftDeck": "meta: 苏英爆破 vs 德澳老兵",
+          "rightDeck": "meta: 苏英爆破 vs 德澳老兵",
+          "accepted": true,
+          "finished": true,
+          "winner": 1,
+          "bufferedRows": 170,
+          "writtenRows": 170,
+          "comparedSteps": 170,
+          "planningPrefixRoots": 0,
+          "planningDecisions": 170,
+          "mainFaults": 0,
+          "mainRejections": 0,
+          "appliedActions": 170,
+          "choiceFaults": 0,
+          "pendingChoices": 0,
+          "vmFaults": 0,
+          "unsupported": {},
+          "calls": {
+            "<local-ran:checkAndUpdateBuffOnCard>": 45207,
+            "<local-ran:GetPlayFromHandDamage>": 1019,
+            "<local-ran:anyOrderPlayedThisTurn>": 108,
+            "<local-ran:ApplyTheBuff>": 359,
+            "<local-ran:didPlayBritishInfantryLastTurn>": 107,
+            "<local-ran:RemoveTheBuff>": 339,
+            "<local-ran:checkAndUpdateBuffOnAllCards>": 304,
+            "<local-ran:isSecondOrderThisTurn>": 16
+          },
+          "missingCallProvenance": [
+            {
+              "phase": "teacher",
+              "sites": [],
+              "sitesOmitted": 0,
+              "captureFailures": 0
+            },
+            {
+              "phase": "replay",
+              "sites": [],
+              "sitesOmitted": 0,
+              "captureFailures": 0
+            },
+            {
+              "phase": "planning",
+              "sites": [],
+              "sitesOmitted": 0,
+              "captureFailures": 0
+            }
+          ],
+          "reasons": [],
+          "cloneEvidence": {
+            "identity": {
+              "seed": 1,
+              "orderedDecksSha256": "66B91DF098586BB1FC217BEE74569C67A639557104A92F9A7DFA53F9B05A2F73",
+              "teacher": "greedy-isolated-prefix/v3+choose-one-explicit/v1+first-index/v1+afterstate-left/v1"
+            },
+            "referenceIdentity": {
+              "seed": 1,
+              "orderedDecksSha256": "66B91DF098586BB1FC217BEE74569C67A639557104A92F9A7DFA53F9B05A2F73",
+              "teacher": "greedy-isolated-prefix/v3+choose-one-explicit/v1+first-index/v1+afterstate-left/v1"
+            },
+            "left": [
+              "card_unit_11th_signal_battalion",
+              "card_unit_kv_1_1941",
+              "card_event_by_the_sword",
+              "card_event_monastyr",
+              "card_unit_97th_rifles",
+              "card_unit_4th_guards_rifles",
+              "card_unit_336th_guards_naval",
+              "card_event_victory_banners",
+              "card_unit_ilyushin_10",
+              "card_unit_289th_gatchina",
+              "card_unit_44th_silesia",
+              "card_event_do_or_die",
+              "card_event_soviet_military_research",
+              "card_unit_641st_rifles",
+              "card_unit_909th_roslavl",
+              "card_unit_the_holy_boys",
+              "card_unit_the_holy_boys",
+              "card_unit_stz_5_katyusha",
+              "card_unit_stz_5_katyusha",
+              "card_event_hms_formidable",
+              "card_event_hms_formidable",
+              "card_unit_55th_rifles",
+              "card_unit_55th_rifles",
+              "card_unit_1081th_smolensk",
+              "card_unit_1081th_smolensk",
+              "card_unit_216th_guards",
+              "card_unit_216th_guards",
+              "card_unit_511th_regiment",
+              "card_unit_511th_regiment",
+              "card_unit_2nd_west_africa",
+              "card_unit_2nd_west_africa",
+              "card_unit_2nd_west_africa",
+              "card_unit_3rd_morskoi_pekhoty",
+              "card_unit_3rd_morskoi_pekhoty",
+              "card_unit_3rd_morskoi_pekhoty",
+              "card_unit_no_46_commando",
+              "card_unit_no_46_commando",
+              "card_unit_no_46_commando",
+              "card_unit_no_46_commando"
+            ],
+            "right": [
+              "card_event_monty",
+              "card_unit_85_pioneer_company",
+              "card_event_repel_the_attack",
+              "card_event_the_rock_of_gibraltar",
+              "card_event_royal_research",
+              "card_event_wave_after_wave",
+              "card_unit_queens_own",
+              "card_unit_gordon_highlanders",
+              "card_event_bpf",
+              "card_unit_hampshire_regiment",
+              "card_event_z_special_unit",
+              "card_unit_meteor",
+              "card_event_colossus",
+              "card_event_mi_5",
+              "card_event_mi_5",
+              "card_event_fog_of_war",
+              "card_event_fog_of_war",
+              "card_event_forward_observers",
+              "card_event_forward_observers",
+              "card_event_the_land_girls",
+              "card_event_the_land_girls",
+              "card_event_anzac_spirit",
+              "card_event_anzac_spirit",
+              "card_unit_m3a3_honey_desert",
+              "card_unit_m3a3_honey_desert",
+              "card_unit_m3a3_honey_desert",
+              "card_event_pams",
+              "card_event_pams",
+              "card_event_pams",
+              "card_event_task_force_44",
+              "card_event_task_force_44",
+              "card_event_task_force_44",
+              "card_event_aans",
+              "card_event_aans",
+              "card_event_aans",
+              "card_unit_2nd_west_africa",
+              "card_unit_2nd_west_africa",
+              "card_unit_2nd_west_africa",
+              "card_unit_2nd_west_africa"
+            ],
+            "clones": 170,
+            "baselineRoots": 170,
+            "verifiedRoots": 170,
+            "initialVerified": true,
+            "finalVerified": true,
+            "boundaryFailure": null,
+            "boundaryFailureStep": null,
+            "cloneFingerprint": {
+              "rowsSha256": "0619FCF12BDF9F2B8889611C3F1C8703D332DA4BADFF341D2FAB12C26C1B15E7",
+              "snapshotSha256": "A8A7AFC35516CF26F2569D28479B4480D16D49273E99EEBDA659AFB47A5E2012",
+              "traceSha256": "68A882E14CEC85E949180B5282F1AE27D7880A14A0153FFEDF363C1B3869EA08",
+              "randomState": 2225510075,
+              "randomConsumed": 562
+            },
+            "referenceFingerprint": {
+              "rowsSha256": "0619FCF12BDF9F2B8889611C3F1C8703D332DA4BADFF341D2FAB12C26C1B15E7",
+              "snapshotSha256": "A8A7AFC35516CF26F2569D28479B4480D16D49273E99EEBDA659AFB47A5E2012",
+              "traceSha256": "68A882E14CEC85E949180B5282F1AE27D7880A14A0153FFEDF363C1B3869EA08",
+              "randomState": 2225510075,
+              "randomConsumed": 562
+            },
+            "reference": {
+              "game": 0,
+              "seed": 1,
+              "leftDeck": "meta: 苏英爆破 vs 德澳老兵",
+              "rightDeck": "meta: 苏英爆破 vs 德澳老兵",
+              "accepted": true,
+              "finished": true,
+              "winner": 1,
+              "bufferedRows": 170,
+              "writtenRows": 170,
+              "comparedSteps": 170,
+              "planningPrefixRoots": 14365,
+              "planningDecisions": 170,
+              "mainFaults": 0,
+              "mainRejections": 0,
+              "appliedActions": 170,
+              "choiceFaults": 0,
+              "pendingChoices": 0,
+              "vmFaults": 0,
+              "unsupported": {},
+              "calls": {
+                "<local-ran:checkAndUpdateBuffOnCard>": 44616,
+                "<local-ran:GetPlayFromHandDamage>": 1007,
+                "<local-ran:anyOrderPlayedThisTurn>": 107,
+                "<local-ran:ApplyTheBuff>": 355,
+                "<local-ran:didPlayBritishInfantryLastTurn>": 106,
+                "<local-ran:RemoveTheBuff>": 335,
+                "<local-ran:checkAndUpdateBuffOnAllCards>": 300,
+                "<local-ran:isSecondOrderThisTurn>": 15
+              },
+              "missingCallProvenance": [
+                {
+                  "phase": "teacher",
+                  "sites": [],
+                  "sitesOmitted": 0,
+                  "captureFailures": 0
+                },
+                {
+                  "phase": "replay",
+                  "sites": [],
+                  "sitesOmitted": 0,
+                  "captureFailures": 0
+                },
+                {
+                  "phase": "planning",
+                  "sites": [],
+                  "sitesOmitted": 0,
+                  "captureFailures": 0
+                }
+              ],
+              "reasons": [],
+              "snapshotDifference": null
+            }
+          },
+          "snapshotDifference": null
+        }
+      ]
+    },
+    "meta2-seed2": {
+      "rows": 133,
+      "rowBytesSha256": "f65cad45e348f058c4acdd517be9019c84d02d93ce5c377fef15eeead61d1bac",
+      "games": [
+        {
+          "game": 0,
+          "seed": 2,
+          "leftDeck": "meta: 苏英爆破 vs 德澳老兵",
+          "rightDeck": "meta: 苏英爆破 vs 德澳老兵",
+          "accepted": true,
+          "finished": true,
+          "winner": 1,
+          "bufferedRows": 133,
+          "writtenRows": 133,
+          "comparedSteps": 133,
+          "planningPrefixRoots": 0,
+          "planningDecisions": 133,
+          "mainFaults": 0,
+          "mainRejections": 0,
+          "appliedActions": 133,
+          "choiceFaults": 0,
+          "pendingChoices": 0,
+          "vmFaults": 0,
+          "unsupported": {},
+          "calls": {
+            "<local-ran:checkAndUpdateBuffOnCard>": 24762,
+            "<local-ran:GetPlayFromHandDamage>": 664,
+            "<local-ran:didPlayBritishInfantryLastTurn>": 180,
+            "<local-ran:anyOrderPlayedThisTurn>": 86,
+            "<local-ran:ApplyTheBuff>": 306,
+            "<local-ran:RemoveTheBuff>": 294,
+            "<local-ran:isSecondOrderThisTurn>": 35
+          },
+          "missingCallProvenance": [
+            {
+              "phase": "teacher",
+              "sites": [],
+              "sitesOmitted": 0,
+              "captureFailures": 0
+            },
+            {
+              "phase": "replay",
+              "sites": [],
+              "sitesOmitted": 0,
+              "captureFailures": 0
+            },
+            {
+              "phase": "planning",
+              "sites": [],
+              "sitesOmitted": 0,
+              "captureFailures": 0
+            }
+          ],
+          "reasons": [],
+          "cloneEvidence": {
+            "identity": {
+              "seed": 2,
+              "orderedDecksSha256": "66B91DF098586BB1FC217BEE74569C67A639557104A92F9A7DFA53F9B05A2F73",
+              "teacher": "greedy-isolated-prefix/v3+choose-one-explicit/v1+first-index/v1+afterstate-left/v1"
+            },
+            "referenceIdentity": {
+              "seed": 2,
+              "orderedDecksSha256": "66B91DF098586BB1FC217BEE74569C67A639557104A92F9A7DFA53F9B05A2F73",
+              "teacher": "greedy-isolated-prefix/v3+choose-one-explicit/v1+first-index/v1+afterstate-left/v1"
+            },
+            "left": [
+              "card_unit_11th_signal_battalion",
+              "card_unit_kv_1_1941",
+              "card_event_by_the_sword",
+              "card_event_monastyr",
+              "card_unit_97th_rifles",
+              "card_unit_4th_guards_rifles",
+              "card_unit_336th_guards_naval",
+              "card_event_victory_banners",
+              "card_unit_ilyushin_10",
+              "card_unit_289th_gatchina",
+              "card_unit_44th_silesia",
+              "card_event_do_or_die",
+              "card_event_soviet_military_research",
+              "card_unit_641st_rifles",
+              "card_unit_909th_roslavl",
+              "card_unit_the_holy_boys",
+              "card_unit_the_holy_boys",
+              "card_unit_stz_5_katyusha",
+              "card_unit_stz_5_katyusha",
+              "card_event_hms_formidable",
+              "card_event_hms_formidable",
+              "card_unit_55th_rifles",
+              "card_unit_55th_rifles",
+              "card_unit_1081th_smolensk",
+              "card_unit_1081th_smolensk",
+              "card_unit_216th_guards",
+              "card_unit_216th_guards",
+              "card_unit_511th_regiment",
+              "card_unit_511th_regiment",
+              "card_unit_2nd_west_africa",
+              "card_unit_2nd_west_africa",
+              "card_unit_2nd_west_africa",
+              "card_unit_3rd_morskoi_pekhoty",
+              "card_unit_3rd_morskoi_pekhoty",
+              "card_unit_3rd_morskoi_pekhoty",
+              "card_unit_no_46_commando",
+              "card_unit_no_46_commando",
+              "card_unit_no_46_commando",
+              "card_unit_no_46_commando"
+            ],
+            "right": [
+              "card_event_monty",
+              "card_unit_85_pioneer_company",
+              "card_event_repel_the_attack",
+              "card_event_the_rock_of_gibraltar",
+              "card_event_royal_research",
+              "card_event_wave_after_wave",
+              "card_unit_queens_own",
+              "card_unit_gordon_highlanders",
+              "card_event_bpf",
+              "card_unit_hampshire_regiment",
+              "card_event_z_special_unit",
+              "card_unit_meteor",
+              "card_event_colossus",
+              "card_event_mi_5",
+              "card_event_mi_5",
+              "card_event_fog_of_war",
+              "card_event_fog_of_war",
+              "card_event_forward_observers",
+              "card_event_forward_observers",
+              "card_event_the_land_girls",
+              "card_event_the_land_girls",
+              "card_event_anzac_spirit",
+              "card_event_anzac_spirit",
+              "card_unit_m3a3_honey_desert",
+              "card_unit_m3a3_honey_desert",
+              "card_unit_m3a3_honey_desert",
+              "card_event_pams",
+              "card_event_pams",
+              "card_event_pams",
+              "card_event_task_force_44",
+              "card_event_task_force_44",
+              "card_event_task_force_44",
+              "card_event_aans",
+              "card_event_aans",
+              "card_event_aans",
+              "card_unit_2nd_west_africa",
+              "card_unit_2nd_west_africa",
+              "card_unit_2nd_west_africa",
+              "card_unit_2nd_west_africa"
+            ],
+            "clones": 133,
+            "baselineRoots": 133,
+            "verifiedRoots": 133,
+            "initialVerified": true,
+            "finalVerified": true,
+            "boundaryFailure": null,
+            "boundaryFailureStep": null,
+            "cloneFingerprint": {
+              "rowsSha256": "F65CAD45E348F058C4ACDD517BE9019C84D02D93CE5C377FEF15EEEAD61D1BAC",
+              "snapshotSha256": "2AF80567914DC25C5B125FE2FE88DC28B20B0A7F53CFBCC329CD3E61B2361049",
+              "traceSha256": "2304E8379696D5C0A8F92A628C09967F0775BE3EDF0E68EAF6CBE1E895940EFB",
+              "randomState": 879965953,
+              "randomConsumed": 621
+            },
+            "referenceFingerprint": {
+              "rowsSha256": "F65CAD45E348F058C4ACDD517BE9019C84D02D93CE5C377FEF15EEEAD61D1BAC",
+              "snapshotSha256": "2AF80567914DC25C5B125FE2FE88DC28B20B0A7F53CFBCC329CD3E61B2361049",
+              "traceSha256": "2304E8379696D5C0A8F92A628C09967F0775BE3EDF0E68EAF6CBE1E895940EFB",
+              "randomState": 879965953,
+              "randomConsumed": 621
+            },
+            "reference": {
+              "game": 0,
+              "seed": 2,
+              "leftDeck": "meta: 苏英爆破 vs 德澳老兵",
+              "rightDeck": "meta: 苏英爆破 vs 德澳老兵",
+              "accepted": true,
+              "finished": true,
+              "winner": 1,
+              "bufferedRows": 133,
+              "writtenRows": 133,
+              "comparedSteps": 133,
+              "planningPrefixRoots": 8778,
+              "planningDecisions": 133,
+              "mainFaults": 0,
+              "mainRejections": 0,
+              "appliedActions": 133,
+              "choiceFaults": 0,
+              "pendingChoices": 0,
+              "vmFaults": 0,
+              "unsupported": {},
+              "calls": {
+                "<local-ran:checkAndUpdateBuffOnCard>": 24372,
+                "<local-ran:GetPlayFromHandDamage>": 656,
+                "<local-ran:didPlayBritishInfantryLastTurn>": 178,
+                "<local-ran:anyOrderPlayedThisTurn>": 85,
+                "<local-ran:ApplyTheBuff>": 302,
+                "<local-ran:RemoveTheBuff>": 290,
+                "<local-ran:isSecondOrderThisTurn>": 34
+              },
+              "missingCallProvenance": [
+                {
+                  "phase": "teacher",
+                  "sites": [],
+                  "sitesOmitted": 0,
+                  "captureFailures": 0
+                },
+                {
+                  "phase": "replay",
+                  "sites": [],
+                  "sitesOmitted": 0,
+                  "captureFailures": 0
+                },
+                {
+                  "phase": "planning",
+                  "sites": [],
+                  "sitesOmitted": 0,
+                  "captureFailures": 0
+                }
+              ],
+              "reasons": [],
+              "snapshotDifference": null
+            }
+          },
+          "snapshotDifference": null
+        }
+      ]
+    }
+  },
+  "samples": [
+    {
+      "fixture": "m1-native",
+      "repeat": 0,
+      "mode": "before",
+      "elapsedSeconds": 4.030321900034323,
+      "rows": 39,
+      "rowBytesSha256": "8635ee2a07ab4295e728ff4b1838fb57e6078d28bd6c132b4d34b3b13eced610",
+      "dataSha256": "c616ce19995596a20dd13f2e84793401d92dcba67c84576bf89f9109c80ae894"
+    },
+    {
+      "fixture": "m1-native",
+      "repeat": 0,
+      "mode": "after",
+      "elapsedSeconds": 3.993500800104812,
+      "rows": 39,
+      "rowBytesSha256": "8635ee2a07ab4295e728ff4b1838fb57e6078d28bd6c132b4d34b3b13eced610",
+      "dataSha256": "07e061a1a850a7ce53b3edc882c5473ed7232ac2082b4541785c2b582a94d21f"
+    },
+    {
+      "fixture": "m1-last",
+      "repeat": 0,
+      "mode": "before",
+      "elapsedSeconds": 3.817542999982834,
+      "rows": 39,
+      "rowBytesSha256": "03a4fe081bf37ef982955b1eb1ad21ea022825597bc8403f700e0cb5b9b902ab",
+      "dataSha256": "c30727841726ff2745f4636e6fa70c1eb1b1865dcec4d22a56e211687261f137"
+    },
+    {
+      "fixture": "m1-last",
+      "repeat": 0,
+      "mode": "after",
+      "elapsedSeconds": 3.9558714001905173,
+      "rows": 39,
+      "rowBytesSha256": "03a4fe081bf37ef982955b1eb1ad21ea022825597bc8403f700e0cb5b9b902ab",
+      "dataSha256": "a807d4fc94165ff903123e875606acc5d7c2b7271b4fdc014d0f997853c4bd69"
+    },
+    {
+      "fixture": "meta1-seed1",
+      "repeat": 0,
+      "mode": "before",
+      "elapsedSeconds": 14.228612799895927,
+      "rows": 107,
+      "rowBytesSha256": "8e76e0a8b3214d1daa0946b509dbe07796f2306a95a81eb49bbce81ba293720c",
+      "dataSha256": "cddc01d341efd0971bf779eed28847ef584d7b39bfb91440d396912d64914c1e"
+    },
+    {
+      "fixture": "meta1-seed1",
+      "repeat": 0,
+      "mode": "after",
+      "elapsedSeconds": 13.430234199855477,
+      "rows": 107,
+      "rowBytesSha256": "8e76e0a8b3214d1daa0946b509dbe07796f2306a95a81eb49bbce81ba293720c",
+      "dataSha256": "ec61584cee9923535808c168196229d2e8201a1aa4725269a9cb9342bd6a85e1"
+    },
+    {
+      "fixture": "meta1-seed2",
+      "repeat": 0,
+      "mode": "before",
+      "elapsedSeconds": 12.46730689983815,
+      "rows": 102,
+      "rowBytesSha256": "a19d3b1ed13895b5435d7a56e8a82b110f73e61083d768eb378ffdec3be0fa9e",
+      "dataSha256": "77c1d732d00e7f56ef013e156a33398bc5c2fe964de7505641c3a465a1cb8380"
+    },
+    {
+      "fixture": "meta1-seed2",
+      "repeat": 0,
+      "mode": "after",
+      "elapsedSeconds": 12.392673300113529,
+      "rows": 102,
+      "rowBytesSha256": "a19d3b1ed13895b5435d7a56e8a82b110f73e61083d768eb378ffdec3be0fa9e",
+      "dataSha256": "9a4199e7e6950158c1fce4a404368de1587f6a768bda728e5452168933409c4e"
+    },
+    {
+      "fixture": "meta2-seed1",
+      "repeat": 0,
+      "mode": "before",
+      "elapsedSeconds": 26.15014379983768,
+      "rows": 170,
+      "rowBytesSha256": "0619fcf12bdf9f2b8889611c3f1c8703d332da4badff341d2fab12c26c1b15e7",
+      "dataSha256": "e04d11f321b125dab896f55241c658eeae9a27fa303d19ef357f227c1216ecd7"
+    },
+    {
+      "fixture": "meta2-seed1",
+      "repeat": 0,
+      "mode": "after",
+      "elapsedSeconds": 24.151143099879846,
+      "rows": 170,
+      "rowBytesSha256": "0619fcf12bdf9f2b8889611c3f1c8703d332da4badff341d2fab12c26c1b15e7",
+      "dataSha256": "206f9e70d966c38e81a5939fc8bf65b6c75f845879d8ed69fcff3d4a928f7bae"
+    },
+    {
+      "fixture": "meta2-seed2",
+      "repeat": 0,
+      "mode": "before",
+      "elapsedSeconds": 19.868610000004992,
+      "rows": 133,
+      "rowBytesSha256": "f65cad45e348f058c4acdd517be9019c84d02d93ce5c377fef15eeead61d1bac",
+      "dataSha256": "c9eb73f6d5e2dd883bce8c95ca09e7332c30ab80ab86d1ea9983d85a63c26295"
+    },
+    {
+      "fixture": "meta2-seed2",
+      "repeat": 0,
+      "mode": "after",
+      "elapsedSeconds": 19.176286099944264,
+      "rows": 133,
+      "rowBytesSha256": "f65cad45e348f058c4acdd517be9019c84d02d93ce5c377fef15eeead61d1bac",
+      "dataSha256": "b4155274df8ad3510eb03d195c23ba262c40e1a4313fe190ac1d1a09014f7708"
+    },
+    {
+      "fixture": "m1-native",
+      "repeat": 1,
+      "mode": "after",
+      "elapsedSeconds": 3.710585599998012,
+      "rows": 39,
+      "rowBytesSha256": "8635ee2a07ab4295e728ff4b1838fb57e6078d28bd6c132b4d34b3b13eced610",
+      "dataSha256": "07e061a1a850a7ce53b3edc882c5473ed7232ac2082b4541785c2b582a94d21f"
+    },
+    {
+      "fixture": "m1-native",
+      "repeat": 1,
+      "mode": "before",
+      "elapsedSeconds": 3.8248784001916647,
+      "rows": 39,
+      "rowBytesSha256": "8635ee2a07ab4295e728ff4b1838fb57e6078d28bd6c132b4d34b3b13eced610",
+      "dataSha256": "c616ce19995596a20dd13f2e84793401d92dcba67c84576bf89f9109c80ae894"
+    },
+    {
+      "fixture": "m1-last",
+      "repeat": 1,
+      "mode": "after",
+      "elapsedSeconds": 3.757089899852872,
+      "rows": 39,
+      "rowBytesSha256": "03a4fe081bf37ef982955b1eb1ad21ea022825597bc8403f700e0cb5b9b902ab",
+      "dataSha256": "a807d4fc94165ff903123e875606acc5d7c2b7271b4fdc014d0f997853c4bd69"
+    },
+    {
+      "fixture": "m1-last",
+      "repeat": 1,
+      "mode": "before",
+      "elapsedSeconds": 3.4965822000522166,
+      "rows": 39,
+      "rowBytesSha256": "03a4fe081bf37ef982955b1eb1ad21ea022825597bc8403f700e0cb5b9b902ab",
+      "dataSha256": "c30727841726ff2745f4636e6fa70c1eb1b1865dcec4d22a56e211687261f137"
+    },
+    {
+      "fixture": "meta1-seed1",
+      "repeat": 1,
+      "mode": "after",
+      "elapsedSeconds": 13.681108700111508,
+      "rows": 107,
+      "rowBytesSha256": "8e76e0a8b3214d1daa0946b509dbe07796f2306a95a81eb49bbce81ba293720c",
+      "dataSha256": "ec61584cee9923535808c168196229d2e8201a1aa4725269a9cb9342bd6a85e1"
+    },
+    {
+      "fixture": "meta1-seed1",
+      "repeat": 1,
+      "mode": "before",
+      "elapsedSeconds": 14.10882329987362,
+      "rows": 107,
+      "rowBytesSha256": "8e76e0a8b3214d1daa0946b509dbe07796f2306a95a81eb49bbce81ba293720c",
+      "dataSha256": "cddc01d341efd0971bf779eed28847ef584d7b39bfb91440d396912d64914c1e"
+    },
+    {
+      "fixture": "meta1-seed2",
+      "repeat": 1,
+      "mode": "after",
+      "elapsedSeconds": 12.332440000027418,
+      "rows": 102,
+      "rowBytesSha256": "a19d3b1ed13895b5435d7a56e8a82b110f73e61083d768eb378ffdec3be0fa9e",
+      "dataSha256": "9a4199e7e6950158c1fce4a404368de1587f6a768bda728e5452168933409c4e"
+    },
+    {
+      "fixture": "meta1-seed2",
+      "repeat": 1,
+      "mode": "before",
+      "elapsedSeconds": 12.530529899988323,
+      "rows": 102,
+      "rowBytesSha256": "a19d3b1ed13895b5435d7a56e8a82b110f73e61083d768eb378ffdec3be0fa9e",
+      "dataSha256": "77c1d732d00e7f56ef013e156a33398bc5c2fe964de7505641c3a465a1cb8380"
+    },
+    {
+      "fixture": "meta2-seed1",
+      "repeat": 1,
+      "mode": "after",
+      "elapsedSeconds": 24.62206370010972,
+      "rows": 170,
+      "rowBytesSha256": "0619fcf12bdf9f2b8889611c3f1c8703d332da4badff341d2fab12c26c1b15e7",
+      "dataSha256": "206f9e70d966c38e81a5939fc8bf65b6c75f845879d8ed69fcff3d4a928f7bae"
+    },
+    {
+      "fixture": "meta2-seed1",
+      "repeat": 1,
+      "mode": "before",
+      "elapsedSeconds": 25.620777300093323,
+      "rows": 170,
+      "rowBytesSha256": "0619fcf12bdf9f2b8889611c3f1c8703d332da4badff341d2fab12c26c1b15e7",
+      "dataSha256": "e04d11f321b125dab896f55241c658eeae9a27fa303d19ef357f227c1216ecd7"
+    },
+    {
+      "fixture": "meta2-seed2",
+      "repeat": 1,
+      "mode": "after",
+      "elapsedSeconds": 19.314755799947307,
+      "rows": 133,
+      "rowBytesSha256": "f65cad45e348f058c4acdd517be9019c84d02d93ce5c377fef15eeead61d1bac",
+      "dataSha256": "b4155274df8ad3510eb03d195c23ba262c40e1a4313fe190ac1d1a09014f7708"
+    },
+    {
+      "fixture": "meta2-seed2",
+      "repeat": 1,
+      "mode": "before",
+      "elapsedSeconds": 20.20515689998865,
+      "rows": 133,
+      "rowBytesSha256": "f65cad45e348f058c4acdd517be9019c84d02d93ce5c377fef15eeead61d1bac",
+      "dataSha256": "c9eb73f6d5e2dd883bce8c95ca09e7332c30ab80ab86d1ea9983d85a63c26295"
+    },
+    {
+      "fixture": "m1-native",
+      "repeat": 2,
+      "mode": "before",
+      "elapsedSeconds": 3.745850699953735,
+      "rows": 39,
+      "rowBytesSha256": "8635ee2a07ab4295e728ff4b1838fb57e6078d28bd6c132b4d34b3b13eced610",
+      "dataSha256": "c616ce19995596a20dd13f2e84793401d92dcba67c84576bf89f9109c80ae894"
+    },
+    {
+      "fixture": "m1-native",
+      "repeat": 2,
+      "mode": "after",
+      "elapsedSeconds": 3.774611399974674,
+      "rows": 39,
+      "rowBytesSha256": "8635ee2a07ab4295e728ff4b1838fb57e6078d28bd6c132b4d34b3b13eced610",
+      "dataSha256": "07e061a1a850a7ce53b3edc882c5473ed7232ac2082b4541785c2b582a94d21f"
+    },
+    {
+      "fixture": "m1-last",
+      "repeat": 2,
+      "mode": "before",
+      "elapsedSeconds": 3.72257939982228,
+      "rows": 39,
+      "rowBytesSha256": "03a4fe081bf37ef982955b1eb1ad21ea022825597bc8403f700e0cb5b9b902ab",
+      "dataSha256": "c30727841726ff2745f4636e6fa70c1eb1b1865dcec4d22a56e211687261f137"
+    },
+    {
+      "fixture": "m1-last",
+      "repeat": 2,
+      "mode": "after",
+      "elapsedSeconds": 3.745591799961403,
+      "rows": 39,
+      "rowBytesSha256": "03a4fe081bf37ef982955b1eb1ad21ea022825597bc8403f700e0cb5b9b902ab",
+      "dataSha256": "a807d4fc94165ff903123e875606acc5d7c2b7271b4fdc014d0f997853c4bd69"
+    },
+    {
+      "fixture": "meta1-seed1",
+      "repeat": 2,
+      "mode": "before",
+      "elapsedSeconds": 14.17204919992946,
+      "rows": 107,
+      "rowBytesSha256": "8e76e0a8b3214d1daa0946b509dbe07796f2306a95a81eb49bbce81ba293720c",
+      "dataSha256": "cddc01d341efd0971bf779eed28847ef584d7b39bfb91440d396912d64914c1e"
+    },
+    {
+      "fixture": "meta1-seed1",
+      "repeat": 2,
+      "mode": "after",
+      "elapsedSeconds": 13.784888500114903,
+      "rows": 107,
+      "rowBytesSha256": "8e76e0a8b3214d1daa0946b509dbe07796f2306a95a81eb49bbce81ba293720c",
+      "dataSha256": "ec61584cee9923535808c168196229d2e8201a1aa4725269a9cb9342bd6a85e1"
+    },
+    {
+      "fixture": "meta1-seed2",
+      "repeat": 2,
+      "mode": "before",
+      "elapsedSeconds": 12.345765199977905,
+      "rows": 102,
+      "rowBytesSha256": "a19d3b1ed13895b5435d7a56e8a82b110f73e61083d768eb378ffdec3be0fa9e",
+      "dataSha256": "77c1d732d00e7f56ef013e156a33398bc5c2fe964de7505641c3a465a1cb8380"
+    },
+    {
+      "fixture": "meta1-seed2",
+      "repeat": 2,
+      "mode": "after",
+      "elapsedSeconds": 11.506869500037283,
+      "rows": 102,
+      "rowBytesSha256": "a19d3b1ed13895b5435d7a56e8a82b110f73e61083d768eb378ffdec3be0fa9e",
+      "dataSha256": "9a4199e7e6950158c1fce4a404368de1587f6a768bda728e5452168933409c4e"
+    },
+    {
+      "fixture": "meta2-seed1",
+      "repeat": 2,
+      "mode": "before",
+      "elapsedSeconds": 26.425518700154498,
+      "rows": 170,
+      "rowBytesSha256": "0619fcf12bdf9f2b8889611c3f1c8703d332da4badff341d2fab12c26c1b15e7",
+      "dataSha256": "e04d11f321b125dab896f55241c658eeae9a27fa303d19ef357f227c1216ecd7"
+    },
+    {
+      "fixture": "meta2-seed1",
+      "repeat": 2,
+      "mode": "after",
+      "elapsedSeconds": 24.719796399818733,
+      "rows": 170,
+      "rowBytesSha256": "0619fcf12bdf9f2b8889611c3f1c8703d332da4badff341d2fab12c26c1b15e7",
+      "dataSha256": "206f9e70d966c38e81a5939fc8bf65b6c75f845879d8ed69fcff3d4a928f7bae"
+    },
+    {
+      "fixture": "meta2-seed2",
+      "repeat": 2,
+      "mode": "before",
+      "elapsedSeconds": 20.57482250011526,
+      "rows": 133,
+      "rowBytesSha256": "f65cad45e348f058c4acdd517be9019c84d02d93ce5c377fef15eeead61d1bac",
+      "dataSha256": "c9eb73f6d5e2dd883bce8c95ca09e7332c30ab80ab86d1ea9983d85a63c26295"
+    },
+    {
+      "fixture": "meta2-seed2",
+      "repeat": 2,
+      "mode": "after",
+      "elapsedSeconds": 19.33973990008235,
+      "rows": 133,
+      "rowBytesSha256": "f65cad45e348f058c4acdd517be9019c84d02d93ce5c377fef15eeead61d1bac",
+      "dataSha256": "b4155274df8ad3510eb03d195c23ba262c40e1a4313fe190ac1d1a09014f7708"
+    }
+  ],
+  "review": {
+    "method": "Primary verified full UTF8 serialization uses same declared types/options and snapshot-RNG-trace-details order, exact span content equality, no capture/check removed. Request comparison remains unchanged.",
+    "deepseekJob": "20261102-203630-choice-utf8-review-403bc33b",
+    "deepseekStatus": "completed",
+    "workerReviewSha256": "d4af36362d3397192d10e38f501aa8fe0cd8d5c6978a86d7d6fb18577cdfc8c5",
+    "workerUse": "Bounded static field/order and risk inventory, not performance/rule authority. Primary checked 14 detail fields and SnapshotJson implementation. Worker overcounted pure scenarios and described preexisting Chinese text as surrogate-pair coverage; these claims were not adopted."
+  },
+  "regressions": {
+    "mutationScenarios": 124,
+    "pureChoiceScenarios": 24,
+    "pureChoicesPerScenario": 2,
+    "serializationFailureRecoveryScenarios": 4
+  },
+  "limitations": [
+    "Three repetitions of six fixed simulator workloads, not a whole-corpus throughput or authentic rule-parity estimate.",
+    "Fresh-process startup included, OS caches and machine load uncontrolled. Worker review overlapped only the beginning of the benchmark.",
+    "Timers are temporary diagnostics, not production timings. Uninstrumented runs provide the A/B measurements.",
+    "No hashing, cached callback state, skipped field or independent reference reduction in production detector.",
+    "Existing unrelated working-tree modifications excluded from both source snapshots.",
+    "NNTrain retained the same 10 existing CS8632 warnings."
+  ]
+}

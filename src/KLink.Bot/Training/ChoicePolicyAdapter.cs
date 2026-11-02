@@ -84,7 +84,7 @@ public sealed class ChoicePolicyAdapter : IDisposable
                 if (cards.Count != offered.Length || cards.Where((c, i) => !ReferenceEquals(c, offered[i])).Any()
                     || handlers != (_engine.ChooseSpawnCard, _engine.PickCardToDraw,
                         _engine.PickHandTargetId, _engine.PickHandTarget, _engine.ChooseHandTarget)
-                    || boundary != DecisionBoundary(source, offered)
+                    || !boundary.Matches(DecisionBoundary(source, offered))
                     || described != JsonSerializer.Serialize(Describe()))
                     throw new InvalidOperationException("Policy changed the engine or offer during a synchronous choice.");
                 if (index < 0 ? index != -1 || !canCancel : index >= cards.Count)
@@ -101,18 +101,27 @@ public sealed class ChoicePolicyAdapter : IDisposable
     // Include detached Forecast/templates: they need not occur in AllCards.
     // Hidden battle snapshots are never exposed to the policy request.
     // VM private state, transient changes and concurrency remain outside scope.
-    private (string Snapshot, string Trace, string Details) DecisionBoundary(CardInstance source, IReadOnlyList<CardInstance> offered)
+    private readonly struct Boundary(byte[] snapshot, byte[] trace, byte[] details)
+    {
+        public bool Matches(Boundary other) => snapshot.AsSpan().SequenceEqual(other.Snapshot)
+            && trace.AsSpan().SequenceEqual(other.Trace) && details.AsSpan().SequenceEqual(other.Details);
+        private byte[] Snapshot => snapshot;
+        private byte[] Trace => trace;
+        private byte[] Details => details;
+    }
+
+    private Boundary DecisionBoundary(CardInstance source, IReadOnlyList<CardInstance> offered)
     {
         var state = _engine.State;
         object Card(CardInstance c) => new
         {
             Snapshot = c.Snapshot(), c.ChooseOne, CurrentTargetId = c.CurrentTarget?.CardId
         };
-        // Compare the existing JSON strings exactly without escaping them into another JSON object.
-        string snapshot = state.SnapshotJson();
+        // Preserve the complete JSON and read order; compare exact UTF-8, without decoding to strings.
+        byte[] snapshot = JsonSerializer.SerializeToUtf8Bytes(state.Snapshot(), GameState.SnapshotJsonOptions);
         ulong randomState = state.Random.State;
-        string trace = JsonSerializer.Serialize(state.ActionLog);
-        string details = JsonSerializer.Serialize(new
+        byte[] trace = JsonSerializer.SerializeToUtf8Bytes(state.ActionLog);
+        byte[] details = JsonSerializer.SerializeToUtf8Bytes(new
         {
             State = randomState,
             state.StopFurtherActions, state.StopAttack, state.IsFinished, state.Winner, state.WinnerReason,
@@ -121,7 +130,7 @@ public sealed class ChoicePolicyAdapter : IDisposable
             Source = Card(source), Offered = offered.Select(Card).ToArray(),
             _engine.Api.Vm.ProgramsExecuted, _engine.Api.Vm.FaultedPrograms, Faults
         });
-        return (snapshot, trace, details);
+        return new Boundary(snapshot, trace, details);
     }
 
     public void Dispose()
