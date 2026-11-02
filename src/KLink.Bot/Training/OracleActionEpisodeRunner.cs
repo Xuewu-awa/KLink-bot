@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Security.Cryptography;
 using KLink.Bot.Bots;
 using KLink.Bot.Cards;
 using KLink.Bot.Engine;
@@ -7,6 +8,7 @@ using KLink.Bot.NN;
 
 namespace KLink.Bot.Training;
 
+public sealed record OracleActionEpisodeIdentity(ulong Seed,string OrderedDecksSha256,string Teacher);
 public sealed record OracleActionLabel(int Step, MainActionRequest Request, int ChosenIndex,
     float[]? AfterObservation = null);
 public sealed record OracleMissingCallCount(KismetMissingCallSite Site, long Count);
@@ -14,6 +16,10 @@ public sealed record OracleActionEpisodeResult(MatchEngine Teacher, MatchEngine 
     IReadOnlyList<OracleActionLabel> Labels, IReadOnlyList<string> Errors, long ChoiceFaults,
     long MainFaults, long MainRejections, long AppliedActions, int ComparedSteps)
 {
+    public OracleActionEpisodeIdentity? Identity {get;init;}
+    public bool PlanningBaselineInitialVerified {get;init;}
+    public long PlanningBaselineVerifiedRoots {get;init;}
+    public bool PlanningBaselineFinalVerified {get;init;}
     public string? SnapshotDifference {get;init;}
     public string PlanningMode {get;init;}="replay-prefix";
     public string? PlanningCloneFailure {get;init;}
@@ -81,7 +87,9 @@ public static class OracleActionEpisodeRunner
         OracleChooseOnePolicy chooseOnePolicy=OracleChooseOnePolicy.Native,
         bool clonePlanning=false, Action<MatchEngine,int>? beforeClone=null)
     {
-        _=ContractFor(chooseOnePolicy);
+        var identity=new OracleActionEpisodeIdentity(seed,
+            Convert.ToHexString(SHA256.HashData(JsonSerializer.SerializeToUtf8Bytes(new {left=left.ToArray(),right=right.ToArray()}))),
+            ContractFor(chooseOnePolicy));
         var teacher=new MatchEngine(database,left,right,seed);var replay=new MatchEngine(database,left,right,seed);
         var labels=new List<OracleActionLabel>();var errors=new List<string>();
         var main=new MainActionPolicyAdapter(replay,vectors);var teacherView=new MainActionPolicyAdapter(teacher,vectors);
@@ -93,7 +101,8 @@ public static class OracleActionEpisodeRunner
         long planningSitesOmitted=0,planningCaptureFailures=0;
         string? snapshotDifference=null;
         MatchEngine? baseline=null;
-        long baselineRoots=0,baselineChoiceFaults=0;
+        long baselineRoots=0,baselineChoiceFaults=0,baselineVerifiedRoots=0;
+        bool baselineInitialVerified=false,baselineFinalVerified=false;
         int clones=0;
         string? cloneFailure=null;int? cloneFailureStep=null;
         bool SameRequest(MainActionRequest a,MainActionRequest b)=>a.Actor==b.Actor && a.Turn==b.Turn
@@ -128,6 +137,12 @@ public static class OracleActionEpisodeRunner
                 using var initialChoice=new ChoicePolicyAdapter(baseline,vectors,First);
                 try { baseline.Start(); }
                 finally { baselineChoiceFaults+=initialChoice.Faults; }
+            }
+            if(baseline is not null)
+            {
+                baselineInitialVerified=SameClock(teacher,baseline) && SameFullTrace(teacher,baseline)
+                    && teacher.State.SnapshotJson()==baseline.State.SnapshotJson();
+                if(!baselineInitialVerified)errors.Add("planning_baseline_initial_mismatch");
             }
             if(!SameClock(teacher,replay) || !SameTrace(0,0) || !SameSnapshot())errors.Add("initial_trace_mismatch");
 
@@ -255,6 +270,7 @@ public static class OracleActionEpisodeRunner
                             || teacher.State.SnapshotJson()!=baseline.State.SnapshotJson())
                             errors.Add("planning_baseline_mismatch");
                         if(errors.Count!=0)break;
+                        baselineVerifiedRoots++;
                     }
                     afterRoot?.Invoke(teacher,replay,compared);
                     if(!SameClock(teacher,replay) || !SameTrace(t,r)){errors.Add("root_trace_mismatch");break;}
@@ -268,6 +284,9 @@ public static class OracleActionEpisodeRunner
                     if(command.Kind==MainActionKind.EndTurn)break;
                 }
             }
+            if(baseline is not null)
+                baselineFinalVerified=baseline.State.IsFinished && SameClock(teacher,baseline)
+                    && SameFullTrace(teacher,baseline) && teacher.State.SnapshotJson()==baseline.State.SnapshotJson();
             if(!teacher.State.IsFinished || !replay.State.IsFinished)errors.Add("unfinished");
             if(teacher.PendingSelectionCount+replay.PendingSelectionCount!=0)errors.Add("pending_choice");
             if(labels.Count==0)errors.Add("no_action_rows");
@@ -300,7 +319,9 @@ public static class OracleActionEpisodeRunner
         return new(teacher,replay,labels.AsReadOnly(),errors.Distinct(StringComparer.Ordinal).ToArray(),
             (teacherChoice?.Faults??0)+(replayChoice?.Faults??0),main.Faults+teacherView.Faults,
             main.RejectedActions+teacherView.RejectedActions,main.AppliedActions,compared)
-            {PlanningCloneFailure=cloneFailure,PlanningCloneFailureStep=cloneFailureStep,
+            {Identity=identity,PlanningBaselineInitialVerified=baselineInitialVerified,
+             PlanningBaselineVerifiedRoots=baselineVerifiedRoots,PlanningBaselineFinalVerified=baselineFinalVerified,
+             PlanningCloneFailure=cloneFailure,PlanningCloneFailureStep=cloneFailureStep,
              PlanningMode=clonePlanning?"experimental-owned-idle-clone/v1":"replay-prefix",
              PlanningClones=clones,PlanningBaselineRoots=baselineRoots,
              SnapshotDifference=snapshotDifference,PlanningPrefixRoots=prefixRoots,PlanningDecisions=planningDecisions,

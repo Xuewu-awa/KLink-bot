@@ -22,7 +22,9 @@ internal static partial class SelfTest
                 || replay.Replay.State.Random.State!=clone.Replay.State.Random.State
                 || replay.Replay.State.Random.ConsumedCount!=clone.Replay.State.Random.ConsumedCount)
                 return $"seed {seed}: {string.Join(',',clone.Errors)} / labels {clone.Labels.Count}";
-            if(clone.PlanningPrefixRoots!=0 || clone.PlanningClones!=clone.Labels.Count
+            if(!clone.PlanningBaselineInitialVerified || !clone.PlanningBaselineFinalVerified
+                || clone.PlanningBaselineVerifiedRoots!=clone.Labels.Count || clone.Identity!=replay.Identity
+                || clone.PlanningPrefixRoots!=0 || clone.PlanningClones!=clone.Labels.Count
                 || clone.PlanningBaselineRoots!=clone.Labels.Count || clone.PlanningDecisions!=clone.Labels.Count
                 || clone.PlanningVmFaults+clone.PlanningChoiceFaults+clone.MainFaults+clone.MainRejections!=0)
                 return "克隆工作/健康计数错误";
@@ -63,7 +65,8 @@ internal static partial class SelfTest
             beforeClone:(p,n)=>{if(n==1)p.ChooseSpawnCard=(c,cards)=>cards[0];});
         if(!unsupported.Errors.Contains("planning_clone_unsupported") || unsupported.Labels.Count!=1
             || unsupported.PlanningClones!=1 || unsupported.PlanningPrefixRoots!=0
-            || unsupported.PlanningCloneFailureStep!=1 || string.IsNullOrWhiteSpace(unsupported.PlanningCloneFailure))return "不支持克隆未显式停止/意外回退";
+            || unsupported.PlanningBaselineVerifiedRoots!=1 || !unsupported.PlanningBaselineInitialVerified
+            || unsupported.PlanningBaselineFinalVerified || unsupported.PlanningCloneFailureStep!=1 || string.IsNullOrWhiteSpace(unsupported.PlanningCloneFailure))return "不支持克隆未显式停止/意外回退";
         var fault=OracleActionEpisodeRunner.RunCore(db,vectors,deck,deck,1,maxRows:12,clonePlanning:true,
             afterProbe:(p,n)=>{if(n==1)p.Api.Vm.UnsupportedOps["<forced-clone-fault>"]=1;});
         return fault.Errors.Contains("planning_execution_fault") && fault.Labels.Count==1

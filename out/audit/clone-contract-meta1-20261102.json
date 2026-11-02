@@ -1,0 +1,282 @@
+{
+  "version": 1,
+  "contract": "experimental-clone-paired-reference/v1",
+  "accepted": true,
+  "reasons": [],
+  "writesTrainingRows": false,
+  "fixture": {
+    "name": "meta: \u82F1\u65E5 vs \u65E5\u6FB3\u5FEB\u653B",
+    "left": [
+      "card_event_monty",
+      "card_event_the_commonwealth",
+      "card_unit_85_pioneer_company",
+      "card_event_honor",
+      "card_event_royal_research",
+      "card_event_wave_after_wave",
+      "card_unit_gordon_highlanders",
+      "card_event_the_land_girls",
+      "card_unit_universal_carrier",
+      "card_unit_meteor",
+      "card_event_forward_observers",
+      "card_event_forward_observers",
+      "card_unit_middlesex_regiment",
+      "card_unit_middlesex_regiment",
+      "card_event_fortification",
+      "card_event_fortification",
+      "card_event_fortification",
+      "card_unit_m3a3_honey_desert",
+      "card_unit_m3a3_honey_desert",
+      "card_unit_m3a3_honey_desert",
+      "card_unit_sally",
+      "card_unit_sally",
+      "card_unit_sally",
+      "card_unit_no_9_commando",
+      "card_unit_no_9_commando",
+      "card_unit_no_9_commando",
+      "card_event_grand_plans",
+      "card_event_grand_plans",
+      "card_event_grand_plans",
+      "card_event_protected_convoy",
+      "card_event_protected_convoy",
+      "card_event_protected_convoy",
+      "card_unit_no_46_commando",
+      "card_unit_no_46_commando",
+      "card_unit_no_46_commando",
+      "card_event_deadly_duty",
+      "card_event_deadly_duty",
+      "card_event_deadly_duty",
+      "card_event_deadly_duty"
+    ],
+    "right": [
+      "card_event_desperate_measures",
+      "card_unit_2nd_raiding_brigade",
+      "card_unit_1st_signal_regiment",
+      "card_unit_dinah_iii",
+      "card_unit_ki_30_ann",
+      "card_unit_kyoto_regiment",
+      "card_event_overpower",
+      "card_event_imperial_research",
+      "card_event_special_attack",
+      "card_unit_kawanishi_h8k",
+      "card_unit_raaf_walrus",
+      "card_event_repel_the_attack",
+      "card_event_repel_the_attack",
+      "card_event_ferocious_assault",
+      "card_event_ferocious_assault",
+      "card_unit_5th_sasebo_snlf",
+      "card_unit_5th_sasebo_snlf",
+      "card_unit_2_2nd_pioneers",
+      "card_unit_2_2nd_pioneers",
+      "card_unit_type_93",
+      "card_unit_type_93",
+      "card_unit_type_93",
+      "card_unit_yokosuka_e14y",
+      "card_unit_yokosuka_e14y",
+      "card_unit_yokosuka_e14y",
+      "card_event_task_force_44",
+      "card_event_task_force_44",
+      "card_event_task_force_44",
+      "card_unit_238th_regiment",
+      "card_unit_238th_regiment",
+      "card_unit_238th_regiment",
+      "card_unit_shibata_regiment",
+      "card_unit_shibata_regiment",
+      "card_unit_shibata_regiment",
+      "card_unit_shibata_regiment",
+      "card_unit_dingo_armored_car",
+      "card_unit_dingo_armored_car",
+      "card_unit_dingo_armored_car",
+      "card_unit_dingo_armored_car"
+    ]
+  },
+  "identity": {
+    "seed": 1,
+    "orderedDecksSha256": "85F602A1852B56E2D487FB8DD9FD5B45027B4CB368ACAF721FB0EC0178C52D56",
+    "teacher": "greedy-isolated-prefix/v3\u002Bchoose-one-explicit/v1\u002Bfirst-index/v1\u002Bafterstate-left/v1"
+  },
+  "cloneFingerprint": {
+    "labelsSha256": "CDC1AFF0094B3145CAEB1601A2030E24E365336849733AD47B22D6F039001405",
+    "snapshotSha256": "DF169C431521E100812BCB8A3A6241BF5C6076BF5F9BBF4A40A21309FB186246",
+    "traceSha256": "CC52EFE0BA0992CFEF30608248D823F9985B75D86444B90D2C7C572A5B6E5EE4",
+    "state": 3234535816,
+    "consumedCount": 265,
+    "winner": 2
+  },
+  "referenceFingerprint": {
+    "labelsSha256": "CDC1AFF0094B3145CAEB1601A2030E24E365336849733AD47B22D6F039001405",
+    "snapshotSha256": "DF169C431521E100812BCB8A3A6241BF5C6076BF5F9BBF4A40A21309FB186246",
+    "traceSha256": "CC52EFE0BA0992CFEF30608248D823F9985B75D86444B90D2C7C572A5B6E5EE4",
+    "state": 3234535816,
+    "consumedCount": 265,
+    "winner": 2
+  },
+  "inputsSha256": {
+    "card-effects.json": "fc335d228779a2859627ee706d85949149ca595d0cfdfbc4971541831e5a8df0",
+    "card-ir-native-defaults.json": "a4f2812716f03ded180f45603ac7b715e890c54b1bc5b4b75fe2b1ec0975d711",
+    "card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b",
+    "card-vectors.json": "b15b93cb02e7e8a712561a2da52127a5867084ecb878a6ad58539b56b1109ab9",
+    "cards.json": "3550dc76eb0414c500166875f45909077aeeb3ea4d229b9b0ba9c66a81987c4b",
+    "deck_code_ids.json": "261cfd518c1a1ce40488f141e8dbd617ff19abe0734c49319ebcd6ac5dcb257e",
+    "event-contracts.json": "e4806dd48efbfc799a27c14b3660ad76ee03cd3f13e3e4320b213c5928efb112",
+    "live-actions.json": "db413a4644afe75806e66c47e200d93c5d93e91ca03e23fca38465b7dcb4dab3",
+    "KLink.Bot.dll": "d32b1a86e3ee5a045494163e1849d4d8d32e926975c6b4880b54f451dd07bc62",
+    "NNTrain.dll": "8c48821415e9cd1abcd8f0370650dd7461ad9ed74bf691ccf904f20e33ebb89e"
+  },
+  "defaultAdmissionReasons": [
+    "experimental_planning_not_admitted",
+    "unverified_planning_count"
+  ],
+  "cloneDiagnostics": {
+    "identity": {
+      "seed": 1,
+      "orderedDecksSha256": "85F602A1852B56E2D487FB8DD9FD5B45027B4CB368ACAF721FB0EC0178C52D56",
+      "teacher": "greedy-isolated-prefix/v3\u002Bchoose-one-explicit/v1\u002Bfirst-index/v1\u002Bafterstate-left/v1"
+    },
+    "planningBaselineInitialVerified": true,
+    "planningBaselineFinalVerified": true,
+    "planningBaselineVerifiedRoots": 107,
+    "errors": [],
+    "snapshotDifference": null,
+    "planningCloneFailureStep": null,
+    "planningCloneFailure": null,
+    "teacher": {
+      "faultedPrograms": 0,
+      "unsupportedOps": {},
+      "unimplementedCalls": {
+        "\u003Clocal-ran:didPlayBritishInfantryLastTurn\u003E": 1,
+        "\u003Clocal-ran:anyOrderPlayedThisTurn\u003E": 1,
+        "\u003Clocal-ran:ApplyTheBuff\u003E": 3,
+        "\u003Clocal-ran:RemoveTheBuff\u003E": 3,
+        "\u003Clocal-ran:GetPlayFromHandDamage\u003E": 1,
+        "\u003Clocal-ran:isSecondOrderThisTurn\u003E": 1
+      },
+      "pendingSelectionCount": 0
+    },
+    "replay": {
+      "faultedPrograms": 0,
+      "unsupportedOps": {},
+      "unimplementedCalls": {
+        "\u003Clocal-ran:didPlayBritishInfantryLastTurn\u003E": 1,
+        "\u003Clocal-ran:anyOrderPlayedThisTurn\u003E": 1,
+        "\u003Clocal-ran:ApplyTheBuff\u003E": 3,
+        "\u003Clocal-ran:RemoveTheBuff\u003E": 3,
+        "\u003Clocal-ran:GetPlayFromHandDamage\u003E": 1,
+        "\u003Clocal-ran:isSecondOrderThisTurn\u003E": 1
+      },
+      "pendingSelectionCount": 0
+    },
+    "planning": {
+      "planningVmFaults": 0,
+      "planningUnsupported": {},
+      "planningCalls": {
+        "\u003Clocal-ran:didPlayBritishInfantryLastTurn\u003E": 92,
+        "\u003Clocal-ran:anyOrderPlayedThisTurn\u003E": 48,
+        "\u003Clocal-ran:ApplyTheBuff\u003E": 89,
+        "\u003Clocal-ran:RemoveTheBuff\u003E": 61,
+        "\u003Clocal-ran:GetPlayFromHandDamage\u003E": 28,
+        "\u003Clocal-ran:isSecondOrderThisTurn\u003E": 17
+      },
+      "planningPendingChoices": 0,
+      "counterScope": "Cumulative diagnostics including inherited clone prefixes; not newly executed work."
+    },
+    "missingCalls": [
+      {
+        "phase": "teacher",
+        "sites": [],
+        "sitesOmitted": 0,
+        "captureFailures": 0
+      },
+      {
+        "phase": "replay",
+        "sites": [],
+        "sitesOmitted": 0,
+        "captureFailures": 0
+      },
+      {
+        "phase": "planning",
+        "sites": [],
+        "sitesOmitted": 0,
+        "captureFailures": 0
+      }
+    ]
+  },
+  "referenceDiagnostics": {
+    "identity": {
+      "seed": 1,
+      "orderedDecksSha256": "85F602A1852B56E2D487FB8DD9FD5B45027B4CB368ACAF721FB0EC0178C52D56",
+      "teacher": "greedy-isolated-prefix/v3\u002Bchoose-one-explicit/v1\u002Bfirst-index/v1\u002Bafterstate-left/v1"
+    },
+    "planningBaselineInitialVerified": false,
+    "planningBaselineFinalVerified": false,
+    "planningBaselineVerifiedRoots": 0,
+    "errors": [],
+    "snapshotDifference": null,
+    "planningCloneFailureStep": null,
+    "planningCloneFailure": null,
+    "teacher": {
+      "faultedPrograms": 0,
+      "unsupportedOps": {},
+      "unimplementedCalls": {
+        "\u003Clocal-ran:didPlayBritishInfantryLastTurn\u003E": 1,
+        "\u003Clocal-ran:anyOrderPlayedThisTurn\u003E": 1,
+        "\u003Clocal-ran:ApplyTheBuff\u003E": 3,
+        "\u003Clocal-ran:RemoveTheBuff\u003E": 3,
+        "\u003Clocal-ran:GetPlayFromHandDamage\u003E": 1,
+        "\u003Clocal-ran:isSecondOrderThisTurn\u003E": 1
+      },
+      "pendingSelectionCount": 0
+    },
+    "replay": {
+      "faultedPrograms": 0,
+      "unsupportedOps": {},
+      "unimplementedCalls": {
+        "\u003Clocal-ran:didPlayBritishInfantryLastTurn\u003E": 1,
+        "\u003Clocal-ran:anyOrderPlayedThisTurn\u003E": 1,
+        "\u003Clocal-ran:ApplyTheBuff\u003E": 3,
+        "\u003Clocal-ran:RemoveTheBuff\u003E": 3,
+        "\u003Clocal-ran:GetPlayFromHandDamage\u003E": 1,
+        "\u003Clocal-ran:isSecondOrderThisTurn\u003E": 1
+      },
+      "pendingSelectionCount": 0
+    },
+    "planning": {
+      "planningVmFaults": 0,
+      "planningUnsupported": {},
+      "planningCalls": {
+        "\u003Clocal-ran:didPlayBritishInfantryLastTurn\u003E": 91,
+        "\u003Clocal-ran:anyOrderPlayedThisTurn\u003E": 47,
+        "\u003Clocal-ran:ApplyTheBuff\u003E": 86,
+        "\u003Clocal-ran:RemoveTheBuff\u003E": 58,
+        "\u003Clocal-ran:GetPlayFromHandDamage\u003E": 27,
+        "\u003Clocal-ran:isSecondOrderThisTurn\u003E": 16
+      },
+      "planningPendingChoices": 0,
+      "counterScope": "Cumulative diagnostics including inherited clone prefixes; not newly executed work."
+    },
+    "missingCalls": [
+      {
+        "phase": "teacher",
+        "sites": [],
+        "sitesOmitted": 0,
+        "captureFailures": 0
+      },
+      {
+        "phase": "replay",
+        "sites": [],
+        "sitesOmitted": 0,
+        "captureFailures": 0
+      },
+      {
+        "phase": "planning",
+        "sites": [],
+        "sitesOmitted": 0,
+        "captureFailures": 0
+      }
+    ]
+  },
+  "rows": 107,
+  "planningClones": 107,
+  "planningBaselineRoots": 107,
+  "planningBaselineVerifiedRoots": 107,
+  "scope": "Paired software consistency/health check, not rule certification. Shared catalogs and IR frozen; single thread; fixed first-index choice adapters. No dataset output or training admission change."
+}

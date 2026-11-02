@@ -1281,3 +1281,61 @@ policy-evaluation checks and 63 action-dataset checks pass. New checks cover
 fixture selection/rejection and rejected-boundary/provenance serialization.
 All four report deck hashes and loaded data/binary hashes were independently
 verified against the tested snapshot. Existing NNTrain CS8632 warnings remain.
+
+## Paired clone admission pilot (2026-11-02)
+
+`NNTrain inspect-clone-admission --fixture m1 --seed 1 --out report.json`
+now evaluates the separate `experimental-clone-paired-reference/v1` pilot.
+It runs a complete independent prefix-replay episode, then the experimental
+clone episode with the same ordered decks, seed, teacher policy, database and
+vector instances. Meta decks and `--choose-one-policy last` use the same
+fixture/policy options as the episode benchmark. `clone-admission-selftest`
+exercises the pilot's rejection boundary.
+
+The gate requires four distinct teacher/replay engines sharing one database,
+matching episode identities, healthy complete executions and exact labels,
+final snapshots, full action traces and RNG state/consumption across the pair.
+It also checks finite bounded label shapes, complete missing-call provenance,
+no missing-call sites, no clone-boundary failure, exact clone/decision/root
+counts, zero prefix reconstruction roots, and verified initial, every-root
+and final internal baseline comparisons. The independent reference must pass
+the existing prefix-replay admission checks. The runner now records baseline
+verification explicitly rather than inferring it from an empty error list.
+
+This is trusted in-process validation, not an unforgeable attestation or an
+external report importer. Result records and engines are mutable; the identity
+hash binds deck order/seed/teacher, not all catalog/vector/IR state. The inspect
+driver supplies shared vectors and frozen catalogs/IR under the existing
+single-thread idle-clone restrictions. It records exact loaded input and binary
+hashes. The gate does not replace the serialized dataset verifier, certify all
+private clone state, or certify KARDS rules. Planning counters can include
+inherited prefixes and must not be interpreted as newly executed VM work.
+
+Four seed-1 paired fixtures passed: M1 Native (39 rows), M1 Last (39), 英日 vs
+日澳快攻 (107), and 苏英爆破 vs 德澳老兵 (170). Labels, final snapshot, trace
+and RNG fingerprints match in every pair. M1 is a synthetic fixture; these runs
+do not establish current deck legality or exhaustive card coverage.
+Reports are `out/audit/clone-contract-{m1-native,m1-last,meta1,meta2}-20261102.json`.
+Exact source/input/report provenance and validation counts are recorded in
+`out/audit/clone-contract-source-verification-20261102.json`.
+
+All 51 pilot checks pass, including malformed identities/work counts, missing
+baseline verification, execution/provenance failures, engine aliasing, invalid
+or nonfinite labels, changed final state/trace/RNG, failed reference and default
+writer non-leak checks. Isolated Release builds and all 1,098 BotSim, nine
+policy-evaluation and 63 action-dataset checks pass. The snapshot excludes the
+unrelated local dirty source files. Existing NNTrain nullable warnings remain.
+
+The private DeepSeek worker supplied a mechanical acceptance/consumer inventory.
+Primary review checked the applicable execution and rejection categories against
+source; its proposed serialized header/manifest/hash checks belong to a future
+dataset contract, not this in-process pilot. No worker output certifies rules.
+
+No dataset writer, schema version or model-consumer admission was added.
+`dump-actions` remains prefix replay; default admission still rejects every
+experimental clone result, including all four pilot-approved episodes. This
+pilot deliberately pays for a full independent reference and is not a training
+throughput improvement. No rule-audit matrix certification was refreshed.
+Next: design a separately versioned opt-in clone dataset writer/verifier and
+matching model-consumer contract, preserving whole-episode rejection and the
+default prefix-replay path; benchmark that complete pipeline before adoption.

@@ -41,7 +41,8 @@ internal static class CloneEpisodeBenchmark
     {
         object Engine(KLink.Bot.Engine.MatchEngine engine)=>new {
             engine.Api.Vm.FaultedPrograms,engine.Api.Vm.UnsupportedOps,engine.UnimplementedCalls,engine.PendingSelectionCount};
-        return new {e.Errors,e.SnapshotDifference,e.PlanningCloneFailureStep,e.PlanningCloneFailure,
+        return new {e.Identity,e.PlanningBaselineInitialVerified,e.PlanningBaselineFinalVerified,e.PlanningBaselineVerifiedRoots,
+            e.Errors,e.SnapshotDifference,e.PlanningCloneFailureStep,e.PlanningCloneFailure,
             teacher=Engine(e.Teacher),replay=Engine(e.Replay),
             planning=new {e.PlanningVmFaults,e.PlanningUnsupported,e.PlanningCalls,e.PlanningPendingChoices,
                 counterScope="Cumulative diagnostics including inherited clone prefixes; not newly executed work."},

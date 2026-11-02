@@ -67,8 +67,18 @@ internal static class ActionDatasetTool
     }
     internal static string[] AdmissionReasons(OracleActionEpisodeResult result,bool irLoaded)
     {
-        var reasons=new List<string>(result.Errors);
+        var reasons=new List<string>(ExecutionReasons(result,irLoaded));
         if(result.PlanningMode!="replay-prefix")reasons.Add("experimental_planning_not_admitted");
+        if(result.PlanningDecisions!=result.Labels.Count
+            || result.PlanningPrefixRoots!=(long)result.Labels.Count*(result.Labels.Count-1)/2)
+            reasons.Add("unverified_planning_count");
+        return reasons.Distinct(StringComparer.Ordinal).OrderBy(s=>s,StringComparer.Ordinal).ToArray();
+    }
+
+    // Shared execution checks only; each planning mode must enforce its own work/ownership contract.
+    internal static string[] ExecutionReasons(OracleActionEpisodeResult result,bool irLoaded)
+    {
+        var reasons=new List<string>(result.Errors);
         foreach(var engine in new[]{result.Teacher,result.Replay})
             reasons.AddRange(TrainingAdmission.Check(engine.State.IsFinished,engine.State.Winner,engine.Api.Vm.FaultedPrograms,
                 engine.Api.Vm.UnsupportedOps,engine.UnimplementedCalls,irLoaded,result.Labels.Count,true,
@@ -76,9 +86,6 @@ internal static class ActionDatasetTool
         reasons.AddRange(TrainingAdmission.Check(result.Replay.State.IsFinished,result.Replay.State.Winner,
             result.PlanningVmFaults,result.PlanningUnsupported,result.PlanningCalls,irLoaded,result.Labels.Count,true,
             result.PlanningChoiceFaults,pendingChoices:result.PlanningPendingChoices));
-        if(result.PlanningDecisions!=result.Labels.Count
-            || result.PlanningPrefixRoots!=(long)result.Labels.Count*(result.Labels.Count-1)/2)
-            reasons.Add("unverified_planning_count");
         if(result.Labels.Any(label=>label.AfterObservation is null
             || label.AfterObservation.Length!=StateEncoder.Dim
             || !label.AfterObservation.All(float.IsFinite)))
