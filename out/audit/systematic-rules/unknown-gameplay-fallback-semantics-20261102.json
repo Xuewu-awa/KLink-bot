@@ -1,0 +1,59 @@
+{
+  "schema": "klink-systematic-audit/1",
+  "date": "2026-11-02",
+  "branch": "DinkyPuffer",
+  "base_commit": "d9759f0f31bfb494cdfd92c5dc545f3c40efd34b",
+  "scope": "Review the four unknown_gameplay entries that were classified as covered by same-card local or entrypoint fallback. Determine whether current evidence shows a semantic defect.",
+  "conclusion": {
+    "production_change": false,
+    "static_missing_callsites": 0,
+    "runtime_confirmed_targets": 3,
+    "unresolved_targets": ["card_unit_obice_da_75_13::OnEnterPlay"],
+    "summary": "No defect is established for the three damage-event targets; a focused existing BotSim regression passes. The Obice call drops an anonymous int argument, but the reachable callee closure reads no event/method payload. Its focused smoke test exits before the callsite, so that path still needs a targeted fixture or authoritative asset-level confirmation."
+  },
+  "implementation_facts": [
+    {
+      "fact": "The entrypoint fallback evaluates call arguments in the caller frame, but invokes RunCore with the existing EffectContext and a snapshot of caller locals; RunCore has no argument-list parameter.",
+      "source": "src/KLink.Bot/Effects/Blueprint/KismetVm.cs:648-656, 186-189"
+    },
+    {
+      "fact": "220th Rifles, Kyushu J7W3, and SU-100 each call one no-output same-card event entrypoint from locals.OnCardDealDamage. Their target closures operate on board/card state and have no event-parameter reads in the extracted IR.",
+      "source": "out/audit/deepseek-unknown-gameplay-20261102/result.json"
+    },
+    {
+      "fact": "Obice da 75/13 calls OnEnterPlay(int 0) at i=3175 from the OnAfterOtherCardLeaveBoardOrOwner flow. The reachable OnEnterPlay closure references cardFunction, cardID, and side and contains no K2Node_Event or Method payload reads.",
+      "source": "out/audit/deepseek-unknown-gameplay-20261102/result.json"
+    },
+    {
+      "fact": "The OnEnterPlay event contract has a method enum slot, while OnAfterOtherCardLeaveBoardOrOwner carries cardLeaving and oldLocation. The nested call's literal is anonymous in the IR, so its formal target is not proven by the available extracted record.",
+      "source": "klink bot/docs/event-contracts.json"
+    }
+  ],
+  "validation": [
+    {
+      "command": "dotnet run --project tools/BotSim -c Release -- selftest --filter '卡内伤害自定义事件入口'",
+      "result": "PASS: 1 focused test; 220th Rifles, Kyushu J7W3, and SU-100 all executed their nested damage event behavior."
+    },
+    {
+      "command": "dotnet run --project tools/BotSim -c Release -- smoke-all-cards --only card_unit_obice_da_75_13 --entry OnAfterOtherCardLeaveBoardOrOwner --no-determinism --no-integration",
+      "result": "LIMITED: no exception or missing primitive; 11 steps, one JSON_GetIntArray call, zero state changes. This did not reach the nested OnEnterPlay callsite and is not evidence that its substantive branch works."
+    }
+  ],
+  "assessment": {
+    "confirmed": [
+      "The three damage-event fallbacks are covered by an existing integration-style BotSim selftest, which passed on this checkout.",
+      "The Obice nested OnEnterPlay body does not appear to consume the dropped argument in the extracted reachable closure."
+    ],
+    "not_proven": [
+      "That the anonymous Obice int(0) is specifically the OnEnterPlay method parameter.",
+      "That the Obice nested branch is reached and produces the intended board mutation under an accurately constructed game state.",
+      "Equivalence of this VM fallback behavior to the current live client; this audit used repository IR/contracts and BotSim, not a new client-memory capture."
+    ],
+    "next_step": "Add a narrowly scoped BotSim fixture that reaches Obice's OnAfterOtherCardLeaveBoardOrOwner callsite with a same-name leaving card and eligible allied Alpine units; assert the expected attribute/persistence changes. Cross-check the anonymous call parameter against the authoritative Blueprint export before making a production change."
+  },
+  "worker_artifact_review": {
+    "job_id": "20261102-215730-unknown-gameplay-map-d66add69",
+    "artifact": "out/audit/deepseek-unknown-gameplay-20261102/result.json",
+    "status": "mechanical inventory independently spot-checked against KismetVm.cs, KismetIr.cs, CardApi.cs, MatchEngine.cs, event-contracts.json, and the focused BotSim selftest; worker inferences were not treated as proof of game semantics"
+  }
+}
