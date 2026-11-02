@@ -20,6 +20,12 @@ internal static partial class SelfTest
 
     private static readonly List<Case> Cases = new()
     {
+        new("MatchEngineClone: exact fields aliases callbacks and isolation", MatchEngineCloneFields),
+        new("MatchEngineClone: independent replay and repeated continuation", MatchEngineCloneContinuation),
+        new("MatchEngineClone: pending work and external ownership rejection", MatchEngineCloneRejection),
+        new("MatchEngineClone: callback reentry and exception unwind", MatchEngineCloneReentrancy),
+        new("MatchEngineClone: integrated pool cache cycles", db => CardApiClonePools(db, wholeEngine: true)),
+        new("MatchEngineClone: play move attack and destruction continuation", MatchEngineCloneActions),
         new("CardApiClone: exact fields trace aliases and isolation", CardApiCloneFields),
         new("CardApiClone: VM pools caches cycles and invalidation", CardApiClonePools),
         new("CardApiClone: dispatch binding and database views", CardApiCloneBindingAndDatabase),

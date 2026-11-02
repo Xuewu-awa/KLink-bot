@@ -16,7 +16,7 @@ namespace KLink.Bot.Engine;
 /// - kredit 上限、疲劳公式、部署线容量
 /// - 攻击结算顺序（反击、Guard、Smokescreen 的交互）
 /// </summary>
-public sealed class MatchEngine
+public sealed partial class MatchEngine
 {
     // A selection response occurs after the requesting Blueprint has returned.
     // Keep this order in headless play while resolving the choice synchronously.
@@ -34,6 +34,7 @@ public sealed class MatchEngine
         bool defer = true, bool consumeAutoPlay = true, bool updateExtraBeforeWait = false,
         Func<CardInstance?>? replySource = null)
     {
+        using var operation = EnterOperation();
         bool Complete()
         {
             void BeginReply()
@@ -181,6 +182,7 @@ public sealed class MatchEngine
     /// </summary>
     private void FireCardCreated(CardInstance card)
     {
+        using var operation = EnterOperation();
         Api.FireTrigger("OnCreateCard", card, card.Owner);
     }
 
@@ -214,6 +216,7 @@ public sealed class MatchEngine
     internal void ExecuteLocationMovedEvents(CardInstance card, CardLocation oldLocation,
         CardLocation newLocation, bool changeOwner, CardMoveReason moveReason, bool manageLocation = false)
     {
+        using var operation = EnterOperation();
         // CardLocationMoved i=578 invokes the event helper before removing smoke (i=735).
         ExecuteOnCardLocationMoved(card, oldLocation, newLocation, changeOwner, moveReason);
 
@@ -305,6 +308,7 @@ public sealed class MatchEngine
     private void ExecuteOnCardLocationMovedCore(CardInstance? card, int cardId, CardLocation oldLocation,
         CardLocation newLocation, bool changeOwner, CardMoveReason moveReason)
     {
+        using var operation = EnterOperation();
         Effects.Blueprint.LiveRuleTables.TryGetEnumName("/Game/Structs/CardMoveReason.CardMoveReason",
             (int)moveReason, out string reasonName);
         var args = new object?[] { card, (int)oldLocation, (int)newLocation, changeOwner, reasonName };
@@ -335,6 +339,7 @@ public sealed class MatchEngine
     /// <summary>Native T49: own hook, query observers, stop check before each saved item.</summary>
     public void ExecuteOnCardMoveFromFrontline(CardInstance card)
     {
+        using var operation = EnterOperation();
         if (!card.IsSuppressed)
             Api.FireTrigger("OnMoveFromFrontline", card, card.Owner,
                 eventArgs: Array.Empty<object?>(), recipientSnapshot: new[] { card },
@@ -346,6 +351,7 @@ public sealed class MatchEngine
     /// <summary>ExecuteOnEnterPlayEvents: unsuppressed self first, then T43 observers.</summary>
     public void ExecuteOnEnterPlayEvents(CardInstance? card, int method)
     {
+        using var operation = EnterOperation();
         if (card is not null && !card.IsSuppressed)
             Api.FireTrigger("OnEnterPlay", card, card.Owner,
                 eventArgs: new object?[] { method },
@@ -508,6 +514,7 @@ public sealed class MatchEngine
 
     public void Start()
     {
+        using var operation = EnterOperation();
         // HQ：左右各一，防御 20
         var leftHq = State.Create("card_location_london", Side.Left, CardLocation.BoardHqLeft, 0);
         State.SetLocationCardBySide(Side.Left, leftHq);
@@ -571,6 +578,7 @@ public sealed class MatchEngine
 
     private void BuildDeck(Side side, IReadOnlyList<string> cards)
     {
+        using var operation = EnterOperation();
         int n = 0;
         foreach (string name in cards)
         {
@@ -583,6 +591,7 @@ public sealed class MatchEngine
 
     private void ShuffleDeck(Side side)
     {
+        using var operation = EnterOperation();
         var deck = State.Deck(side).ToList();
         State.Random.Shuffle(deck);
         for (int i = 0; i < deck.Count; i++)
@@ -593,6 +602,7 @@ public sealed class MatchEngine
 
     private void DealOpeningHand(Side side, int count)
     {
+        using var operation = EnterOperation();
         var deck = State.Deck(side).ToList();
         for (int i = 0; i < count && i < deck.Count; i++)
         {
@@ -619,6 +629,7 @@ public sealed class MatchEngine
     /// </param>
     public void StartTurn(Side side, bool? draw = null)
     {
+        using var operation = EnterOperation();
         BeginEffectResolution();
         try
         {
@@ -643,6 +654,7 @@ public sealed class MatchEngine
 
     private void StartTurnCore(Side side, bool? draw = null)
     {
+        using var operation = EnterOperation();
         bool doDraw = draw ?? (State.Turn != 1);
 
         State.ActiveSide = side;
@@ -831,6 +843,7 @@ public sealed class MatchEngine
 
     public void EndTurn(Side side)
     {
+        using var operation = EnterOperation();
         BeginEffectResolution();
         try
         {
@@ -844,6 +857,7 @@ public sealed class MatchEngine
 
     private void EndTurnCore(Side side)
     {
+        using var operation = EnterOperation();
         // PlayerMoves starts EndOfTurn -> InitStart -> SuperActionStarted before
         // end-turn events/autoplay. Keep the existing final root-log placement,
         // but isolate cancellation rewrites and clear stops before any effects.
@@ -912,6 +926,7 @@ public sealed class MatchEngine
     /// </summary>
     internal void RequestForceEndTurn(Side side, int instigatorID)
     {
+        using var operation = EnterOperation();
         if (_pendingForcedEndTurnSide is null)
         {
             _pendingForcedEndTurnSide = side;
@@ -921,6 +936,7 @@ public sealed class MatchEngine
 
     internal void BeginEffectResolution()
     {
+        using var operation = EnterOperation();
         if (_effectResolutionDepth == 0 && _pendingSelections is null)
             _pendingSelections = new Queue<Func<bool>>();
         _effectResolutionDepth++;
@@ -928,6 +944,7 @@ public sealed class MatchEngine
 
     internal void EndEffectResolution()
     {
+        using var operation = EnterOperation();
         if (_effectResolutionDepth <= 0)
         {
             return;
@@ -965,6 +982,7 @@ public sealed class MatchEngine
     /// <summary>Retry the pending head with current choice policies; never recursively drain an active effect.</summary>
     public bool ResumePendingSelections()
     {
+        using var operation = EnterOperation();
         if (_effectResolutionDepth != 0) return false;
         if (PendingSelectionCount == 0) return true;
         BeginEffectResolution();
@@ -974,6 +992,7 @@ public sealed class MatchEngine
 
     private void ConsumePendingForcedEndTurn()
     {
+        using var operation = EnterOperation();
         if (_processingForcedEndTurn
             || _pendingForcedEndTurnSide is not { } side)
         {
@@ -1030,6 +1049,7 @@ public sealed class MatchEngine
     /// <summary>ApplyFatigueDamage: direct HQ defense subtraction, then T26, with a saved death flag.</summary>
     internal bool ApplyFatigueDamage(Side side, bool fromBond)
     {
+        using var operation = EnterOperation();
         var hq = State.Hq(side);
         int amount = State.Fatigue(side) + 1;
         int oldDefense = hq.Defense;
@@ -1057,6 +1077,7 @@ public sealed class MatchEngine
 
     private CardInstance? DrawCardCore(Side side, bool startOfTurnDraw, int instigatorId, bool cardSeen, bool opponentDraw, int? selectedCardId)
     {
+        using var operation = EnterOperation();
         var deck = State.Deck(side).ToList();
         // Specific draw's remove/add-to-top/draw sequence has no callbacks in
         // between. Select its ID directly while preserving object numbers and
@@ -1160,6 +1181,7 @@ public sealed class MatchEngine
     /// </summary>
     public void FireEnteredHandFromDeckEvents(CardInstance card, Side side, bool startOfTurnDraw)
     {
+        using var operation = EnterOperation();
         var drawnNamed = new Dictionary<string, object?>(StringComparer.Ordinal)
         {
             ["drawnCardID"] = card.CardId,
@@ -1194,6 +1216,7 @@ public sealed class MatchEngine
     /// </summary>
     public void ApplyPendingLocalRuleReceipts()
     {
+        using var operation = EnterOperation();
         while (_pendingLocalRuleReceipts.TryDequeue(out var receipt))
         {
             if (receipt.Kind == LocalReceiptKind.GotchaTrigger)
@@ -1263,6 +1286,7 @@ public sealed class MatchEngine
 
     internal void NotifyFrontlineLimiter(int limiterId, bool remove)
     {
+        using var operation = EnterOperation();
         FireSubAction("ZActionUpdateFrontlineLimiter", new[] {
             ActionValue2.Int("cardID", limiterId),
             ActionValue2.Int("instigatorID", limiterId),
@@ -1273,6 +1297,7 @@ public sealed class MatchEngine
 
     internal void NotifyGotchaTriggered(int cardId, int instigatorId, bool stopCard)
     {
+        using var operation = EnterOperation();
         // AddSubActionGotchaTriggered i=0..158: exactly these three fields;
         // skipDiscardingOrder is not serialized by this constructor.
         FireSubAction("ZActionGotchaTriggered", new[] {
@@ -1287,6 +1312,7 @@ public sealed class MatchEngine
         int locationNumber, int targetId, bool playedDirectly, CardLocation? destination = null,
         int? chooseOneIndex = null)
     {
+        using var operation = EnterOperation();
         Effects.Blueprint.LiveRuleTables.TryGetEnumName("/Script/kards.ECardLocationEnum",
             (int)(destination ?? card.Location), out string locationName);
         var values = new List<ActionValue2>
@@ -1323,6 +1349,7 @@ public sealed class MatchEngine
     /// </summary>
     public void ExecuteQueuedAutoPlayActions()
     {
+        using var operation = EnterOperation();
         if (_processingQueuedAutoPlayActions || State.GetAutoPlayCards().Length == 0) return;
         BeginEffectResolution();
         _processingQueuedAutoPlayActions = true;
@@ -1374,6 +1401,7 @@ public sealed class MatchEngine
     /// <summary>Process autoplay inside one action; the caller applies its receipts afterwards.</summary>
     public void ExecuteAutoPlayCards()
     {
+        using var operation = EnterOperation();
         if (_processingAutoPlayCards) return;
         _processingAutoPlayCards = true;
         try
@@ -1407,6 +1435,7 @@ public sealed class MatchEngine
 
     private void PrepareHandPlayCurrentTarget(CardInstance card, CardInstance? target)
     {
+        using var operation = EnterOperation();
         // PlayCardFromHand i=694/728: positive IDs resolve through the map;
         // zero/negative IDs take i=1950 (NoObject). This precedes notification,
         // movement, countermeasures and entry, including the Gotcha early return.
@@ -1415,6 +1444,7 @@ public sealed class MatchEngine
 
     private void ApplyNativeHandPlayCost(CardInstance card, CardInstance? target = null)
     {
+        using var operation = EnterOperation();
         // PlayCardFromHand i=61..304: the activation field alone selects refund,
         // and neither normal cost nor the autoplay tag is checked on that path.
         if (card.GotchaActivated > 0)
@@ -1431,6 +1461,7 @@ public sealed class MatchEngine
 
     private void ChangeHandPlayKredits(CardInstance card, int delta)
     {
+        using var operation = EnterOperation();
         int old = State.Kredits(card.Owner);
         int slots = State.MaxKredits(card.Owner);
         // ChangeKreditsBySide clamps current kredits to the maximum possible,
@@ -1476,6 +1507,7 @@ public sealed class MatchEngine
     /// <summary>能否打出这张牌（费用 + 目标 + 身份可信）。</summary>
     public bool CanPlay(CardInstance card, out string reason, CardInstance? target = null)
     {
+        using var operation = EnterOperation();
         reason = "";
 
         // ★★ 安全网（见 `EnforceGeneratedCardTrust` 的注释）。
@@ -1619,6 +1651,7 @@ public sealed class MatchEngine
     private bool ResolveHandPlayAction(CardInstance card, CardInstance? target,
         bool skipLeaveTrigger, bool validateOrderTarget)
     {
+        using var operation = EnterOperation();
         BeginEffectResolution();
         try
         {
@@ -1636,6 +1669,7 @@ public sealed class MatchEngine
     private bool PlayCardActionCore(CardInstance card, CardInstance? target, bool skipLeaveTrigger,
         bool validateOrderTarget)
     {
+        using var operation = EnterOperation();
         // The training command has already selected a valid option. Refresh its
         // target flag with the shared WhichChooseOne contract before availability
         // branches on it; a flag left by an earlier query describes another option.
@@ -1709,6 +1743,7 @@ public sealed class MatchEngine
     internal bool PlayCardDirectlyFromHand(CardInstance card, bool toFrontline,
                                           int instigatorID, int locationNumber, out bool wroteQqq)
     {
+        using var operation = EnterOperation();
         wroteQqq = false;
         if (card.Location != card.Owner.HandOf() || !card.IsAlive)
         {
@@ -1790,6 +1825,7 @@ public sealed class MatchEngine
                                       int locationNumber, int instigatorID, bool currentTargetPrepared = false,
                                       bool playNotificationPrepared = false)
     {
+        using var operation = EnterOperation();
         BeginEffectResolution();
         try
         {
@@ -1807,6 +1843,7 @@ public sealed class MatchEngine
                                           bool recordAction, bool toFrontline,
                                           int locationNumber, int instigatorID, bool currentTargetPrepared, bool playNotificationPrepared)
     {
+        using var operation = EnterOperation();
         // Native PlayCardFromHand/CardPlayedFromHand pass an integer ID;
         // callbacks may replace the object mapped to it before each use.
         int targetCardId = target?.CardId ?? 0;
@@ -2012,6 +2049,7 @@ public sealed class MatchEngine
     /// </summary>
     private bool RunDeploymentEffect(CardInstance card, int targetCardId, int? instigatorId = null)
     {
+        using var operation = EnterOperation();
         CardInstance? ResolveTarget() => targetCardId > 0 ? State.ById(targetCardId) : null;
         // si=3640：没有 hasDeployment 的卡（全部指令 + 21 张没这个字段的单位）走 si=5920，
         // 那条路上 `_triggerMultiple` 恒 0 ⇒ 只跑一次，且**没有取消钩子**。
@@ -2050,6 +2088,7 @@ public sealed class MatchEngine
     /// <summary>供 <c>CardApi.TriggerDeployment</c> 调用的主动部署效果入口。</summary>
     public void RunDeploymentEffectForTrigger(CardInstance card, int instigatorId)
     {
+        using var operation = EnterOperation();
         // TriggerDeployment i=59/524/956/1119 is a distinct path: it always
         // repeats directly, with no wait flag or extra-play JSON counter.
         if (!card.Keywords.Contains(Keyword.Deployment) || Api.FireDeploymentCancelHook(card, instigatorId)) return;
@@ -2080,6 +2119,7 @@ public sealed class MatchEngine
     private void PlaceOnBoard(CardInstance card, bool toFrontline = false, int locationNumber = -1,
                               CardMoveReason moveReason = CardMoveReason.PlayCardPlayerMove)
     {
+        using var operation = EnterOperation();
         card.EnteredPlayOnTurn = State.Turn;
 
         CardLocation destination = toFrontline ? CardLocation.BoardFrontline : card.Owner.HqOf();
@@ -2092,6 +2132,7 @@ public sealed class MatchEngine
 
     private void MovePlayedCard(CardInstance card, CardLocation destination, int slot, CardMoveReason moveReason)
     {
+        using var operation = EnterOperation();
         var oldLocation = card.Location;
         // PlayCardFromHand i=1988 -> CardLocationMoved i=215/348/578:
         // insert, emit the movement notice, refresh locations, then run callbacks.
@@ -2191,6 +2232,7 @@ public sealed class MatchEngine
     /// </summary>
     private void DecrementPinnedTurnsEndTurn()
     {
+        using var operation = EnterOperation();
         // BP_Logic refreshes GetAllCardInBattle at the loop condition and
         // again before indexing. Callbacks can append/remove/move cards.
         for (int index = 0; index < State.AllCardsInBattleOrder.Count; index++)
@@ -2265,6 +2307,7 @@ public sealed class MatchEngine
     /// </summary>
     public bool MoveUnit(CardInstance unit, int targetSlot, out string reason)
     {
+        using var operation = EnterOperation();
         BeginEffectResolution();
         try
         {
@@ -2281,6 +2324,7 @@ public sealed class MatchEngine
 
     private bool MoveUnitActionCore(CardInstance unit, int targetSlot, out string reason)
     {
+        using var operation = EnterOperation();
         reason = "";
 
         if (unit.Owner != State.ActiveSide || !unit.Location.IsBoard() || unit.IsHq)
@@ -2419,6 +2463,7 @@ public sealed class MatchEngine
     public bool MoveUnitFromSupportToFrontLine(CardInstance unit, int instigatorID,
                                                out string reason)
     {
+        using var operation = EnterOperation();
         reason = "";
         if (!unit.Location.IsBoard() || unit.IsHq)
         {
@@ -2489,6 +2534,7 @@ public sealed class MatchEngine
     /// </summary>
     private void UpdateFrontlineOwner()
     {
+        using var operation = EnterOperation();
         // FetchCardsByLocation returns the first physical battle-array match,
         // without owner grouping, slot sorting or an HQ exclusion.
         State.FrontlineOwner = State.AllCardsInBattleOrder
@@ -2529,6 +2575,7 @@ public sealed class MatchEngine
 
     private void RefreshFrontlineOwnerCore(CardInstance? subject, int subjectId)
     {
+        using var operation = EnterOperation();
         // 必须在 `UpdateFrontlineOwner()` **之前**读：这正是蓝图 si=5 取
         // `oldFrontlineOwnerSide` 的时机，也是"变了才发"的比较基准。
         Side oldOwner = State.FrontlineOwner;
@@ -2557,6 +2604,7 @@ public sealed class MatchEngine
     public void FireLeaveTrigger(CardInstance card, CardLocation goingToLocation, int method = 0,
                                  CardLocation? oldLocation = null, bool includeLocationCards = false)
     {
+        using var operation = EnterOperation();
         if ((!includeLocationCards && card.IsHq) || !(oldLocation ?? card.Location).IsBoard())
         {
             return; // Keep legacy callers' HQ guard; native explicit removal opts in.
@@ -2590,6 +2638,7 @@ public sealed class MatchEngine
     // movement/frontline callbacks. A null own receiver still leaves T8 active.
     internal void FireAfterLeaveTriggerById(int cardId, CardLocation goingToLocation, CardLocation oldLocation)
     {
+        using var operation = EnterOperation();
         if (cardId <= 0 || !oldLocation.IsBoard()) return;
         if (Api.GetCardFromID(cardId) is { } card)
         {
@@ -2606,6 +2655,7 @@ public sealed class MatchEngine
     public void FireAfterLeaveTrigger(CardInstance card, CardLocation goingToLocation, CardLocation oldLocation,
                                       bool includeLocationCards = false)
     {
+        using var operation = EnterOperation();
         if ((!includeLocationCards && card.IsHq) || !oldLocation.IsBoard()) return;
         if (Api.HasActivePincerEffect(card)) Api.RemovePincerEffects(card);
         var afterNamed = new Dictionary<string, object?>(StringComparer.Ordinal)
@@ -2662,6 +2712,7 @@ public sealed class MatchEngine
     /// </summary>
     public bool Attack(CardInstance attacker, CardInstance defender, out string reason)
     {
+        using var operation = EnterOperation();
         BeginEffectResolution();
         try
         {
@@ -2678,6 +2729,7 @@ public sealed class MatchEngine
 
     private bool AttackActionCore(CardInstance attacker, CardInstance defender, out string reason)
     {
+        using var operation = EnterOperation();
         reason = "";
 
         if (attacker.Owner != State.ActiveSide || !attacker.Location.IsBoard() || attacker.IsHq)
@@ -2973,6 +3025,7 @@ public sealed class MatchEngine
     // after calculation/before receive hooks. CanMoveThisTurn also consults this flag.
     internal void SetAttackerHasAttacked(CardInstance attacker)
     {
+        using var operation = EnterOperation();
         // SetAttackerHasAttacked i=379 decrements movementLeft first when
         // the native armor/custom predicate is false (including stopped attacks).
         if (!attacker.CanMoveAndAttackInSameTurn) attacker.HasMovedThisTurn = true;
@@ -2984,6 +3037,7 @@ public sealed class MatchEngine
     /// <summary>列出当前可以攻击的目标。</summary>
     public IEnumerable<CardInstance> LegalTargets(CardInstance attacker)
     {
+        using var operation = EnterOperation();
         var enemy = attacker.Owner.Opposite();
         var enemyUnits = State.Board(enemy).Where(u => u.IsAlive).ToList();
 
@@ -3052,9 +3106,7 @@ public sealed class MatchEngine
         // ⚠️ 与 `Attack` 里那道门**必须同源**：这里过滤掉的目标，`Attack` 也必须拒；
         //    反过来，`Attack` 拒的，这里也不能列出来 —— 否则「候选里有、结算说非法」
         //    会表现成 AI 反复尝试一个永远失败的动作。两处都走 `AttackTargetGate`。
-        return targets.Where(t => CanReachAcrossFrontline(attacker, t)
-                               && CanAttackByCardRestrictions(attacker, t, out _)
-                               && AttackTargetGate(attacker, t).Can);
+        return targets.Where(t => EvaluateLegalAttackTarget(attacker, t));
     }
 
     /// <summary>
@@ -3069,6 +3121,7 @@ public sealed class MatchEngine
     private bool CanAttackByCardRestrictions(CardInstance attacker, CardInstance defender,
                                              out string reason)
     {
+        using var operation = EnterOperation();
         reason = "";
         if (Api.HasCantAttack(attacker))
         {
@@ -3140,6 +3193,7 @@ public sealed class MatchEngine
     /// </summary>
     public List<CardInstance> LegalPlayTargets(CardInstance card)
     {
+        using var operation = EnterOperation();
         var list = new List<CardInstance>();
 
         foreach (var side in new[] { card.Owner.Opposite(), card.Owner })
@@ -3173,6 +3227,7 @@ public sealed class MatchEngine
     /// </summary>
     public bool IsBeingGuarded(CardInstance card)
     {
+        using var operation = EnterOperation();
         if (!card.Location.IsBoard())
         {
             return false;   // si=174：location ∉ {5,6,7} 直接返回
@@ -3275,6 +3330,7 @@ public sealed class MatchEngine
                              bool isCombatDamage = false, bool ignoreHeavyArmor = false,
                              bool damageAlreadyCalculated = false)
     {
+        using var operation = EnterOperation();
         // RULE-536: ExecuteAttackCard writes bounded total defense minus the
         // signed precomputed amount in both directions, even for zero damage.
         // These two callers own notifications and saved destruction decisions.
@@ -3323,6 +3379,7 @@ public sealed class MatchEngine
     internal int CalculateAppliedDamage(CardInstance target, int amount, CardInstance? source,
                                         bool isCombatDamage = false, bool ignoreHeavyArmor = false)
     {
+        using var operation = EnterOperation();
         if (amount <= 0 || !target.IsAlive || target.Keywords.Contains(Keyword.Immune))
         {
             return 0;
@@ -3349,6 +3406,7 @@ public sealed class MatchEngine
     /// <summary>清理防御 ≤ 0 的单位。</summary>
     public void CheckDeaths()
     {
+        using var operation = EnterOperation();
         if (State.IsFinished)
         {
             return;
@@ -3406,6 +3464,7 @@ public sealed class MatchEngine
     private void DestroyCore(CardInstance card, CardInstance? destroyer, bool destroyedInCombat,
                              bool recordDestroyAction, bool useLegacyGuards)
     {
+        using var operation = EnterOperation();
         // RULE-387: explicit native removal accepts HQ objects too. Automatic
         // legacy death adapters keep their existing zone and HQ guards.
         if (useLegacyGuards && (!card.IsAlive || card.IsHq)) return;
@@ -3445,6 +3504,7 @@ public sealed class MatchEngine
     internal void DestroyCombatPair(CardInstance defender, CardInstance attacker,
         CardLocation defenderOldLocation, CardLocation attackerOldLocation)
     {
+        using var operation = EnterOperation();
         var cards = new[] { defender, attacker };
         var killers = new[] { attacker, defender };
         var oldLocations = new[] { defenderOldLocation, attackerOldLocation };
@@ -3470,6 +3530,7 @@ public sealed class MatchEngine
     /// </summary>
     public void DestroyMultiple(IReadOnlyList<CardInstance> cards, CardInstance? destroyer)
     {
+        using var operation = EnterOperation();
         // Native ApplyDestroyMultipleCards has no Type/HQ input filter.
         var targets = cards.ToArray();
         var ids = targets.Select(x => x.CardId).ToArray();
@@ -3521,6 +3582,7 @@ public sealed class MatchEngine
 
     internal void BeforeDestroyed(CardInstance card, CardInstance? killer, bool combat, bool triggered = false)
     {
+        using var operation = EnterOperation();
         // ExecuteOnBeforeOtherCardDestroyed i=140/520/574: suppressed skips only self.
         if (!card.IsSuppressed)
             Api.FireTrigger("OnBeforeDestroyed", card, card.Owner,
@@ -3547,6 +3609,7 @@ public sealed class MatchEngine
     internal void ExecuteDestroyed(CardInstance card, CardInstance? killer, CardLocation location,
                                   IReadOnlyList<int> batch, bool combat)
     {
+        using var operation = EnterOperation();
         // RULE-386: native i=137 sets this in the action process before the
         // target lookup/T24 query. It does not filter the destroyed card's type.
         State.SetUnitDestroyedThisTurn(true);
@@ -3633,6 +3696,7 @@ public sealed class MatchEngine
 
     private void NotifyStopFurtherActions()
     {
+        using var operation = EnterOperation();
         // OnlineMatch.StopFurtherActions rebuilds only the current subActions.
         // Its local values array is NOT cleared between matching play records.
         // Array assignment / struct insertion copy each accumulated prefix.
@@ -3655,6 +3719,7 @@ public sealed class MatchEngine
 
     internal void RecordAction(string actionType, Side player, Dictionary<string, object?> data, IReadOnlyList<SubAction>? subs = null)
     {
+        using var operation = EnterOperation();
         // CreateAction_InitStart i=1320 clears subActions. In-action autoplay
         // does not start an action; DoNextInQueue starts one for every card.
         _currentActionLogStart = State.ActionLog.Count;
@@ -3668,6 +3733,7 @@ public sealed class MatchEngine
     /// <summary>产生并记录一个子动作（对应游戏里的 CreateAction_AddSubAction / AddSubAction*）。</summary>
     internal void FireSubAction(string name, IEnumerable<ActionValue2> values)
     {
+        using var operation = EnterOperation();
         var snapshot = values.ToList();
         State.ActionLog.Add(new GameAction(
             ++_actionId, "SubAction", State.ActiveSide, State.Turn,
@@ -3678,6 +3744,7 @@ public sealed class MatchEngine
 
     private void QueueDestroyedHistoryReceipt(string name, IReadOnlyList<ActionValue2> values)
     {
+        using var operation = EnterOperation();
         int Value(string key) => values.LastOrDefault(x => x.Name == key)?.Value ?? 0;
         string Text(string key) => values.LastOrDefault(x => x.Name == key)?.Text ?? "";
         static int[] Integers(string text) => text.Split(';', StringSplitOptions.RemoveEmptyEntries)
@@ -3719,6 +3786,7 @@ public sealed class MatchEngine
                                     Side toSide, CardLocation originalLocation,
                                     bool releaseControl)
     {
+        using var operation = EnterOperation();
         if (!card.Definition.IsUnit || !card.Location.IsBoard()
             || card.Owner != fromSide || toSide is Side.NotAvailable
             || fromSide == toSide)

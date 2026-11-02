@@ -1,8 +1,8 @@
 # Exact state cloning for candidate evaluation
 
 Status: RNG, supported card-graph/container and detached GameState cloning are
-implemented. Internal idle VM and CardApi component copies and isolated database
-query views are also implemented; complete MatchEngine cloning remains open. Candidate evaluation still constructs an independent engine and
+implemented. MatchEngine.CloneAtIdle now integrates the state, VM, CardApi and
+isolated database query view at a restricted idle boundary. Candidate evaluation still constructs an independent engine and
 replays the committed action tape.
 No speedup is claimed by this work.
 
@@ -330,3 +330,72 @@ nullable-context warnings remain). An initial full run exposed legacy fixtures
 selecting the sole nonpublic CardDatabase constructor by reflection; CloneView
 uses a factory method instead of adding a constructor, and the rerun passed.
 The final added actual-fallback/cold-index assertions passed in the targeted run.
+
+## Integrated idle MatchEngine copy (2026-11-02)
+
+MatchEngine.CloneAtIdle() returns an independently mutable engine at an explicitly
+restricted boundary. It registers the destination engine and a database view in
+one graph memo, then copies GameState, deck inputs, engine log, CardApi and VM.
+The three default GameState callbacks are rebound to the destination. Constructor
+gameplay setup, Start, rule setters and queue draining are not invoked by copying.
+
+The 27 engine storage fields (12 explicit and 15 auto-property backing fields)
+have an exact reflection inventory guard. Raw action ID, current action-log start,
+out-of-range rejection counter and both trust configuration flags are retained.
+LastPick and LastHandTarget share sealed immutable scalar/string records; their
+field layouts are also guarded. Deck inputs support exact string[] and List<string>
+runtime types, copied through the common memo to preserve aliases with each other
+and with other graph roots. Other IReadOnlyList implementations fail explicitly.
+Engine log aliases to state/API/VM payloads are preserved.
+
+The boundary rejects pending selections (including an empty retained queue),
+local rule receipts, forced-end requests, trigger/autoplay/wait queues, active
+engine/effect/autoplay/forced-end scopes, pending deck removal and active API/VM
+execution. The gate does not consume pending work. In particular, a direct Destroy
+can leave a receipt that its normal caller must apply before cloning is allowed.
+The five external selector properties must be null; no captured selector closure
+is retained. All three state callbacks must equal the engine's default owned
+delegates; null, custom and multicast replacements are rejected. Destination
+selectors can be installed explicitly after cloning when their ownership is known.
+
+All 70 nonstatic block-bodied methods in the original engine file have a disposable
+operation-depth scope. Expression-bodied gameplay entry points forward into these
+scoped methods; simple record/log updates have no callback. LegalTargets retains its
+original deferred predicate timing and guards each predicate invocation separately.
+Scopes unwind on exceptions and nest across root calls and callbacks. This is not
+synchronization: callers must use one thread, clone between completed operations,
+and exclude direct API/state operations in progress. The guard cannot establish
+quiescence against arbitrary external mutation or another thread.
+
+Database and pool identities must belong to this engine. Any unregistered database
+encountered in the engine graph is rejected rather than silently sharing its mutable
+query counters/index. Standalone state/component copies retain their earlier database
+contract. Frozen card definitions, catalog indexes, immutable policies and global IR
+remain shared. Dispatch is rebuilt with destination ownership; unsupported private
+dispatch overrides are not an extension mechanism and are not preserved. IR/catalog
+reloads and concurrent mutation remain outside the copy contract.
+
+Six integrated regressions cover the exact field/record inventory, nondefault
+scalars, engine/database/log payload aliases, deck aliasing, callback ownership,
+two-way isolation, repeated copying, controlled candidate-cache/template cycles,
+all listed pending/active/foreign-owner rejection categories, reentrant callback
+rejection and exception unwind. Deterministic fixtures compare clone continuation
+with both the source and a freshly constructed engine executing the same prefix:
+Start, draws, turn changes, RNG samples, play, movement, attack, destruction and
+receipt application. Comparisons include snapshots/action history, logs, next action
+numbering and VM diagnostics. These are bounded engineering checks, not exhaustive
+PvP rule equivalence proofs. The cache fixture uses the same scoped synthetic IR
+described in the previous component batch, not a new actual-card rule claim.
+
+DeepSeek delivered the bounded pre-change member inventory; the primary agent
+checked its counts against the source and exact runtime field guard. Implementation,
+integration, validation and publishing remain with the primary agent.
+
+Candidate evaluation remains on independent full replay. Next: integrate an opt-in
+clone probe with explicit choice-adapter ownership, compare it against replay on
+representative candidate prefixes, and measure time/allocations before changing the
+default. No new PvP certification or measured throughput gain is claimed here.
+
+Validation: six MatchEngineClone cases passed, the full BotSim selftest passed
+1,085 cases, and NNTrain policy-evaluation-selftest passed nine cases. Existing
+NNTrain CS8632 nullable-context warnings remain.

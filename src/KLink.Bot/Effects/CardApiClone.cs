@@ -4,6 +4,12 @@ namespace KLink.Bot.Effects;
 
 public sealed partial class CardApi
 {
+    internal void ValidateCloneDatabase(Cards.CardDatabase database)
+    {
+        if (_staticPoolDb is not null && !ReferenceEquals(_staticPoolDb, database))
+            throw new NotSupportedException("CardApi clone encountered a foreign pool database");
+    }
+
     // Component only: caller must establish whole-engine quiescence, copy state
     // with this same memo and bind destination callbacks. No source closures.
     internal CardApi(MatchEngine destination, CardApi source, CardGraphClone context)

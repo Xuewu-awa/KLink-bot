@@ -115,7 +115,11 @@ public sealed partial class CardGraphClone
         copy = value switch
         {
             GameState state => new GameState(state, this),
-            Cards.CardDatabase database => database, // standalone state: frozen catalog contract
+            Cards.CardDatabase database => _requireRegisteredDatabase
+                ? throw new NotSupportedException("Engine clone encountered an unregistered database")
+                : database, // standalone state: frozen catalog contract
+            MatchEngine.HandTargetRecord record => record, // sealed immutable scalar records
+            MatchEngine.PickRecord record => record,
             Effects.CardApi.GcsCacheEntry entry => new Effects.CardApi.GcsCacheEntry(entry, this),
             List<List<CardInstance>> list => CopyList(list),
             Dictionary<(bool, bool), List<CardInstance>> map => CopyMap(map),

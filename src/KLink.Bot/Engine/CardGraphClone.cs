@@ -15,12 +15,16 @@ public sealed partial class CardGraphClone
     public IReadOnlyDictionary<CardInstance, CardInstance> Cards { get; }
 
     private readonly bool _includeState;
+    private readonly bool _requireRegisteredDatabase;
 
     internal CardGraphClone(bool includeState = false)
     {
         _includeState = includeState;
         Cards = new System.Collections.ObjectModel.ReadOnlyDictionary<CardInstance, CardInstance>(_cards);
     }
+
+    internal CardGraphClone(bool includeState, bool requireRegisteredDatabase) : this(includeState)
+        => _requireRegisteredDatabase = requireRegisteredDatabase;
 
     public static CardGraphClone Create(IEnumerable<CardInstance> roots)
     {

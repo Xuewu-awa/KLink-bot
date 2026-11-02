@@ -78,7 +78,9 @@ internal static partial class SelfTest
         return null;
     }
 
-    private static string? CardApiClonePools(CardDatabase db)
+    private static string? CardApiClonePools(CardDatabase db) => CardApiClonePools(db, wholeEngine: false);
+
+    private static string? CardApiClonePools(CardDatabase db, bool wholeEngine)
     {
         var (engine, state) = EmptyBoard(db);
         state.CardReservations = new CardReservationPolicy(Array.Empty<CardReservationChange>(), 10);
@@ -115,7 +117,7 @@ internal static partial class SelfTest
         candidates[0].BlueprintVariables["owner"] = selecting;
         candidates[0].BlueprintVariables["entry"] = cache[selecting.Name];
         candidates[0].BlueprintVariables["marker"] = 73;
-        var destination = CopyApiComponents(engine);
+        var destination = wholeEngine ? engine.CloneAtIdle() : CopyApiComponents(engine);
         var copiedSelecting = destination.State.ById(selecting.CardId)!;
         var copiedPool = ApiField<List<CardInstance>>(destination.Api, "_staticPool");
         var copiedCandidates = (List<CardInstance>)copiedSelecting.BlueprintVariables["savedCandidates"]!;
