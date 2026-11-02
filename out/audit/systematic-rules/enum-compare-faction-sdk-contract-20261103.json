@@ -1,0 +1,3916 @@
+{
+  "schema_version": 1,
+  "report_id": "ENUM-COMPARE-FACTION-SDK-CONTRACT-20261103",
+  "scope": "current card IR callsites, SDK declarations/enumerators, and local VM regression only; no native execution or PvP reachability claim",
+  "sdk": {
+    "function_signature": "void EnumCompareFaction(EFactionEnum faction1, EFactionEnum faction2, EnumAreTheyEqual& Branches)",
+    "function_signature_present": true,
+    "faction_enum": [
+      {
+        "name": "NotAvailable",
+        "value": 0
+      },
+      {
+        "name": "Germany",
+        "value": 1
+      },
+      {
+        "name": "Britain",
+        "value": 2
+      },
+      {
+        "name": "Japan",
+        "value": 3
+      },
+      {
+        "name": "Soviet",
+        "value": 4
+      },
+      {
+        "name": "USA",
+        "value": 5
+      },
+      {
+        "name": "France",
+        "value": 6
+      },
+      {
+        "name": "Italy",
+        "value": 7
+      },
+      {
+        "name": "Poland",
+        "value": 8
+      },
+      {
+        "name": "Finland",
+        "value": 9
+      },
+      {
+        "name": "Anzac",
+        "value": 10
+      },
+      {
+        "name": "Allies",
+        "value": 11
+      },
+      {
+        "name": "Neutral",
+        "value": 12
+      }
+    ],
+    "branch_enum": [
+      {
+        "name": "Equal",
+        "value": 0
+      },
+      {
+        "name": "NotEqual",
+        "value": 1
+      }
+    ],
+    "native_body_present_in_sdk_dump": false
+  },
+  "inventory": {
+    "callsite_count": 98,
+    "asset_count": 76,
+    "program_count": 77,
+    "first_local_consumer_math_counts": {
+      "NotEqual_ByteByte": 98
+    },
+    "callsites": [
+      {
+        "card": "card_event_hmas_warramunga",
+        "program": "steps",
+        "instruction_i": 306,
+        "byte_offset": 306,
+        "args": [
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "var": "CallFunc_GetCardFromID_card",
+              "scope": "local"
+            }
+          },
+          {
+            "int": 10
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches",
+        "first_local_consumer": [
+          {
+            "instruction_i": 358,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_event_atlantic_convoy",
+        "program": "steps",
+        "instruction_i": 79,
+        "byte_offset": 79,
+        "args": [
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "var": "CallFunc_Array_Get_Item",
+              "scope": "local"
+            }
+          },
+          {
+            "int": 5
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches",
+        "first_local_consumer": [
+          {
+            "instruction_i": 131,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_event_close_air_support",
+        "program": "locals.CanPlayFromHand",
+        "instruction_i": 188,
+        "byte_offset": 188,
+        "args": [
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "var": "CallFunc_GetTargetedCard_card",
+              "scope": "local"
+            }
+          },
+          {
+            "int": 2
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches",
+        "first_local_consumer": [
+          {
+            "instruction_i": 240,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_event_radar_alert",
+        "program": "locals.GetRandomBritishAir",
+        "instruction_i": 362,
+        "byte_offset": 362,
+        "args": [
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "var": "CallFunc_Array_Get_Item",
+              "scope": "local"
+            }
+          },
+          {
+            "int": 2
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches",
+        "first_local_consumer": [
+          {
+            "instruction_i": 414,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_event_kangaroo_transport",
+        "program": "locals.CanPlayFromHand",
+        "instruction_i": 69,
+        "byte_offset": 69,
+        "args": [
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "var": "CallFunc_GetTargetedCard_card",
+              "scope": "local"
+            }
+          },
+          {
+            "int": 2
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches",
+        "first_local_consumer": [
+          {
+            "instruction_i": 121,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_event_strong_bond",
+        "program": "steps",
+        "instruction_i": 1005,
+        "byte_offset": 1005,
+        "args": [
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "var": "CallFunc_Array_Get_Item",
+              "scope": "local"
+            }
+          },
+          {
+            "int": 5
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches",
+        "first_local_consumer": [
+          {
+            "instruction_i": 1057,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_event_baker_street_irregulars",
+        "program": "locals.GetChooseSpawnCards",
+        "instruction_i": 1110,
+        "byte_offset": 1110,
+        "args": [
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "var": "CallFunc_Array_Get_Item_1",
+              "scope": "local"
+            }
+          },
+          {
+            "int": 2
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches",
+        "first_local_consumer": [
+          {
+            "instruction_i": 1162,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_event_sea_embargo",
+        "program": "locals.GetChooseSpawnCards",
+        "instruction_i": 362,
+        "byte_offset": 362,
+        "args": [
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "var": "CallFunc_Array_Get_Item",
+              "scope": "local"
+            }
+          },
+          {
+            "int": 2
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches",
+        "first_local_consumer": [
+          {
+            "instruction_i": 414,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_unit_beaufighter_vi_f",
+        "program": "steps",
+        "instruction_i": 313,
+        "byte_offset": 313,
+        "args": [
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "var": "tempCard",
+              "scope": "instance"
+            }
+          },
+          {
+            "int": 2
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches",
+        "first_local_consumer": [
+          {
+            "instruction_i": 365,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_event_combined_chiefs_of_staff",
+        "program": "steps",
+        "instruction_i": 365,
+        "byte_offset": 365,
+        "args": [
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "var": "CallFunc_Array_Get_Item",
+              "scope": "local"
+            }
+          },
+          {
+            "int": 2
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches_1",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches_1"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches_1",
+        "first_local_consumer": [
+          {
+            "instruction_i": 417,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_event_combined_chiefs_of_staff",
+        "program": "steps",
+        "instruction_i": 902,
+        "byte_offset": 902,
+        "args": [
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "var": "CallFunc_Array_Get_Item",
+              "scope": "local"
+            }
+          },
+          {
+            "int": 5
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches",
+        "first_local_consumer": [
+          {
+            "instruction_i": 954,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_event_national_service_home",
+        "program": "steps",
+        "instruction_i": 187,
+        "byte_offset": 187,
+        "args": [
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "var": "CallFunc_GetCardFromID_card",
+              "scope": "local"
+            }
+          },
+          {
+            "int": 2
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches",
+        "first_local_consumer": [
+          {
+            "instruction_i": 239,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_unit_layforce",
+        "program": "steps",
+        "instruction_i": 772,
+        "byte_offset": 772,
+        "args": [
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "var": "tmpCard",
+              "scope": "instance"
+            }
+          },
+          {
+            "int": 2
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches_1",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches_1"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches_1",
+        "first_local_consumer": [
+          {
+            "instruction_i": 824,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_unit_layforce",
+        "program": "steps",
+        "instruction_i": 1248,
+        "byte_offset": 1248,
+        "args": [
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "var": "tmpCard",
+              "scope": "instance"
+            }
+          },
+          {
+            "int": 2
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches_2",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches_2"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches_2",
+        "first_local_consumer": [
+          {
+            "instruction_i": 1300,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_unit_layforce",
+        "program": "steps",
+        "instruction_i": 1807,
+        "byte_offset": 1807,
+        "args": [
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "var": "tmpCard",
+              "scope": "instance"
+            }
+          },
+          {
+            "int": 2
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches",
+        "first_local_consumer": [
+          {
+            "instruction_i": 1859,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_unit_raf_mustang",
+        "program": "steps",
+        "instruction_i": 721,
+        "byte_offset": 721,
+        "args": [
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "var": "TmpCard",
+              "scope": "instance"
+            }
+          },
+          {
+            "int": 2
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches_1",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches_1"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches_1",
+        "first_local_consumer": [
+          {
+            "instruction_i": 773,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_unit_raf_mustang",
+        "program": "steps",
+        "instruction_i": 1197,
+        "byte_offset": 1197,
+        "args": [
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "var": "TmpCard",
+              "scope": "instance"
+            }
+          },
+          {
+            "int": 2
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches_2",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches_2"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches_2",
+        "first_local_consumer": [
+          {
+            "instruction_i": 1249,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_unit_raf_mustang",
+        "program": "steps",
+        "instruction_i": 1756,
+        "byte_offset": 1756,
+        "args": [
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "var": "TmpCard",
+              "scope": "instance"
+            }
+          },
+          {
+            "int": 2
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches",
+        "first_local_consumer": [
+          {
+            "instruction_i": 1808,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_event_bpf",
+        "program": "locals.GetChooseSpawnCards",
+        "instruction_i": 442,
+        "byte_offset": 442,
+        "args": [
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "var": "CallFunc_Array_Get_Item",
+              "scope": "local"
+            }
+          },
+          {
+            "int": 2
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches",
+        "first_local_consumer": [
+          {
+            "instruction_i": 494,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_unit_the_biscuit_boys",
+        "program": "steps",
+        "instruction_i": 117,
+        "byte_offset": 117,
+        "args": [
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "var": "K2Node_Event_cardPlayed",
+              "scope": "local"
+            }
+          },
+          {
+            "int": 12
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches",
+        "first_local_consumer": [
+          {
+            "instruction_i": 169,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_unit_the_holy_boys",
+        "program": "steps",
+        "instruction_i": 885,
+        "byte_offset": 885,
+        "args": [
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "var": "K2Node_Event_cardPlayed",
+              "scope": "local"
+            }
+          },
+          {
+            "int": 12
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches",
+        "first_local_consumer": [
+          {
+            "instruction_i": 937,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_location_british_scen5",
+        "program": "steps",
+        "instruction_i": 5755,
+        "byte_offset": 5755,
+        "args": [
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "var": "K2Node_Event_cardPlayed_1",
+              "scope": "local"
+            }
+          },
+          {
+            "int": 6
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches",
+        "first_local_consumer": [
+          {
+            "instruction_i": 5807,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_event_defend_the_empire",
+        "program": "steps",
+        "instruction_i": 214,
+        "byte_offset": 214,
+        "args": [
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "var": "CallFunc_GetCardFromID_card",
+              "scope": "local"
+            }
+          },
+          {
+            "int": 6
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches",
+        "first_local_consumer": [
+          {
+            "instruction_i": 266,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_event_french_alliance",
+        "program": "steps",
+        "instruction_i": 503,
+        "byte_offset": 503,
+        "args": [
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "var": "CallFunc_GetCardFromID_card",
+              "scope": "local"
+            }
+          },
+          {
+            "int": 6
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches",
+        "first_local_consumer": [
+          {
+            "instruction_i": 555,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_unit_1e_bfl",
+        "program": "steps",
+        "instruction_i": 79,
+        "byte_offset": 79,
+        "args": [
+          {
+            "int": 6
+          },
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "var": "CallFunc_Array_Get_Item",
+              "scope": "local"
+            }
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches",
+        "first_local_consumer": [
+          {
+            "instruction_i": 131,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_unit_4e_brigade",
+        "program": "steps",
+        "instruction_i": 79,
+        "byte_offset": 79,
+        "args": [
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "var": "CallFunc_Array_Get_Item",
+              "scope": "local"
+            }
+          },
+          {
+            "int": 6
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches",
+        "first_local_consumer": [
+          {
+            "instruction_i": 131,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_unit_hotchkiss_35",
+        "program": "steps",
+        "instruction_i": 196,
+        "byte_offset": 196,
+        "args": [
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "var": "K2Node_Event_cardPlayed",
+              "scope": "local"
+            }
+          },
+          {
+            "int": 6
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches",
+        "first_local_consumer": [
+          {
+            "instruction_i": 248,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_event_rush_production",
+        "program": "steps",
+        "instruction_i": 299,
+        "byte_offset": 299,
+        "args": [
+          {
+            "int": 1
+          },
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "var": "tempCard",
+              "scope": "instance"
+            }
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches",
+        "first_local_consumer": [
+          {
+            "instruction_i": 351,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_unit_panzer_iii_f",
+        "program": "steps",
+        "instruction_i": 603,
+        "byte_offset": 851,
+        "args": [
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "var": "CallFunc_Array_Get_Item_2",
+              "scope": "local"
+            }
+          },
+          {
+            "int": 1
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches_1",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches_1"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches_1",
+        "first_local_consumer": [
+          {
+            "instruction_i": 655,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_unit_panzer_iii_f",
+        "program": "steps",
+        "instruction_i": 2751,
+        "byte_offset": 3959,
+        "args": [
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "var": "K2Node_Event_cardPlayed",
+              "scope": "local"
+            }
+          },
+          {
+            "int": 1
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches",
+        "first_local_consumer": [
+          {
+            "instruction_i": 2803,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_event_front_and_homeland",
+        "program": "steps",
+        "instruction_i": 187,
+        "byte_offset": 187,
+        "args": [
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "var": "CallFunc_GetCardFromID_card",
+              "scope": "local"
+            }
+          },
+          {
+            "int": 1
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches",
+        "first_local_consumer": [
+          {
+            "instruction_i": 239,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_event_kettenkrad_home",
+        "program": "steps",
+        "instruction_i": 79,
+        "byte_offset": 79,
+        "args": [
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "var": "CallFunc_Array_Get_Item",
+              "scope": "local"
+            }
+          },
+          {
+            "int": 1
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches",
+        "first_local_consumer": [
+          {
+            "instruction_i": 131,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_event_second_front",
+        "program": "locals.CanPlayFromHand",
+        "instruction_i": 69,
+        "byte_offset": 69,
+        "args": [
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "var": "CallFunc_GetTargetedCard_card",
+              "scope": "local"
+            }
+          },
+          {
+            "int": 1
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches",
+        "first_local_consumer": [
+          {
+            "instruction_i": 121,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_event_tactical_retreat",
+        "program": "locals.CanPlayFromHand",
+        "instruction_i": 133,
+        "byte_offset": 189,
+        "args": [
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "var": "CallFunc_GetTargetedCard_card",
+              "scope": "local"
+            }
+          },
+          {
+            "int": 1
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches",
+        "first_local_consumer": [
+          {
+            "instruction_i": 185,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_unit_27_fusiliers",
+        "program": "steps",
+        "instruction_i": 10,
+        "byte_offset": 10,
+        "args": [
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "var": "K2Node_Event_cardReset",
+              "scope": "local"
+            }
+          },
+          {
+            "int": 1
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches",
+        "first_local_consumer": [
+          {
+            "instruction_i": 62,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_unit_27_fusiliers",
+        "program": "steps",
+        "instruction_i": 644,
+        "byte_offset": 644,
+        "args": [
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "var": "CallFunc_GetCardFromID_card",
+              "scope": "local"
+            }
+          },
+          {
+            "int": 1
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches_1",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches_1"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches_1",
+        "first_local_consumer": [
+          {
+            "instruction_i": 696,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_unit_27_fusiliers",
+        "program": "steps",
+        "instruction_i": 1307,
+        "byte_offset": 1307,
+        "args": [
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "var": "CallFunc_GetCardFromID_card_1",
+              "scope": "local"
+            }
+          },
+          {
+            "int": 1
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches_2",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches_2"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches_2",
+        "first_local_consumer": [
+          {
+            "instruction_i": 1359,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_unit_36_kradschutzen",
+        "program": "steps",
+        "instruction_i": 117,
+        "byte_offset": 117,
+        "args": [
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "var": "K2Node_Event_cardMoved",
+              "scope": "local"
+            }
+          },
+          {
+            "int": 1
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches_1",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches_1"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches_1",
+        "first_local_consumer": [
+          {
+            "instruction_i": 169,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_unit_36_kradschutzen",
+        "program": "steps",
+        "instruction_i": 359,
+        "byte_offset": 359,
+        "args": [
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "self": true
+            }
+          },
+          {
+            "int": 1
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches",
+        "first_local_consumer": [
+          {
+            "instruction_i": 403,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_event_tank_wedge",
+        "program": "locals.CanPlayFromHand",
+        "instruction_i": 188,
+        "byte_offset": 188,
+        "args": [
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "var": "CallFunc_GetTargetedCard_card",
+              "scope": "local"
+            }
+          },
+          {
+            "int": 1
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches",
+        "first_local_consumer": [
+          {
+            "instruction_i": 240,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_unit_30_infantry_regiment",
+        "program": "steps",
+        "instruction_i": 117,
+        "byte_offset": 117,
+        "args": [
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "var": "K2Node_Event_attackerCard",
+              "scope": "local"
+            }
+          },
+          {
+            "int": 1
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches",
+        "first_local_consumer": [
+          {
+            "instruction_i": 169,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_unit_30_infantry_regiment",
+        "program": "steps",
+        "instruction_i": 582,
+        "byte_offset": 582,
+        "args": [
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "var": "K2Node_Event_cardMoved",
+              "scope": "local"
+            }
+          },
+          {
+            "int": 1
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches_1",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches_1"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches_1",
+        "first_local_consumer": [
+          {
+            "instruction_i": 634,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_unit_3_panzergrenadier",
+        "program": "steps",
+        "instruction_i": 117,
+        "byte_offset": 181,
+        "args": [
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "var": "K2Node_Event_attackerCard",
+              "scope": "local"
+            }
+          },
+          {
+            "int": 1
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches",
+        "first_local_consumer": [
+          {
+            "instruction_i": 169,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_unit_3_panzergrenadier",
+        "program": "steps",
+        "instruction_i": 457,
+        "byte_offset": 665,
+        "args": [
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "var": "K2Node_Event_cardMoved",
+              "scope": "local"
+            }
+          },
+          {
+            "int": 1
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches_1",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches_1"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches_1",
+        "first_local_consumer": [
+          {
+            "instruction_i": 509,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_location_german_scen3",
+        "program": "steps",
+        "instruction_i": 1262,
+        "byte_offset": 1262,
+        "args": [
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "var": "CallFunc_Array_Get_Item",
+              "scope": "local"
+            }
+          },
+          {
+            "int": 2
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches",
+        "first_local_consumer": [
+          {
+            "instruction_i": 1314,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_event_bypass",
+        "program": "locals.GetPlayFromHandDamage",
+        "instruction_i": 387,
+        "byte_offset": 387,
+        "args": [
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "var": "CallFunc_Array_Get_Item",
+              "scope": "local"
+            }
+          },
+          {
+            "int": 1
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches",
+        "first_local_consumer": [
+          {
+            "instruction_i": 439,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_unit_king_tiger_ii",
+        "program": "steps",
+        "instruction_i": 461,
+        "byte_offset": 461,
+        "args": [
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "var": "CallFunc_Array_Get_Item",
+              "scope": "local"
+            }
+          },
+          {
+            "int": 1
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches",
+        "first_local_consumer": [
+          {
+            "instruction_i": 513,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_event_campaign_alamein1_through_the_wire",
+        "program": "steps",
+        "instruction_i": 137,
+        "byte_offset": 137,
+        "args": [
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "var": "tempCard",
+              "scope": "instance"
+            }
+          },
+          {
+            "int": 7
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches",
+        "first_local_consumer": [
+          {
+            "instruction_i": 189,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_event_campaign_alamein3_spring_the_reserves",
+        "program": "steps",
+        "instruction_i": 157,
+        "byte_offset": 157,
+        "args": [
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "var": "CallFunc_Array_Get_Item",
+              "scope": "local"
+            }
+          },
+          {
+            "int": 7
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches",
+        "first_local_consumer": [
+          {
+            "instruction_i": 209,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_event_for_prosperety",
+        "program": "steps",
+        "instruction_i": 137,
+        "byte_offset": 137,
+        "args": [
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "var": "tempCard",
+              "scope": "instance"
+            }
+          },
+          {
+            "int": 3
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches",
+        "first_local_consumer": [
+          {
+            "instruction_i": 189,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_event_for_the_emperor",
+        "program": "steps",
+        "instruction_i": 294,
+        "byte_offset": 294,
+        "args": [
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "var": "tempCard",
+              "scope": "instance"
+            }
+          },
+          {
+            "int": 3
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches",
+        "first_local_consumer": [
+          {
+            "instruction_i": 346,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_unit_ki_27_nate",
+        "program": "steps",
+        "instruction_i": 240,
+        "byte_offset": 240,
+        "args": [
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "var": "CallFunc_Array_Get_Item",
+              "scope": "local"
+            }
+          },
+          {
+            "int": 3
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches",
+        "first_local_consumer": [
+          {
+            "instruction_i": 292,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_event_experimental_flight",
+        "program": "steps",
+        "instruction_i": 318,
+        "byte_offset": 318,
+        "args": [
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "var": "CallFunc_Array_Get_Item",
+              "scope": "local"
+            }
+          },
+          {
+            "int": 3
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches",
+        "first_local_consumer": [
+          {
+            "instruction_i": 370,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_event_outmaneuver",
+        "program": "locals.CanPlayFromHand",
+        "instruction_i": 124,
+        "byte_offset": 124,
+        "args": [
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "var": "CallFunc_GetTargetedCard_card",
+              "scope": "local"
+            }
+          },
+          {
+            "int": 3
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches",
+        "first_local_consumer": [
+          {
+            "instruction_i": 176,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_unit_kokuras_sword",
+        "program": "steps",
+        "instruction_i": 647,
+        "byte_offset": 647,
+        "args": [
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "var": "CallFunc_Array_Get_Item",
+              "scope": "local"
+            }
+          },
+          {
+            "int": 3
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches",
+        "first_local_consumer": [
+          {
+            "instruction_i": 699,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_event_way_of_subjects",
+        "program": "steps",
+        "instruction_i": 287,
+        "byte_offset": 287,
+        "args": [
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "var": "CallFunc_Array_Get_Item",
+              "scope": "local"
+            }
+          },
+          {
+            "int": 3
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches",
+        "first_local_consumer": [
+          {
+            "instruction_i": 339,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_unit_kawasaki_ki_10",
+        "program": "steps",
+        "instruction_i": 10,
+        "byte_offset": 10,
+        "args": [
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "var": "K2Node_Event_attackerCard",
+              "scope": "local"
+            }
+          },
+          {
+            "int": 3
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches",
+        "first_local_consumer": [
+          {
+            "instruction_i": 62,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_unit_storm_division",
+        "program": "steps",
+        "instruction_i": 98,
+        "byte_offset": 98,
+        "args": [
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "var": "_tmp_card",
+              "scope": "instance"
+            }
+          },
+          {
+            "int": 3
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches_1",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches_1"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches_1",
+        "first_local_consumer": [
+          {
+            "instruction_i": 150,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_unit_storm_division",
+        "program": "steps",
+        "instruction_i": 899,
+        "byte_offset": 899,
+        "args": [
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "var": "_tmp_card",
+              "scope": "instance"
+            }
+          },
+          {
+            "int": 3
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches_2",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches_2"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches_2",
+        "first_local_consumer": [
+          {
+            "instruction_i": 951,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_unit_storm_division",
+        "program": "steps",
+        "instruction_i": 1775,
+        "byte_offset": 1775,
+        "args": [
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "var": "_tmp_card",
+              "scope": "instance"
+            }
+          },
+          {
+            "int": 3
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches",
+        "first_local_consumer": [
+          {
+            "instruction_i": 1827,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_unit_storm_division",
+        "program": "steps",
+        "instruction_i": 2406,
+        "byte_offset": 2406,
+        "args": [
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "var": "_tmp_card",
+              "scope": "instance"
+            }
+          },
+          {
+            "int": 3
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches_3",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches_3"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches_3",
+        "first_local_consumer": [
+          {
+            "instruction_i": 2458,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_event_campaign_philippines4_infiltration",
+        "program": "locals.CanPlayFromHand",
+        "instruction_i": 329,
+        "byte_offset": 329,
+        "args": [
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "var": "CallFunc_GetTargetedCard_card",
+              "scope": "local"
+            }
+          },
+          {
+            "int": 3
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches",
+        "first_local_consumer": [
+          {
+            "instruction_i": 381,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_event_for_prosperety_cam1",
+        "program": "steps",
+        "instruction_i": 54,
+        "byte_offset": 54,
+        "args": [
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "var": "tempCard",
+              "scope": "instance"
+            }
+          },
+          {
+            "int": 3
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches",
+        "first_local_consumer": [
+          {
+            "instruction_i": 106,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_unit_3rd_yokosuka",
+        "program": "locals.get_adjacent_japan_units_count",
+        "instruction_i": 410,
+        "byte_offset": 410,
+        "args": [
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "var": "CallFunc_Array_Get_Item",
+              "scope": "local"
+            }
+          },
+          {
+            "int": 3
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches",
+        "first_local_consumer": [
+          {
+            "instruction_i": 462,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_event_uprising",
+        "program": "steps",
+        "instruction_i": 1453,
+        "byte_offset": 1453,
+        "args": [
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "var": "K2Node_Event_cardDestroyed",
+              "scope": "local"
+            }
+          },
+          {
+            "int": 8
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches",
+        "first_local_consumer": [
+          {
+            "instruction_i": 1505,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_unit_p37los",
+        "program": "steps",
+        "instruction_i": 238,
+        "byte_offset": 366,
+        "args": [
+          {
+            "var": "salvageFaction",
+            "scope": "instance",
+            "ctx": {
+              "var": "K2Node_Event_cardDestroyed",
+              "scope": "local"
+            }
+          },
+          {
+            "int": 8
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches",
+        "first_local_consumer": [
+          {
+            "instruction_i": 290,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_unit_p37los",
+        "program": "steps",
+        "instruction_i": 336,
+        "byte_offset": 512,
+        "args": [
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "var": "K2Node_Event_cardDestroyed",
+              "scope": "local"
+            }
+          },
+          {
+            "int": 8
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches_1",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches_1"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches_1",
+        "first_local_consumer": [
+          {
+            "instruction_i": 388,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_unit_p37los",
+        "program": "steps",
+        "instruction_i": 883,
+        "byte_offset": 1291,
+        "args": [
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "var": "CallFunc_Array_Get_Item",
+              "scope": "local"
+            }
+          },
+          {
+            "int": 8
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches_3",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches_3"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches_3",
+        "first_local_consumer": [
+          {
+            "instruction_i": 935,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_unit_p37los",
+        "program": "steps",
+        "instruction_i": 1667,
+        "byte_offset": 2427,
+        "args": [
+          {
+            "var": "salvageFaction",
+            "scope": "instance"
+          },
+          {
+            "int": 8
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches_2",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches_2"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches_2",
+        "first_local_consumer": [
+          {
+            "instruction_i": 1697,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_event_soviet_promo3",
+        "program": "locals.Random_3_SovietUnits",
+        "instruction_i": 300,
+        "byte_offset": 300,
+        "args": [
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "var": "CallFunc_Array_Get_Item",
+              "scope": "local"
+            }
+          },
+          {
+            "int": 4
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches",
+        "first_local_consumer": [
+          {
+            "instruction_i": 352,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_unit_japan_promo1",
+        "program": "steps",
+        "instruction_i": 214,
+        "byte_offset": 214,
+        "args": [
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "var": "CallFunc_GetCardFromID_card",
+              "scope": "local"
+            }
+          },
+          {
+            "int": 3
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches",
+        "first_local_consumer": [
+          {
+            "instruction_i": 266,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_unit_royal_sussex",
+        "program": "steps",
+        "instruction_i": 254,
+        "byte_offset": 254,
+        "args": [
+          {
+            "int": 2
+          },
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "var": "K2Node_Event_attackerCard",
+              "scope": "local"
+            }
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches",
+        "first_local_consumer": [
+          {
+            "instruction_i": 306,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_event_veteran_pilots",
+        "program": "locals.CanPlayFromHand",
+        "instruction_i": 238,
+        "byte_offset": 238,
+        "args": [
+          {
+            "int": 4
+          },
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "var": "CallFunc_GetTargetedCard_card",
+              "scope": "local"
+            }
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches",
+        "first_local_consumer": [
+          {
+            "instruction_i": 290,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_unit_su_85",
+        "program": "steps",
+        "instruction_i": 220,
+        "byte_offset": 220,
+        "args": [
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "var": "K2Node_Event_attackerCard",
+              "scope": "local"
+            }
+          },
+          {
+            "int": 4
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches",
+        "first_local_consumer": [
+          {
+            "instruction_i": 272,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_unit_su_85",
+        "program": "steps",
+        "instruction_i": 461,
+        "byte_offset": 461,
+        "args": [
+          {
+            "var": "faction",
+            "scope": "instance"
+          },
+          {
+            "int": 4
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches_1",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches_1"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches_1",
+        "first_local_consumer": [
+          {
+            "instruction_i": 491,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_event_blood_red_sky",
+        "program": "steps",
+        "instruction_i": 188,
+        "byte_offset": 188,
+        "args": [
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "var": "tempCard",
+              "scope": "instance"
+            }
+          },
+          {
+            "int": 4
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches",
+        "first_local_consumer": [
+          {
+            "instruction_i": 240,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_event_order_no_227",
+        "program": "steps",
+        "instruction_i": 137,
+        "byte_offset": 137,
+        "args": [
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "var": "tempCard",
+              "scope": "instance"
+            }
+          },
+          {
+            "int": 4
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches",
+        "first_local_consumer": [
+          {
+            "instruction_i": 189,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_event_zhukov",
+        "program": "steps",
+        "instruction_i": 287,
+        "byte_offset": 287,
+        "args": [
+          {
+            "int": 4
+          },
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "var": "CallFunc_Array_Get_Item",
+              "scope": "local"
+            }
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches",
+        "first_local_consumer": [
+          {
+            "instruction_i": 339,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_unit_13th_rifle_regiment",
+        "program": "steps",
+        "instruction_i": 240,
+        "byte_offset": 240,
+        "args": [
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "var": "CallFunc_Array_Get_Item",
+              "scope": "local"
+            }
+          },
+          {
+            "int": 4
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches",
+        "first_local_consumer": [
+          {
+            "instruction_i": 292,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_unit_yak_3",
+        "program": "steps",
+        "instruction_i": 79,
+        "byte_offset": 79,
+        "args": [
+          {
+            "int": 4
+          },
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "var": "CallFunc_Array_Get_Item",
+              "scope": "local"
+            }
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches",
+        "first_local_consumer": [
+          {
+            "instruction_i": 131,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_unit_yak_9",
+        "program": "steps",
+        "instruction_i": 287,
+        "byte_offset": 287,
+        "args": [
+          {
+            "int": 4
+          },
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "var": "CallFunc_Array_Get_Item",
+              "scope": "local"
+            }
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches",
+        "first_local_consumer": [
+          {
+            "instruction_i": 339,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_event_motherland_calls",
+        "program": "steps",
+        "instruction_i": 187,
+        "byte_offset": 187,
+        "args": [
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "var": "CallFunc_GetCardFromID_card",
+              "scope": "local"
+            }
+          },
+          {
+            "int": 4
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches",
+        "first_local_consumer": [
+          {
+            "instruction_i": 239,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_event_persian_corridor",
+        "program": "steps",
+        "instruction_i": 290,
+        "byte_offset": 290,
+        "args": [
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "var": "CallFunc_Array_Get_Item",
+              "scope": "local"
+            }
+          },
+          {
+            "int": 4
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches",
+        "first_local_consumer": [
+          {
+            "instruction_i": 342,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_event_persian_corridor",
+        "program": "locals.CanPlayFromHand",
+        "instruction_i": 133,
+        "byte_offset": 133,
+        "args": [
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "var": "CallFunc_GetTargetedCard_card",
+              "scope": "local"
+            }
+          },
+          {
+            "int": 5
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches_1",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches_1"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches_1",
+        "first_local_consumer": [
+          {
+            "instruction_i": 185,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_event_persian_corridor",
+        "program": "locals.CanPlayFromHand",
+        "instruction_i": 494,
+        "byte_offset": 494,
+        "args": [
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "var": "CallFunc_GetTargetedCard_card",
+              "scope": "local"
+            }
+          },
+          {
+            "int": 2
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches",
+        "first_local_consumer": [
+          {
+            "instruction_i": 546,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_unit_199th_rifle_regiment",
+        "program": "steps",
+        "instruction_i": 10,
+        "byte_offset": 10,
+        "args": [
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "var": "K2Node_Event_cardPlayed",
+              "scope": "local"
+            }
+          },
+          {
+            "int": 5
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches_1",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches_1"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches_1",
+        "first_local_consumer": [
+          {
+            "instruction_i": 62,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_unit_199th_rifle_regiment",
+        "program": "steps",
+        "instruction_i": 567,
+        "byte_offset": 567,
+        "args": [
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "var": "K2Node_Event_cardPlayed",
+              "scope": "local"
+            }
+          },
+          {
+            "int": 2
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches",
+        "first_local_consumer": [
+          {
+            "instruction_i": 619,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_unit_175th_motorized",
+        "program": "steps",
+        "instruction_i": 424,
+        "byte_offset": 424,
+        "args": [
+          {
+            "int": 4
+          },
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "var": "CallFunc_Array_Get_Item",
+              "scope": "local"
+            }
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches",
+        "first_local_consumer": [
+          {
+            "instruction_i": 476,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_location_stalingrad_unlock7",
+        "program": "steps",
+        "instruction_i": 895,
+        "byte_offset": 895,
+        "args": [
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "var": "CallFunc_Array_Get_Item",
+              "scope": "local"
+            }
+          },
+          {
+            "int": 4
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches",
+        "first_local_consumer": [
+          {
+            "instruction_i": 947,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_event_machines_of_war",
+        "program": "steps",
+        "instruction_i": 549,
+        "byte_offset": 549,
+        "args": [
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "var": "CallFunc_Array_Get_Item",
+              "scope": "local"
+            }
+          },
+          {
+            "int": 4
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches",
+        "first_local_consumer": [
+          {
+            "instruction_i": 601,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_event_out_with_the_old",
+        "program": "locals.CanPlayFromHand",
+        "instruction_i": 69,
+        "byte_offset": 69,
+        "args": [
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "var": "CallFunc_GetTargetedCard_card",
+              "scope": "local"
+            }
+          },
+          {
+            "int": 4
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches",
+        "first_local_consumer": [
+          {
+            "instruction_i": 121,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_event_the_alliance",
+        "program": "steps",
+        "instruction_i": 137,
+        "byte_offset": 137,
+        "args": [
+          {
+            "int": 5
+          },
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "var": "tempCard",
+              "scope": "instance"
+            }
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches",
+        "first_local_consumer": [
+          {
+            "instruction_i": 189,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_event_women_at_work",
+        "program": "locals.IsValidHandTarget",
+        "instruction_i": 0,
+        "byte_offset": 0,
+        "args": [
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "var": "targetedCard",
+              "scope": "local"
+            }
+          },
+          {
+            "int": 5
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches",
+        "first_local_consumer": [
+          {
+            "instruction_i": 52,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_event_allied_research_effort",
+        "program": "steps",
+        "instruction_i": 240,
+        "byte_offset": 240,
+        "args": [
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "var": "CallFunc_Array_Get_Item",
+              "scope": "local"
+            }
+          },
+          {
+            "int": 5
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches_1",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches_1"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches_1",
+        "first_local_consumer": [
+          {
+            "instruction_i": 292,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_event_allied_research_effort",
+        "program": "steps",
+        "instruction_i": 1253,
+        "byte_offset": 1253,
+        "args": [
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "var": "CallFunc_Array_Get_Item",
+              "scope": "local"
+            }
+          },
+          {
+            "int": 2
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches",
+        "first_local_consumer": [
+          {
+            "instruction_i": 1305,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_unit_c47_skytrain",
+        "program": "steps",
+        "instruction_i": 240,
+        "byte_offset": 240,
+        "args": [
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "var": "CallFunc_Array_Get_Item",
+              "scope": "local"
+            }
+          },
+          {
+            "int": 5
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches",
+        "first_local_consumer": [
+          {
+            "instruction_i": 292,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_event_mass_deployment",
+        "program": "locals.GetUSAUnitsAndKredits",
+        "instruction_i": 432,
+        "byte_offset": 432,
+        "args": [
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "var": "localTempCard",
+              "scope": "local"
+            }
+          },
+          {
+            "int": 5
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches",
+        "first_local_consumer": [
+          {
+            "instruction_i": 484,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_event_usaaf",
+        "program": "steps",
+        "instruction_i": 79,
+        "byte_offset": 79,
+        "args": [
+          {
+            "var": "faction",
+            "scope": "instance",
+            "ctx": {
+              "var": "CallFunc_Array_Get_Item",
+              "scope": "local"
+            }
+          },
+          {
+            "int": 5
+          },
+          {
+            "var": "CallFunc_EnumCompareFaction_Branches",
+            "scope": "local"
+          }
+        ],
+        "outs": [
+          {
+            "param": 2,
+            "slot": "CallFunc_EnumCompareFaction_Branches"
+          }
+        ],
+        "branch_output_slot": "CallFunc_EnumCompareFaction_Branches",
+        "first_local_consumer": [
+          {
+            "instruction_i": 131,
+            "operation": "set",
+            "math_names": [
+              "NotEqual_ByteByte"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "simulator_observation": {
+    "summary": "EvalMath returns 0 when its first two inputs convert to the same integer and 1 otherwise; the self-test exercises all 169 pairs from faction enum ordinals 0..12.",
+    "native_equivalence_established": false
+  },
+  "limitations": [
+    "SDK declarations provide parameter types and output enum values but no EnumCompareFaction implementation body.",
+    "The VM regression validates the local mapping against enum labels only; it is not a client runtime oracle.",
+    "Current IR occurrence and first-consumer counts do not establish PvP eligibility, execution, or full call reachability.",
+    "Factions outside the SDK EFactionEnum ordinal range and malformed values are not modeled by the 13x13 regression."
+  ],
+  "source_sha256": {
+    "card_ir": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b",
+    "vm": "0af6f3eb2bc660bb7025a2c5eda928802eb723cffa2de3d18a5e01a0d49f41ae",
+    "selftest": "f7dc3893eaa92a393989fa585173e62fac11e5be37867dcc8db07bbf382e79f3",
+    "selftest_registry": "4c6b848dea68d22d3a2b6cf1dc0b6e5e77be3db8bcd7444a56435e81add37ff7",
+    "sdk_function": "f8039a5583a5db8be8c73470418b5b94f6cc1e856d402ffd75403c0fa8a2ac78",
+    "sdk_faction_enum": "718166b9cbbd2d4cd9ecf761d5a94f1acba7b383dc6faa6f64358601128eb00b",
+    "sdk_compare_enum": "547f570a5bb9ab42ebd69e7628a3e07dcaa10181d7bb4d06e10ed15aac8ac9bd"
+  }
+}
