@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "report_id": "RULE-KISMET-GETVALIDVALUE-LOCAL-REGRESSION-20261103",
+  "status": "implementation_regression_passed; client_semantics_unconfirmed",
+  "scope": "Focused BotSim VM regression for the CardMoveReason enum path used by card_unit_35th_infantry_regiment::getMoveReason. The test directly executes GetValidValue expressions through RunLocalProgramMulti; it does not execute the complete card local function.",
+  "observations": {
+    "ir_asset": "card_unit_35th_infantry_regiment",
+    "ir_local": "getMoveReason",
+    "ir_call_sites": [
+      325,
+      502
+    ],
+    "enum_path": "/Game/Structs/CardMoveReason.CardMoveReason",
+    "live_rule_table_enum_count": 14,
+    "declared_sdk_signature": "void GetValidValue(const class UEnum* Enum, uint8 EnumeratorValue);"
+  },
+  "regression": {
+    "command": "dotnet run --project tools/BotSim -c Release -- selftest --filter \"Kismet math\"",
+    "result": "passed; 2 selected cases",
+    "cases": [
+      {
+        "input": 0,
+        "expected": 0,
+        "observed": 0
+      },
+      {
+        "input": 12,
+        "expected": 12,
+        "observed": 12
+      },
+      {
+        "input": 13,
+        "expected": 13,
+        "observed": 13
+      },
+      {
+        "input": 14,
+        "expected": 0,
+        "observed": 0
+      },
+      {
+        "input": 255,
+        "expected": 0,
+        "observed": 0
+      }
+    ]
+  },
+  "evidence_level": "local implementation behavior only",
+  "limitations": [
+    "The expected out-of-range fallback to zero is not independently established by the available current-client evidence.",
+    "The SDK declaration does not document the generated Blueprint return behavior and is not sufficient to prove semantics.",
+    "The test verifies selected enum boundaries, not every enum value, full getMoveReason flow, or PvP reachability.",
+    "No production KismetVm behavior was changed."
+  ],
+  "inputs_sha256": {
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\Blueprint\\KismetVm.cs": "0af6f3eb2bc660bb7025a2c5eda928802eb723cffa2de3d18a5e01a0d49f41ae",
+    "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\Blueprint\\LiveRuleTables.cs": "fa54fb5563557461ef0a364a81d1d0d2479fd3e3e4fc0858798f4c2309e33179",
+    "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.KismetMath.cs": "21c87c2c5ab1a6f9b4fcf4f0fcbcbbb6539bfb8c81ae7cbfe847dd4f1d3549f0",
+    "D:\\Codex Workshop\\KLink-bot\\tools\\BotSim\\SelfTest.cs": "5f1429e25e72a4296bb88c2c3737e42a23dfc277a31e022e54a1cc15047f9c46",
+    "D:\\Codex Workshop\\KLink-bot\\klink bot\\docs\\card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b",
+    "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\ue4ss\\CXXHeaderDump\\Engine.hpp": "6ff639c0078e8800c5bc6aae8090beda97d4265ad5f3ba35e13f6e65128c82fb"
+  }
+}

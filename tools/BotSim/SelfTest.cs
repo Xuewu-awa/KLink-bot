@@ -43,6 +43,7 @@ internal static partial class SelfTest
         new("KismetVmClone: destination binding and continuation", VmCloneContinuation),
         new("KismetVmClone: nested execution rejection and unwind", VmCloneExecutionBoundary),
         new("Kismet math: Unreal string search enum mapping", KismetStringSearchEnumMapping),
+        new("Kismet math: GetValidValue enum boundary", KismetGetValidValueEnumBounds),
         new("GameStateClone: exact field coverage", GameStateCloneFieldCoverage),
         new("GameStateClone: roots aliases and isolation", GameStateCloneGraphIsolation),
         new("GameStateClone: continuation and rebinding", GameStateCloneContinuation),

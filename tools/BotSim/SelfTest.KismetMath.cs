@@ -67,4 +67,25 @@ internal static partial class SelfTest
             return "Split did not preserve output references on a case-sensitive miss";
         return null;
     }
+
+    private static string? KismetGetValidValueEnumBounds(CardDatabase db)
+    {
+        const string enumPath = "/Game/Structs/CardMoveReason.CardMoveReason";
+        var (engine, state) = EmptyBoard(db);
+        var ctx = new EffectContext { Engine = engine, State = state, Controller = Side.Left };
+        int[] inputs = [0, 12, 13, 14, 255];
+        var steps = inputs.Select((value, i) => SetMathResult(i, $"value{i}",
+            MathExpr("GetValidValue", new KismetExpr { Obj = enumPath }, IntExpr(value)))).ToArray();
+        var result = engine.Api.Vm.RunLocalProgramMulti(new KismetProgram(steps, 0), ctx, null,
+            "value0", "value1", "value2", "value3", "value4");
+
+        int[] expected = [0, 12, 13, 0, 0];
+        for (int i = 0; i < expected.Length; i++)
+        {
+            if (!Equals(result[$"value{i}"], expected[i]))
+                return $"GetValidValue enum boundary {inputs[i]} returned {result[$"value{i}"] ?? "<null>"}; expected {expected[i]}";
+        }
+
+        return null;
+    }
 }
