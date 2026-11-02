@@ -1,0 +1,182 @@
+using System.Text.Json;
+using KLink.Bot.Cards;
+using KLink.Bot.Effects.Blueprint;
+using KLink.Bot.Engine;
+using KLink.Bot.NN;
+
+namespace KLink.Bot.Training;
+
+public sealed record CloneActionProbeReport(IReadOnlyList<CandidateExecutionProbe> Candidates,
+    IReadOnlyList<string> Errors, int EnginesCreated, int ClonesCreated, long PrefixRootsApplied)
+{
+    public string Contract => CloneActionProbe.Contract;
+    public bool AllDeterminate => Errors.Count == 0 && Candidates.Count > 0
+        && Candidates.All(c => c.Status != SimulatorExecutability.Unknown);
+}
+
+/// <summary>
+/// Diagnostic only. An owned seed/prefix engine is rebuilt once, then cloned per candidate; no live root is
+/// executed and no successor state is returned. Accepted/Rejected describe the
+/// current simulator's root return, not authoritative legality or a policy mask.
+/// Snapshot/trace/request checks do not prove equivalence of all VM private state.
+/// Shared static libraries and definition objects are not process-isolated.
+/// </summary>
+public static class CloneActionProbe
+{
+    public const string Contract = "simulator-executability/experimental-v2;owned-prefix-once;idle-clone-per-candidate;choice=first-index/v1;not-legal-mask";
+
+    public static CloneActionProbeReport Run(CardDatabase database, StateEncoder.CardVecs vectors,
+        IReadOnlyList<string> left, IReadOnlyList<string> right, ulong seed,
+        IReadOnlyList<ConfirmedRoot> prefix, MatchEngine reference, ActionProbeLimits? limits = null)
+        => RunCore(database, vectors, left, right, seed, prefix, reference, limits ?? new());
+
+    internal static CloneActionProbeReport RunCore(CardDatabase database, StateEncoder.CardVecs vectors,
+        IReadOnlyList<string> left, IReadOnlyList<string> right, ulong seed,
+        IReadOnlyList<ConfirmedRoot> prefix, MatchEngine reference, ActionProbeLimits limits,
+        Action<MatchEngine,int>? afterRebuild = null, Action<MatchEngine,int>? afterApply = null,
+        bool reverse = false, Action<MatchEngine>? afterBaseline = null)
+    {
+        if (limits.MaxCandidates <= 0 || limits.MaxPrefixRoots < 0 || limits.MaxTotalPrefixRoots < 0)
+            throw new ArgumentOutOfRangeException(nameof(limits));
+        var results = new List<CandidateExecutionProbe>(); var errors = new List<string>();
+        int engines = 0, clones = 0; long roots = 0;
+        CloneActionProbeReport Report() => new(Array.AsReadOnly(results.OrderBy(c=>c.Index).ToArray()),
+            Array.AsReadOnly(errors.Distinct(StringComparer.Ordinal).ToArray()), engines, clones, roots);
+        // Capture copies, never restore a serialized subset into the reference.
+        static string Trace(MatchEngine e) => JsonSerializer.Serialize(e.State.ActionLog);
+        static string Clock(MatchEngine e) => JsonSerializer.Serialize(new {
+            e.State.Turn,e.State.ActiveSide,e.State.IsFinished,e.State.Winner,
+            e.State.Random.State,e.State.Random.ConsumedCount,e.PendingSelectionCount });
+        static string Diagnostics(MatchEngine e) => JsonSerializer.Serialize(new {
+            e.Api.Vm.ProgramsExecuted,e.Api.Vm.FaultedPrograms,e.Api.Vm.UnsupportedOps,e.UnimplementedCalls });
+        static bool Informational(string key) => key.StartsWith("<local-ran:",StringComparison.Ordinal) && key.EndsWith('>')
+            || key is "<frontline-blocked-full>" or "<frontline-blocked-by-opponent>";
+        static string? Health(MatchEngine e, ChoicePolicyAdapter? choice = null)
+        {
+            if (KismetLibrary.Default is null) return "ir_not_loaded";
+            if (e.Api.Vm.FaultedPrograms != 0) return "vm_fault";
+            if (choice?.Faults > 0) return "choice_fault";
+            if (e.PendingSelectionCount != 0) return "pending_choice";
+            if (e.Api.Vm.UnsupportedOps.Any(p=>p.Value>0)) return "unsupported_op";
+            if (e.UnimplementedCalls.Any(p=>p.Value>0 && !Informational(p.Key))) return "unimplemented_call";
+            return null;
+        }
+        try
+        {
+            var initialHealth = Health(reference);
+            if (initialHealth is not null) { errors.Add("reference_"+initialHealth); return Report(); }
+            var actor = reference.State.ActiveSide;
+            var request = new MainActionPolicyAdapter(reference,vectors).DescribeCandidates(actor);
+            if (!request.Observation.All(float.IsFinite) || request.Candidates.Any(c=>!c.Features.All(float.IsFinite)))
+            { errors.Add("nonfinite_request"); return Report(); }
+            string expectedRequest = JsonSerializer.Serialize(request), snapshot = reference.State.SnapshotJson(),
+                trace = Trace(reference), clock = Clock(reference), diagnostics = Diagnostics(reference);
+            if (prefix.Count > limits.MaxPrefixRoots || request.Candidates.Count > limits.MaxCandidates
+                || (long)prefix.Count*request.Candidates.Count > limits.MaxTotalPrefixRoots)
+            { errors.Add("probe_work_limit"); return Report(); }
+            // Freeze caller-owned containers for the duration of this synchronous batch.
+            var history = prefix.ToArray(); var leftDeck = left.ToArray(); var rightDeck = right.ToArray();
+            // Never detach a selector from the caller's reference. Own this replay and
+            // dispose only its adapter before the idle clone boundary. The fixed policy
+            // ignores Sequence; arbitrary stateful policies are deliberately unsupported.
+            var baseline = new MatchEngine(database,leftDeck,rightDeck,seed); engines++;
+            using (var baselineChoices = new ChoicePolicyAdapter(baseline,vectors,
+                r=>r.Options.Count==0 && r.CanCancel ? -1 : 0))
+            {
+                baseline.Start();
+                string? failure = Health(baseline,baselineChoices);
+                foreach (var root in history)
+                {
+                    if (failure is not null) break;
+                    roots++;
+                    if (!MainActionPolicyAdapter.ApplyRoot(baseline,root.Actor,root.Command)) failure = "prefix_rejected";
+                    failure ??= Health(baseline,baselineChoices);
+                }
+                if (failure is not null) { errors.Add("baseline_"+failure); return Report(); }
+            }
+            afterBaseline?.Invoke(baseline);
+            var order = reverse ? request.Candidates.Reverse() : request.Candidates;
+            foreach (var option in order)
+            {
+                var status = SimulatorExecutability.Unknown; string reason = "not_executed";
+                string phase = "construction"; MatchEngine? probe = null; ChoicePolicyAdapter? choices = null;
+                var missingBefore = new Dictionary<string,int>(); var unsupportedBefore = new Dictionary<string,int>();
+                int faultsBefore = 0; long choiceFaultsBefore = 0, completedBefore = 0;
+                ProbeExecutionEvidence? evidence = null;
+                try
+                {
+                    phase = "clone";
+                    probe = baseline.CloneAtIdle(); clones++;
+                    choices = new ChoicePolicyAdapter(probe,vectors,r=>r.Options.Count==0 && r.CanCancel ? -1 : 0);
+                    string? failure = Health(probe,choices);
+                    if (failure is null)
+                    {
+                        phase = "comparison"; afterRebuild?.Invoke(probe,option.Index);
+                        failure = Health(probe,choices);
+                        if (failure is null && (clock!=Clock(probe) || snapshot!=probe.State.SnapshotJson()
+                            || trace!=Trace(probe) || expectedRequest!=JsonSerializer.Serialize(
+                                new MainActionPolicyAdapter(probe,vectors).DescribeCandidates(actor))))
+                            failure = "prefix_mismatch";
+                    }
+                    if (failure is not null) reason = failure;
+                    else
+                    {
+                        phase = "root";
+                        missingBefore = probe.UnimplementedCalls.ToDictionary(p=>p.Key,p=>p.Value);
+                        unsupportedBefore = probe.Api.Vm.UnsupportedOps.ToDictionary(p=>p.Key,p=>p.Value);
+                        faultsBefore = probe.Api.Vm.FaultedPrograms;
+                        choiceFaultsBefore = choices.Faults; completedBefore = choices.CompletedChoices;
+                        long completed = choices.CompletedChoices;
+                        bool accepted = MainActionPolicyAdapter.ApplyRoot(probe,actor,option.Command);
+                        afterApply?.Invoke(probe,option.Index);
+                        failure = Health(probe,choices);
+                        // A root that required a nested policy answer is not a plain
+                        // binary legality fact, even when first-index resolved it.
+                        if (failure is not null) reason = failure;
+                        else if (choices.CompletedChoices != completed) reason = "choice_policy_dependent";
+                        else { status = accepted ? SimulatorExecutability.Accepted : SimulatorExecutability.Rejected;
+                            reason = accepted ? "simulator_returned_true" : "simulator_returned_false"; }
+                    }
+                }
+                catch (Exception ex) when (ex is not OutOfMemoryException)
+                { reason = "probe_exception:"+ex.GetType().Name; }
+                finally
+                {
+                    if (probe is not null)
+                    {
+                        static IReadOnlyDictionary<string,int> Delta(IReadOnlyDictionary<string,int> after,
+                            IReadOnlyDictionary<string,int> before, bool calls)
+                            => new System.Collections.ObjectModel.ReadOnlyDictionary<string,int>(after
+                                .Where(p=>p.Value-before.GetValueOrDefault(p.Key)>0 && (!calls || !Informational(p.Key)))
+                                .OrderBy(p=>p.Key,StringComparer.Ordinal)
+                                .ToDictionary(p=>p.Key,p=>p.Value-before.GetValueOrDefault(p.Key),StringComparer.Ordinal));
+                        evidence = new(option.Command, reference.State.ById(option.Command.SourceId) is { } own
+                            && own.Owner == actor ? own.Name : null, phase,
+                            Delta(probe.UnimplementedCalls,missingBefore,true),
+                            Delta(probe.Api.Vm.UnsupportedOps,unsupportedBefore,false),
+                            probe.Api.Vm.FaultedPrograms-faultsBefore,
+                            (choices?.Faults ?? 0)-choiceFaultsBefore,
+                            (choices?.CompletedChoices ?? 0)-completedBefore);
+                    }
+                    choices?.Dispose();
+                }
+                results.Add(new(option.Index,status,reason) { Evidence = evidence });
+            }
+            // Detect observable cross-instance contamination; do not silently use
+            // earlier labels if the reference changed anywhere during the batch.
+            if (clock!=Clock(reference) || snapshot!=reference.State.SnapshotJson() || trace!=Trace(reference)
+                || expectedRequest!=JsonSerializer.Serialize(new MainActionPolicyAdapter(reference,vectors).DescribeCandidates(actor))
+                || diagnostics!=Diagnostics(reference) || Health(reference) is not null)
+            {
+                errors.Add("reference_changed");
+                results = results.Select(c=>c with {Status=SimulatorExecutability.Unknown,Reason="reference_changed"}).ToList();
+            }
+        }
+        catch (Exception ex) when (ex is not OutOfMemoryException)
+        {
+            errors.Add("batch_exception:"+ex.GetType().Name);
+            results = results.Select(c=>c with {Status=SimulatorExecutability.Unknown,Reason="batch_exception"}).ToList();
+        }
+        return Report();
+    }
+}

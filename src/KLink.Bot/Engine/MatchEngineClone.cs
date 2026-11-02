@@ -30,7 +30,7 @@ public sealed partial class MatchEngine
     /// Copy between completed calls on a single thread, with no direct API/state
     /// operation in progress. Catalog and IR must be frozen. External selectors,
     /// custom callbacks and pending resolutions are unsupported. This guard is
-    /// not synchronization. Candidate evaluation does not yet use this method.
+    /// not synchronization. The opt-in clone probe uses an owned replay baseline.
     /// </summary>
     public MatchEngine CloneAtIdle()
     {

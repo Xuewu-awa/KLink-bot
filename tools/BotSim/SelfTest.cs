@@ -20,6 +20,9 @@ internal static partial class SelfTest
 
     private static readonly List<Case> Cases = new()
     {
+        new("CloneActionProbe: replay successor equivalence and owned selectors", CloneProbeReplayEquivalence),
+        new("CloneActionProbe: branch isolation faults choices and idle gate", CloneProbeIsolationAndFailures),
+        new("CloneActionProbe: budgets prefix failure and reference invalidation", CloneProbeLimitsAndInvalidation),
         new("MatchEngineClone: exact fields aliases callbacks and isolation", MatchEngineCloneFields),
         new("MatchEngineClone: independent replay and repeated continuation", MatchEngineCloneContinuation),
         new("MatchEngineClone: pending work and external ownership rejection", MatchEngineCloneRejection),

@@ -391,11 +391,89 @@ DeepSeek delivered the bounded pre-change member inventory; the primary agent
 checked its counts against the source and exact runtime field guard. Implementation,
 integration, validation and publishing remain with the primary agent.
 
-Candidate evaluation remains on independent full replay. Next: integrate an opt-in
-clone probe with explicit choice-adapter ownership, compare it against replay on
-representative candidate prefixes, and measure time/allocations before changing the
-default. No new PvP certification or measured throughput gain is claimed here.
+The default candidate probe remains on independent full replay. The opt-in
+clone probe and its bounded measurements are documented below. This engine-copy
+batch itself added no PvP certification.
 
 Validation: six MatchEngineClone cases passed, the full BotSim selftest passed
 1,085 cases, and NNTrain policy-evaluation-selftest passed nine cases. Existing
 NNTrain CS8632 nullable-context warnings remain.
+
+
+## Opt-in candidate clone probe (2026-11-02)
+
+`CloneActionProbe.Run` is a separate experimental diagnostic. It constructs one
+owned baseline from seed and confirmed roots, with the fixed first-index choice
+adapter. It disposes that adapter, clones the idle baseline once per candidate,
+and attaches an independent first-index adapter to each clone. It never detaches
+handlers from the caller's reference engine. Unsupported clone boundaries or graph
+payloads remain Unknown with an explicit exception reason; no replay fallback hides
+these failures. A bad baseline returns a batch error and no candidate labels.
+
+The separate report contract identifies `owned-prefix-once;idle-clone-per-candidate`.
+EnginesCreated counts baseline constructions; ClonesCreated counts successful
+copies; PrefixRootsApplied counts actual replay attempts, once for the baseline.
+The existing candidate/prefix/product budgets are conservatively retained, even
+though the product is no longer the actual number of prefix executions.
+
+Choice adapter counters restart on each branch. This is valid only for the fixed
+policy here, which ignores Sequence. Arbitrary stateful policies are unsupported.
+Root choice/fault evidence uses deltas, and any completed nested choice makes the
+root Unknown. Accepted/Rejected still describe simulator returns, not authoritative
+legality, a policy mask, or training admission. Returned reports contain no successor
+states. Frozen catalog/IR and single-thread restrictions of CloneAtIdle still apply.
+Snapshot/request/trace/diagnostic checks are bounded contamination detectors, not a
+proof of equality of every private field or process-wide isolation.
+
+The existing replay probe and default callers are unchanged. A separate command
+performs replay/clone classification and root-successor comparisons, then measures
+both paths after warmup with alternating order over five repetitions. Timed runs
+exclude validation serialization. Allocations use the current-thread GC counter;
+these are allocated bytes, not peak memory. Empty card vectors are deliberate for
+this execution-only benchmark. Teacher prefixes are engineering fixtures, not game
+rules authority. Forward replay and forward/reversed clone reports must agree;
+forward root snapshots, action records, engine log, RNG state/consumption and VM
+counters must agree. Every candidate must have reached the root observer, so equal
+pre-root Unknown failures cannot count as successful successor validation.
+
+```powershell
+dotnet run --project tools/BotSim -c Release -- probe-actions-clone --plain --steps 8 --repeats 5 --out out/audit/clone-probe-plain-20261102.json
+dotnet run --project tools/BotSim -c Release -- probe-actions-clone --steps 8 --repeats 5 --out out/audit/clone-probe-meta-20261102.json
+```
+
+Both runs use seed 1 and eight prefixes (lengths 0 through 7). Measurements below
+are totals across five repeats, on this machine; they are not general throughput
+claims. Initial runs and repeats showed timing variation. No default switch is
+justified by these two bounded fixtures alone.
+
+| Fixture | Candidate comparisons | Replay / clone time (ms) | Replay / clone allocated bytes | Replayed prefix roots per pass |
+|---|---:|---:|---:|---:|
+| 39 Arado / 39 Arado | 239 | 1910.6 / 1795.7 | 2,887,233,856 / 2,535,984,080 | 1025 / 28 |
+| 英日 / 日澳快攻 | 281 | 2930.4 / 2397.0 | 3,757,448,744 / 3,253,951,824 | 1187 / 28 |
+
+There were zero classification/successor mismatches. The plain fixture had 147
+Accepted and 92 Rejected candidates. The meta fixture had 57 Accepted, 214 Rejected
+and 10 Unknown: six choice-policy-dependent and four unimplemented-call results.
+Those Unknown results remain unresolved and add no rule coverage. The latest run
+reduced elapsed time by approximately 6% / 18% and allocated bytes by 12% / 13%.
+Detailed rows, counters and contracts are in
+`out/audit/clone-probe-plain-20261102.json` and
+`out/audit/clone-probe-meta-20261102.json`.
+
+Three new regression cases exercise normal play/move/attack prefixes, root successor
+equivalence, caller selector ownership, clone accounting, branch mutation isolation,
+reverse traversal, VM gaps, pending/nested choices, exceptions, clone-boundary
+rejection without fallback, prefix mismatch/rejection, budgets and reference
+contamination. All 1,088 BotSim selftests and nine NNTrain policy-evaluation-selftests
+passed in a separate publishing snapshot excluding unrelated dirty source edits.
+The snapshot preserves unchanged checkout data bytes: Git-normalized cards.live.json
+line endings do not match the existing exact native-default card-data hash, so an
+archive-only fixture failed IR loading until the original unchanged checkout bytes
+were copied and outputs rebuilt. No evidence hash or card rule was rewritten.
+Existing NNTrain CS8632 warnings remain.
+
+The DeepSeek worker supplied a bounded selector/counter inventory, checked against
+ChoicePolicyAdapter and the replay probe by the primary agent; it did not implement
+or publish changes. This engineering batch does not update PvP certification or the
+audit completion denominator. Next: broaden prefixes and profile the remaining
+snapshot/query/copy allocations before selecting any faster default.

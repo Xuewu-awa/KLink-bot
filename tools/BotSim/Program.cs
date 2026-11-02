@@ -54,6 +54,7 @@ internal static class Program
                 "dispatch-gap" => CmdDispatchGap(db),
                 "replay" => CmdReplay(db, opts),
                 "selftest" => SelfTest.Run(db, opts.GetValueOrDefault("filter")),
+                "probe-actions-clone" => CloneProbeBenchmark.Run(db, opts),
                 "probe-actions" => ActionProbeSmoke.Run(db, opts),
                 "probe-targets" => ActionTargetSmoke.Run(db, opts),
                 // 全卡池蓝图烟雾测试 —— 逐卡跑蓝图，抓异常/未实现原语/步数上限/零变化/非确定性。
