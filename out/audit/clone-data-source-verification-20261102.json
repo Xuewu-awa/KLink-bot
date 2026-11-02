@@ -1,0 +1,868 @@
+{
+  "baseHead": "1e27897f7201fbd5ce530511bbe36bba5e449094",
+  "sourceFiles": [
+    {
+      "file": "src/KLink.Bot/Bots/GreedyBot.cs",
+      "testedSha256": "5aa057ad859fd2d42014bb3f3666b090f8fcca7f96a3a5e525ef13e80c313979",
+      "origin": "HEAD"
+    },
+    {
+      "file": "src/KLink.Bot/Cards/CardBlacklistPolicy.cs",
+      "testedSha256": "070ca6f9c3043c7c692d064093840d90adedc719f8f1aa129c05507c40f76161",
+      "origin": "HEAD"
+    },
+    {
+      "file": "src/KLink.Bot/Cards/CardDatabase.cs",
+      "testedSha256": "bca791da95f9952dd989513ee34c4a60bd69e6c2deb2bd493591c4caf5e29d8e",
+      "origin": "HEAD"
+    },
+    {
+      "file": "src/KLink.Bot/Cards/CardInnateTable.cs",
+      "testedSha256": "ab382c8482a105a688869cab0e4a83246b7035375d5c6f219336646da7a64eb5",
+      "origin": "HEAD"
+    },
+    {
+      "file": "src/KLink.Bot/Cards/CardPoolTable.cs",
+      "testedSha256": "1d9e4d58637780a5e27216e7fbd7a3a93b42c77bea153e64f2212c769bf0ac4e",
+      "origin": "HEAD"
+    },
+    {
+      "file": "src/KLink.Bot/Cards/CardReservationPolicy.cs",
+      "testedSha256": "ad3753ff9fea3da719b2aef0d988d3d1a8dbe92e878decc778635d09bbcfaa51",
+      "origin": "HEAD"
+    },
+    {
+      "file": "src/KLink.Bot/Cards/DeckCodeParser.cs",
+      "testedSha256": "ac464e036b2405f207cfb06e7e5c69202b33f02f45bd06484449bb0c7632dd5f",
+      "origin": "HEAD"
+    },
+    {
+      "file": "src/KLink.Bot/Cards/MetaDecks.cs",
+      "testedSha256": "972840e92a266fe00742a27d13623d53efdd9375c33fd014de82ada5d0c526aa",
+      "origin": "HEAD"
+    },
+    {
+      "file": "src/KLink.Bot/Effects/Blueprint/DispatchGap.cs",
+      "testedSha256": "076978e9de146093a7deaeb88017ed849bc38903000b38a50bed5aa4208e85c5",
+      "origin": "HEAD"
+    },
+    {
+      "file": "src/KLink.Bot/Effects/Blueprint/KismetIr.cs",
+      "testedSha256": "6e710fc92c40a8882277ffdc724afded26014ae5fb650083e95c513dea861e57",
+      "origin": "HEAD"
+    },
+    {
+      "file": "src/KLink.Bot/Effects/Blueprint/KismetMissingCallSites.cs",
+      "testedSha256": "a768257cc2cc9216d67d24c6af8bbb6d8f201138c3b2321e32e8cb309b06cf51",
+      "origin": "HEAD"
+    },
+    {
+      "file": "src/KLink.Bot/Effects/Blueprint/KismetNativeDefaults.cs",
+      "testedSha256": "07f82fce7697c8654b123a1583c46470cbebdf27c94acc7a9716de4124f3009d",
+      "origin": "HEAD"
+    },
+    {
+      "file": "src/KLink.Bot/Effects/Blueprint/KismetVm.cs",
+      "testedSha256": "73b7d7c54e4549271b8bbff0f035769ed015146304a905dc8f235ab4c3bfc0d2",
+      "origin": "HEAD"
+    },
+    {
+      "file": "src/KLink.Bot/Effects/Blueprint/KismetVmClone.cs",
+      "testedSha256": "fb7a05d4a8aab5ae259715a65877ed784cc43071d4eac591fb94e2db176490fd",
+      "origin": "HEAD"
+    },
+    {
+      "file": "src/KLink.Bot/Effects/Blueprint/LiveRuleTables.cs",
+      "testedSha256": "7025627d5468560844447b823a6a39df6d187f51f2fa7a187f9c3eb6c3b492ea",
+      "origin": "HEAD"
+    },
+    {
+      "file": "src/KLink.Bot/Effects/CardApi.EffectDamage.cs",
+      "testedSha256": "36f72925695728384f0fa9cb815f844149036bbb7828d1390304255bfebfb0c0",
+      "origin": "HEAD"
+    },
+    {
+      "file": "src/KLink.Bot/Effects/CardApi.cs",
+      "testedSha256": "8008eaef80bdbd395fb45bc16486cf503ae9d2e4e1d36ea97ee6e850b47965db",
+      "origin": "HEAD"
+    },
+    {
+      "file": "src/KLink.Bot/Effects/CardApiClone.cs",
+      "testedSha256": "786106022192716db222897d3e8284afa9c46ae2b587272a137c0ea5ac7c914c",
+      "origin": "HEAD"
+    },
+    {
+      "file": "src/KLink.Bot/Effects/CardApiDispatch.cs",
+      "testedSha256": "b7188eace3ff3ad55eac7985b4b92e437f208e0b0e5ddc74e3cd572c0c79c7f3",
+      "origin": "HEAD"
+    },
+    {
+      "file": "src/KLink.Bot/Effects/CardEffectScripts.cs",
+      "testedSha256": "0b7772fd871fdcf28f25d3c1de58d4089f307815e351397c0e1715423b773596",
+      "origin": "HEAD"
+    },
+    {
+      "file": "src/KLink.Bot/Effects/EffectContext.cs",
+      "testedSha256": "668da40ab6ac797782d8c3389772e4f1439d2a070ffd19b1f8b7d66219c9be53",
+      "origin": "HEAD"
+    },
+    {
+      "file": "src/KLink.Bot/Effects/GameplayTagTable.cs",
+      "testedSha256": "b2035b20d5a28abee3a2ac48fbdd640ec061599cc967e16c525d2662f3f35808",
+      "origin": "HEAD"
+    },
+    {
+      "file": "src/KLink.Bot/Engine/CardCustomJson.cs",
+      "testedSha256": "d101a35039ce6a183c5a7e98584fd026de2d06e065574e3cf33494200357a103",
+      "origin": "HEAD"
+    },
+    {
+      "file": "src/KLink.Bot/Engine/CardCustomNames.cs",
+      "testedSha256": "3525c245866aa80f04711660d876b380fb5fc24bf4f1d508734b89e0db30ffe9",
+      "origin": "HEAD"
+    },
+    {
+      "file": "src/KLink.Bot/Engine/CardGraphClone.cs",
+      "testedSha256": "99969df17165a420501cb5efe28e342cf8898b66de76774547a52a93a3125f50",
+      "origin": "HEAD"
+    },
+    {
+      "file": "src/KLink.Bot/Engine/CardInstance.cs",
+      "testedSha256": "e3640cddebefacb307c60c3d52f28637a710cd0185e09a6a6700fb0f29288326",
+      "origin": "HEAD"
+    },
+    {
+      "file": "src/KLink.Bot/Engine/CloneStageProfile.cs",
+      "testedSha256": "5a616e835516c2c1044860ff69f2a69fd3b44bcf34bda570ff9cd74fa9821d54",
+      "origin": "HEAD"
+    },
+    {
+      "file": "src/KLink.Bot/Engine/CollectionSlotClone.cs",
+      "testedSha256": "89a846330d6a49dab359c72a76c181f93b54d3e6e6a31f1d153e94ad65283122",
+      "origin": "HEAD"
+    },
+    {
+      "file": "src/KLink.Bot/Engine/DeterministicRandom.cs",
+      "testedSha256": "7bbd8a63125a0720dc9f14994eda3b34933a762f26be9b51e31c20f757ed1b43",
+      "origin": "HEAD"
+    },
+    {
+      "file": "src/KLink.Bot/Engine/Enums.cs",
+      "testedSha256": "938b2f98d2ec2e1491eb2ed0ddf9b9505aea64f14ebe9f72ca792cb8fc1b81d9",
+      "origin": "HEAD"
+    },
+    {
+      "file": "src/KLink.Bot/Engine/GameState.cs",
+      "testedSha256": "9917a4e17a9726de581964ba3ebec4065fb4ce8188f164a1811330584cc155ec",
+      "origin": "HEAD"
+    },
+    {
+      "file": "src/KLink.Bot/Engine/GameStateClone.cs",
+      "testedSha256": "0ff10e3e3a17f342bb3bec484995e16f80a17c0fc55c9d849b982fb482dff6c4",
+      "origin": "HEAD"
+    },
+    {
+      "file": "src/KLink.Bot/Engine/MatchEngine.cs",
+      "testedSha256": "7bb7ff632cc9bf2aaf051c6b1b9cbd12a01180659b5cc27b06244502150d939c",
+      "origin": "HEAD"
+    },
+    {
+      "file": "src/KLink.Bot/Engine/MatchEngineClone.cs",
+      "testedSha256": "1f72f35b30ed97271979a7f2806275505690593214bf762390a7b3bb1ec1a156",
+      "origin": "HEAD"
+    },
+    {
+      "file": "src/KLink.Bot/Engine/UeRandomStream.cs",
+      "testedSha256": "23aec803e4abf476f6a8ca6fc85a4a196771378666ef6ee431b279340129e62e",
+      "origin": "HEAD"
+    },
+    {
+      "file": "src/KLink.Bot/Engine/WireAction.cs",
+      "testedSha256": "0f99425a6d8647dd5c64b71f8b663d92b5bfd8e1d62887dbb179741388770683",
+      "origin": "HEAD"
+    },
+    {
+      "file": "src/KLink.Bot/KLink.Bot.csproj",
+      "testedSha256": "f9ac7bf69631fd4cf201a8365cc7559dc804f51a7abb295cffe2a1405095d09e",
+      "origin": "HEAD"
+    },
+    {
+      "file": "src/KLink.Bot/NN/MainActionModel.cs",
+      "testedSha256": "54a6ee4d191a57ffbf52e579d9cf253ac542ee83111f87acf811fa3b88b3836c",
+      "origin": "batch"
+    },
+    {
+      "file": "src/KLink.Bot/NN/NnModel.cs",
+      "testedSha256": "ea92c551c08de60c095647e63f75dae38c39133380e8f3093615f8c6abcf0019",
+      "origin": "HEAD"
+    },
+    {
+      "file": "src/KLink.Bot/NN/StateEncoder.cs",
+      "testedSha256": "8da023351d65a32e1ca22ccf1dd9e86f86652316ffb6735b60374516752e90e7",
+      "origin": "HEAD"
+    },
+    {
+      "file": "src/KLink.Bot/NN/ValueTrainingContract.cs",
+      "testedSha256": "260a7c607c2818b45ca9b045c2e42c1a54f29cf2ecb5ccee86afa1b17b5e0c06",
+      "origin": "HEAD"
+    },
+    {
+      "file": "src/KLink.Bot/Replay/ReplayData.cs",
+      "testedSha256": "5201984ca59bc805bc951b9af17259a18744929b45b5e49106638e99c4a768ad",
+      "origin": "HEAD"
+    },
+    {
+      "file": "src/KLink.Bot/Replay/ReplayRunner.cs",
+      "testedSha256": "940e1e46e77f75c0251ac656b4bd4dd0c81cdf74e8c24623e95f17c1560a0c3a",
+      "origin": "HEAD"
+    },
+    {
+      "file": "src/KLink.Bot/Server/ActionPacketCodec.cs",
+      "testedSha256": "3c165a25dc6c78a007bfa18bfb586d21f26604354c5ace70ed108cd6a6a1762e",
+      "origin": "HEAD"
+    },
+    {
+      "file": "src/KLink.Bot/Server/AtomicAction.cs",
+      "testedSha256": "05fc444f94c6697a2f695f5960e5aca58532bd7de3c449a22b063566142bb786",
+      "origin": "HEAD"
+    },
+    {
+      "file": "src/KLink.Bot/Server/BotTurnService.cs",
+      "testedSha256": "27f186f15422993847f505b4dce026628a0e9d888768b6d76367c956528c70bb",
+      "origin": "HEAD"
+    },
+    {
+      "file": "src/KLink.Bot/Server/NnPolicy.cs",
+      "testedSha256": "d9782d2821319349a4682c92bc093fc65b15cee2bd18ad55ff7059f825067359",
+      "origin": "HEAD"
+    },
+    {
+      "file": "src/KLink.Bot/Server/ServerMatchSnapshot.cs",
+      "testedSha256": "8645a833ddc7b6663754813aa03c6a73996b23f3e1f5e36b4b1c67bf941af7af",
+      "origin": "HEAD"
+    },
+    {
+      "file": "src/KLink.Bot/Server/ServerReplayBridge.cs",
+      "testedSha256": "cb2237f84cd0420815bfc1b60cb8f2f9e1ff0bbcd0c21a0ab84fe3eca1bf3dc6",
+      "origin": "HEAD"
+    },
+    {
+      "file": "src/KLink.Bot/Training/ChoicePolicyAdapter.cs",
+      "testedSha256": "52525eabc5475e41c5cf966109e31a23fc2881d3453e507af4c4a776484dc583",
+      "origin": "HEAD"
+    },
+    {
+      "file": "src/KLink.Bot/Training/CloneActionProbe.cs",
+      "testedSha256": "d73b86ab60f12eb488cb67fe7929dea3d47328f8fa8b25cb18c106acbcfc104a",
+      "origin": "HEAD"
+    },
+    {
+      "file": "src/KLink.Bot/Training/CloneProbeProfile.cs",
+      "testedSha256": "5433095ca858d6d3f6b8a699225a9392d666480b90a88fbac8b6665265aeaada",
+      "origin": "HEAD"
+    },
+    {
+      "file": "src/KLink.Bot/Training/GreedyEpisodeRunner.cs",
+      "testedSha256": "2ec0ef58e09361b33743ae5b4b4a8cf901f45868822ee5fac9b942df77ad75f7",
+      "origin": "HEAD"
+    },
+    {
+      "file": "src/KLink.Bot/Training/IsolatedActionProbe.cs",
+      "testedSha256": "1e25455424536cf08ccf38c2c4ec8b30c5d13be5b70548d16bb199fa423b02f5",
+      "origin": "HEAD"
+    },
+    {
+      "file": "src/KLink.Bot/Training/MainActionPolicyAdapter.cs",
+      "testedSha256": "5470e6c29235d862548c3a268e0d4fc9f37b522f7187991b6a0623d02a8ea2e2",
+      "origin": "HEAD"
+    },
+    {
+      "file": "src/KLink.Bot/Training/OracleActionEpisodeRunner.cs",
+      "testedSha256": "79da56f05cf6e8802a986451749491f95391a1485aa5885bc8205fde7e87b578",
+      "origin": "HEAD"
+    },
+    {
+      "file": "src/KLink.Bot/Training/ProbeSnapshotComparison.cs",
+      "testedSha256": "99256cae7085ba0c634354009a84458122e0f62803693e5fa8e9f7b01b180b71",
+      "origin": "HEAD"
+    },
+    {
+      "file": "src/KLink.Bot/Training/TrainingTestAccess.cs",
+      "testedSha256": "a854fba23828ed217ad68c1738449564b2852e015bcdc1c3c7424307e345759e",
+      "origin": "HEAD"
+    },
+    {
+      "file": "tools/BotSim/ActionProbeSmoke.cs",
+      "testedSha256": "39d44c4460e3ef3c0a7af2fa121e68007ea8fad740a1f093a630613b2e7b3e56",
+      "origin": "HEAD"
+    },
+    {
+      "file": "tools/BotSim/ActionTargetSmoke.cs",
+      "testedSha256": "6fd22258ac8ec39ee583073422d88ed231e484e56cf55adfab42750c344de20e",
+      "origin": "HEAD"
+    },
+    {
+      "file": "tools/BotSim/BotSim.csproj",
+      "testedSha256": "51582ef348504dcf7d84b6c3651dc300a7e0c7417bbd268fb1eeca2117057dca",
+      "origin": "HEAD"
+    },
+    {
+      "file": "tools/BotSim/CloneProbeBenchmark.cs",
+      "testedSha256": "99bc117c86552c4d23f90bf1e1b5aa0489923a060509e263991e250b03d4b51b",
+      "origin": "HEAD"
+    },
+    {
+      "file": "tools/BotSim/DispatchGap.cs",
+      "testedSha256": "9092a217505832ca66b40ffe0e2ef74ad9bfbe7a78575106c8ef081485463e3f",
+      "origin": "HEAD"
+    },
+    {
+      "file": "tools/BotSim/GapReport.cs",
+      "testedSha256": "b8839b4ec64df5096a0634b6c83c6642508ac7ea146dc44ea51dd27d622620dd",
+      "origin": "HEAD"
+    },
+    {
+      "file": "tools/BotSim/Program.cs",
+      "testedSha256": "4039e6377c9b8a6b9b0eb608635a8beaa314b6ecebc2b4e72d1081617e18490b",
+      "origin": "HEAD"
+    },
+    {
+      "file": "tools/BotSim/SelfTest.ActionProvenance.cs",
+      "testedSha256": "49c3de1d62e8412feb0d6bc46c072898cd8d91c551f0e76a1a501cf2c9d5ec68",
+      "origin": "HEAD"
+    },
+    {
+      "file": "tools/BotSim/SelfTest.AmbushNumeric.cs",
+      "testedSha256": "9d492f98507eeecee87957f72c6f94b58f253f82eea31b315ec785b7f7855080",
+      "origin": "HEAD"
+    },
+    {
+      "file": "tools/BotSim/SelfTest.CalculationOutputs.cs",
+      "testedSha256": "b6c29678332b9f8014710af24db0be8be9faef305c9de6e66f285f21ae4bb14e",
+      "origin": "HEAD"
+    },
+    {
+      "file": "tools/BotSim/SelfTest.CardApiClone.cs",
+      "testedSha256": "1451828c23a35611ece2b6a3506fc12714e37f9228e7d7bf20ce9750b3c7c6b5",
+      "origin": "HEAD"
+    },
+    {
+      "file": "tools/BotSim/SelfTest.CardGraphClone.cs",
+      "testedSha256": "df303b3ebc1fbfb0b18206aac0a75f36def8c23edb47f479d607fee4d27e978d",
+      "origin": "HEAD"
+    },
+    {
+      "file": "tools/BotSim/SelfTest.CardGraphVm.cs",
+      "testedSha256": "e6d48b0f3ca9f14f1889a5607c78b6f34d9637035ab2cc3adbc2c8c6522cdead",
+      "origin": "HEAD"
+    },
+    {
+      "file": "tools/BotSim/SelfTest.ChoiceOrderTarget.cs",
+      "testedSha256": "f972cdfd04cbed4dcdebf71aec26b8444406dfe7c9ea9a35996183927fef43ad",
+      "origin": "HEAD"
+    },
+    {
+      "file": "tools/BotSim/SelfTest.ChoicePolicyAdapter.cs",
+      "testedSha256": "d2a8180e63a6c45337fd615d60cee9b9c6f519b5ab66f4f028cfc06b0f8ee31b",
+      "origin": "HEAD"
+    },
+    {
+      "file": "tools/BotSim/SelfTest.ChoicePolicyMutation.cs",
+      "testedSha256": "77d1b5a9075df33d109dfec7c497d594d4839a405d9f7234a4bb3e4537e6171a",
+      "origin": "HEAD"
+    },
+    {
+      "file": "tools/BotSim/SelfTest.ChoiceUnitDeployment.cs",
+      "testedSha256": "5a1cc899f0c6b712d1fab712d37a75ebdab8dc6cf041560621117ec5bbbcd4c6",
+      "origin": "HEAD"
+    },
+    {
+      "file": "tools/BotSim/SelfTest.CloneActionProbe.cs",
+      "testedSha256": "6336bf2e6c20076c52445e871b798f262d0835a9829d9cafb362bb2d35e27e7c",
+      "origin": "HEAD"
+    },
+    {
+      "file": "tools/BotSim/SelfTest.CloneEpisode.cs",
+      "testedSha256": "fb93dbb726a3799fdd35b413dfb52e216d1a49f5bfdc19604f77489274e189a8",
+      "origin": "HEAD"
+    },
+    {
+      "file": "tools/BotSim/SelfTest.CombatDeath.cs",
+      "testedSha256": "a285da1fbe0474ad21fa06de5cbfb32433bdf6a54106f6b4af0b653ff5e1d0eb",
+      "origin": "HEAD"
+    },
+    {
+      "file": "tools/BotSim/SelfTest.CombatNumeric.cs",
+      "testedSha256": "905d1371249afae71a6ebb5cbd1f5a51948c378a0ec29f5e610498131552e894",
+      "origin": "HEAD"
+    },
+    {
+      "file": "tools/BotSim/SelfTest.CountermeasureReceipts.cs",
+      "testedSha256": "fe3ac32c48317fe58ef5f7a1d63a22ecbaf26630fd37ce4ce96edad422ea718b",
+      "origin": "HEAD"
+    },
+    {
+      "file": "tools/BotSim/SelfTest.DamageDeath.cs",
+      "testedSha256": "637c1f1e219b7ea08a6ea289f79b35daf2b82aa55c3e18d6b833e8c8e23b57ec",
+      "origin": "HEAD"
+    },
+    {
+      "file": "tools/BotSim/SelfTest.DamageHq.cs",
+      "testedSha256": "0df50b78c5ed04855d7406ae727800a1326fc6d2ad9221e5675843de09b20b06",
+      "origin": "HEAD"
+    },
+    {
+      "file": "tools/BotSim/SelfTest.DamageModifierDefault.cs",
+      "testedSha256": "0cc8eeef6703e4705e6a681e3b3517bf11fd890c2d82f205d66405677f67a37c",
+      "origin": "HEAD"
+    },
+    {
+      "file": "tools/BotSim/SelfTest.DamageModifierFloor.cs",
+      "testedSha256": "8a81c4282440039ab29364ef23259cc52d40752ed049f1acf6f05c9693a581d6",
+      "origin": "HEAD"
+    },
+    {
+      "file": "tools/BotSim/SelfTest.DamageModifierOverrides.cs",
+      "testedSha256": "c1cca93c3bbe32c4b310f9b23c36d8bad2ad39b3b44504819b53a9425f85a74a",
+      "origin": "HEAD"
+    },
+    {
+      "file": "tools/BotSim/SelfTest.DamageNumeric.cs",
+      "testedSha256": "4b23eb8c7420b82a4d792e5e17127ac8dbbb53d1c1e02c82572016adfe63a519",
+      "origin": "HEAD"
+    },
+    {
+      "file": "tools/BotSim/SelfTest.DamageObserverChain.cs",
+      "testedSha256": "def2edaf6dc710bd2a718d90248114a076ab22e7660df7ea7b0d377e93eb5fb1",
+      "origin": "HEAD"
+    },
+    {
+      "file": "tools/BotSim/SelfTest.DecisionSampling.cs",
+      "testedSha256": "fdc1fae85cf80d7e0afc24d550f56149452a87b9e47b83d6fdc5fa0d0247fce2",
+      "origin": "HEAD"
+    },
+    {
+      "file": "tools/BotSim/SelfTest.EffectDamage.cs",
+      "testedSha256": "5251657d61d719131ab6777dfacf2ac2eb5f99313670b166f714d40e3872be24",
+      "origin": "HEAD"
+    },
+    {
+      "file": "tools/BotSim/SelfTest.EntryReturnClosure.cs",
+      "testedSha256": "5ba1193c27144a2a9e9553f8f82277a593fca0ce4e323b97dcc04072dfc93403",
+      "origin": "HEAD"
+    },
+    {
+      "file": "tools/BotSim/SelfTest.ExplicitOrderTarget.cs",
+      "testedSha256": "65dd7ddecd9e3df18f3c882dd6cb978c473537e2a8cc711506e0216a65045bcc",
+      "origin": "HEAD"
+    },
+    {
+      "file": "tools/BotSim/SelfTest.GameStateClone.cs",
+      "testedSha256": "e0372d1b66ca309b5ebc7eb66fc2e0ab21949933ef90294ca4c7a82dd51e6524",
+      "origin": "HEAD"
+    },
+    {
+      "file": "tools/BotSim/SelfTest.GreedyGotcha.cs",
+      "testedSha256": "61b7ff2a5887b1b1b0881e4de7eff5c44129017ba35c04e02244d63abcef1d3e",
+      "origin": "HEAD"
+    },
+    {
+      "file": "tools/BotSim/SelfTest.HandDeploymentSlots.cs",
+      "testedSha256": "cdceddee2bd71ce9da27e07c7106cb4e739af78a2236d5ff55a6941bfd203884",
+      "origin": "HEAD"
+    },
+    {
+      "file": "tools/BotSim/SelfTest.HqSlots.cs",
+      "testedSha256": "c846f80b0cdace729fdb87839eb33b19eaff7d4e5b6cf435a333cf2bf2071b4f",
+      "origin": "HEAD"
+    },
+    {
+      "file": "tools/BotSim/SelfTest.IsolatedActionProbe.cs",
+      "testedSha256": "c8757b7a7883f3569dfc29f8e90175033533a9aff955eb5f6c4d84a020c4bb01",
+      "origin": "HEAD"
+    },
+    {
+      "file": "tools/BotSim/SelfTest.KismetVmClone.cs",
+      "testedSha256": "7615bbf1ea6f1605e66a2bcdcb1ceee794d1b2974b6a849460771e26ce72512e",
+      "origin": "HEAD"
+    },
+    {
+      "file": "tools/BotSim/SelfTest.LiteralAndNativeDefault.cs",
+      "testedSha256": "48421e683642513a1be05295bb2019467830d7300f13a5d653c3079ac4c16ec8",
+      "origin": "HEAD"
+    },
+    {
+      "file": "tools/BotSim/SelfTest.MainActionContract.cs",
+      "testedSha256": "53c84d3f07db37d468aec0785619369b3331e274849478d8bb9f68b39ac8bd24",
+      "origin": "HEAD"
+    },
+    {
+      "file": "tools/BotSim/SelfTest.MainPolicyMutation.cs",
+      "testedSha256": "08cc6d5636c6df82dda8fa82c687d256193b7c3ed97f2c4187f1dd10a6e261c1",
+      "origin": "HEAD"
+    },
+    {
+      "file": "tools/BotSim/SelfTest.MatchEngineClone.cs",
+      "testedSha256": "958cab516a61500d6005ae44c880e28e2df2aa7c2047f679119d0fa64805a9a1",
+      "origin": "HEAD"
+    },
+    {
+      "file": "tools/BotSim/SelfTest.MissingCallSites.cs",
+      "testedSha256": "f9798047da23c8cc5c500066ecc62f04a13a89d1bac89c5e5c4168c4b0f59e81",
+      "origin": "HEAD"
+    },
+    {
+      "file": "tools/BotSim/SelfTest.NestedActionBoundaries.cs",
+      "testedSha256": "cc37a95f7d36aaa79def13beab962b5e433e0e4d4c6bc7413ea31f2e32208d09",
+      "origin": "HEAD"
+    },
+    {
+      "file": "tools/BotSim/SelfTest.OracleLabels.cs",
+      "testedSha256": "41aa38cbdf34701863b9b9483c461b4f16a7c3998fe00ac691f768c51b9c44ad",
+      "origin": "HEAD"
+    },
+    {
+      "file": "tools/BotSim/SelfTest.OrderHandMovement.cs",
+      "testedSha256": "850f5a057f600bcef378e91f2cfa20f116ee0b1743f68a9ed8150fd4edc6badd",
+      "origin": "HEAD"
+    },
+    {
+      "file": "tools/BotSim/SelfTest.PassiveMitigation.cs",
+      "testedSha256": "45569827c867aa72290a75dcd6142ce40e6405f6933a5ec26487e892ee773a5c",
+      "origin": "HEAD"
+    },
+    {
+      "file": "tools/BotSim/SelfTest.RandomCheckpoint.cs",
+      "testedSha256": "5b6bab011b7a642abc6e2a85274e1be31bbeac26d2fee6481ee0e19c35791fcb",
+      "origin": "HEAD"
+    },
+    {
+      "file": "tools/BotSim/SelfTest.Repair.cs",
+      "testedSha256": "ae428444d538bb3f7b977d2567e7c5dfc8cca72021bad6620b07ec043b56f9db",
+      "origin": "HEAD"
+    },
+    {
+      "file": "tools/BotSim/SelfTest.RootStopBoundary.cs",
+      "testedSha256": "9d53cc4bc8ab334ce4ff2b5b4e16905482cd709367d5c20a2c440dd2173c7f5f",
+      "origin": "HEAD"
+    },
+    {
+      "file": "tools/BotSim/SelfTest.SalvageCreation.cs",
+      "testedSha256": "0432e74948a6aa5eeda2f6311afef5ac859ebf98eda2f2173a0ab8b97caf2ce3",
+      "origin": "HEAD"
+    },
+    {
+      "file": "tools/BotSim/SelfTest.SixNativeDefaults.cs",
+      "testedSha256": "267e0b42ba4467f850bed9d3e699e28f61a23b81046cb50d6bd432a4c73f5ad1",
+      "origin": "HEAD"
+    },
+    {
+      "file": "tools/BotSim/SelfTest.SnapshotAllocation.cs",
+      "testedSha256": "f4a5051174b1afbe8cbad39ba7254e03fc2a52927aa8aab75fa7ad6670a0114e",
+      "origin": "HEAD"
+    },
+    {
+      "file": "tools/BotSim/SelfTest.SpawnBoardNonVisualReceipt.cs",
+      "testedSha256": "b77f6ce4e0a4e52b49ae43abeabc971c974ce42d02eaacd5671c69b095a15362",
+      "origin": "HEAD"
+    },
+    {
+      "file": "tools/BotSim/SelfTest.SpawnHandNonVisualReceipt.cs",
+      "testedSha256": "130a4664e1672066f56f5634db6bf5c89aba79c8f8f4f0d9ca4695e44aa2367b",
+      "origin": "HEAD"
+    },
+    {
+      "file": "tools/BotSim/SelfTest.SpawnHandReceipt.cs",
+      "testedSha256": "7390345409fe787e31a5e6c6ad2dcd1b7707add37644cc32a0f82eef18ff8c5e",
+      "origin": "HEAD"
+    },
+    {
+      "file": "tools/BotSim/SelfTest.SpawnHandSeenReceipt.cs",
+      "testedSha256": "a1075b7d958337c23474279295225829d0356f84581cd491e1b6ad62fb57aea6",
+      "origin": "HEAD"
+    },
+    {
+      "file": "tools/BotSim/SelfTest.SpawnHandSlot.cs",
+      "testedSha256": "dde5afe03ac370facbffc070506d7ce04f77c6e3b22624b2159d80831d38b2a8",
+      "origin": "HEAD"
+    },
+    {
+      "file": "tools/BotSim/SelfTest.TrainingBatchDefaults.cs",
+      "testedSha256": "4f9ed2c9bdd1587d925e3d31a059ab89077448475699d9efd9d7f3d767c6788c",
+      "origin": "HEAD"
+    },
+    {
+      "file": "tools/BotSim/SelfTest.UnitDeploymentTarget.cs",
+      "testedSha256": "9a53ad25ad03014bab59755121e87aa2d233ed6020bb01eaaf173041bf2dcdb6",
+      "origin": "HEAD"
+    },
+    {
+      "file": "tools/BotSim/SelfTest.cs",
+      "testedSha256": "50b421e43124c71e8b1c133e8a1db6f4bbebef00683019eb71c33f87db12b006",
+      "origin": "HEAD"
+    },
+    {
+      "file": "tools/BotSim/SmokeAllCards.cs",
+      "testedSha256": "9bb2648d2187fcdf48c8a2835df321b0693e77d788c920652215ecf08cefe8bf",
+      "origin": "HEAD"
+    },
+    {
+      "file": "tools/NNTrain/ActionDatasetSelfTest.cs",
+      "testedSha256": "ae6852dbe7d7ee980e7aace4fbc3f0e76d7518dfb6ad8196edaeb84352ecdc5d",
+      "origin": "HEAD"
+    },
+    {
+      "file": "tools/NNTrain/ActionDatasetTool.cs",
+      "testedSha256": "b3a922bd3af774d3d8dda8aa19d5c437f1521dddca03658911f78d696534f227",
+      "origin": "batch"
+    },
+    {
+      "file": "tools/NNTrain/ActionEpisodeBenchmark.cs",
+      "testedSha256": "b9b1ad024c9c08d45b4d64cf8e6b2ce35fdc6dcfd435eedc23b25a039e76bd5e",
+      "origin": "HEAD"
+    },
+    {
+      "file": "tools/NNTrain/ActionModelSelfTest.cs",
+      "testedSha256": "969399fddd1867fba1660822ed3eadf13059195a97dd15b7a04aeb01ac9c4555",
+      "origin": "HEAD"
+    },
+    {
+      "file": "tools/NNTrain/ActionModelTool.cs",
+      "testedSha256": "94b5ed94a491a74ec001586f40b974c724ea1b6ebe9dd57712b6c87a210122d3",
+      "origin": "batch"
+    },
+    {
+      "file": "tools/NNTrain/AdmissionSelfTest.cs",
+      "testedSha256": "1f234c31be86882a920886836991d98d55d9a8e32cb2817c2ab93e33ccf43b31",
+      "origin": "HEAD"
+    },
+    {
+      "file": "tools/NNTrain/AfterstateDatasetTool.cs",
+      "testedSha256": "dcbb8ef04f6bc590930d87e38eee9b755a2588d414a72a29dd26a0b3fa2d9bb7",
+      "origin": "HEAD"
+    },
+    {
+      "file": "tools/NNTrain/AfterstateWinTraining.cs",
+      "testedSha256": "dcdbee73324e957d4ad9121a89b8fcbb679bf5526edd055cd26aceeb11ea8df8",
+      "origin": "HEAD"
+    },
+    {
+      "file": "tools/NNTrain/CloneActionDatasetSelfTest.cs",
+      "testedSha256": "f1832f241db8c146d17d04d529ad5083d1616a986be5299b4f87bc5df1c9fb97",
+      "origin": "batch"
+    },
+    {
+      "file": "tools/NNTrain/CloneActionDatasetTool.cs",
+      "testedSha256": "b4a7157a7fe5e21527195ce052135c4900a57456ceda14b71acf1dea72b172b3",
+      "origin": "batch"
+    },
+    {
+      "file": "tools/NNTrain/CloneEpisodeBenchmark.cs",
+      "testedSha256": "1d6630dddb7b336b648f9adffed90b074e0fc8069988deb856a5c7ab0e1bb2b9",
+      "origin": "HEAD"
+    },
+    {
+      "file": "tools/NNTrain/ClonePlanningAdmission.cs",
+      "testedSha256": "0bd8fe592999379690dd731a7eb8924c5c20994bf98c6e5b6eff118fae2acd0a",
+      "origin": "batch"
+    },
+    {
+      "file": "tools/NNTrain/ClonePlanningAdmissionSelfTest.cs",
+      "testedSha256": "ee06f0368d47eae94685068807d7085146b945608e6c62f9163a7e57535dc12c",
+      "origin": "HEAD"
+    },
+    {
+      "file": "tools/NNTrain/DumpMatchup.cs",
+      "testedSha256": "59a75ce1201ce00fbae2dc2985f190f78fb54560d8ef54ba0050678c7f77d40c",
+      "origin": "HEAD"
+    },
+    {
+      "file": "tools/NNTrain/DumpMatchupSelfTest.cs",
+      "testedSha256": "6a64b85cefa0f071301db7cf7ed4cd99cbde72329953b70e75a152aec41d9c2c",
+      "origin": "HEAD"
+    },
+    {
+      "file": "tools/NNTrain/ExternalValueEvaluation.cs",
+      "testedSha256": "728c67ec74c033975d02b94cc7b2f147b6341711e1ebeff718bfe14005feb2e9",
+      "origin": "HEAD"
+    },
+    {
+      "file": "tools/NNTrain/ExternalValueEvaluationSelfTest.cs",
+      "testedSha256": "6c3adbe4ffe12330d847516b7577e7ba03d7c41dc894dfdebc8bbc8ac746c192",
+      "origin": "HEAD"
+    },
+    {
+      "file": "tools/NNTrain/FrozenSplitSelfTest.cs",
+      "testedSha256": "09d00f580fa681c0e41ce335df513c6c819ceffa3851f3d6b89be118c7212ab0",
+      "origin": "HEAD"
+    },
+    {
+      "file": "tools/NNTrain/FrozenValueSplit.cs",
+      "testedSha256": "cc97227dc10ba863917ba420bf8cbc5f3e6957dd741be3f01783593bf17dfe0b",
+      "origin": "HEAD"
+    },
+    {
+      "file": "tools/NNTrain/NNTrain.csproj",
+      "testedSha256": "49affd2a564919c3343dc0fe4e8e7c0f10e541f8df058b427d5032bbfa98883c",
+      "origin": "HEAD"
+    },
+    {
+      "file": "tools/NNTrain/PairCoverageSelfTest.cs",
+      "testedSha256": "cd56f56a1e00c09133f51695d7ceed1dbf0cf853f0333212694238e6cc564e0f",
+      "origin": "HEAD"
+    },
+    {
+      "file": "tools/NNTrain/PairDirectionSelfTest.cs",
+      "testedSha256": "7f7dbb622a4652066e7da823a61dd551cf766e75fa883a8e71be863b35df5b0a",
+      "origin": "HEAD"
+    },
+    {
+      "file": "tools/NNTrain/PolicyMatchEvaluation.cs",
+      "testedSha256": "e01aa29034c5355c7550bc94db97281190d18f54feb410b163942dbfd0fd3514",
+      "origin": "HEAD"
+    },
+    {
+      "file": "tools/NNTrain/Program.cs",
+      "testedSha256": "d332b3e01b75115157b4735bc1519d20d22da701e734d151a80fc2e6e1b2633d",
+      "origin": "batch"
+    },
+    {
+      "file": "tools/NNTrain/RankingMetricSelfTest.cs",
+      "testedSha256": "34b3c77fd45ab0e99e46dcd3b98af700983ca9f0a17976c915ef7205c5513fae",
+      "origin": "HEAD"
+    },
+    {
+      "file": "tools/NNTrain/TrainingAdmission.cs",
+      "testedSha256": "71fbe905d72279d03c16a707d03fde393ce41a415d3497a5111ed02d622469d7",
+      "origin": "HEAD"
+    },
+    {
+      "file": "tools/NNTrain/ValueEvaluationSelfTest.cs",
+      "testedSha256": "9309058e6ab5898cebdd37afda7a01d8dc1e4eef1f3c769080fd84365e249953",
+      "origin": "HEAD"
+    },
+    {
+      "file": "tools/NNTrain/ValueEvaluationSplit.cs",
+      "testedSha256": "4e4d54eda4a3148b93404a01167f2c95202c0e79cac00ff4aa15f4e028fb79dc",
+      "origin": "HEAD"
+    },
+    {
+      "file": "tools/NNTrain/ValueLearningSelfTest.cs",
+      "testedSha256": "df02c99e5223fba2c1ac33dc0b3c9c2a768efbb801526a7268b53317be86afb8",
+      "origin": "HEAD"
+    },
+    {
+      "file": "tools/NNTrain/ValuePairCoverage.cs",
+      "testedSha256": "f8ff6185649b6bcd17daff557e90d4abc517d45f5364f73fdd08a03b7b646e63",
+      "origin": "HEAD"
+    },
+    {
+      "file": "tools/NNTrain/ValuePreprocessingSelfTest.cs",
+      "testedSha256": "79529e81c49e2a5dc3d62e3e5bad4a9c98cca711e677462b7447e67cec0cafa3",
+      "origin": "HEAD"
+    }
+  ],
+  "exactInputData": [
+    {
+      "file": "klink bot/docs/card-effects.json",
+      "sha256": "fc335d228779a2859627ee706d85949149ca595d0cfdfbc4971541831e5a8df0"
+    },
+    {
+      "file": "klink bot/docs/card-ir-native-defaults.json",
+      "sha256": "a4f2812716f03ded180f45603ac7b715e890c54b1bc5b4b75fe2b1ec0975d711"
+    },
+    {
+      "file": "klink bot/docs/card-ir.json",
+      "sha256": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b"
+    },
+    {
+      "file": "klink bot/docs/card-vectors.json",
+      "sha256": "b15b93cb02e7e8a712561a2da52127a5867084ecb878a6ad58539b56b1109ab9"
+    },
+    {
+      "file": "klink bot/docs/cards.live.json",
+      "sha256": "3550dc76eb0414c500166875f45909077aeeb3ea4d229b9b0ba9c66a81987c4b"
+    },
+    {
+      "file": "klink bot/docs/deck_code_ids.live.json",
+      "sha256": "261cfd518c1a1ce40488f141e8dbd617ff19abe0734c49319ebcd6ac5dcb257e"
+    },
+    {
+      "file": "klink bot/docs/event-contracts.json",
+      "sha256": "e4806dd48efbfc799a27c14b3660ad76ee03cd3f13e3e4320b213c5928efb112"
+    },
+    {
+      "file": "klink bot/docs/live-actions.json",
+      "sha256": "db413a4644afe75806e66c47e200d93c5d93e91ca03e23fca38465b7dcb4dab3"
+    }
+  ],
+  "loadedInputsSha256": {
+    "card-effects.json": "fc335d228779a2859627ee706d85949149ca595d0cfdfbc4971541831e5a8df0",
+    "card-ir-native-defaults.json": "a4f2812716f03ded180f45603ac7b715e890c54b1bc5b4b75fe2b1ec0975d711",
+    "card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b",
+    "card-vectors.json": "b15b93cb02e7e8a712561a2da52127a5867084ecb878a6ad58539b56b1109ab9",
+    "cards.json": "3550dc76eb0414c500166875f45909077aeeb3ea4d229b9b0ba9c66a81987c4b",
+    "deck_code_ids.json": "261cfd518c1a1ce40488f141e8dbd617ff19abe0734c49319ebcd6ac5dcb257e",
+    "event-contracts.json": "e4806dd48efbfc799a27c14b3660ad76ee03cd3f13e3e4320b213c5928efb112",
+    "live-actions.json": "db413a4644afe75806e66c47e200d93c5d93e91ca03e23fca38465b7dcb4dab3",
+    "KLink.Bot.dll": "7f620941183f5eedbefd889fd41851a7edab04881e22675c9655a397928295b1",
+    "NNTrain.dll": "fa39372ca88c75855608cf3ad96354d3d6ed9f4f77885e0ce5d4b2efaa0d0e05"
+  },
+  "excludedDirty": [
+    "out/audit/dispatch-classification.json",
+    "out/audit/dispatch-classification.md",
+    "src/KLink.Bot/Training/IsolatedActionProbe.cs",
+    "tools/BotSim/ActionProbeSmoke.cs",
+    "tools/BotSim/SelfTest.IsolatedActionProbe.cs"
+  ],
+  "validation": {
+    "checks": {
+      "clone-dataset-selftest": 52,
+      "clone-admission-selftest": 51,
+      "actions-selftest": 63,
+      "action-model-selftest": 31,
+      "policy-evaluation-selftest": 9,
+      "full-selftest": 1098
+    },
+    "releaseBuildsSucceeded": true,
+    "logs": {
+      "build-NNTrain": {
+        "file": "out/audit/clone-data-build-NNTrain-20261102.txt",
+        "sha256": "c6df27612e75dc138e655cba3621697a51d9879046ea7761d36a4b66ab82c222"
+      },
+      "build-BotSim": {
+        "file": "out/audit/clone-data-build-BotSim-20261102.txt",
+        "sha256": "1f38a9b904f1c796e07130af1d02943a159a6d6c1f50eb292326a0074c9f4354"
+      },
+      "full-selftest": {
+        "file": "out/audit/clone-data-full-selftest-20261102.txt",
+        "sha256": "7448b11a0b78924cae0421330c9ee29c1f537d8dc72df6e0bacd592205d83262"
+      },
+      "clone-dataset-selftest": {
+        "file": "out/audit/clone-data-clone-dataset-selftest-20261102.txt",
+        "sha256": "d4ce7a04944175a5c24040a691bc0869eb6265b9d811a7b1d5caa24fcda4be2c"
+      },
+      "clone-admission-selftest": {
+        "file": "out/audit/clone-data-clone-admission-selftest-20261102.txt",
+        "sha256": "a327674c7d55289c74a13d5b27ccd59d5bf35a1f0d93ef11badef34f29ed6f52"
+      },
+      "actions-selftest": {
+        "file": "out/audit/clone-data-actions-selftest-20261102.txt",
+        "sha256": "b7b9a321ee35a9855b66b39700d1cc0f8188cfb0579a000e4ca683091be5c6f5"
+      },
+      "action-model-selftest": {
+        "file": "out/audit/clone-data-action-model-selftest-20261102.txt",
+        "sha256": "f4f5707f27410b7c3a6b92bd47562fef6af5356c380b7a152dee77587b293767"
+      },
+      "policy-evaluation-selftest": {
+        "file": "out/audit/clone-data-policy-evaluation-selftest-20261102.txt",
+        "sha256": "62ba370f5cde2b57d2898678873a32f938cf195a6e6afab1d9ef84251c3aa15b"
+      }
+    }
+  },
+  "pipelineReport": {
+    "file": "out/audit/clone-data-pipeline-20261102.json",
+    "sha256": "6ed265dbeefead5954ad79ecb5863b4b9472b928d4f4a4200908926f9e7b888e"
+  },
+  "note": "Exact HEAD source bytes plus seven batch files; all snapshot source files enumerated. Exact local and loaded inputs verified. Trusted producer evidence, not signed proof or rule certification. No audit matrix refresh."
+}

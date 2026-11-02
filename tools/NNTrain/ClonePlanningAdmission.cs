@@ -6,7 +6,7 @@ using KLink.Bot.Training;
 
 namespace KLink.Bot.NNTrain;
 
-// Pilot contract only. No row writer/dataset schema accepts this contract yet.
+// Trusted in-process paired gate. Only the separate opt-in v6 writer consumes it.
 internal static class ClonePlanningAdmission
 {
     internal const string Contract="experimental-clone-paired-reference/v1";

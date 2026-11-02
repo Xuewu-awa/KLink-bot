@@ -11,7 +11,8 @@ using KLink.Bot.Training;
 namespace KLink.Bot.NNTrain;
 
 internal sealed record ActionDatasetHeader(int Version,string Kind,string ObservationSpec,string ActionSpec,
-    string Perspective,string Teacher,string Candidates,ulong Seed,int RequestedGames,Dictionary<string,string> InputsSha256);
+    string Perspective,string Teacher,string Candidates,ulong Seed,int RequestedGames,Dictionary<string,string> InputsSha256,
+    [property:System.Text.Json.Serialization.JsonIgnore(Condition=System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] string PlanningContract=null);
 internal sealed record ActionDatasetRow(int Game,int Step,Side Actor,int Turn,float[] Observation,
     MainActionOption[] Candidates,int ChosenIndex,string[] CoverageGaps,float[]? AfterObservation=null);
 // Optional diagnostics only: phase is ownership, not a rule/display classification.
@@ -41,6 +42,8 @@ internal sealed class ActionGameQuality
     public Dictionary<string,int> Calls {get;set;}=[];
     public ActionCallProvenance[] MissingCallProvenance {get;set;}=[];
     public string[] Reasons {get;set;}=[];
+    [System.Text.Json.Serialization.JsonIgnore(Condition=System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public CloneActionEvidence CloneEvidence {get;set;}
     public string SnapshotDifference {get;set;}
 }
 internal sealed class ActionDatasetQuality
@@ -125,23 +128,8 @@ internal static class ActionDatasetTool
                 int di=pick.Next(decks.Count),dj=pick.Next(decks.Count-1);if(dj>=di)dj++;
                 bool swap=pick.Next(2)==1;int l=swap?dj:di,r=swap?di:dj;
                 var result=OracleActionEpisodeRunner.Run(db,vectors,expanded[l],expanded[r],seed+(ulong)g,choicePolicy);
-                var reasons=AdmissionReasons(result,true);var engines=new[]{result.Teacher,result.Replay};
-                Dictionary<string,int> Merge(Func<MatchEngine,IReadOnlyDictionary<string,int>> get)=>engines
-                    .SelectMany(e=>get(e)).GroupBy(p=>p.Key).ToDictionary(p=>p.Key,p=>p.Sum(v=>v.Value));
-                Dictionary<string,int> WithPlanning(Dictionary<string,int> values,IReadOnlyDictionary<string,int> planning)
-                {foreach(var p in planning)values[p.Key]=values.GetValueOrDefault(p.Key)+p.Value;return values;}
-                var game=new ActionGameQuality {Game=g,Seed=seed+(ulong)g,LeftDeck=decks[l].Name,RightDeck=decks[r].Name,
-                    Accepted=reasons.Length==0,Finished=engines.All(e=>e.State.IsFinished),Winner=result.Replay.State.Winner,
-                    BufferedRows=result.Labels.Count,WrittenRows=reasons.Length==0?result.Labels.Count:0,
-                    ComparedSteps=result.ComparedSteps,PlanningPrefixRoots=result.PlanningPrefixRoots,PlanningDecisions=result.PlanningDecisions,
-                    MainFaults=result.MainFaults,MainRejections=result.MainRejections,
-                    AppliedActions=result.AppliedActions,ChoiceFaults=result.ChoiceFaults+result.PlanningChoiceFaults,
-                    PendingChoices=engines.Sum(e=>e.PendingSelectionCount)+result.PlanningPendingChoices,
-                    VmFaults=engines.Sum(e=>(long)e.Api.Vm.FaultedPrograms)+result.PlanningVmFaults,
-                    Unsupported=WithPlanning(Merge(e=>e.Api.Vm.UnsupportedOps),result.PlanningUnsupported),
-                    Calls=WithPlanning(Merge(e=>e.UnimplementedCalls),result.PlanningCalls),Reasons=reasons,
-                    MissingCallProvenance=CaptureCallProvenance(result),
-                    SnapshotDifference=result.SnapshotDifference};
+                var reasons=AdmissionReasons(result,true);
+                var game=Summarize(g,seed+(ulong)g,decks[l].Name,decks[r].Name,result,reasons);
                 quality.Games.Add(game);
                 if(!game.Accepted){quality.RejectedGames++;continue;}
                 quality.AcceptedGames++;
@@ -155,6 +143,32 @@ internal static class ActionDatasetTool
             Console.WriteLine($"  {reason.Key}: {reason.Count()} games");
         return quality.RejectedGames!=0 || quality.Rows==0?2:0;
     }
+
+    internal static ActionGameQuality Summarize(int g,ulong seed,string left,string right,
+        OracleActionEpisodeResult result,string[] reasons)
+    {
+        var engines=new[]{result.Teacher,result.Replay};
+        Dictionary<string,int> Merge(Func<MatchEngine,IReadOnlyDictionary<string,int>> get)=>engines
+            .SelectMany(e=>get(e)).GroupBy(p=>p.Key).ToDictionary(p=>p.Key,p=>p.Sum(v=>v.Value));
+        Dictionary<string,int> WithPlanning(Dictionary<string,int> values,IReadOnlyDictionary<string,int> planning)
+        {foreach(var p in planning)values[p.Key]=values.GetValueOrDefault(p.Key)+p.Value;return values;}
+        return new ActionGameQuality {Game=g,Seed=seed,LeftDeck=left,RightDeck=right,
+            Accepted=reasons.Length==0,Finished=engines.All(e=>e.State.IsFinished),Winner=result.Replay.State.Winner,
+            BufferedRows=result.Labels.Count,WrittenRows=reasons.Length==0?result.Labels.Count:0,
+            ComparedSteps=result.ComparedSteps,PlanningPrefixRoots=result.PlanningPrefixRoots,PlanningDecisions=result.PlanningDecisions,
+            MainFaults=result.MainFaults,MainRejections=result.MainRejections,
+            AppliedActions=result.AppliedActions,ChoiceFaults=result.ChoiceFaults+result.PlanningChoiceFaults,
+            PendingChoices=engines.Sum(e=>e.PendingSelectionCount)+result.PlanningPendingChoices,
+            VmFaults=engines.Sum(e=>(long)e.Api.Vm.FaultedPrograms)+result.PlanningVmFaults,
+            Unsupported=WithPlanning(Merge(e=>e.Api.Vm.UnsupportedOps),result.PlanningUnsupported),
+            Calls=WithPlanning(Merge(e=>e.UnimplementedCalls),result.PlanningCalls),Reasons=reasons,
+            MissingCallProvenance=CaptureCallProvenance(result),
+            SnapshotDifference=result.SnapshotDifference};
+    }
+
+    internal static ActionDatasetRow Row(int game,OracleActionLabel label)=>new(game,label.Step,label.Request.Actor,
+        label.Request.Turn,label.Request.Observation.ToArray(),label.Request.Candidates.ToArray(),label.ChosenIndex,
+        label.Request.CoverageGaps.ToArray(),label.AfterObservation);
 
     internal static int VerifyCommand(Dictionary<string,string> opts)
     {
@@ -175,17 +189,19 @@ internal static class ActionDatasetTool
         return result.Labels.Count;
     }
 
-    internal static ActionDatasetQuality Verify(string path)
+    internal static ActionDatasetQuality Verify(string path,bool pairedClone=false)
     {
         try
         {
             var q=JsonSerializer.Deserialize<ActionDatasetQuality>(File.ReadAllText(path+".quality.json"),Json)
                 ?? throw new InvalidDataException("Missing action quality manifest.");
             var h=q.Header;
-            if(h is null || h.Version!=5 || h.Kind!="KLink.MainActionLabels" || h.Perspective!="actor"
+            if(h is null || h.Version!=(pairedClone?6:5) || h.Kind!=(pairedClone?CloneActionDatasetTool.Kind:"KLink.MainActionLabels")
+                || h.PlanningContract!=(pairedClone?ClonePlanningAdmission.Contract:null) || h.Perspective!="actor"
                 || h.ObservationSpec!=StateEncoder.Spec || h.ActionSpec!=MainActionFeatures.Spec
                 || h.Teacher is not (OracleActionEpisodeRunner.TeacherContract or OracleActionEpisodeRunner.LastChoiceTeacherContract)
                 || h.Candidates!="structural-superset"
+                || h.RequestedGames<=0 || q.Games is null || q.Games.Any(g=>g is null) || h.InputsSha256 is null
                 || q.Rows<=0 || q.AcceptedGames<=0 || q.Games.Count!=h.RequestedGames
                 || q.Games.Select(g=>g.Game).Distinct().Count()!=q.Games.Count
                 || q.Games.Any(g=>g.Game<0 || g.Game>=h.RequestedGames || g.Seed!=h.Seed+(ulong)g.Game)
@@ -193,20 +209,12 @@ internal static class ActionDatasetTool
                 || q.Games.Sum(g=>(long)g.WrittenRows)!=q.Rows || q.DataSha256!=TrainingAdmission.Hash(path))
                 throw new InvalidDataException("Action dataset header/count/hash mismatch.");
             foreach(string key in new[]{"cards.json","card-ir.json","card-effects.json","card-vectors.json","KLink.Bot.dll","NNTrain.dll"})
-                if(!h.InputsSha256.TryGetValue(key,out var hash) || hash.Length!=64 || !hash.All(Uri.IsHexDigit))
+                if(!h.InputsSha256.TryGetValue(key,out var hash) || hash is not {Length:64} || !hash.All(Uri.IsHexDigit))
                     throw new InvalidDataException("Missing action dataset input fingerprint.");
             foreach(var g in q.Games)
             {
-                if(g.WrittenRows<0 || g.BufferedRows<g.WrittenRows || g.BufferedRows>OracleActionEpisodeRunner.MaxRows
-                    || g.PlanningPrefixRoots<0 || g.PlanningPrefixRoots>OracleActionEpisodeRunner.MaxPlanningPrefixRoots
-                    || g.PlanningDecisions<0 || g.PlanningDecisions>g.BufferedRows+1
-                    || g.Accepted && (!g.Finished || g.Winner is not (Side.Left or Side.Right) || g.Reasons.Length!=0
-                        || g.PlanningDecisions!=g.WrittenRows || g.PlanningPrefixRoots!=(long)g.WrittenRows*(g.WrittenRows-1)/2
-                        || g.WrittenRows==0 || g.BufferedRows!=g.WrittenRows || g.WrittenRows!=g.ComparedSteps || g.AppliedActions!=g.ComparedSteps
-                        || g.MainFaults!=0 || g.MainRejections!=0 || g.ChoiceFaults!=0 || g.PendingChoices!=0 || g.VmFaults!=0
-                        || g.Unsupported.Any(p=>p.Value>0) || g.Calls.Any(p=>p.Value>0 && !TrainingAdmission.IsInformational(p.Key)))
-                    || !g.Accepted && (g.WrittenRows!=0 || g.Reasons.Length==0))
-                    throw new InvalidDataException("Action game health/row statistics mismatch.");
+                VerifyGame(g,pairedClone);
+                if(pairedClone)CloneActionDatasetTool.VerifyEvidence(g,h);
             }
             using var file=File.OpenRead(path);using var zip=new GZipStream(file,CompressionMode.Decompress);
             using var reader=new StreamReader(zip,Encoding.UTF8);
@@ -214,60 +222,90 @@ internal static class ActionDatasetTool
             if(JsonSerializer.Serialize(stored,Json)!=JsonSerializer.Serialize(h,Json))throw new InvalidDataException("Action header differs from manifest.");
             long count=0;int last=-1;var steps=q.Games.ToDictionary(g=>g.Game,_=>0);
             var optionCounts=q.Games.ToDictionary(g=>g.Game,_=>0L);
-            while(reader.ReadLine() is {} line)
+            var rowHashes=q.Games.Where(g=>pairedClone && g.Accepted).ToDictionary(g=>g.Game,_=>System.Security.Cryptography.IncrementalHash.CreateHash(System.Security.Cryptography.HashAlgorithmName.SHA256));
+            try
             {
-                var row=JsonSerializer.Deserialize<ActionDatasetRow>(line,Json)??throw new InvalidDataException("Null action row.");
-                if(!steps.ContainsKey(row.Game) || row.Game<last || !q.Games.Single(g=>g.Game==row.Game).Accepted
-                    || row.Step!=steps[row.Game]++ || row.Actor is not (Side.Left or Side.Right) || row.Turn<=0
-                    || row.Observation is null || row.Observation.Length!=StateEncoder.Dim || !row.Observation.All(float.IsFinite)
-                    || row.AfterObservation is null || row.AfterObservation.Length!=StateEncoder.Dim || !row.AfterObservation.All(float.IsFinite)
-                    || row.Candidates is null || row.Candidates.Length is <1 or >OracleActionEpisodeRunner.MaxCandidatesPerRow
-                    || row.ChosenIndex<0 || row.ChosenIndex>=row.Candidates.Length
-                    || row.CoverageGaps is null || !row.CoverageGaps.Contains("legal-mask/unverified"))
-                    throw new InvalidDataException("Action label/observation shape mismatch.");
-                var commands=new HashSet<MainActionCommand>();
-                for(int i=0;i<row.Candidates.Length;i++)
+                while(reader.ReadLine() is {} line)
                 {
-                    var option=row.Candidates[i]??throw new InvalidDataException("Null action candidate.");
-                    var c=option.Command??throw new InvalidDataException("Null action command.");
-                    bool shape=c.Kind switch {MainActionKind.EndTurn=>c.SourceId==0 && c.TargetId==0 && c.Slot==-1,
-                        MainActionKind.Play=>c.SourceId>0 && c.TargetId>=0 && c.Slot==-1,
-                        MainActionKind.Attack=>c.SourceId>0 && c.TargetId>0 && c.Slot==-1,
-                        MainActionKind.Move=>c.SourceId>0 && c.TargetId==0 && c.Slot>=0,_=>false};
-                    shape &= c.Kind==MainActionKind.Play ? c.ChooseOne>=-1 : c.ChooseOne==-1;
-                    int bit=c.Kind switch {MainActionKind.Play=>0,MainActionKind.Attack=>1,MainActionKind.Move=>2,_=>3};
-                    if(!shape || option.Index!=i || !commands.Add(c) || option.Features is null || option.Features.Count!=MainActionFeatures.Dim
-                        || !option.Features.All(float.IsFinite) || option.Features.Take(4).Where((f,j)=>f!=(j==bit?1:0)).Any())
-                        throw new InvalidDataException("Action candidate/feature mismatch.");
-                    float choice=option.Features[16],branches=option.Features[17];
-                    if(c.Kind==MainActionKind.Play
-                        ? choice!=(float)c.ChooseOne+1 || branches<0 || branches!=MathF.Truncate(branches)
-                            || (branches==0 ? c.ChooseOne!=-1 : c.ChooseOne<0 || c.ChooseOne>=branches)
-                        : choice!=0 || branches!=0)
-                        throw new InvalidDataException("Action choose-one command/feature mismatch.");
-                    foreach(var (present,start,allowed) in new[]{
-                        (MainActionFeatures.SourceVectorPresent,MainActionFeatures.SourceVectorStart,c.SourceId>0),
-                        (MainActionFeatures.TargetVectorPresent,MainActionFeatures.TargetVectorStart,c.TargetId>0 && option.Features[10]==1)})
-                    {
-                        float flag=option.Features[present];
-                        if(flag is not (0 or 1) || (!allowed && flag!=0)
-                            || flag==0 && option.Features.Skip(start).Take(StateEncoder.CardDim).Any(v=>v!=0))
-                            throw new InvalidDataException("Action own-card vector marker/payload mismatch.");
-                    }
+                    var row=JsonSerializer.Deserialize<ActionDatasetRow>(line,Json)??throw new InvalidDataException("Null action row.");
+                    if(!steps.ContainsKey(row.Game) || row.Game<last || !q.Games.Single(g=>g.Game==row.Game).Accepted
+                        || row.Step!=steps[row.Game]++)throw new InvalidDataException("Action game/step mismatch.");
+                    VerifyRow(row,h.Teacher);
+                    optionCounts[row.Game]+=row.Candidates.Length;
+                    if(optionCounts[row.Game]>OracleActionEpisodeRunner.MaxOptionsPerEpisode)
+                        throw new InvalidDataException("Action episode option limit exceeded.");
+                    if(pairedClone)rowHashes[row.Game].AppendData(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(row,Json)+"\n"));
+                    last=row.Game;count++;
                 }
-                var chosen=row.Candidates[row.ChosenIndex];
-                if(h.Teacher==OracleActionEpisodeRunner.LastChoiceTeacherContract && chosen.Command.Kind==MainActionKind.Play
-                    && chosen.Features[17]>0 && chosen.Command.ChooseOne!=chosen.Features[17]-1)
-                    throw new InvalidDataException("Chosen branch differs from fixed-last teacher contract.");
-                optionCounts[row.Game]+=row.Candidates.Length;
-                if(optionCounts[row.Game]>OracleActionEpisodeRunner.MaxOptionsPerEpisode)
-                    throw new InvalidDataException("Action episode option limit exceeded.");
-                last=row.Game;count++;
+                if(count!=q.Rows || q.Games.Any(g=>steps[g.Game]!=g.WrittenRows))throw new InvalidDataException("Action row count mismatch.");
+                if(pairedClone)
+                    foreach(var g in q.Games.Where(g=>g.Accepted))
+                        if(Convert.ToHexString(rowHashes[g.Game].GetHashAndReset())!=g.CloneEvidence.CloneFingerprint.RowsSha256)
+                            throw new InvalidDataException("Paired clone row fingerprint mismatch.");
+                return q;
             }
-            if(count!=q.Rows || q.Games.Any(g=>steps[g.Game]!=g.WrittenRows))throw new InvalidDataException("Action row count mismatch.");
-            return q;
+            finally {foreach(var hash in rowHashes.Values)hash.Dispose();}
         }
         catch(JsonException error){throw new InvalidDataException("Invalid action dataset JSON.",error);}
+    }
+
+    internal static void VerifyRow(ActionDatasetRow row,string teacher)
+    {
+        if(row is null || row.Actor is not (Side.Left or Side.Right) || row.Turn<=0
+            || row.Observation is null || row.Observation.Length!=StateEncoder.Dim || !row.Observation.All(float.IsFinite)
+            || row.AfterObservation is null || row.AfterObservation.Length!=StateEncoder.Dim || !row.AfterObservation.All(float.IsFinite)
+            || row.Candidates is null || row.Candidates.Length is <1 or >OracleActionEpisodeRunner.MaxCandidatesPerRow
+            || row.ChosenIndex<0 || row.ChosenIndex>=row.Candidates.Length
+            || row.CoverageGaps is null || !row.CoverageGaps.Contains("legal-mask/unverified"))
+            throw new InvalidDataException("Action label/observation shape mismatch.");
+        var commands=new HashSet<MainActionCommand>();
+        for(int i=0;i<row.Candidates.Length;i++)
+        {
+            var option=row.Candidates[i]??throw new InvalidDataException("Null action candidate.");
+            var c=option.Command??throw new InvalidDataException("Null action command.");
+            bool shape=c.Kind switch {MainActionKind.EndTurn=>c.SourceId==0 && c.TargetId==0 && c.Slot==-1,
+                MainActionKind.Play=>c.SourceId>0 && c.TargetId>=0 && c.Slot==-1,
+                MainActionKind.Attack=>c.SourceId>0 && c.TargetId>0 && c.Slot==-1,
+                MainActionKind.Move=>c.SourceId>0 && c.TargetId==0 && c.Slot>=0,_=>false};
+            shape &= c.Kind==MainActionKind.Play ? c.ChooseOne>=-1 : c.ChooseOne==-1;
+            int bit=c.Kind switch {MainActionKind.Play=>0,MainActionKind.Attack=>1,MainActionKind.Move=>2,_=>3};
+            if(!shape || option.Index!=i || !commands.Add(c) || option.Features is null || option.Features.Count!=MainActionFeatures.Dim
+                || !option.Features.All(float.IsFinite) || option.Features.Take(4).Where((f,j)=>f!=(j==bit?1:0)).Any())
+                throw new InvalidDataException("Action candidate/feature mismatch.");
+            float choice=option.Features[16],branches=option.Features[17];
+            if(c.Kind==MainActionKind.Play
+                ? choice!=(float)c.ChooseOne+1 || branches<0 || branches!=MathF.Truncate(branches)
+                    || (branches==0 ? c.ChooseOne!=-1 : c.ChooseOne<0 || c.ChooseOne>=branches)
+                : choice!=0 || branches!=0)
+                throw new InvalidDataException("Action choose-one command/feature mismatch.");
+            foreach(var (present,start,allowed) in new[]{
+                (MainActionFeatures.SourceVectorPresent,MainActionFeatures.SourceVectorStart,c.SourceId>0),
+                (MainActionFeatures.TargetVectorPresent,MainActionFeatures.TargetVectorStart,c.TargetId>0 && option.Features[10]==1)})
+            {
+                float flag=option.Features[present];
+                if(flag is not (0 or 1) || (!allowed && flag!=0)
+                    || flag==0 && option.Features.Skip(start).Take(StateEncoder.CardDim).Any(v=>v!=0))
+                    throw new InvalidDataException("Action own-card vector marker/payload mismatch.");
+            }
+        }
+        var chosen=row.Candidates[row.ChosenIndex];
+        if(teacher==OracleActionEpisodeRunner.LastChoiceTeacherContract && chosen.Command.Kind==MainActionKind.Play
+            && chosen.Features[17]>0 && chosen.Command.ChooseOne!=chosen.Features[17]-1)
+            throw new InvalidDataException("Chosen branch differs from fixed-last teacher contract.");
+    }
+
+    internal static void VerifyGame(ActionGameQuality g,bool pairedClone=false)
+    {
+        if(g is null || g.Reasons is null || g.Unsupported is null || g.Calls is null || (!pairedClone && g.CloneEvidence is not null) || g.WrittenRows<0 || g.BufferedRows<g.WrittenRows || g.BufferedRows>OracleActionEpisodeRunner.MaxRows
+            || g.PlanningPrefixRoots<0 || g.PlanningPrefixRoots>OracleActionEpisodeRunner.MaxPlanningPrefixRoots
+            || g.PlanningDecisions<0 || g.PlanningDecisions>g.BufferedRows+1
+            || g.Accepted && (!g.Finished || g.Winner is not (Side.Left or Side.Right) || g.Reasons.Length!=0
+                || g.PlanningDecisions!=g.WrittenRows || g.PlanningPrefixRoots!=(pairedClone?0:(long)g.WrittenRows*(g.WrittenRows-1)/2)
+                || g.WrittenRows==0 || g.BufferedRows!=g.WrittenRows || g.WrittenRows!=g.ComparedSteps || g.AppliedActions!=g.ComparedSteps
+                || g.MainFaults!=0 || g.MainRejections!=0 || g.ChoiceFaults!=0 || g.PendingChoices!=0 || g.VmFaults!=0
+                || g.Unsupported.Any(p=>p.Value>0) || g.Calls.Any(p=>p.Value>0 && !TrainingAdmission.IsInformational(p.Key)))
+            || !g.Accepted && (g.WrittenRows!=0 || g.Reasons.Length==0))
+            throw new InvalidDataException("Action game health/row statistics mismatch.");
     }
 
     internal static Dictionary<string,string> CurrentInputs(string dataDir,string vectorPath)

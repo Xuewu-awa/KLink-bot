@@ -13,9 +13,9 @@ internal static class ActionModelTool
     internal const int MaxLoadedRows=20000;
     internal const int MaxLoadedCandidates=200000;
 
-    private static (ActionDatasetQuality Quality,ActionDatasetRow[] Rows) Read(string path)
+    private static (ActionDatasetQuality Quality,ActionDatasetRow[] Rows) Read(string path,bool pairedClone=false)
     {
-        var q=ActionDatasetTool.Verify(path);
+        var q=ActionDatasetTool.Verify(path,pairedClone);
         if(q.Rows>MaxLoadedRows || q.Games.Sum(g=>(long)g.WrittenRows)>MaxLoadedRows)
             throw new InvalidDataException("Offline smoke trainer row limit exceeded; no silent truncation.");
         var rows=new List<ActionDatasetRow>();long candidates=0;
@@ -68,10 +68,13 @@ internal static class ActionModelTool
         double lr=double.Parse(opts.GetValueOrDefault("lr","0.01"),CultureInfo.InvariantCulture);
         if(epochs is <1 or >100 || hidden is <1 or >64 || !double.IsFinite(lr) || lr<=0 || lr>1)
             throw new ArgumentException("Expected epochs 1..100, hidden 1..64 and finite lr in (0,1].");
-        var (q,rows)=Read(path);var split=Split(q.Games.Where(g=>g.Accepted).Select(g=>g.Game),seed);
-        var contract=new MainActionTrainingContract {Teacher=q.Header.Teacher,DatasetSha256=q.DataSha256,
+        bool pairedClone=CloneActionDatasetTool.OptIn(opts);
+        var (q,rows)=Read(path,pairedClone);var split=Split(q.Games.Where(g=>g.Accepted).Select(g=>g.Game),seed);
+        var contract=new MainActionTrainingContract {Version=pairedClone?2:1,PlanningContract=q.Header.PlanningContract,
+            DatasetQualitySha256=pairedClone?TrainingAdmission.Hash(path+".quality.json"):null,
+            Teacher=q.Header.Teacher,DatasetSha256=q.DataSha256,
             InputsSha256=q.Header.InputsSha256,SplitSeed=seed,TrainingGames=split.Train,ValidationGames=split.Validation};
-        contract.RequireInputs(q.Header.Teacher,ActionDatasetTool.CurrentInputs(dataDir,vectorPath));
+        contract.RequireInputs(q.Header.Teacher,ActionDatasetTool.CurrentInputs(dataDir,vectorPath),q.Header.PlanningContract);
         var model=MainActionModel.Create(contract,hidden,seed);
         var train=rows.Where(r=>split.Train.Contains(r.Game)).ToArray();
         var validation=rows.Where(r=>split.Validation.Contains(r.Game)).ToArray();
@@ -85,7 +88,7 @@ internal static class ActionModelTool
             model.Validate();Console.WriteLine($"Action epoch {epoch+1}: online train NLL {loss/train.Length:F6}");
         }
         string output=opts.GetValueOrDefault("out","action-model.json");model.Save(output);
-        var loaded=MainActionModel.Load(output);loaded.Contract.RequireInputs(q.Header.Teacher,ActionDatasetTool.CurrentInputs(dataDir,vectorPath));
+        var loaded=MainActionModel.Load(output,pairedClone);loaded.Contract.RequireInputs(q.Header.Teacher,ActionDatasetTool.CurrentInputs(dataDir,vectorPath),q.Header.PlanningContract);
         foreach(var row in rows)
             if(!model.Probabilities(row.Observation,Features(row)).SequenceEqual(loaded.Probabilities(row.Observation,Features(row))))
                 throw new InvalidDataException("Action scorer changed across save/load.");
@@ -98,12 +101,16 @@ internal static class ActionModelTool
 
     internal static int Verify(Dictionary<string,string> opts,string dataDir,string vectorPath)
     {
-        var model=MainActionModel.Load(opts.GetValueOrDefault("model","action-model.json"));
-        var (q,rows)=Read(opts.GetValueOrDefault("data","action-labels.jsonl.gz"));
-        model.Contract.RequireInputs(q.Header.Teacher,q.Header.InputsSha256);
-        model.Contract.RequireInputs(q.Header.Teacher,ActionDatasetTool.CurrentInputs(dataDir,vectorPath));
+        bool pairedClone=CloneActionDatasetTool.OptIn(opts);
+        string path=opts.GetValueOrDefault("data","action-labels.jsonl.gz");
+        var model=MainActionModel.Load(opts.GetValueOrDefault("model","action-model.json"),pairedClone);
+        var (q,rows)=Read(path,pairedClone);
+        model.Contract.RequireInputs(q.Header.Teacher,q.Header.InputsSha256,q.Header.PlanningContract);
+        model.Contract.RequireInputs(q.Header.Teacher,ActionDatasetTool.CurrentInputs(dataDir,vectorPath),q.Header.PlanningContract);
         var split=Split(q.Games.Where(g=>g.Accepted).Select(g=>g.Game),model.Contract.SplitSeed);
-        if(q.DataSha256!=model.Contract.DatasetSha256 || !split.Train.SequenceEqual(model.Contract.TrainingGames)
+        if(model.Contract.PlanningContract!=q.Header.PlanningContract
+            || pairedClone && model.Contract.DatasetQualitySha256!=TrainingAdmission.Hash(path+".quality.json")
+            || q.DataSha256!=model.Contract.DatasetSha256 || !split.Train.SequenceEqual(model.Contract.TrainingGames)
             || !split.Validation.SequenceEqual(model.Contract.ValidationGames))
             throw new InvalidDataException("Smoke verifier expects the bound dataset and exact game split.");
         Console.WriteLine(JsonSerializer.Serialize(Evaluate(model,rows.Where(r=>split.Validation.Contains(r.Game)).ToArray()),TrainingAdmission.Json));

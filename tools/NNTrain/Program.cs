@@ -77,6 +77,7 @@ internal static class Program
             if (cmd == "coverage") return Coverage(opts);
             if (cmd == "ranking-metric-selftest") return RankingMetricSelfTest.Run();
             if (cmd == "pair-direction-selftest") return PairDirectionSelfTest.Run();
+            if (cmd == "verify-clone-actions") {var q=ActionDatasetTool.Verify(opts.GetValueOrDefault("data","paired-clone-actions.jsonl.gz"),pairedClone:true);Console.WriteLine($"Verified paired clone data: {q.Rows} rows.");return 0;}
             if (cmd == "verify-actions") return ActionDatasetTool.VerifyCommand(opts);
             if (cmd == "build-afterstate-data") return AfterstateDatasetTool.Build(opts);
             if (cmd == "verify-afterstate-data") { AfterstateDatasetTool.Verify(opts.GetValueOrDefault("data","afterstate-win.jsonl.gz")); Console.WriteLine("Verified afterstate win data."); return 0; }
@@ -115,6 +116,8 @@ internal static class Program
             return cmd switch
             {
                 "evaluate-policy" => PolicyMatchEvaluation.Run(opts, db, vecs, dataDir, FindDir("card-vectors.json")),
+                "dump-clone-actions" => CloneActionDatasetTool.Dump(db,vecs,opts,dataDir,Path.Combine(FindDir("card-vectors.json"),"card-vectors.json")),
+                "clone-dataset-selftest" => CloneActionDatasetSelfTest.Run(db,vecs),
                 "clone-admission-selftest" => ClonePlanningAdmissionSelfTest.Run(db,vecs),
                 "inspect-clone-admission" => ClonePlanningAdmission.Inspect(db,vecs,opts,dataDir,Path.Combine(FindDir("card-vectors.json"),"card-vectors.json")),
                 "actions-selftest" => ActionDatasetSelfTest.Run(db,vecs),
@@ -1089,6 +1092,11 @@ internal static class Program
             两者均为左方视角的胜负价值样本；decision还不是动作标签/掩码数据。
               NNTrain dump-actions --games 100 --seed 1 --out actions.jsonl.gz [--choose-one-policy native|last]
               NNTrain verify-actions --data actions.jsonl.gz
+              NNTrain dump-clone-actions --games 2 --fixture m1 --out paired-clone-actions.jsonl.gz [--seed 1] [--choose-one-policy native|last]
+              NNTrain verify-clone-actions --data paired-clone-actions.jsonl.gz
+              NNTrain clone-dataset-selftest
+            克隆数据独立版本6，保留整场独立重放参考；训练/验证模型需 --planning-mode paired-clone。
+            默认 dump-actions/verify-actions/后状态数据转换仍只接受前缀重放版本5。
               NNTrain clone-admission-selftest
               NNTrain inspect-clone-admission --out report.json [--fixture alternating|m1 OR --left-deck NAME --right-deck NAME] [--seed 1] [--choose-one-policy native|last]
             独立克隆准入试验：必须与同输入前缀重放逐场核对；不输出训练数据。

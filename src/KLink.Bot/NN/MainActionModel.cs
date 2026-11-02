@@ -8,6 +8,11 @@ namespace KLink.Bot.NN;
 public sealed record MainActionTrainingContract
 {
     public int Version {get;init;}=1;
+    public const string PairedClonePlanning="experimental-clone-paired-reference/v1";
+    [System.Text.Json.Serialization.JsonIgnore(Condition=System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public string? PlanningContract {get;init;}
+    [System.Text.Json.Serialization.JsonIgnore(Condition=System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public string? DatasetQualitySha256 {get;init;}
     public string ObservationSpec {get;init;}=StateEncoder.Spec;
     public string ActionSpec {get;init;}=MainActionFeatures.Spec;
     public string Perspective {get;init;}="actor";
@@ -23,7 +28,8 @@ public sealed record MainActionTrainingContract
     public void Validate()
     {
         static bool Hash(string? s)=>s is {Length:64} && s.All(Uri.IsHexDigit);
-        if(Version!=1 || ObservationSpec!=StateEncoder.Spec || ActionSpec!=MainActionFeatures.Spec
+        if((Version==1 ? PlanningContract is not null || DatasetQualitySha256 is not null
+            : Version!=2 || PlanningContract!=PairedClonePlanning || !Hash(DatasetQualitySha256)) || ObservationSpec!=StateEncoder.Spec || ActionSpec!=MainActionFeatures.Spec
             || Perspective!="actor" || Candidates!="structural-superset" || Objective!="teacher-index-softmax/v1"
             || Teacher is not (OracleActionEpisodeRunner.TeacherContract or OracleActionEpisodeRunner.LastChoiceTeacherContract)
             || !Hash(DatasetSha256) || InputsSha256 is null || InputsSha256.Any(p=>!Hash(p.Value))
@@ -34,10 +40,10 @@ public sealed record MainActionTrainingContract
             throw new InvalidDataException("Incomplete or unsupported action-model contract.");
     }
 
-    public void RequireInputs(string teacher,IReadOnlyDictionary<string,string> inputs)
+    public void RequireInputs(string teacher,IReadOnlyDictionary<string,string> inputs,string? planningContract=null)
     {
         Validate();
-        if(Teacher!=teacher || InputsSha256.Count!=inputs.Count
+        if(PlanningContract!=planningContract || Teacher!=teacher || InputsSha256.Count!=inputs.Count
             || InputsSha256.Any(p=>!inputs.TryGetValue(p.Key,out var value) || value!=p.Value))
             throw new InvalidDataException("Action model teacher/input distribution differs from dataset or runtime.");
         using var file=File.OpenRead(typeof(Engine.MatchEngine).Assembly.Location);
@@ -165,13 +171,16 @@ public sealed class MainActionModel
     {
         Validate();File.WriteAllText(path,JsonSerializer.Serialize(this));
     }
-    public static MainActionModel Load(string path)
+    public static MainActionModel Load(string path,bool allowPairedClone=false)
     {
         try
         {
             var model=JsonSerializer.Deserialize<MainActionModel>(File.ReadAllText(path))
                 ??throw new InvalidDataException("Missing action model.");
-            model.Validate();return model;
+            model.Validate();
+            if((model.Contract.Version==2)!=allowPairedClone)
+                throw new InvalidDataException("Action model planning mode requires explicit matching opt-in.");
+            return model;
         }
         catch(JsonException e){throw new InvalidDataException("Invalid action model JSON.",e);}
     }

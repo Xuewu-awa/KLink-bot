@@ -1339,3 +1339,78 @@ throughput improvement. No rule-audit matrix certification was refreshed.
 Next: design a separately versioned opt-in clone dataset writer/verifier and
 matching model-consumer contract, preserving whole-episode rejection and the
 default prefix-replay path; benchmark that complete pipeline before adoption.
+
+
+## Opt-in paired clone datasets and models (2026-11-02)
+
+The separate `dump-clone-actions` producer now writes gzip JSONL version 6,
+kind `KLink.PairedCloneActionLabels`, with planning contract
+`experimental-clone-paired-reference/v1`. The v5 row layout remains unchanged.
+Each game still runs a complete independent prefix-replay reference plus the
+experimental clone episode. Only the clone rows are emitted, once per game;
+the reference is evidence, not a second training example or split member.
+
+```text
+NNTrain dump-clone-actions --fixture m1 --games 2 --seed 1 --out clone.gz
+NNTrain verify-clone-actions --data clone.gz
+NNTrain train-actions --data clone.gz --planning-mode paired-clone --epochs 1 --hidden 2 --out clone-model.json
+NNTrain verify-action-model --data clone.gz --model clone-model.json --planning-mode paired-clone
+NNTrain clone-dataset-selftest
+```
+
+The producer also accepts the existing `--left-deck NAME --right-deck NAME`
+fixture options and `--choose-one-policy native|last`. M1 is synthetic, not a
+claim of legal deck construction. Production requires loaded IR, bounded games
+and seeds, and refuses to overwrite either data or its quality manifest. A
+whole episode is buffered and rejected before any of its rows are written if
+pair admission or shared serialized row validation fails. Rejected games retain
+diagnostics with zero written rows. Interrupted output without a complete,
+matching manifest is not admitted; the two files are not an atomic publication.
+
+The manifest retains exact ordered decks/seed/teacher identities, independent
+reference health/work/provenance summaries, clone/baseline verification counts,
+and canonical per-game row, final snapshot, full trace and RNG fingerprints.
+The verifier checks accepted-pair invariants and independently recomputes row
+hashes from the data. Each row hash includes the game ID. It does not re-execute
+reference episodes or reconstruct final states from rows: snapshot/trace/RNG
+hashes and verification flags remain trusted producer claims, not a signed
+attestation. Synchronized forgery of data and manifest is outside this contract.
+Shared input catalogs, vectors and IR remain frozen within a single-thread run.
+
+Clone model contracts use version 2 and bind both the planning contract and
+quality-manifest SHA256, in addition to dataset/input hashes and game-disjoint
+splits. `--planning-mode paired-clone` is required for training and verification.
+The default mode remains `replay-prefix`; unknown mode values fail. Default
+model loading and default dataset/afterstate consumers reject clone artifacts.
+Explicit clone mode also rejects v5 replay data/models. Optional fields are
+omitted for v5 datasets and v1 models to preserve their serialized structure;
+the normal verifier does not compute clone row hashes. Dataset/model input
+fingerprints still require regeneration after relevant binary/input changes.
+
+Validation: 52 clone-dataset checks, 51 paired-admission checks, 63 existing
+action-dataset checks, 31 action-model checks, nine policy checks and all 1,098
+BotSim checks pass in an isolated Release snapshot excluding unrelated dirty
+sources. Cases include matching malformed command pairs, nonfinite labels,
+late rejection/no prefix leak, mixed accepted/rejected games, legacy v5
+roundtrip, missing/changed evidence, default refusal and recomputed row hashes.
+The end-to-end runs emit M1 Native seed 1/2 (78 rows), M1 Last seed 1 (39), and
+英日 vs 日澳快攻 seed 1 (107). Native data trains a small one-epoch smoke model;
+all 78 row scores match after save/load. Default consumption, changed manifest
+and changed current input bindings fail as expected. Existing NNTrain nullable
+warnings remain. Exact sources, inputs and logs are recorded in
+`out/audit/clone-data-source-verification-20261102.json`; durable experiment
+summaries are in `out/audit/clone-data-pipeline-20261102.json`.
+
+The DeepSeek consumer inventory was reviewed against source; its assumption
+that both pair members should be training rows was not adopted. There is one
+clone row stream with independent reference evidence, so references cannot
+leak across the train/validation split. The inventory is static assistance,
+not execution evidence or rule certification.
+
+This completes the optional engineering path, not adoption as the default.
+The paired producer pays for the full reference and internal baseline checks;
+no throughput gain, stronger AI, complete card coverage or additional KARDS
+rule certification is claimed. No rules matrix fingerprints were refreshed.
+Next: benchmark the full pipeline on representative fixtures and use measured
+costs to design a separate, explicitly bounded reference-check policy before
+attempting higher-volume training generation.
