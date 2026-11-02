@@ -1502,3 +1502,79 @@ play path itself across different fixtures, then validate any candidate against
 the complete reference, including side effects, fault counters and rejected
 actions. The DeepSeek inventory job timed out; these findings were checked directly
 against the source and instrumented run rather than relying on its output.
+
+### Choice boundary serialization optimization (2026-11-02)
+
+The temporary play-path timers identified repeated wrapping of serialized JSON
+in `ChoicePolicyAdapter.DecisionBoundary`. In the heavy seed-1 reference run,
+4,072 boundary captures took 8.14 seconds. A candidate separating the snapshot,
+trace and remaining metadata took 4.34 seconds with identical fingerprints.
+Those instrumented single-run figures guided the change; the table below is
+the separate, uninstrumented complete-pipeline comparison.
+
+The production detector now compares `(Snapshot, Trace, Details)` as exact
+strings. It retains every previous field, the snapshot/RNG/trace read order,
+detached source and offered-card captures, choice order/reference checks,
+request re-description, handler ownership and fault behavior. It avoids JSON
+escaping the already serialized snapshot and trace into an outer object.
+No hash-based equality, caching, sampling or reduced independent reference
+validation was introduced. Its existing limitations remain: it is a change
+detector, not rollback, full callback isolation or concurrent-state protection.
+
+`tools/benchmark-choice-boundary.py` ran the full paired-v6 dataset producer,
+including per-game independent reference replay, admission, gzip writing and
+verification. Each sample started a new process; each case was repeated three
+times, with before/after order reversed on the second repeat. All 36 samples
+accepted one game. For every case, all repeats and both implementations had
+identical decompressed row bytes after the provenance header, complete game
+quality records, row/snapshot/trace fingerprints and RNG state/consumption.
+Input data hashes also matched. Headers and gzip file hashes differ because
+the producer DLL hashes deliberately differ.
+
+| Case | Before median, seconds | After median, seconds | Time reduction |
+| --- | ---: | ---: | ---: |
+| m1-native | 3.89 | 3.82 | 1.8% |
+| m1-last | 3.69 | 3.81 | -3.3% |
+| meta1-seed1 | 15.72 | 14.58 | 7.3% |
+| meta1-seed2 | 12.65 | 12.44 | 1.7% |
+| meta2-seed1 | 32.72 | 26.08 | 20.3% |
+| meta2-seed2 | 23.94 | 19.78 | 17.4% |
+
+`meta1` is 英日 vs 日澳快攻; `meta2` is 苏英爆破 vs 德澳老兵. Seeds
+are shown in each case name. These are fixed simulator workload samples, not
+an estimate of throughput across the full training corpus or improved AI
+strength. Process startup is included; machine load and OS caches were not
+controlled. Small changes in the low-choice synthetic cases can be noise.
+
+Validation used two isolated source snapshots of `f293d9ad27be7843585b6b88a1e95d53fc070307`.
+The 181 tracked files under `src`, `tools/BotSim`, `tools/NNTrain` and
+`NuGet.config` were compared against that revision: both snapshots contain
+only the added choice mutation regressions; the after snapshot additionally
+contains the production `ChoicePolicyAdapter` change. Existing unrelated
+working-tree edits were excluded. No profiling instrumentation is present.
+BotSim and NNTrain Release builds succeeded; NNTrain retained the same ten
+existing CS8632 warnings in both snapshots.
+
+All five focused choice-interface tests passed before and after; the optimized
+snapshot passed the complete 1,098-test BotSim suite, including rejected and
+faulted choice/clone paths. Mutation coverage increased from 80 to 100 scenarios
+across both sides and both choice routes: added cases change nested action-log
+data without changing log length, replace a subaction, toggle StopAttack,
+change client side and mutate a detached offered template. Pure-choice controls
+retain escaped Unicode, quotes, backslashes and newlines in trace and template
+data. These software regressions do not establish authentic KARDS rule parity.
+
+The compact result, input/binary/source hashes, per-case fingerprints, all
+sample timings and test-log hashes are in
+`out/audit/choice-boundary-measurements-20261102.json`. Local raw manifests,
+datasets and logs remain under `out/audit/choice-boundary-20261102`. To repeat,
+build isolated before/after snapshots with the same data hashes and run:
+
+```powershell
+python tools/benchmark-choice-boundary.py --before <before-root> --after <after-root> --out <new-output-directory> --repeats 3
+```
+
+The bounded DeepSeek field-comparison job timed out with no delivered review.
+The primary agent checked the field mapping and read order directly; no worker
+approval was assumed. This performance-only change does not refresh rule audit
+fingerprints or expand any card's certified evidence scope.

@@ -75,7 +75,7 @@ public sealed class ChoicePolicyAdapter : IDisposable
                         new PolicyCardOption(i, c.CardId, c.Name, c.Attack, c.Defense, c.KreditCost)).ToArray()),
                     Array.AsReadOnly(StateEncoder.Encode(_engine.State, _vectors, source.Owner)));
                 var request = Describe();
-                string boundary = DecisionBoundary(source, offered);
+                var boundary = DecisionBoundary(source, offered);
                 string described = JsonSerializer.Serialize(request);
                 var handlers = (_engine.ChooseSpawnCard, _engine.PickCardToDraw,
                     _engine.PickHandTargetId, _engine.PickHandTarget, _engine.ChooseHandTarget);
@@ -101,23 +101,27 @@ public sealed class ChoicePolicyAdapter : IDisposable
     // Include detached Forecast/templates: they need not occur in AllCards.
     // Hidden battle snapshots are never exposed to the policy request.
     // VM private state, transient changes and concurrency remain outside scope.
-    private string DecisionBoundary(CardInstance source, IReadOnlyList<CardInstance> offered)
+    private (string Snapshot, string Trace, string Details) DecisionBoundary(CardInstance source, IReadOnlyList<CardInstance> offered)
     {
         var state = _engine.State;
         object Card(CardInstance c) => new
         {
             Snapshot = c.Snapshot(), c.ChooseOne, CurrentTargetId = c.CurrentTarget?.CardId
         };
-        return JsonSerializer.Serialize(new
+        // Compare the existing JSON strings exactly without escaping them into another JSON object.
+        string snapshot = state.SnapshotJson();
+        ulong randomState = state.Random.State;
+        string trace = JsonSerializer.Serialize(state.ActionLog);
+        string details = JsonSerializer.Serialize(new
         {
-            Snapshot = state.SnapshotJson(), state.Random.State,
-            Trace = JsonSerializer.Serialize(state.ActionLog),
+            State = randomState,
             state.StopFurtherActions, state.StopAttack, state.IsFinished, state.Winner, state.WinnerReason,
             state.ClientSide, _engine.PendingSelectionCount,
             Choices = state.AllCards.Select(c => new { c.CardId, c.ChooseOne, CurrentTargetId = c.CurrentTarget?.CardId }).ToArray(),
             Source = Card(source), Offered = offered.Select(Card).ToArray(),
             _engine.Api.Vm.ProgramsExecuted, _engine.Api.Vm.FaultedPrograms, Faults
         });
+        return (snapshot, trace, details);
     }
 
     public void Dispose()
