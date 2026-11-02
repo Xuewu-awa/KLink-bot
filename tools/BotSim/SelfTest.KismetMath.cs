@@ -88,4 +88,30 @@ internal static partial class SelfTest
 
         return null;
     }
+
+    private static string? KismetGetFactionEnumSdkMapping(CardDatabase db)
+    {
+        // Ordinals copied from the current client's KardsCore_enums.hpp EFactionEnum.
+        // This guards the simulator's canonical-name projection only; it is not a
+        // black-box claim about the native GetFactionEnum implementation.
+        string[] factionNames =
+        [
+            "NotAvailable", "Germany", "Britain", "Japan", "Soviet", "USA",
+            "France", "Italy", "Poland", "Finland", "Anzac", "Allies", "Neutral",
+        ];
+        var (engine, state) = EmptyBoard(db);
+        var ctx = new EffectContext { Engine = engine, State = state, Controller = Side.Left };
+        var slots = Enumerable.Range(0, factionNames.Length).Select(i => $"faction{i}").ToArray();
+        var steps = factionNames.Select((name, i) => SetMathResult(i, slots[i],
+            MathExpr("GetFactionEnum", MathExpr("Conv_StringToName", StringExpr(name))))).ToArray();
+        var result = engine.Api.Vm.RunLocalProgramMulti(new KismetProgram(steps, 0), ctx, null, slots);
+
+        for (int i = 0; i < factionNames.Length; i++)
+        {
+            if (!Equals(result[slots[i]], i))
+                return $"GetFactionEnum canonical SDK value {factionNames[i]} returned {result[slots[i]] ?? "<null>"}; expected {i}";
+        }
+
+        return null;
+    }
 }

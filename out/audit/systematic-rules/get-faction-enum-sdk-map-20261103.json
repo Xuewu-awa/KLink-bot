@@ -1,0 +1,289 @@
+{
+  "schema_version": 1,
+  "report_id": "GET-FACTION-ENUM-SDK-MAP-20261103",
+  "scope": "static current card IR callsites and local canonical-name mapping comparison; no native execution claim",
+  "sdk": {
+    "function_signature": "void GetFactionEnum(const FName& faction)",
+    "function_signature_present": true,
+    "enum": "EFactionEnum",
+    "values": [
+      {
+        "name": "NotAvailable",
+        "value": 0
+      },
+      {
+        "name": "Germany",
+        "value": 1
+      },
+      {
+        "name": "Britain",
+        "value": 2
+      },
+      {
+        "name": "Japan",
+        "value": 3
+      },
+      {
+        "name": "Soviet",
+        "value": 4
+      },
+      {
+        "name": "USA",
+        "value": 5
+      },
+      {
+        "name": "France",
+        "value": 6
+      },
+      {
+        "name": "Italy",
+        "value": 7
+      },
+      {
+        "name": "Poland",
+        "value": 8
+      },
+      {
+        "name": "Finland",
+        "value": 9
+      },
+      {
+        "name": "Anzac",
+        "value": 10
+      },
+      {
+        "name": "Allies",
+        "value": 11
+      },
+      {
+        "name": "Neutral",
+        "value": 12
+      }
+    ]
+  },
+  "inventory": {
+    "callsite_count": 11,
+    "asset_count": 8,
+    "direct_consumer_counts": {
+      "SpawnCardInHandBySide": 1,
+      "SpawnCardOnBattlefield": 10
+    },
+    "callsites": [
+      {
+        "card": "card_event_second_front",
+        "program": "steps",
+        "instruction_i": 1024,
+        "byte_offset": 1024,
+        "expression_path": "src",
+        "destination": "CallFunc_GetFactionEnum_ReturnValue",
+        "direct_consumers_before_next_write": [
+          {
+            "function": "SpawnCardOnBattlefield",
+            "instruction_i": 1061,
+            "argument_index": 7,
+            "nested_variable_paths": [
+              "args[5]"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_event_second_front",
+        "program": "steps",
+        "instruction_i": 1317,
+        "byte_offset": 1317,
+        "expression_path": "src",
+        "destination": "CallFunc_GetFactionEnum_ReturnValue",
+        "direct_consumers_before_next_write": [
+          {
+            "function": "SpawnCardOnBattlefield",
+            "instruction_i": 1354,
+            "argument_index": 7,
+            "nested_variable_paths": [
+              "args[5]"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_event_second_front",
+        "program": "steps",
+        "instruction_i": 1984,
+        "byte_offset": 1984,
+        "expression_path": "src",
+        "destination": "CallFunc_GetFactionEnum_ReturnValue_1",
+        "direct_consumers_before_next_write": [
+          {
+            "function": "SpawnCardOnBattlefield",
+            "instruction_i": 2021,
+            "argument_index": 7,
+            "nested_variable_paths": [
+              "args[5]"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_event_second_front",
+        "program": "steps",
+        "instruction_i": 2296,
+        "byte_offset": 2296,
+        "expression_path": "src",
+        "destination": "CallFunc_GetFactionEnum_ReturnValue_1",
+        "direct_consumers_before_next_write": [
+          {
+            "function": "SpawnCardOnBattlefield",
+            "instruction_i": 2333,
+            "argument_index": 7,
+            "nested_variable_paths": [
+              "args[5]"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_event_isolation",
+        "program": "steps",
+        "instruction_i": 881,
+        "byte_offset": 881,
+        "expression_path": "src",
+        "destination": "CallFunc_GetFactionEnum_ReturnValue",
+        "direct_consumers_before_next_write": [
+          {
+            "function": "SpawnCardOnBattlefield",
+            "instruction_i": 918,
+            "argument_index": 7,
+            "nested_variable_paths": [
+              "args[5]"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_unit_sendai_regiment",
+        "program": "steps",
+        "instruction_i": 1140,
+        "byte_offset": 1140,
+        "expression_path": "src",
+        "destination": "CallFunc_GetFactionEnum_ReturnValue",
+        "direct_consumers_before_next_write": [
+          {
+            "function": "SpawnCardOnBattlefield",
+            "instruction_i": 1177,
+            "argument_index": 7,
+            "nested_variable_paths": [
+              "args[5]"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_event_drive_into_the_sea",
+        "program": "steps",
+        "instruction_i": 881,
+        "byte_offset": 881,
+        "expression_path": "src",
+        "destination": "CallFunc_GetFactionEnum_ReturnValue",
+        "direct_consumers_before_next_write": [
+          {
+            "function": "SpawnCardOnBattlefield",
+            "instruction_i": 918,
+            "argument_index": 7,
+            "nested_variable_paths": [
+              "args[5]"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_event_volunteer_corps_home",
+        "program": "steps",
+        "instruction_i": 289,
+        "byte_offset": 289,
+        "expression_path": "src",
+        "destination": "CallFunc_GetFactionEnum_ReturnValue",
+        "direct_consumers_before_next_write": [
+          {
+            "function": "SpawnCardOnBattlefield",
+            "instruction_i": 326,
+            "argument_index": 7,
+            "nested_variable_paths": [
+              "args[5]"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_unit_kyoto_regiment",
+        "program": "steps",
+        "instruction_i": 1140,
+        "byte_offset": 1140,
+        "expression_path": "src",
+        "destination": "CallFunc_GetFactionEnum_ReturnValue",
+        "direct_consumers_before_next_write": [
+          {
+            "function": "SpawnCardOnBattlefield",
+            "instruction_i": 1177,
+            "argument_index": 7,
+            "nested_variable_paths": [
+              "args[5]"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_event_distant_front",
+        "program": "steps",
+        "instruction_i": 881,
+        "byte_offset": 881,
+        "expression_path": "src",
+        "destination": "CallFunc_GetFactionEnum_ReturnValue",
+        "direct_consumers_before_next_write": [
+          {
+            "function": "SpawnCardOnBattlefield",
+            "instruction_i": 918,
+            "argument_index": 7,
+            "nested_variable_paths": [
+              "args[5]"
+            ]
+          }
+        ]
+      },
+      {
+        "card": "card_event_special_reinforcements",
+        "program": "steps",
+        "instruction_i": 943,
+        "byte_offset": 943,
+        "expression_path": "src",
+        "destination": "CallFunc_GetFactionEnum_ReturnValue",
+        "direct_consumers_before_next_write": [
+          {
+            "function": "SpawnCardInHandBySide",
+            "instruction_i": 1019,
+            "argument_index": 8,
+            "nested_variable_paths": [
+              "args[5]"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "vm_source_observation": {
+    "summary": "Searches IDs 0..12 using FactionName, compares the suffix after `::` with OrdinalIgnoreCase, and returns FirstOrDefault (0 when unmatched).",
+    "native_equivalence_established": false
+  },
+  "limitations": [
+    "The SDK supplies a declaration and enum values but no native function body.",
+    "The self-test validates the simulator's 13 canonical name-to-ordinal projections against the SDK table; it does not validate the client's native output.",
+    "Case handling, qualified or numbered FName forms, invalid names, and real runtime input values remain unverified.",
+    "Static card IR occurrence and consumer counts do not establish current PvP eligibility or runtime reachability."
+  ],
+  "source_sha256": {
+    "card_ir": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b",
+    "sdk_enum": "718166b9cbbd2d4cd9ecf761d5a94f1acba7b383dc6faa6f64358601128eb00b",
+    "sdk_function": "f8039a5583a5db8be8c73470418b5b94f6cc1e856d402ffd75403c0fa8a2ac78",
+    "vm": "0af6f3eb2bc660bb7025a2c5eda928802eb723cffa2de3d18a5e01a0d49f41ae",
+    "selftest": "492fd9797f7e3288adb44820a66c0379ca04fc684c757195c2d7d48bcb259759"
+  }
+}
