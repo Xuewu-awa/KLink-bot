@@ -1365,6 +1365,8 @@ internal static partial class SelfTest
         // 与客户端毫无关系 ⇒ 随机/复制类效果抽到的卡必然不同。
         new("★★ UE FRandomStream 复刻：必须逐位命中报告 §4.2.1 的测试向量（LCG 常数 + 高 23 位 + 闭区间）",
             UeRandomStreamMatchesReportVector),
+        new("UE FRandomStream clone：游标、重置种子、计数与副本隔离",
+            UeRandomStreamClonePreservesCursor),
         new("★ UE FRandomStream：`Array_ShuffleFromStream` 是**前向** Fisher-Yates、消耗 n 次（不是 n-1）",
             UeShuffleConsumesNDraws),
         new("★ `RandomIntFromRangeWithStream(0,2)` 必须能出 2（闭区间；旧实现是半开区间 ⇒ 只出 0/1）",

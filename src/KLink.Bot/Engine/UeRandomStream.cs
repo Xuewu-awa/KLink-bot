@@ -83,6 +83,16 @@ public sealed class UeRandomStream
     /// </param>
     public UeRandomStream(ulong seed) => Initialize(unchecked((int)(uint)seed));
 
+    /// <summary>
+    /// Creates an independent stream at the exact current cursor, including the
+    /// original reset seed and cumulative draw count. Does not consume randomness.
+    /// </summary>
+    public UeRandomStream Clone() => new(unchecked((uint)InitialSeed))
+    {
+        Seed = this.Seed,
+        ConsumedCount = this.ConsumedCount,
+    };
+
     /// <summary>`FRandomStream::Initialize(InSeed)`。</summary>
     public void Initialize(int inSeed)
     {
