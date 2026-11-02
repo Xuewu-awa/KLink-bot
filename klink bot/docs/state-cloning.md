@@ -1699,3 +1699,27 @@ review timed out without a delivered artifact, so no worker claim was used;
 equivalence was checked directly by the primary agent and the snapshot
 regressions. This performance-only change does not refresh rule-audit
 fingerprints or certify cards.
+
+### Snapshot empty-collection fast paths (2026-11-02)
+
+The snapshot projection now skips sorting and LINQ enumeration for empty
+`CustomJson`, `CustomJsonTypes`, `ReceivedAbilitiesFromCards`,
+`BlueprintVariables` and `BlueprintSets`. Each path still allocates a fresh
+dictionary with the same comparer; populated collections retain the previous
+sorted deep-copy behavior. No mutable static object or cached snapshot data is
+introduced.
+
+The focused snapshot isolation test and the complete 1,098-test BotSim suite
+passed. A fresh-process paired-v6 A/B benchmark again ran six fixed workloads,
+three repeats and both implementations (36 samples). All samples were
+accepted, and decompressed rows, quality records, clone/reference fingerprints,
+RNG state and non-DLL inputs matched exactly. Median changes were: m1-native
+1.1% faster, m1-last 2.7% faster, meta1-seed1 1.4% slower, meta1-seed2 1.2%
+faster, meta2-seed1 0.9% slower and meta2-seed2 1.4% faster. The effect is within
+run-to-run noise for these workloads, so this is recorded as a low-risk
+allocation reduction rather than a stable throughput improvement.
+
+The compact result is
+`out/audit/snapshot-empty-collections-measurements-20261102.json`; raw isolated
+A/B sources and manifests are under
+`out/audit/snapshot-keywords-ab-20261102/measurements-empty`.

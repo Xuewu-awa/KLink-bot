@@ -1,0 +1,23 @@
+{
+  "date": "2026-11-02",
+  "base": "5afc47e5b78d64f47577d8c4a81fd6d798f12620",
+  "change": "Fresh dictionaries for empty snapshot collections; populated paths retain sorted deep copies.",
+  "tests": { "focusedSnapshot": 1, "fullBotSimAfter": 1098 },
+  "benchmark": {
+    "samples": 36,
+    "repeats": 3,
+    "accepted": 36,
+    "rejected": 0,
+    "exactBehavior": true,
+    "medianReductionPercent": {
+      "m1-native": 1.1244,
+      "m1-last": 2.7201,
+      "meta1-seed1": -1.4049,
+      "meta1-seed2": 1.1901,
+      "meta2-seed1": -0.8507,
+      "meta2-seed2": 1.3858
+    },
+    "rawReport": "out/audit/snapshot-keywords-ab-20261102/measurements-empty/report.json"
+  },
+  "interpretation": "Small and mixed fixed-workload effect; low-risk allocation reduction, not a stable throughput claim."
+}

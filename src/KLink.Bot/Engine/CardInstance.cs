@@ -997,7 +997,9 @@ public sealed partial class CardInstance
         AttacksThisTurn,
         SnapshotKeywords(),
         CustomAbility,
-        CustomJson.OrderBy(kv => kv.Key, StringComparer.Ordinal).ToDictionary(kv => kv.Key, kv => kv.Value))
+        (CustomJson.Count == 0
+            ? new Dictionary<string, string>()
+            : CustomJson.OrderBy(kv => kv.Key, StringComparer.Ordinal).ToDictionary(kv => kv.Key, kv => kv.Value)))
         {
             BaseHeavyArmor = BaseHeavyArmor,
             TemporaryHeavyArmor = TemporaryHeavyArmor,
@@ -1013,7 +1015,9 @@ public sealed partial class CardInstance
             PublicKreditCost = PublicKreditCost,
             PublicKreditCostBuff = PublicKreditCostBuff,
             AttackBuff = AttackBuff,
-            CustomJsonTypes = CustomJson.Keys.OrderBy(k => k, StringComparer.Ordinal).ToDictionary(k => k, CustomJson.TypeOf),
+            CustomJsonTypes = CustomJson.Count == 0
+                ? new Dictionary<string, CardJsonType>()
+                : CustomJson.Keys.OrderBy(k => k, StringComparer.Ordinal).ToDictionary(k => k, CustomJson.TypeOf),
             CardsBuffedByThisCard = CardsBuffedByThisCard.ToArray(),
             SelectTargetOnPlayedFromHand = SelectTargetOnPlayedFromHand,
             HasEverAttacked = HasEverAttacked,
@@ -1104,17 +1108,22 @@ public sealed partial class CardInstance
             GotchaActivated = GotchaActivated,
             OriginalOwner = OriginalOwner,
             UnderEnemyControl = UnderEnemyControl,
-            ReceivedAbilitiesFromCards = ReceivedAbilitiesFromCards
-                .OrderBy(kv => kv.Key, StringComparer.Ordinal)
-                .ToDictionary(kv => kv.Key, kv => kv.Value.ToArray(), StringComparer.Ordinal),
+            ReceivedAbilitiesFromCards = ReceivedAbilitiesFromCards.Count == 0
+                ? new Dictionary<string, int[]>(StringComparer.Ordinal)
+                : ReceivedAbilitiesFromCards
+                    .OrderBy(kv => kv.Key, StringComparer.Ordinal)
+                    .ToDictionary(kv => kv.Key, kv => kv.Value.ToArray(), StringComparer.Ordinal),
             RemovedGameplayTags = RemovedGameplayTags.OrderBy(x => x, StringComparer.Ordinal).ToArray(),
-            BlueprintVariables = BlueprintVariables.OrderBy(kv => kv.Key, StringComparer.Ordinal)
-                .ToDictionary(kv => kv.Key, kv => SnapshotBlueprintValue(kv.Value), StringComparer.Ordinal),
-            BlueprintSets = BlueprintSets
-                .OrderBy(kv => kv.Key, StringComparer.Ordinal)
-                .ToDictionary(kv => kv.Key,
-                    kv => kv.Value.Select(v => v is CardInstance card ? card.CardId : v is int id ? id : 0)
-                        .OrderBy(id => id).ToArray(), StringComparer.Ordinal),
+            BlueprintVariables = BlueprintVariables.Count == 0
+                ? new Dictionary<string, object?>(StringComparer.Ordinal)
+                : BlueprintVariables.OrderBy(kv => kv.Key, StringComparer.Ordinal)
+                    .ToDictionary(kv => kv.Key, kv => SnapshotBlueprintValue(kv.Value), StringComparer.Ordinal),
+            BlueprintSets = BlueprintSets.Count == 0
+                ? new Dictionary<string, int[]>(StringComparer.Ordinal)
+                : BlueprintSets.OrderBy(kv => kv.Key, StringComparer.Ordinal)
+                    .ToDictionary(kv => kv.Key,
+                        kv => kv.Value.Select(v => v is CardInstance card ? card.CardId : v is int id ? id : 0)
+                            .OrderBy(id => id).ToArray(), StringComparer.Ordinal),
         };
     }
 
