@@ -20,6 +20,11 @@ internal static partial class SelfTest
 
     private static readonly List<Case> Cases = new()
     {
+        new("GameStateClone: exact field coverage", GameStateCloneFieldCoverage),
+        new("GameStateClone: roots aliases and isolation", GameStateCloneGraphIsolation),
+        new("GameStateClone: continuation and rebinding", GameStateCloneContinuation),
+        new("GameStateClone: transient scope and payload rejection", GameStateCloneRejection),
+        new("GameStateClone: engine-produced state and history", GameStateCloneEngineProduced),
         new("CardGraphClone: cycles and aliases", CardGraphCyclesAndAliases),
         new("CardGraphClone: ledgers and raw state", CardGraphLedgersAndRawState),
         new("CardGraphClone: coverage and rejection", CardGraphCoverageAndRejection),

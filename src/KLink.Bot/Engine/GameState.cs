@@ -9,7 +9,7 @@ namespace KLink.Bot.Engine;
 /// 1. 协议里的卡对象字段（card_id / location / location_number / name / is_gold）
 /// 2. <c>BP_OnlineMatch_C</c> 的 CDO 属性表（见 docs/对局协议参考.md §7）
 /// </summary>
-public sealed class GameState
+public sealed partial class GameState
 {
     public sealed class GameplayRestriction
     {
@@ -1240,7 +1240,7 @@ public sealed record GameplaySideEffectSnapshot(Side Side, string Tag, int Sourc
     int DurationPolicy, int TurnsRemaining, int EffectValue);
 
 /// <summary>一条已结算的动作 —— 与协议里的 action 信封对应。</summary>
-public sealed record GameAction(
+public sealed partial record GameAction(
     int ActionId,
     string ActionType,
     Side Player,
@@ -1249,7 +1249,7 @@ public sealed record GameAction(
     IReadOnlyDictionary<string, object?> ActionData);
 
 /// <summary>子动作 —— 对应协议里的 <c>SubAction { Name, Values: ActionValue2[] }</c>。</summary>
-public sealed record SubAction(string Name, IReadOnlyList<ActionValue2> Values);
+public sealed partial record SubAction(string Name, IReadOnlyList<ActionValue2> Values);
 
 /// <summary>对应游戏原生结构体 <c>/Script/kards.ActionValue2</c>。</summary>
 public sealed record ActionValue2(string Name, int Value, string Text = "")

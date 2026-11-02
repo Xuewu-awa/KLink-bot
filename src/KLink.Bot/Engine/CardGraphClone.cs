@@ -6,7 +6,7 @@ namespace KLink.Bot.Engine;
 /// Reviewed .NET 10 x64 dictionary/set slots and free chains retain subsequent ordering.
 /// Unsupported payloads/comparers fail explicitly; no partial result is returned.
 /// </summary>
-public sealed class CardGraphClone
+public sealed partial class CardGraphClone
 {
     private readonly Dictionary<object, object> _copies = new(ReferenceEqualityComparer.Instance);
     private readonly Dictionary<CardInstance, CardInstance> _cards = new(ReferenceEqualityComparer.Instance);
@@ -14,8 +14,13 @@ public sealed class CardGraphClone
     public IReadOnlyList<CardInstance> Roots { get; private set; } = [];
     public IReadOnlyDictionary<CardInstance, CardInstance> Cards { get; }
 
-    private CardGraphClone()
-        => Cards = new System.Collections.ObjectModel.ReadOnlyDictionary<CardInstance, CardInstance>(_cards);
+    private readonly bool _includeState;
+
+    internal CardGraphClone(bool includeState = false)
+    {
+        _includeState = includeState;
+        Cards = new System.Collections.ObjectModel.ReadOnlyDictionary<CardInstance, CardInstance>(_cards);
+    }
 
     public static CardGraphClone Create(IEnumerable<CardInstance> roots)
     {
@@ -35,6 +40,7 @@ public sealed class CardGraphClone
             or long or ulong or float or double or decimal or char || value.GetType().IsEnum)
             return value;
         if (_copies.TryGetValue(value, out var existing)) return existing;
+        if (_includeState && TryCopyStateValue(value, out var stateValue)) return stateValue;
         switch (value)
         {
             case CardInstance card:

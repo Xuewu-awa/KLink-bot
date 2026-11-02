@@ -1,7 +1,8 @@
 # Exact state cloning for candidate evaluation
 
-Status: RNG and supported card-graph/container cloning foundation only. Candidate evaluation
-still constructs an independent engine and replays the committed action tape.
+Status: RNG, supported card-graph/container and detached GameState cloning are
+implemented. Candidate evaluation still constructs an independent engine and
+replays the committed action tape.
 No speedup is claimed by this work.
 
 ## Implemented
@@ -108,15 +109,69 @@ Validation on 2026-11-02: all eight targeted CardGraphClone cases passed;
 the complete BotSim selftest passed all 1,067 cases. This batch adds tests and
 documentation only; it does not expand the production payload whitelist.
 
+## Detached GameState graph
+
+`GameStateClone.Create(source)` returns a detached state and a read-only card
+identity map. It uses the card copier's memo across every state root, including
+history-only cards, queue entries and HQ bindings outside the current ID index.
+Distinct objects with the same card ID remain distinct. The state constructor
+copies raw scalars rather than calling gameplay setters, firing triggers or
+rebuilding indexes from a public snapshot. Nonempty trigger/autoplay/wait lists
+and historical ledgers are retained; this does not authorize running a copied
+engine while resolution is pending.
+
+The reviewed GameState inventory contains 61 instance fields (including compiler
+backing fields). The exact-name regression guard requires review on additions:
+
+| Disposition | Fields |
+| --- | --- |
+| Copy scalar/string (24) | ShouldExecuteWaitPlayFromHand, Seed, Turn, ActiveSide, StartingSide, ClientSide, UnitDestroyedThisTurn, OperationKreditsSpentThisTurn, StopAttack, HasPlayedWeatherCardThisTurn, FrontlineOwner, StopFurtherActions, IsFinished, Winner, WinnerReason, _cardsCreatedThisTurn, _createdCountTurn, ClientIdTurnOverride, CollectRandomTrace, TrackGeneratedCardTrust, LeftAllyFaction, RightAllyFaction, LeftMainFaction, RightMainFaction |
+| Shared frozen catalog (1) | Database; its nested definitions and runtime caches are not made immutable by this API. The future engine integration must review catalog queries/cache ownership. |
+| Shared immutable policy (2) | CardReservations, CardBlacklist. Their constructors own their buffers; public changes return new policies. Nested CardReservationChange records own private sets. Policy field names are guarded in tests. |
+| Clone cursor (1) | Random, preserving InitialSeed, Seed and ConsumedCount without drawing |
+| Recursive copy/remap (30) | _cardsBySide, _pendingDeckRemovals, _byCardId, _battleCardOrder, _autoPlayerCardIds, _waitPlayFromHandCards, _buffsToRemoveEndOfTurn, _kreditSlotsLost, GameplayRestrictions, GameplaySideEffects, TriggerQueue, DestroyedCardIdsByTurn, DestroyedCardIdsAll, _destroyedBySide, _kredits, _maxKredits, _hqDamagedThisTurn, _fatigue, ActiveBondFactions, FrontlineLimiters, _nextCardId, ActionLog, CardsPlayedThisTurn, CardsPlayedFromHandByTurn, UnimplementedCalls, RandomTrace, GeneratedCardIds, VerifiedGeneratedCardIds, _locationCards, _locationCardIds |
+| Clear for later destination binding (3) | CardMoved, CardCreated, CardCreationModifiers |
+
+The state-only payload extension admits the concrete list/array/map/set types in
+GameStateClone.cs, mutable GameplayRestriction/GameplaySideEffect entries and
+GameAction/SubAction graphs. One memo preserves repeated entries, cross-store
+aliases and cycles through ActionData. ActionValue2 instances are shared as sealed
+immutable string/int records; their field inventory is guarded. Read-only action
+interfaces do not imply immutable backing storage, so their supported concrete
+containers are copied. Unknown action payloads or container implementations fail
+explicitly. The standalone CardGraphClone whitelist is unchanged by this extension.
+
+An active WithDeckCardRemoved scope is rejected: its source-stack finally cannot
+continue on a detached state. Clearing three callback properties prevents source
+engine captures, but callers must still establish source quiescence and bind the
+destination engine. There is no automatic MatchEngine construction or VM/API copy.
+
+Five GameStateClone regressions cover raw scalar/nullable presence, exact state
+and nested field inventories, mutable-buffer isolation in both directions,
+history/HQ roots with duplicate IDs, indexes/order, repeated effect entries,
+cyclic action data, policy sharing, nonempty queues/ledgers, RNG/allocator
+continuation across turn/override changes, callback clearing/rebinding, repeated
+cloning and rejection without source mutation. One case clones state/action
+history produced by actual engine turn processing and checks that further source
+engine execution leaves the copy unchanged. It does not continue a cloned engine.
+The DeepSeek field inventory was independently checked against source and the
+61-field reflection guard; its unverified policy/HQ interpretations are not used
+as the copy contract.
+
+Validation on 2026-11-02: all five GameStateClone cases and all eight existing
+CardGraphClone cases passed; the full BotSim selftest passed 1,072 cases and
+NNTrain policy-evaluation-selftest passed all nine cases. The NNTrain build still
+reports nullable-context warnings in its existing source files. No engine clone
+or throughput improvement is claimed.
+
 ## Remaining implementation boundaries
 
 1. Card graph: supported container continuation above is implemented. VM producer
    checks below cover selected persisted payloads; exhaustive coverage of actual
    card execution paths and dynamic inputs remains open. Unsupported values fail.
-2. GameState: retain side/id indexes, battle order, HQ bindings, queues,
-   histories, allocators, policies, RNG and admission diagnostics. Rebind callbacks
-   to the destination engine. SnapshotJson is an observation format, not a restore
-   contract.
+2. GameState: detached copying below is implemented. Destination-engine callback
+   binding and the complete idle-boundary gate remain integration work.
+   SnapshotJson is an observation format, not a restore contract.
 3. MatchEngine/CardApi/VM: preserve persistent state and diagnostic counters;
    rebuild dispatch delegates against the destination API. Review static template
    ownership and pool caches before sharing anything. Bind choice adapters to the
