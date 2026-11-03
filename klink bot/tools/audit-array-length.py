@@ -66,7 +66,8 @@ def main() -> int:
     resolve = lambda path: (repo / path).resolve() if not path.is_absolute() else path.resolve()
     capture_path, fixture_path, output = map(resolve, (args.capture, args.fixture, args.output))
     ir_path = repo / "klink bot/docs/card-ir.json"
-    vm_path = repo / "src/KLink.Bot/Effects/Blueprint/KismetVm.cs"
+    dispatch_path = repo / "src/KLink.Bot/Effects/CardApiDispatch.cs"
+    api_path = repo / "src/KLink.Bot/Effects/CardApi.cs"
     test_path = repo / "tools/BotSim/SelfTest.KismetMath.cs"
     registry_path = repo / "tools/BotSim/SelfTest.cs"
     project_path = repo / "tools/BotSim/BotSim.csproj"
@@ -98,7 +99,7 @@ def main() -> int:
         "schema_version": 1,
         "report_id": "KISMET-ARRAY-LENGTH-NATIVE-CONTRACT-20261104",
         "status": "partial",
-        "scope": "Current-client UKismetArrayLibrary Array_Length ownership, wrapper output field, SDK declaration, managed IList regression and static IR input-shape inventory; not complete generic property ABI or card certification.",
+        "scope": "Current-client UKismetArrayLibrary Array_Length ownership, wrapper output field, SDK declaration, CardApiDispatch/EvalList call-path regression and static IR input-shape inventory; not complete generic property ABI or card certification.",
         "client": {"executable": capture["module"]["path"], "sha256": capture["exe_sha256"]},
         "native_capture": {
             "path": capture_path.relative_to(repo).as_posix(),
@@ -110,13 +111,14 @@ def main() -> int:
         },
         "sdk": {"header": str(args.sdk_header.resolve()), "sha256": sha256(args.sdk_header), "declaration": signature.group(0)},
         "simulator": {
-            "implementation": "KismetVm.Array_Length returns IList.Count; null and non-IList values use the existing zero fallback.",
+            "implementation": "CardApiDispatch.Array_Length returns EvalList(...).Count. EvalList accepts non-string IList values, returns an empty list for other values, and has a separate CardInstance-to-singleton fallback.",
             "regression_cases": ["empty int[]", "nonempty int[]", "heterogeneous List<object?>", "Dictionary fallback", "string fallback", "null fallback"],
-            "native_comparison": "Valid array count is consistent with the captured read/store and SDK function declaration. Malformed non-array behavior is not compared to the native error path.",
+            "native_comparison": "The tested IList array count is consistent with the captured read/store and SDK declaration. Non-array fallbacks and the CardInstance singleton fallback are simulator behavior, not native behavior claims.",
         },
         "inventory": inv,
         "source_sha256": {
-            "card_ir": sha256(ir_path), "vm": sha256(vm_path), "selftest": sha256(test_path),
+            "card_ir": sha256(ir_path), "dispatch": sha256(dispatch_path),
+            "api": sha256(api_path), "selftest": sha256(test_path),
             "selftest_registry": sha256(registry_path), "project": sha256(project_path),
             "fixture": sha256(fixture_path), "capture_script": sha256(repo / "out/audit/capture-kismet-array-length-current-20261104.py"),
             "audit_script": sha256(Path(__file__).resolve()),

@@ -1026,7 +1026,7 @@ internal static partial class SelfTest
         {
             string input = $"array{i}", output = $"length{i}";
             outputs[i] = output;
-            steps.Add(SetMathResult(i, output, MathExpr("Array_Length", new KismetExpr { Var = input })));
+            steps.Add(SetMathResult(i, output, new KismetExpr { Call = "Array_Length", Args = [new KismetExpr { Var = input }] }));
         }
         var locals = values.Select((value, index) => (value, index))
             .ToDictionary(pair => $"array{pair.index}", pair => pair.value);
@@ -1038,6 +1038,87 @@ internal static partial class SelfTest
         for (int i = 0; i < outputs.Length; i++)
             if (!Equals(results[outputs[i]], expectedCounts[i]))
                 return $"Array_Length local case {i} returned {results[outputs[i]] ?? "<null>"}; expected {expectedCounts[i]}";
+        return null;
+    }
+
+    private static string? KismetArrayGetNativeContract(CardDatabase db)
+    {
+        string fixturePath = Path.Combine(AppContext.BaseDirectory, "Fixtures", "kismet-array-get-native-20261104.json");
+        using var fixtureDocument = System.Text.Json.JsonDocument.Parse(File.ReadAllText(fixturePath));
+        var fixture = fixtureDocument.RootElement;
+        DirectoryInfo? repository = new(AppContext.BaseDirectory);
+        while (repository is not null && !File.Exists(Path.Combine(repository.FullName, "KLink.slnx")))
+            repository = repository.Parent;
+        if (repository is null) return "could not locate repository root for Array_Get fixture";
+        string captureRelative = fixture.GetProperty("capture_path").GetString()!;
+        string capturePath = Path.Combine(repository.FullName, captureRelative.Replace('/', Path.DirectorySeparatorChar));
+        if (!File.Exists(capturePath)) return $"Array_Get native capture not found at {captureRelative}";
+        string captureHash = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(capturePath))).ToLowerInvariant();
+        if (!string.Equals(captureHash, fixture.GetProperty("capture_sha256").GetString(), StringComparison.Ordinal))
+            return "Array_Get native capture SHA-256 differs from the fixture";
+        using var captureDocument = System.Text.Json.JsonDocument.Parse(File.ReadAllText(capturePath));
+        var capture = captureDocument.RootElement;
+        var native = capture.GetProperty("function");
+        if (!string.Equals(capture.GetProperty("exe_sha256").GetString(), fixture.GetProperty("exe_sha256").GetString(), StringComparison.Ordinal)
+            || !string.Equals(capture.GetProperty("owner").GetString(), fixture.GetProperty("owner").GetString(), StringComparison.Ordinal)
+            || !native.GetProperty("ownership_verified").GetBoolean()
+            || !string.Equals(native.GetProperty("name").GetString(), fixture.GetProperty("function").GetString(), StringComparison.Ordinal)
+            || !string.Equals(native.GetProperty("exec_rva").GetString(), fixture.GetProperty("exec_rva").GetString(), StringComparison.Ordinal))
+            return "Array_Get native function identity differs from the fixture";
+        foreach (var expected in fixture.GetProperty("native_instruction_checks").EnumerateArray())
+            if (!native.GetProperty("instructions_through_two_returns").EnumerateArray().Any(actual =>
+                    string.Equals(actual.GetProperty("rva").GetString(), expected[0].GetString(), StringComparison.Ordinal)
+                    && string.Equals(actual.GetProperty("bytes").GetString(), expected[1].GetString(), StringComparison.Ordinal)))
+                return $"Array_Get native instruction at {expected[0].GetString()} differs from the capture";
+
+        var (engine, state) = EmptyBoard(db);
+        var objectCard = state.CreateWithId(PlainUnit, Side.Left, 1401, CardLocation.BoardHqLeft, 0);
+        var values = new object?[]
+        {
+            new[] { 17, -3, 44 },
+            new List<object?> { objectCard, "marker" },
+            new Dictionary<int, string> { [1] = "value" },
+            "not-an-array",
+            null,
+        };
+        var cases = new (int Array, int Index, string Output, object? Expected)[]
+        {
+            (0, 0, "firstInt", 17),
+            (0, 2, "lastInt", 44),
+            (0, -1, "negativeInt", null),
+            (0, 3, "pastEndInt", null),
+            (1, 0, "objectElement", objectCard),
+            (1, 1, "stringElement", "marker"),
+            (2, 0, "dictionaryFallback", null),
+            (3, 0, "stringFallback", null),
+            (4, 0, "nullFallback", null),
+        };
+        var steps = new List<KismetStep>(cases.Length);
+        var outputs = new string[cases.Length];
+        var locals = values.Select((value, index) => (value, index))
+            .ToDictionary(pair => $"array{pair.index}", pair => pair.value);
+        for (int i = 0; i < cases.Length; i++)
+        {
+            var test = cases[i];
+            string indexName = $"index{i}";
+            outputs[i] = test.Output;
+            locals[indexName] = test.Index;
+            steps.Add(new KismetStep(i, "call", "Array_Get",
+                [new KismetExpr { Var = $"array{test.Array}" }, new KismetExpr { Var = indexName }, new KismetExpr { Var = test.Output }],
+                [2], null, null, -1, null, null));
+        }
+        var context = new EffectContext { Engine = engine, State = state, Controller = Side.Left };
+        long faults = engine.Api.Vm.FaultedPrograms;
+        var results = engine.Api.Vm.RunLocalProgramMulti(new KismetProgram(steps, 0), context, locals, outputs);
+        if (engine.Api.Vm.FaultedPrograms != faults) return "Array_Get dispatch probe unexpectedly faulted the VM";
+        foreach (var test in cases)
+        {
+            object? actual = results[test.Output];
+            if (test.Expected is CardInstance expectedCard
+                ? !ReferenceEquals(actual, expectedCard)
+                : !Equals(actual, test.Expected))
+                return $"Array_Get {test.Output} returned {actual ?? "<null>"}; expected {test.Expected ?? "<null>"}";
+        }
         return null;
     }
 }

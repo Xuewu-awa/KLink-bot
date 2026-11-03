@@ -2,7 +2,7 @@
   "schema_version": 1,
   "report_id": "KISMET-ARRAY-LENGTH-NATIVE-CONTRACT-20261104",
   "status": "partial",
-  "scope": "Current-client UKismetArrayLibrary Array_Length ownership, wrapper output field, SDK declaration, managed IList regression and static IR input-shape inventory; not complete generic property ABI or card certification.",
+  "scope": "Current-client UKismetArrayLibrary Array_Length ownership, wrapper output field, SDK declaration, CardApiDispatch/EvalList call-path regression and static IR input-shape inventory; not complete generic property ABI or card certification.",
   "client": {
     "executable": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
     "sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305"
@@ -34,7 +34,7 @@
     "declaration": "void Array_Length(const TArray<int32>& TargetArray);"
   },
   "simulator": {
-    "implementation": "KismetVm.Array_Length returns IList.Count; null and non-IList values use the existing zero fallback.",
+    "implementation": "CardApiDispatch.Array_Length returns EvalList(...).Count. EvalList accepts non-string IList values, returns an empty list for other values, and has a separate CardInstance-to-singleton fallback.",
     "regression_cases": [
       "empty int[]",
       "nonempty int[]",
@@ -43,7 +43,7 @@
       "string fallback",
       "null fallback"
     ],
-    "native_comparison": "Valid array count is consistent with the captured read/store and SDK function declaration. Malformed non-array behavior is not compared to the native error path."
+    "native_comparison": "The tested IList array count is consistent with the captured read/store and SDK declaration. Non-array fallbacks and the CardInstance singleton fallback are simulator behavior, not native behavior claims."
   },
   "inventory": {
     "callsite_count": 1144,
@@ -213,13 +213,14 @@
   },
   "source_sha256": {
     "card_ir": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b",
-    "vm": "ab7a396c4c9ff77a078c9393a15c01352d04d4aba9578e014edb127a75bfdacc",
-    "selftest": "92f85366a5837982a9325a9d436eaea48c8215bd6a361bd5c2a38c482116f661",
-    "selftest_registry": "80cff54eb5c4066a7ce4cb2e222e78570b4d2201077332635f609a86262d9e12",
-    "project": "5c2659472f8d8bb609f30bacf896240d9024a398bf1cce6015e3eb04fa0ca4bb",
+    "dispatch": "b7188eace3ff3ad55eac7985b4b92e437f208e0b0e5ddc74e3cd572c0c79c7f3",
+    "api": "8008eaef80bdbd395fb45bc16486cf503ae9d2e4e1d36ea97ee6e850b47965db",
+    "selftest": "3b4755f50a06b630ded24d26eebad855280c4af64ec66e2760a509622831144a",
+    "selftest_registry": "228da8d4baf046288b3e608c8acc7d95b127069b43bb1f2adff4703fd5e5f769",
+    "project": "a3e4a46611488f0a4268a454734d06079286f7fd855ee342f2376b55285a7d0f",
     "fixture": "2a6b0a8b6c0aa461cbf98addc4f3bc2f08e0bbfd7dc28680890eb6c29a1869de",
     "capture_script": "22ec2f9733a2310d89d7175d3c17c360b14647bfb39e0e18986362f17416de52",
-    "audit_script": "dc24bdd1933485847b7de7f253774362a054439b0a472770e6d2d91a093e5de6"
+    "audit_script": "2ea135deba0e492d338edd00e25987788cf2425d1a60ae327cd9d57f5f627bd2"
   },
   "limitations": [
     "The captured wrapper reads a 32-bit field at array-data offset +8 and stores it to the output; valid-array results are not obtained by invoking the native function.",

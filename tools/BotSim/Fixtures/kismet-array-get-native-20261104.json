@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "capture_path": "out/audit/systematic-rules/kismet-array-get-native-capture-current-20261104.json",
+  "capture_sha256": "eafca517af6b874d7a17282425b2c667dac100d353742bd24d851070c8422ef3",
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "owner": "/Script/Engine.KismetArrayLibrary",
+  "function": "Array_Get",
+  "signature": "void Array_Get(const TArray<int32>& TargetArray, int32 Index, int32& Item)",
+  "exec_rva": "0x3d92ae0",
+  "native_instruction_checks": [
+    ["0x3d92b63", "48c1e915"],
+    ["0x3d92b67", "f6c101"],
+    ["0x3d92e51", "418806"],
+    ["0x3d92e56", "c683a000000001"]
+  ],
+  "limitations": [
+    "Read-only live UFunction ownership and instruction capture; the native function was not called and game memory was not written.",
+    "The capture includes two return paths but does not reconstruct complete generic property marshaling or all error behavior.",
+    "The local regression's null result for negative/out-of-range indices is simulator behavior and is not asserted to match the native function's output slot."
+  ]
+}

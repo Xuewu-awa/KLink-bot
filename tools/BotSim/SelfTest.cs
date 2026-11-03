@@ -52,6 +52,7 @@ internal static partial class SelfTest
         new("Kismet math: Boolean equality native contract", KismetBooleanComparisonsNativeContract),
         new("Kismet math: IsValid object-versus-location contract", KismetIsValidObjectContract),
         new("Kismet array: Array_Length counts array elements only", KismetArrayLengthNativeContract),
+        new("Kismet array: Array_Get dispatch and output-slot boundaries", KismetArrayGetNativeContract),
         new("Kismet math: Clamp native signed bounds including reversed limits", KismetClampNativeBounds),
         new("Kismet math: SelectInt conditional integer contract", KismetSelectIntContract),
         new("Kismet math: Divide_IntInt and Percent_IntInt native integer contract", KismetDividePercentNativeContract),

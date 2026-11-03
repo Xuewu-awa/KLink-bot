@@ -1,0 +1,412 @@
+{
+  "schema_version": 1,
+  "report_id": "KISMET-ARRAY-GET-NATIVE-CONTRACT-20261104",
+  "status": "partial",
+  "scope": "Current-client UKismetArrayLibrary Array_Get ownership, SDK declaration, local CardApiDispatch/output-slot regression and static IR input inventory; not a full generic property ABI or card certification.",
+  "client": {
+    "executable": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
+    "sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305"
+  },
+  "native_capture": {
+    "path": "out/audit/systematic-rules/kismet-array-get-native-capture-current-20261104.json",
+    "sha256": "eafca517af6b874d7a17282425b2c667dac100d353742bd24d851070c8422ef3",
+    "owner": "/Script/Engine.KismetArrayLibrary",
+    "function": {
+      "name": "Array_Get",
+      "exec_rva": "0x3d92ae0",
+      "ownership_verified": true
+    },
+    "observed_instruction_checks": [
+      [
+        "0x3d92b63",
+        "48c1e915"
+      ],
+      [
+        "0x3d92b67",
+        "f6c101"
+      ],
+      [
+        "0x3d92e51",
+        "418806"
+      ],
+      [
+        "0x3d92e56",
+        "c683a000000001"
+      ]
+    ],
+    "method": "Read-only live UObject/UFunction identity and entry-code capture; no native invocation or process-memory write."
+  },
+  "sdk": {
+    "header": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\ue4ss\\CXXHeaderDump\\Engine.hpp",
+    "sha256": "6ff639c0078e8800c5bc6aae8090beda97d4265ad5f3ba35e13f6e65128c82fb",
+    "declaration": "void Array_Get(const TArray<int32>& TargetArray, int32 Index, int32& Item);"
+  },
+  "simulator": {
+    "implementation": "int i = IntArg(a, 1); var arr = EvalList(r, a); return i >= 0 && i < arr.Count ? arr[i] : null;",
+    "regression_cases": [
+      "int array valid first/last index",
+      "object array valid index",
+      "string-valued element",
+      "negative index",
+      "past-end index",
+      "Dictionary fallback",
+      "string fallback",
+      "null fallback"
+    ],
+    "native_comparison": "The valid indexed read and output-slot route are represented by captured instructions and the SDK declaration. Invalid-index output values and malformed non-array fallbacks are simulator behavior, not native equivalence claims."
+  },
+  "inventory": {
+    "callsite_count": 1744,
+    "asset_count": 705,
+    "program_count": 749,
+    "arity_counts": {
+      "3": 1744
+    },
+    "output_parameter_shapes": {
+      "[2]": 1744
+    },
+    "sample_callsites": [
+      {
+        "card": "card_event_anzac_spirit",
+        "program": "steps",
+        "instruction_i": 20,
+        "byte_offset": 20,
+        "argument_shapes": [
+          [
+            "element_type",
+            "scope",
+            "var"
+          ],
+          [
+            "scope",
+            "var"
+          ],
+          [
+            "scope",
+            "var"
+          ]
+        ],
+        "output_parameter_indices": [
+          2
+        ],
+        "output_slots": [
+          "CallFunc_Array_Get_Item"
+        ]
+      },
+      {
+        "card": "card_event_corps_command",
+        "program": "locals._DoOnCardPlayedOrGotchaTriggered",
+        "instruction_i": 258,
+        "byte_offset": 382,
+        "argument_shapes": [
+          [
+            "element_type",
+            "scope",
+            "var"
+          ],
+          [
+            "scope",
+            "var"
+          ],
+          [
+            "scope",
+            "var"
+          ]
+        ],
+        "output_parameter_indices": [
+          2
+        ],
+        "output_slots": [
+          "CallFunc_Array_Get_Item"
+        ]
+      },
+      {
+        "card": "card_event_corps_command",
+        "program": "locals._DoOnCardPlayedOrGotchaTriggered",
+        "instruction_i": 921,
+        "byte_offset": 1325,
+        "argument_shapes": [
+          [
+            "element_type",
+            "scope",
+            "var"
+          ],
+          [
+            "scope",
+            "var"
+          ],
+          [
+            "scope",
+            "var"
+          ]
+        ],
+        "output_parameter_indices": [
+          2
+        ],
+        "output_slots": [
+          "CallFunc_Array_Get_Item"
+        ]
+      },
+      {
+        "card": "card_event_forward_base_anzac",
+        "program": "locals.GetPlayFromHandDamage",
+        "instruction_i": 370,
+        "byte_offset": 370,
+        "argument_shapes": [
+          [
+            "element_type",
+            "scope",
+            "var"
+          ],
+          [
+            "scope",
+            "var"
+          ],
+          [
+            "scope",
+            "var"
+          ]
+        ],
+        "output_parameter_indices": [
+          2
+        ],
+        "output_slots": [
+          "CallFunc_Array_Get_Item"
+        ]
+      },
+      {
+        "card": "card_event_forward_base_anzac",
+        "program": "locals.GetPlayFromHandDamage",
+        "instruction_i": 495,
+        "byte_offset": 495,
+        "argument_shapes": [
+          [
+            "element_type",
+            "scope",
+            "var"
+          ],
+          [
+            "scope",
+            "var"
+          ],
+          [
+            "scope",
+            "var"
+          ]
+        ],
+        "output_parameter_indices": [
+          2
+        ],
+        "output_slots": [
+          "CallFunc_Array_Get_Item"
+        ]
+      },
+      {
+        "card": "card_event_forward_base_anzac",
+        "program": "locals.GetPlayFromHandDamage",
+        "instruction_i": 603,
+        "byte_offset": 603,
+        "argument_shapes": [
+          [
+            "element_type",
+            "scope",
+            "var"
+          ],
+          [
+            "scope",
+            "var"
+          ],
+          [
+            "scope",
+            "var"
+          ]
+        ],
+        "output_parameter_indices": [
+          2
+        ],
+        "output_slots": [
+          "CallFunc_Array_Get_Item"
+        ]
+      },
+      {
+        "card": "card_event_repel_the_attack",
+        "program": "steps",
+        "instruction_i": 20,
+        "byte_offset": 20,
+        "argument_shapes": [
+          [
+            "element_type",
+            "scope",
+            "var"
+          ],
+          [
+            "scope",
+            "var"
+          ],
+          [
+            "scope",
+            "var"
+          ]
+        ],
+        "output_parameter_indices": [
+          2
+        ],
+        "output_slots": [
+          "CallFunc_Array_Get_Item"
+        ]
+      },
+      {
+        "card": "card_event_repel_the_attack",
+        "program": "steps",
+        "instruction_i": 149,
+        "byte_offset": 149,
+        "argument_shapes": [
+          [
+            "element_type",
+            "scope",
+            "var"
+          ],
+          [
+            "scope",
+            "var"
+          ],
+          [
+            "scope",
+            "var"
+          ]
+        ],
+        "output_parameter_indices": [
+          2
+        ],
+        "output_slots": [
+          "CallFunc_Array_Get_Item"
+        ]
+      },
+      {
+        "card": "card_event_the_double_sunrise",
+        "program": "steps",
+        "instruction_i": 181,
+        "byte_offset": 181,
+        "argument_shapes": [
+          [
+            "element_type",
+            "scope",
+            "var"
+          ],
+          [
+            "scope",
+            "var"
+          ],
+          [
+            "scope",
+            "var"
+          ]
+        ],
+        "output_parameter_indices": [
+          2
+        ],
+        "output_slots": [
+          "CallFunc_Array_Get_Item"
+        ]
+      },
+      {
+        "card": "card_event_the_double_sunrise",
+        "program": "steps",
+        "instruction_i": 389,
+        "byte_offset": 389,
+        "argument_shapes": [
+          [
+            "element_type",
+            "scope",
+            "var"
+          ],
+          [
+            "scope",
+            "var"
+          ],
+          [
+            "scope",
+            "var"
+          ]
+        ],
+        "output_parameter_indices": [
+          2
+        ],
+        "output_slots": [
+          "CallFunc_Array_Get_Item"
+        ]
+      },
+      {
+        "card": "card_event_the_double_sunrise",
+        "program": "steps",
+        "instruction_i": 1126,
+        "byte_offset": 1126,
+        "argument_shapes": [
+          [
+            "element_type",
+            "scope",
+            "var"
+          ],
+          [
+            "scope",
+            "var"
+          ],
+          [
+            "scope",
+            "var"
+          ]
+        ],
+        "output_parameter_indices": [
+          2
+        ],
+        "output_slots": [
+          "CallFunc_Array_Get_Item_1"
+        ]
+      },
+      {
+        "card": "card_event_the_double_sunrise",
+        "program": "steps",
+        "instruction_i": 1334,
+        "byte_offset": 1334,
+        "argument_shapes": [
+          [
+            "element_type",
+            "scope",
+            "var"
+          ],
+          [
+            "scope",
+            "var"
+          ],
+          [
+            "scope",
+            "var"
+          ]
+        ],
+        "output_parameter_indices": [
+          2
+        ],
+        "output_slots": [
+          "CallFunc_Array_Get_Item_1"
+        ]
+      }
+    ]
+  },
+  "source_sha256": {
+    "card_ir": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b",
+    "dispatch": "b7188eace3ff3ad55eac7985b4b92e437f208e0b0e5ddc74e3cd572c0c79c7f3",
+    "selftest": "3b4755f50a06b630ded24d26eebad855280c4af64ec66e2760a509622831144a",
+    "selftest_registry": "228da8d4baf046288b3e608c8acc7d95b127069b43bb1f2adff4703fd5e5f769",
+    "project": "a3e4a46611488f0a4268a454734d06079286f7fd855ee342f2376b55285a7d0f",
+    "fixture": "d17ffd0882337d0106f453b5247570ea82bcab5797472b92f39ddbe7c3c3f53c",
+    "capture_script": "8d7ab6500ec392e72cbd86b99121b4316af282deb50f6865dba86953fe8d4368",
+    "audit_script": "c9bd70d9c04f56d5fdbc6d454824e36251dd64c372ee19c38501d9e5a0bfea64"
+  },
+  "limitations": [
+    "Read-only live UFunction ownership and instruction capture; the native function was not called and game memory was not written.",
+    "The capture includes two return paths but does not reconstruct complete generic property marshaling or all error behavior.",
+    "The local regression's null result for negative/out-of-range indices is simulator behavior and is not asserted to match the native function's output slot.",
+    "Static IR counts do not establish PvP eligibility, runtime reachability, or complete-card behavior.",
+    "The capture does not independently reconstruct all generic property-copy paths or every element type's output handling."
+  ]
+}
