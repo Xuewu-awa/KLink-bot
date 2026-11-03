@@ -1187,4 +1187,42 @@ internal static partial class SelfTest
             return "Array_Add must preserve object identity while mutating the original list";
         return null;
     }
+
+    private static string? KismetArrayClearResetAndReuse(CardDatabase db)
+    {
+        var (engine, state) = EmptyBoard(db);
+        var card = state.CreateWithId(PlainUnit, Side.Left, 1403, CardLocation.BoardHqLeft, 0);
+        var integers = new List<int> { 17, -3, 44 };
+        var objects = new List<object?> { card, "marker" };
+        var locals = new Dictionary<string, object?>
+        {
+            ["integers"] = integers,
+            ["objects"] = objects,
+            ["empty"] = new List<object?>(),
+            ["card"] = card,
+        };
+        KismetStep Clear(int index, string name) => new(index, "call", "Array_Clear",
+            new[] { new KismetExpr { Var = name } }, Array.Empty<int>(), null, null, -1, null, null);
+        KismetExpr Call(string name, params KismetExpr[] args) => new() { Call = name, Args = args };
+        var steps = new List<KismetStep>
+        {
+            Clear(0, "integers"),
+            Clear(1, "objects"),
+            Clear(2, "empty"),
+            SetMathResult(3, "integerIndex", Call("Array_Add", LocalExpr("integers"), IntExpr(9))),
+            SetMathResult(4, "objectIndex", Call("Array_Add", LocalExpr("objects"), LocalExpr("card"))),
+        };
+        var context = new EffectContext { Engine = engine, State = state, Controller = Side.Left };
+        long faults = engine.Api.Vm.FaultedPrograms;
+        var results = engine.Api.Vm.RunLocalProgramMulti(new KismetProgram(steps, 0), context, locals,
+            "integerIndex", "objectIndex");
+        if (engine.Api.Vm.FaultedPrograms != faults) return "Array_Clear dispatch probe unexpectedly faulted the VM";
+        if (!Equals(results["integerIndex"], 0) || !integers.SequenceEqual(new[] { 9 }))
+            return "Array_Clear must empty the original integer list so a later append starts at index zero";
+        if (!Equals(results["objectIndex"], 0) || objects.Count != 1 || !ReferenceEquals(objects[0], card))
+            return "Array_Clear must empty the original object list and preserve identity on later append";
+        if (((List<object?>)locals["empty"]!).Count != 0)
+            return "Array_Clear on an empty list must remain an empty list";
+        return null;
+    }
 }

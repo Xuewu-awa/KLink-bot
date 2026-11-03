@@ -16,9 +16,9 @@
 | IR程序容器 | 2626 |
 | 聚合静态依赖关联 | 18567 |
 | 依赖符号 | 440 |
-| 已索引JSON审计记录 | 577 |
-| 已人工关联局部证据单元 | 70 |
-| 局部证据绑定输入一致 | 3 |
+| 已索引JSON审计记录 | 579 |
+| 已人工关联局部证据单元 | 71 |
+| 局部证据绑定输入一致 | 0 |
 | 规划工作域（不作完成率分母） | 14 |
 | 明确验收条件 | 42 |
 | 当前权威PvP分母已建立 | 否 |
@@ -67,7 +67,7 @@ TSV中的null表示缺失/未知值；复杂字段为JSON单元格，完整类�
 | SpawnCardOnBattlefield | 138 | 138 | RULE-554/SpawnCardOnBattlefield/nonvisual-receipt |
 | SpawnCardInHandBySide | 135 | 137 | 尚未人工关联 |
 | JSON_Clear | 127 | 132 | 尚未人工关联 |
-| Array_Clear | 126 | 127 | 尚未人工关联 |
+| Array_Clear | 126 | 127 | KISMET-ARRAY/Array_Clear/list-reset-reuse-20261104 |
 | GetPlayFromHandDamage | 119 | 119 | 尚未人工关联 |
 | DestroyCard | 112 | 113 | 尚未人工关联 |
 | GetAllCards | 100 | 103 | 尚未人工关联 |
@@ -85,6 +85,6 @@ python tools/test-audit-matrix.py
 
 更新 `klink bot/docs/audit-matrix-reviews.json` 维护局部证据、当前待办及有证据的PvP范围判定。
 绑定报告或源码改变、未检查EXE或EXE不匹配时，局部证据显示失效/未检查；不自动继承绿色状态。
-当前70条局部单元已人工关联；其他旧审计成果为待整理，不表示全部重做。
+当前71条局部单元已人工关联；其他旧审计成果为待整理，不表示全部重做。
 完整单卡认证需要另行完成：当前版本资产、PvP范围、全部自定义/继承/原生路径、分支及联动验证。
 第一版不允许以手填百分比或局部共享测试自动认证整卡；完整认证准入尚待独立闭合。

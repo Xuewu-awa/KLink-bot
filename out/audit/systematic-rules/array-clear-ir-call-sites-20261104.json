@@ -1,0 +1,1549 @@
+{
+  "schema_version": 1,
+  "source_ir": "klink bot/docs/card-ir.json",
+  "source_ir_sha256": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b",
+  "function": "/Script/Engine.KismetArrayLibrary.Array_Clear",
+  "call_count": 140,
+  "asset_count": 126,
+  "sites": [
+    {
+      "asset": "card_event_the_double_sunrise",
+      "path": "/steps/59",
+      "bytecode_offset": 2043,
+      "statement_index": 2043,
+      "target": {
+        "var": "possibleUnits",
+        "scope": "instance",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_unit_3_7_inch_mountain_howitzer",
+      "path": "/steps/13",
+      "bytecode_offset": 566,
+      "statement_index": 382,
+      "target": {
+        "var": "stuffToDamage",
+        "scope": "instance",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_event_atlantic_convoy",
+      "path": "/steps/36",
+      "bytecode_offset": 1220,
+      "statement_index": 1220,
+      "target": {
+        "var": "possibleCards",
+        "scope": "instance",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_event_night_raid",
+      "path": "/steps/43",
+      "bytecode_offset": 1533,
+      "statement_index": 1533,
+      "target": {
+        "var": "possibleOrders",
+        "scope": "instance",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_event_the_empire",
+      "path": "/steps/1",
+      "bytecode_offset": 15,
+      "statement_index": 15,
+      "target": {
+        "var": "cardsToDamage",
+        "scope": "instance",
+        "element_type": "Int"
+      }
+    },
+    {
+      "asset": "card_unit_22nd_guards_brigade",
+      "path": "/steps/50",
+      "bytecode_offset": 1685,
+      "statement_index": 1685,
+      "target": {
+        "var": "cardsToDamage",
+        "scope": "instance",
+        "element_type": "Int"
+      }
+    },
+    {
+      "asset": "card_unit_matilda_mk_iv",
+      "path": "/steps/28",
+      "bytecode_offset": 758,
+      "statement_index": 758,
+      "target": {
+        "var": "possibleTargets",
+        "scope": "instance",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_event_bletchley_park",
+      "path": "/steps/55",
+      "bytecode_offset": 1866,
+      "statement_index": 1866,
+      "target": {
+        "var": "affectedCards",
+        "scope": "instance",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_event_bletchley_park",
+      "path": "/steps/56",
+      "bytecode_offset": 1907,
+      "statement_index": 1907,
+      "target": {
+        "var": "cardIDs",
+        "scope": "instance",
+        "element_type": "Int"
+      }
+    },
+    {
+      "asset": "card_event_bletchley_park",
+      "path": "/steps/60",
+      "bytecode_offset": 2026,
+      "statement_index": 2026,
+      "target": {
+        "var": "affectedCards",
+        "scope": "instance",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_event_bletchley_park",
+      "path": "/steps/61",
+      "bytecode_offset": 2067,
+      "statement_index": 2067,
+      "target": {
+        "var": "cardIDs",
+        "scope": "instance",
+        "element_type": "Int"
+      }
+    },
+    {
+      "asset": "card_event_second_chance",
+      "path": "/steps/2",
+      "bytecode_offset": 20,
+      "statement_index": 20,
+      "target": {
+        "var": "possibleCards",
+        "scope": "instance",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_unit_short_sunderland",
+      "path": "/steps/1",
+      "bytecode_offset": 15,
+      "statement_index": 15,
+      "target": {
+        "var": "possibleCards",
+        "scope": "instance",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_event_refit_bia",
+      "path": "/steps/39",
+      "bytecode_offset": 1303,
+      "statement_index": 1303,
+      "target": {
+        "var": "spitfireToDraw",
+        "scope": "instance",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_event_strong_bond",
+      "path": "/steps/13",
+      "bytecode_offset": 607,
+      "statement_index": 607,
+      "target": {
+        "var": "possibleCards",
+        "scope": "instance",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_event_baker_street_irregulars",
+      "path": "/locals/GetChooseSpawnCards/3",
+      "bytecode_offset": 85,
+      "statement_index": 85,
+      "target": {
+        "var": "PossibleCards",
+        "scope": "instance",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_event_double_strength",
+      "path": "/steps/33",
+      "bytecode_offset": 1194,
+      "statement_index": 1194,
+      "target": {
+        "var": "possibleCards",
+        "scope": "instance",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_event_resourcefulness",
+      "path": "/steps/34",
+      "bytecode_offset": 1190,
+      "statement_index": 1190,
+      "target": {
+        "var": "possibleCards",
+        "scope": "instance",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_unit_churchill_mk_iii_avre",
+      "path": "/steps/21",
+      "bytecode_offset": 581,
+      "statement_index": 581,
+      "target": {
+        "var": "affectedUnits",
+        "scope": "instance",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_event_colossus",
+      "path": "/steps/80",
+      "bytecode_offset": 2647,
+      "statement_index": 2647,
+      "target": {
+        "var": "possibleOrders",
+        "scope": "instance",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_event_pams",
+      "path": "/locals/GetChooseSpawnCards/1",
+      "bytecode_offset": 5,
+      "statement_index": 5,
+      "target": {
+        "var": "PossibleCards",
+        "scope": "instance",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_event_seac",
+      "path": "/steps/32",
+      "bytecode_offset": 1211,
+      "statement_index": 1211,
+      "target": {
+        "var": "possibleCards",
+        "scope": "instance",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_event_the_rock_of_gibraltar",
+      "path": "/locals/GetChooseSpawnCards/3",
+      "bytecode_offset": 85,
+      "statement_index": 85,
+      "target": {
+        "var": "PossibleCards",
+        "scope": "instance",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_unit_2nd_west_africa",
+      "path": "/locals/GetChooseSpawnCards/1",
+      "bytecode_offset": 5,
+      "statement_index": 5,
+      "target": {
+        "var": "PossibleCards",
+        "scope": "instance",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_unit_46th_indian_brigade",
+      "path": "/steps/31",
+      "bytecode_offset": 1118,
+      "statement_index": 1118,
+      "target": {
+        "var": "possibleCards",
+        "scope": "instance",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_event_supply_shortage",
+      "path": "/steps/46",
+      "bytecode_offset": 1578,
+      "statement_index": 1578,
+      "target": {
+        "var": "affectedCardsID",
+        "scope": "instance",
+        "element_type": "Int"
+      }
+    },
+    {
+      "asset": "card_unit_1er_marins_commandos",
+      "path": "/steps/37",
+      "bytecode_offset": 1086,
+      "statement_index": 1086,
+      "target": {
+        "var": "PossibleCards",
+        "scope": "instance",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_unit_31e_algiers",
+      "path": "/steps/96",
+      "bytecode_offset": 2981,
+      "statement_index": 2981,
+      "target": {
+        "var": "newAdjacentCardIDs",
+        "scope": "instance",
+        "element_type": "Int"
+      }
+    },
+    {
+      "asset": "card_event_lurking_danger",
+      "path": "/steps/40",
+      "bytecode_offset": 1293,
+      "statement_index": 1293,
+      "target": {
+        "var": "possibleCards",
+        "scope": "instance",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_event_eagle_claws",
+      "path": "/steps/18",
+      "bytecode_offset": 507,
+      "statement_index": 507,
+      "target": {
+        "var": "_cardsToDamage",
+        "scope": "instance",
+        "element_type": "Int"
+      }
+    },
+    {
+      "asset": "card_unit_arado_ar_196",
+      "path": "/steps/1",
+      "bytecode_offset": 15,
+      "statement_index": 15,
+      "target": {
+        "var": "orderCardid",
+        "scope": "instance",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_unit_marder_iii_h",
+      "path": "/steps/49",
+      "bytecode_offset": 1598,
+      "statement_index": 1598,
+      "target": {
+        "var": "possibleCards",
+        "scope": "instance",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_unit_me_262_schwalbe",
+      "path": "/steps/21",
+      "bytecode_offset": 612,
+      "statement_index": 612,
+      "target": {
+        "var": "targets",
+        "scope": "instance",
+        "element_type": "Int"
+      }
+    },
+    {
+      "asset": "card_unit_sd_kfz222x",
+      "path": "/steps/95",
+      "bytecode_offset": 2952,
+      "statement_index": 2952,
+      "target": {
+        "var": "newAdjacentCardIDs",
+        "scope": "instance",
+        "element_type": "Int"
+      }
+    },
+    {
+      "asset": "card_event_crossfire",
+      "path": "/steps/24",
+      "bytecode_offset": 737,
+      "statement_index": 737,
+      "target": {
+        "var": "cardsToDamage",
+        "scope": "instance",
+        "element_type": "Int"
+      }
+    },
+    {
+      "asset": "card_unit_maus",
+      "path": "/steps/31",
+      "bytecode_offset": 1008,
+      "statement_index": 1008,
+      "target": {
+        "var": "cardsToDestroy",
+        "scope": "instance",
+        "element_type": "Int"
+      }
+    },
+    {
+      "asset": "card_unit_119_grenadier",
+      "path": "/steps/63",
+      "bytecode_offset": 1957,
+      "statement_index": 1957,
+      "target": {
+        "var": "affectedUnits",
+        "scope": "instance",
+        "element_type": "Int"
+      }
+    },
+    {
+      "asset": "card_unit_15_aufklarungs",
+      "path": "/locals/GetChooseSpawnCards/1",
+      "bytecode_offset": 5,
+      "statement_index": 5,
+      "target": {
+        "var": "PossibleCards",
+        "scope": "instance",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_event_gathering_storm",
+      "path": "/steps/81",
+      "bytecode_offset": 2695,
+      "statement_index": 2695,
+      "target": {
+        "var": "infantryCardid",
+        "scope": "instance",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_event_gathering_storm",
+      "path": "/steps/82",
+      "bytecode_offset": 2736,
+      "statement_index": 2736,
+      "target": {
+        "var": "tankCardid",
+        "scope": "instance",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_event_gathering_storm",
+      "path": "/steps/83",
+      "bytecode_offset": 2777,
+      "statement_index": 2777,
+      "target": {
+        "var": "artilleryCardid",
+        "scope": "instance",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_event_gathering_storm",
+      "path": "/steps/84",
+      "bytecode_offset": 2818,
+      "statement_index": 2818,
+      "target": {
+        "var": "fighterCardid",
+        "scope": "instance",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_event_fliegerfuhrer_atlantik",
+      "path": "/steps/47",
+      "bytecode_offset": 1589,
+      "statement_index": 1589,
+      "target": {
+        "var": "possibleCards",
+        "scope": "instance",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_location_german_scen3",
+      "path": "/steps/327",
+      "bytecode_offset": 11813,
+      "statement_index": 11813,
+      "target": {
+        "var": "notPinnedUnits",
+        "scope": "instance",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_event_harass",
+      "path": "/locals/PickRandomCard/3",
+      "bytecode_offset": 73,
+      "statement_index": 73,
+      "target": {
+        "var": "possibleCards",
+        "scope": "local",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_unit_fieseler_156",
+      "path": "/steps/34",
+      "bytecode_offset": 1109,
+      "statement_index": 1109,
+      "target": {
+        "var": "inactiveGotchasInHand",
+        "scope": "instance",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_event_betasom",
+      "path": "/locals/GetChooseSpawnCards/1",
+      "bytecode_offset": 5,
+      "statement_index": 5,
+      "target": {
+        "var": "possibleCards",
+        "scope": "local",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_event_naval_engagement",
+      "path": "/steps/12",
+      "bytecode_offset": 355,
+      "statement_index": 355,
+      "target": {
+        "var": "cardsToDestroy",
+        "scope": "instance",
+        "element_type": "Int"
+      }
+    },
+    {
+      "asset": "card_event_regia_marina",
+      "path": "/steps/2",
+      "bytecode_offset": 42,
+      "statement_index": 26,
+      "target": {
+        "var": "possible_cards",
+        "scope": "instance",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_event_regia_marina",
+      "path": "/steps/22",
+      "bytecode_offset": 1079,
+      "statement_index": 747,
+      "target": {
+        "var": "possible_cards",
+        "scope": "instance",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_unit_breda_ba_65",
+      "path": "/steps/14",
+      "bytecode_offset": 451,
+      "statement_index": 451,
+      "target": {
+        "var": "cardsToDamage",
+        "scope": "instance",
+        "element_type": "Int"
+      }
+    },
+    {
+      "asset": "card_unit_fiat_cr_32",
+      "path": "/steps/1",
+      "bytecode_offset": 15,
+      "statement_index": 15,
+      "target": {
+        "var": "possibleUnits",
+        "scope": "instance",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_unit_ki_27_nate",
+      "path": "/steps/31",
+      "bytecode_offset": 1018,
+      "statement_index": 1018,
+      "target": {
+        "var": "possibleCards",
+        "scope": "instance",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_unit_ki_44_tojo",
+      "path": "/steps/27",
+      "bytecode_offset": 877,
+      "statement_index": 877,
+      "target": {
+        "var": "possibleCards",
+        "scope": "instance",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_unit_nakajima_b5n",
+      "path": "/steps/22",
+      "bytecode_offset": 568,
+      "statement_index": 568,
+      "target": {
+        "var": "cards_ids_to_damage",
+        "scope": "instance",
+        "element_type": "Int"
+      }
+    },
+    {
+      "asset": "card_unit_p1y_ginga",
+      "path": "/steps/27",
+      "bytecode_offset": 872,
+      "statement_index": 872,
+      "target": {
+        "var": "cardsToDamage",
+        "scope": "instance",
+        "element_type": "Int"
+      }
+    },
+    {
+      "asset": "card_event_experimental_flight",
+      "path": "/steps/36",
+      "bytecode_offset": 1198,
+      "statement_index": 1198,
+      "target": {
+        "var": "possibleCards",
+        "scope": "instance",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_unit_dinah_iii",
+      "path": "/steps/34",
+      "bytecode_offset": 1185,
+      "statement_index": 1185,
+      "target": {
+        "var": "1CostUnits",
+        "scope": "instance",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_event_jungle_warfare",
+      "path": "/steps/44",
+      "bytecode_offset": 1520,
+      "statement_index": 1520,
+      "target": {
+        "var": "PossibleCards",
+        "scope": "instance",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_event_under_fire_japan",
+      "path": "/steps/37",
+      "bytecode_offset": 1192,
+      "statement_index": 1192,
+      "target": {
+        "var": "_cardsToDamage",
+        "scope": "instance",
+        "element_type": "Int"
+      }
+    },
+    {
+      "asset": "card_unit_24th_cavalry_regiment",
+      "path": "/steps/34",
+      "bytecode_offset": 1169,
+      "statement_index": 1169,
+      "target": {
+        "var": "24thCards",
+        "scope": "instance",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_unit_56th_recon",
+      "path": "/steps/16",
+      "bytecode_offset": 434,
+      "statement_index": 434,
+      "target": {
+        "var": "cards_to_damage",
+        "scope": "instance",
+        "element_type": "Int"
+      }
+    },
+    {
+      "asset": "card_unit_ki_49_donryu",
+      "path": "/steps/17",
+      "bytecode_offset": 549,
+      "statement_index": 549,
+      "target": {
+        "var": "cardsToDestroy",
+        "scope": "instance",
+        "element_type": "Int"
+      }
+    },
+    {
+      "asset": "card_unit_kokuras_sword",
+      "path": "/steps/10",
+      "bytecode_offset": 249,
+      "statement_index": 249,
+      "target": {
+        "var": "possibleCards",
+        "scope": "instance",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_event_grand_plans",
+      "path": "/steps/9",
+      "bytecode_offset": 305,
+      "statement_index": 305,
+      "target": {
+        "var": "possibleCards",
+        "scope": "instance",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_unit_73rd_infantry_regiment",
+      "path": "/steps/1",
+      "bytecode_offset": 15,
+      "statement_index": 15,
+      "target": {
+        "var": "unitsToTrigger",
+        "scope": "instance",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_event_mikura",
+      "path": "/steps/36",
+      "bytecode_offset": 1277,
+      "statement_index": 1277,
+      "target": {
+        "var": "mikuraCardid",
+        "scope": "instance",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_event_the_tide_turns",
+      "path": "/steps/54",
+      "bytecode_offset": 1611,
+      "statement_index": 1611,
+      "target": {
+        "var": "cardIDS",
+        "scope": "instance",
+        "element_type": "Int"
+      }
+    },
+    {
+      "asset": "card_location_japan_scen2",
+      "path": "/steps/146",
+      "bytecode_offset": 6042,
+      "statement_index": 6042,
+      "target": {
+        "var": "units_opposite",
+        "scope": "instance",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_unit_type_93_cam1",
+      "path": "/steps/19",
+      "bytecode_offset": 694,
+      "statement_index": 694,
+      "target": {
+        "var": "cardsAffected",
+        "scope": "instance",
+        "element_type": "Int"
+      }
+    },
+    {
+      "asset": "card_unit_type_93_cam1",
+      "path": "/steps/125",
+      "bytecode_offset": 3726,
+      "statement_index": 3726,
+      "target": {
+        "var": "cardsAffected",
+        "scope": "instance",
+        "element_type": "Int"
+      }
+    },
+    {
+      "asset": "card_unit_type_97_cam1",
+      "path": "/steps/35",
+      "bytecode_offset": 1065,
+      "statement_index": 1065,
+      "target": {
+        "var": "cardsAffected",
+        "scope": "instance",
+        "element_type": "Int"
+      }
+    },
+    {
+      "asset": "card_unit_type_97_cam1",
+      "path": "/steps/110",
+      "bytecode_offset": 3199,
+      "statement_index": 3199,
+      "target": {
+        "var": "cardsAffected",
+        "scope": "instance",
+        "element_type": "Int"
+      }
+    },
+    {
+      "asset": "card_event_on_the_ascend",
+      "path": "/steps/9",
+      "bytecode_offset": 299,
+      "statement_index": 299,
+      "target": {
+        "var": "affectedUnits",
+        "scope": "instance",
+        "element_type": "Int"
+      }
+    },
+    {
+      "asset": "card_event_take_liberty",
+      "path": "/steps/15",
+      "bytecode_offset": 589,
+      "statement_index": 589,
+      "target": {
+        "var": "Card IDs",
+        "scope": "instance",
+        "element_type": "Int"
+      }
+    },
+    {
+      "asset": "card_event_edge_of_the_empire",
+      "path": "/steps/19",
+      "bytecode_offset": 571,
+      "statement_index": 571,
+      "target": {
+        "var": "cardIDs",
+        "scope": "instance",
+        "element_type": "Int"
+      }
+    },
+    {
+      "asset": "card_event_rain4_monsoon_rain",
+      "path": "/locals/DiscardHighestCostCardBySide/22",
+      "bytecode_offset": 705,
+      "statement_index": 705,
+      "target": {
+        "var": "possibleCards",
+        "scope": "local",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_event_storm3_tropical_storm",
+      "path": "/steps/17",
+      "bytecode_offset": 583,
+      "statement_index": 583,
+      "target": {
+        "var": "Card IDs",
+        "scope": "instance",
+        "element_type": "Int"
+      }
+    },
+    {
+      "asset": "card_event_sunny4_scorching_sun",
+      "path": "/steps/50",
+      "bytecode_offset": 1654,
+      "statement_index": 1654,
+      "target": {
+        "var": "unitsToPlay",
+        "scope": "instance",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_event_agency_africa",
+      "path": "/steps/26",
+      "bytecode_offset": 903,
+      "statement_index": 903,
+      "target": {
+        "var": "possibleCards",
+        "scope": "instance",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_event_frontal_defense",
+      "path": "/steps/13",
+      "bytecode_offset": 392,
+      "statement_index": 392,
+      "target": {
+        "var": "cardsToDamage",
+        "scope": "instance",
+        "element_type": "Int"
+      }
+    },
+    {
+      "asset": "card_event_orp_blyskawica",
+      "path": "/steps/46",
+      "bytecode_offset": 1750,
+      "statement_index": 1750,
+      "target": {
+        "var": "possibleOrders",
+        "scope": "instance",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_event_orp_general_haller",
+      "path": "/steps/22",
+      "bytecode_offset": 721,
+      "statement_index": 721,
+      "target": {
+        "var": "cardsToConvert",
+        "scope": "instance",
+        "element_type": "Int"
+      }
+    },
+    {
+      "asset": "card_event_pilot_escape",
+      "path": "/locals/GetChooseSpawnCards/1",
+      "bytecode_offset": 5,
+      "statement_index": 5,
+      "target": {
+        "var": "possibleCards",
+        "scope": "local",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_unit_p37los",
+      "path": "/steps/21",
+      "bytecode_offset": 729,
+      "statement_index": 485,
+      "target": {
+        "var": "possibleCards",
+        "scope": "instance"
+      }
+    },
+    {
+      "asset": "card_event_bomber_cost",
+      "path": "/steps/39",
+      "bytecode_offset": 1279,
+      "statement_index": 1279,
+      "target": {
+        "var": "maxBombers",
+        "scope": "instance",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_event_bomber_cost",
+      "path": "/locals/CanPlayFromHand/1",
+      "bytecode_offset": 5,
+      "statement_index": 5,
+      "target": {
+        "var": "possibleTargets",
+        "scope": "instance",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_event_ruthless_planning",
+      "path": "/steps/31",
+      "bytecode_offset": 1106,
+      "statement_index": 1106,
+      "target": {
+        "var": "CardsWithDestruction",
+        "scope": "instance",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_event_parade",
+      "path": "/steps/34",
+      "bytecode_offset": 1248,
+      "statement_index": 1248,
+      "target": {
+        "var": "Units_InSameDeck",
+        "scope": "instance",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_event_arctic_convoy",
+      "path": "/steps/2",
+      "bytecode_offset": 20,
+      "statement_index": 20,
+      "target": {
+        "var": "possibleCards",
+        "scope": "instance",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_event_red_banner",
+      "path": "/locals/Random Card/6",
+      "bytecode_offset": 183,
+      "statement_index": 183,
+      "target": {
+        "var": "possibleCards",
+        "scope": "local",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_event_ural_factories",
+      "path": "/locals/Random Card/6",
+      "bytecode_offset": 183,
+      "statement_index": 183,
+      "target": {
+        "var": "possibleCards",
+        "scope": "local",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_event_zhukov",
+      "path": "/steps/42",
+      "bytecode_offset": 1423,
+      "statement_index": 1423,
+      "target": {
+        "var": "possibleCards",
+        "scope": "instance",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_unit_13th_rifle_regiment",
+      "path": "/steps/28",
+      "bytecode_offset": 916,
+      "statement_index": 916,
+      "target": {
+        "var": "PossibleCards",
+        "scope": "instance",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_unit_isu_152",
+      "path": "/steps/22",
+      "bytecode_offset": 727,
+      "statement_index": 727,
+      "target": {
+        "var": "cardsToDestroy",
+        "scope": "instance",
+        "element_type": "Int"
+      }
+    },
+    {
+      "asset": "card_unit_yak_9",
+      "path": "/steps/34",
+      "bytecode_offset": 1133,
+      "statement_index": 1133,
+      "target": {
+        "var": "possibleCards",
+        "scope": "instance",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_unit_t_34_76d",
+      "path": "/steps/32",
+      "bytecode_offset": 1183,
+      "statement_index": 1183,
+      "target": {
+        "var": "t34ToDraw",
+        "scope": "instance",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_event_stand_together_brothers",
+      "path": "/locals/RandomlyChooseTank/5",
+      "bytecode_offset": 112,
+      "statement_index": 112,
+      "target": {
+        "var": "possibleCards",
+        "scope": "local",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_event_strategic_focus",
+      "path": "/steps/25",
+      "bytecode_offset": 798,
+      "statement_index": 798,
+      "target": {
+        "var": "ReceiverIDs",
+        "scope": "instance",
+        "element_type": "Int"
+      }
+    },
+    {
+      "asset": "card_event_promotion",
+      "path": "/steps/37",
+      "bytecode_offset": 1257,
+      "statement_index": 1257,
+      "target": {
+        "var": "possibleCards",
+        "scope": "instance",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_unit_152mm_howitzer_gun",
+      "path": "/steps/18",
+      "bytecode_offset": 595,
+      "statement_index": 595,
+      "target": {
+        "var": "cardsToDamage",
+        "scope": "instance",
+        "element_type": "Int"
+      }
+    },
+    {
+      "asset": "card_unit_6th_motor_rifles_sov",
+      "path": "/steps/4",
+      "bytecode_offset": 171,
+      "statement_index": 171,
+      "target": {
+        "var": "cardsToConvert",
+        "scope": "instance",
+        "element_type": "Int"
+      }
+    },
+    {
+      "asset": "card_unit_tupolev_tu_2",
+      "path": "/steps/38",
+      "bytecode_offset": 1828,
+      "statement_index": 1264,
+      "target": {
+        "var": "my_deck_units",
+        "scope": "instance",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_event_campaign_moscow1_retreat",
+      "path": "/locals/getUnpinnedEnemyUnits/1",
+      "bytecode_offset": 5,
+      "statement_index": 5,
+      "target": {
+        "var": "_unpinnedEnemyUnits",
+        "scope": "local",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_event_ural_factories_cam1",
+      "path": "/steps/110",
+      "bytecode_offset": 3941,
+      "statement_index": 3941,
+      "target": {
+        "var": "CardsToChek",
+        "scope": "instance",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_event_ural_factories_cam1",
+      "path": "/steps/114",
+      "bytecode_offset": 4155,
+      "statement_index": 4155,
+      "target": {
+        "var": "cardsToSpawn",
+        "scope": "instance",
+        "element_type": "Name"
+      }
+    },
+    {
+      "asset": "card_event_ural_factories_cam1",
+      "path": "/steps/115",
+      "bytecode_offset": 4196,
+      "statement_index": 4196,
+      "target": {
+        "var": "cardsToDestroy",
+        "scope": "instance",
+        "element_type": "Int"
+      }
+    },
+    {
+      "asset": "card_unit_t_35_winter",
+      "path": "/steps/25",
+      "bytecode_offset": 712,
+      "statement_index": 712,
+      "target": {
+        "var": "locationIDs",
+        "scope": "instance",
+        "element_type": "Int"
+      }
+    },
+    {
+      "asset": "card_unit_bryansk_irregulars",
+      "path": "/steps/35",
+      "bytecode_offset": 1186,
+      "statement_index": 1186,
+      "target": {
+        "var": "cards_to_damage",
+        "scope": "instance",
+        "element_type": "Int"
+      }
+    },
+    {
+      "asset": "card_unit_p_39_airacobra",
+      "path": "/steps/20",
+      "bytecode_offset": 630,
+      "statement_index": 630,
+      "target": {
+        "var": "possibleUnits",
+        "scope": "instance",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_unit_p_61_black_widow",
+      "path": "/steps/33",
+      "bytecode_offset": 1055,
+      "statement_index": 1055,
+      "target": {
+        "var": "FriendlyAirUnits",
+        "scope": "instance",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_event_mobilization",
+      "path": "/steps/2",
+      "bytecode_offset": 20,
+      "statement_index": 20,
+      "target": {
+        "var": "Units",
+        "scope": "instance",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_event_strategic_bombing",
+      "path": "/steps/20",
+      "bytecode_offset": 571,
+      "statement_index": 571,
+      "target": {
+        "var": "cardsToDamage",
+        "scope": "instance",
+        "element_type": "Int"
+      }
+    },
+    {
+      "asset": "card_unit_10th_engineering_battalion",
+      "path": "/steps/91",
+      "bytecode_offset": 3005,
+      "statement_index": 3005,
+      "target": {
+        "var": "oldAdjacentCardIDs",
+        "scope": "instance",
+        "element_type": "Int"
+      }
+    },
+    {
+      "asset": "card_unit_10th_engineering_battalion",
+      "path": "/steps/93",
+      "bytecode_offset": 3047,
+      "statement_index": 3047,
+      "target": {
+        "var": "newAdjacentCardIDs",
+        "scope": "instance",
+        "element_type": "Int"
+      }
+    },
+    {
+      "asset": "card_unit_corsair_f4u_1d",
+      "path": "/steps/1",
+      "bytecode_offset": 15,
+      "statement_index": 15,
+      "target": {
+        "var": "possibleUnits",
+        "scope": "instance",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_unit_p51_mustang",
+      "path": "/steps/25",
+      "bytecode_offset": 756,
+      "statement_index": 756,
+      "target": {
+        "var": "possibleTargets",
+        "scope": "instance",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_unit_tbf_avanger",
+      "path": "/steps/26",
+      "bytecode_offset": 765,
+      "statement_index": 765,
+      "target": {
+        "var": "possibleTargets",
+        "scope": "instance",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_unit_calliope",
+      "path": "/steps/30",
+      "bytecode_offset": 794,
+      "statement_index": 794,
+      "target": {
+        "var": "possibleTargets",
+        "scope": "instance",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_unit_cyclone_division",
+      "path": "/locals/SpawnShermanInHand/1",
+      "bytecode_offset": 5,
+      "statement_index": 5,
+      "target": {
+        "var": "ShermanCards",
+        "scope": "local",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_event_allied_research_effort",
+      "path": "/steps/47",
+      "bytecode_offset": 1484,
+      "statement_index": 1484,
+      "target": {
+        "var": "possibleCards",
+        "scope": "instance",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_unit_32nd_infantry_regiment",
+      "path": "/steps/31",
+      "bytecode_offset": 1096,
+      "statement_index": 1096,
+      "target": {
+        "var": "32ndCardid",
+        "scope": "instance",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_unit_c47_skytrain",
+      "path": "/steps/37",
+      "bytecode_offset": 1156,
+      "statement_index": 1156,
+      "target": {
+        "var": "possibleCards",
+        "scope": "instance",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_unit_usaaf_spitfire_ix",
+      "path": "/steps/1",
+      "bytecode_offset": 15,
+      "statement_index": 15,
+      "target": {
+        "var": "possibleCards",
+        "scope": "instance",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_unit_179th_tomahawks",
+      "path": "/steps/29",
+      "bytecode_offset": 868,
+      "statement_index": 868,
+      "target": {
+        "var": "possibleTargets",
+        "scope": "instance",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_unit_327th_pathfinders",
+      "path": "/steps/45",
+      "bytecode_offset": 1391,
+      "statement_index": 1391,
+      "target": {
+        "var": "_possibleCardsToRetreat",
+        "scope": "instance",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_event_hidden_plans",
+      "path": "/steps/45",
+      "bytecode_offset": 1607,
+      "statement_index": 1607,
+      "target": {
+        "var": "Possible Targets",
+        "scope": "instance",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_event_swift_response",
+      "path": "/steps/1",
+      "bytecode_offset": 15,
+      "statement_index": 15,
+      "target": {
+        "var": "possibleUnits",
+        "scope": "instance",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_unit_1st_florida",
+      "path": "/steps/40",
+      "bytecode_offset": 1279,
+      "statement_index": 1279,
+      "target": {
+        "var": "possibleUnits",
+        "scope": "instance",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_event_stars_n_stripes",
+      "path": "/steps/26",
+      "bytecode_offset": 745,
+      "statement_index": 745,
+      "target": {
+        "var": "_cardsToDamage",
+        "scope": "instance",
+        "element_type": "Int"
+      }
+    },
+    {
+      "asset": "card_unit_507th_pir",
+      "path": "/steps/33",
+      "bytecode_offset": 1000,
+      "statement_index": 1000,
+      "target": {
+        "var": "possibleTargets",
+        "scope": "instance",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_unit_p_40_k",
+      "path": "/steps/9",
+      "bytecode_offset": 277,
+      "statement_index": 277,
+      "target": {
+        "var": "Cards",
+        "scope": "instance",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_event_strike_group",
+      "path": "/steps/55",
+      "bytecode_offset": 1892,
+      "statement_index": 1892,
+      "target": {
+        "var": "possibleCards",
+        "scope": "instance",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_event_usaaf",
+      "path": "/steps/54",
+      "bytecode_offset": 1793,
+      "statement_index": 1793,
+      "target": {
+        "var": "BomberCardid",
+        "scope": "instance",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_event_usaaf",
+      "path": "/steps/55",
+      "bytecode_offset": 1834,
+      "statement_index": 1834,
+      "target": {
+        "var": "fighterCardid",
+        "scope": "instance",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_event_unity_is_strength_cam1",
+      "path": "/steps/120",
+      "bytecode_offset": 4351,
+      "statement_index": 4351,
+      "target": {
+        "var": "infantryUnits",
+        "scope": "instance",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_unit_164th_infantry_regiment_cam1",
+      "path": "/steps/55",
+      "bytecode_offset": 1505,
+      "statement_index": 1505,
+      "target": {
+        "var": "Cards",
+        "scope": "instance",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_unit_164th_infantry_regiment",
+      "path": "/steps/38",
+      "bytecode_offset": 1225,
+      "statement_index": 1225,
+      "target": {
+        "var": "possibleUnits",
+        "scope": "instance",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_event_supply_priorities",
+      "path": "/steps/1",
+      "bytecode_offset": 15,
+      "statement_index": 15,
+      "target": {
+        "var": "damagedCards",
+        "scope": "instance",
+        "element_type": "Object"
+      }
+    },
+    {
+      "asset": "card_unit_p47d_25_waw",
+      "path": "/steps/26",
+      "bytecode_offset": 895,
+      "statement_index": 895,
+      "target": {
+        "var": "OppositeUnitsFrontline",
+        "scope": "instance",
+        "element_type": "Object"
+      }
+    }
+  ]
+}

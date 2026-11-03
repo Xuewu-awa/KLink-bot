@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "rule": "Array_Clear",
+  "date": "2026-11-04",
+  "status": "partial simulator-observable contract; current native identity capture blocked",
+  "findings": [
+    "SDK and previous captures declare Array_Clear(const TArray<int32>& TargetArray); prior RULE-513 records 9 controlled execution cases for the reconstructed native thunk, with property, allocator, element destructor and FFrame helpers supplied by fixtures.",
+    "Current card IR contains 140 Array_Clear sites across 126 assets; this is an inventory, not semantic certification of those cards.",
+    "BotSim verifies the dispatch clears existing integer and object lists in place, leaves an empty list empty, and permits subsequent append at index zero. It does not establish TArray capacity retention, real FProperty destruction, allocator behavior, GC, or all element types.",
+    "A fresh read-only UObject layout probe against the running PID returned zeroed FUObjectArray header fields and sample entries; the probe did not establish the current Array_Clear UFunction identity or RVA. The prior process index was stale and was not reused."
+  ],
+  "evidence": {
+    "prior_native_report": "out/audit/systematic-rules/array-unwind-chain-reconstruction-and-native-return-semantics-20261028.json",
+    "prior_wrapper_report": "out/audit/systematic-rules/autoplay-list-api-reset-sites-and-native-fragment-boundary-20261028.json",
+    "ir_inventory": "out/audit/systematic-rules/array-clear-ir-call-sites-20261104.json",
+    "ir_inventory_sha256": "925ff148ac1091154df7389e557593acb9ae61fdcfaa5e94939dd2f229e44bbd",
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305"
+  },
+  "verification": {
+    "botsim_full_selftest": "passed",
+    "passed_cases": 1121,
+    "new_test": "Kismet array: Array_Clear in-place reset and reuse",
+    "current_live_capture": "unavailable: current FUObjectArray header fields and sample entries read zero; no native identity asserted"
+  },
+  "limitations": [
+    "No current-client Array_Clear capture was obtained.",
+    "No full native TArray lifecycle or FProperty behavior certified.",
+    "No card is promoted to fully audited based on this primitive.",
+    "Simulator test covers the implemented List-backed observation contract only."
+  ]
+}

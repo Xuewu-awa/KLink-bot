@@ -9221,6 +9221,29 @@
         "Native Array_Add was not invoked; the append helper's return meaning, result property, and generic property lifecycle remain unresolved.",
         "Static IR call counts do not establish PvP eligibility, runtime reachability, or full-card behavior."
       ]
+    },
+    {
+      "id": "KISMET-ARRAY/Array_Clear/list-reset-reuse-20261104",
+      "symbol": "Array_Clear",
+      "modes": [0],
+      "status": "partial",
+      "validated_scope": "BotSim List-backed in-place clear of integer/object arrays and subsequent append; IR call-site inventory only.",
+      "report": "out/audit/systematic-rules/array-clear-audit-20261104.json",
+      "report_sha256": "50808b4f974b03fec9b141de677de3eabb9b56495e1da4d6d4a27b905de1d497",
+      "client_exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+      "source_bindings": {
+        "tools/BotSim/SelfTest.cs": "8b70a1d71415eb6a0ac5c3fa4a0d874e03db7dcf75d2d1598ac1383cbd32e9a6",
+        "tools/BotSim/SelfTest.KismetMath.cs": "143ca50bd6ab7797339e3b76e1e1ca4f4fc816284859a9f08b7d80d9e2b3f1ab",
+        "klink bot/docs/card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b"
+      },
+      "evidence_bindings": {
+        "out/audit/systematic-rules/array-clear-ir-call-sites-20261104.json": "925ff148ac1091154df7389e557593acb9ae61fdcfaa5e94939dd2f229e44bbd"
+      },
+      "limitations": [
+        "Current-client Array_Clear UFunction identity was not captured because the live FUObjectArray header fields and sample entries read as zero; no current RVA is asserted.",
+        "BotSim validates List-backed clear and reuse only; it does not certify TArray capacity, allocator, FProperty destruction, GC, or all element types.",
+        "140 IR call sites across 126 assets are inventoried, not certified end to end."
+      ]
     }
   ],
   "scope_reviews": {},
