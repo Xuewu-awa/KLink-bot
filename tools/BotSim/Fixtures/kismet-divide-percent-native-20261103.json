@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "source": "Ownership-checked read-only current-client native capture; simulator regression binding",
+  "capture_path": "out/audit/systematic-rules/kismet-divide-percent-native-capture-current-20261103.json",
+  "capture_sha256": "81255d4b8d90c76bf339496a574533b2619f8828ec976c70c6077a394d26aaad",
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "native_functions": {
+    "Divide_IntInt": {
+      "exec_rva": "0x3daadb0",
+      "instructions": [
+        { "rva": "0x3daae59", "bytes": "8b4c2438" },
+        { "rva": "0x3daae5d", "bytes": "85c9" },
+        { "rva": "0x3daae5f", "bytes": "7526" },
+        { "rva": "0x3daae76", "bytes": "c70700000000" },
+        { "rva": "0x3daae90", "bytes": "99" },
+        { "rva": "0x3daae91", "bytes": "f7f9" },
+        { "rva": "0x3daae93", "bytes": "8907" },
+        { "rva": "0x3daae9a", "bytes": "c3" }
+      ]
+    },
+    "Percent_IntInt": {
+      "exec_rva": "0x3dd80f0",
+      "instructions": [
+        { "rva": "0x3dd8199", "bytes": "8b4c2438" },
+        { "rva": "0x3dd819d", "bytes": "85c9" },
+        { "rva": "0x3dd819f", "bytes": "7526" },
+        { "rva": "0x3dd81b6", "bytes": "c70700000000" },
+        { "rva": "0x3dd81d0", "bytes": "99" },
+        { "rva": "0x3dd81d1", "bytes": "f7f9" },
+        { "rva": "0x3dd81d3", "bytes": "8917" },
+        { "rva": "0x3dd81da", "bytes": "c3" }
+      ]
+    }
+  },
+  "cases": [
+    [7, 3, 2, 1],
+    [-7, 3, -2, -1],
+    [7, -3, -2, 1],
+    [-7, -3, 2, -1],
+    [-2147483648, 1, -2147483648, 0],
+    [-2147483648, 2, -1073741824, 0],
+    [2147483647, -1, -2147483647, 0],
+    [-2147483648, 2147483647, -1, -1],
+    [-2147483648, 0, 0, 0],
+    [2147483647, 0, 0, 0]
+  ],
+  "limitations": [
+    "The fixture validates finite, representable int32 inputs only.",
+    "INT_MIN / -1 is excluded because native signed IDIV faults and game-level handling is unresolved.",
+    "The read-only native capture and offline VM regression do not certify full UFunction marshaling or card reachability."
+  ]
+}

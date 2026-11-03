@@ -1135,6 +1135,13 @@ public sealed partial class KismetVm
             case "Add_IntInt": return ToInt(a) + ToInt(b);
             case "Subtract_IntInt": return ToInt(a) - ToInt(b);
             case "Multiply_IntInt": return ToInt(a) * ToInt(b);
+            // Current-client KismetMathLibrary execDivide_IntInt and
+            // execPercent_IntInt (native capture
+            // `out/audit/systematic-rules/kismet-divide-percent-native-capture-current-20261103.json`)
+            // explicitly write zero for a zero divisor, then execute signed
+            // x86 `cdq; idiv ecx`: quotient truncates toward zero and the
+            // remainder has the dividend's sign. Keep the zero guard local so
+            // the VM does not expose a managed DivideByZeroException.
             case "Divide_IntInt": return ToInt(b) == 0 ? 0 : ToInt(a) / ToInt(b);
             case "Percent_IntInt": return ToInt(b) == 0 ? 0 : ToInt(a) % ToInt(b);
             case "Abs_Int": return Math.Abs(ToInt(a));

@@ -8448,6 +8448,76 @@
         "out/audit/systematic-rules/selectint-full-selftest-20261103.txt": "a4f85fed1709e42b52bccb6f6580ec12e83b5f6c045b992047ec6108e4152730",
         "out/audit/systematic-rules/selectint-botsim-build-20261103.txt": "e53ac7e57c962b4ad40c23a2362132330cb92cddf3ec658fab12490dfbd79445"
       }
+    },
+    {
+      "id": "KISMET-MATH/Divide_IntInt/native-int32-contract-20261103",
+      "symbol": "Divide_IntInt",
+      "modes": [
+        null
+      ],
+      "status": "partial",
+      "validated_scope": "Current executable native zero-divisor and signed int32 wrapper semantics; VM regression checks finite representable values and source hashes. Static IR sites are inventory only.",
+      "report": "out/audit/systematic-rules/divide-percent-native-contract-20261103.json",
+      "report_sha256": "ccc04acb1a0c08db806e53ff2b6b17b0453b7d749bf7609ac458b19db706951a",
+      "client_exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+      "source_bindings": {
+        "src/KLink.Bot/Effects/Blueprint/KismetVm.cs": "faf5604ccaea7321c70d2164390b1ca41e3cd6a2f605f9006baffed0d89cfbee",
+        "klink bot/docs/card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b",
+        "tools/BotSim/SelfTest.KismetMath.cs": "24bcd774214036be65678aab0f0ee99bc60a0b7fada27f79c7147e7b7c7cb5da",
+        "tools/BotSim/SelfTest.cs": "577269da9988b623d0d69b69cc6530790685bd1e36cf74356bdc4614d9cc91f2",
+        "tools/BotSim/BotSim.csproj": "e0d8c27b356764777d482e99003985a14b1424e56f1d3381310567bb552f58b9",
+        "tools/BotSim/Fixtures/kismet-divide-percent-native-20261103.json": "4389a72ccfdf208362850310db6e103fdfdaae1f07a9b04054aaaa8c939369b1"
+      },
+      "evidence_bindings": {
+        "out/audit/systematic-rules/kismet-divide-percent-native-capture-current-20261103.json": "81255d4b8d90c76bf339496a574533b2619f8828ec976c70c6077a394d26aaad",
+        "tools/BotSim/Fixtures/kismet-divide-percent-native-20261103.json": "4389a72ccfdf208362850310db6e103fdfdaae1f07a9b04054aaaa8c939369b1",
+        "out/audit/systematic-rules/divide-percent-focused-selftest-20261103.txt": "a9c2e0f5cbaad15972e1bcb178ab0a1f1a4c4f44bfa8fbc083049a63add3306d",
+        "out/audit/systematic-rules/divide-percent-full-selftest-20261103.txt": "39d3e18430ac5bf056ebb33568edeff6aa6cdc738542862a9c86ff14d2bb6edc",
+        "out/audit/systematic-rules/divide-percent-botsim-build-20261103.txt": "4a4b70f0812ac7cf6e0e669b8c75bc1003332535fc5d98afcb2ac49b3921f57e",
+        "out/audit/systematic-rules/divide-percent-solution-build-20261103.txt": "50701635a27c2ea34d199644c07866ebc8a29b7b4370ad336f3c16ee7e9334ea",
+        "D:/Program Files/KARDS - The WWII Card Game/KARDS/default/game/kards/Binaries/Win64/kards-Win64-Shipping.exe": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305"
+      },
+      "limitations": [
+        "Not full UFunction marshaling or in-process invocation.",
+        "INT_MIN / -1 exception handling is unresolved.",
+        "Static IR inventory does not prove PvP reachability or certify complete cards.",
+        "Current executable hash must match; asset and client version equivalence remains separately required."
+      ]
+    },
+    {
+      "id": "KISMET-MATH/Percent_IntInt/native-int32-contract-20261103",
+      "symbol": "Percent_IntInt",
+      "modes": [
+        null
+      ],
+      "status": "partial",
+      "validated_scope": "Current executable native zero-divisor and signed int32 wrapper semantics; VM regression checks finite representable values and source hashes. Static IR sites are inventory only.",
+      "report": "out/audit/systematic-rules/divide-percent-native-contract-20261103.json",
+      "report_sha256": "ccc04acb1a0c08db806e53ff2b6b17b0453b7d749bf7609ac458b19db706951a",
+      "client_exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+      "source_bindings": {
+        "src/KLink.Bot/Effects/Blueprint/KismetVm.cs": "faf5604ccaea7321c70d2164390b1ca41e3cd6a2f605f9006baffed0d89cfbee",
+        "klink bot/docs/card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b",
+        "tools/BotSim/SelfTest.KismetMath.cs": "24bcd774214036be65678aab0f0ee99bc60a0b7fada27f79c7147e7b7c7cb5da",
+        "tools/BotSim/SelfTest.cs": "577269da9988b623d0d69b69cc6530790685bd1e36cf74356bdc4614d9cc91f2",
+        "tools/BotSim/BotSim.csproj": "e0d8c27b356764777d482e99003985a14b1424e56f1d3381310567bb552f58b9",
+        "tools/BotSim/Fixtures/kismet-divide-percent-native-20261103.json": "4389a72ccfdf208362850310db6e103fdfdaae1f07a9b04054aaaa8c939369b1"
+      },
+      "evidence_bindings": {
+        "out/audit/systematic-rules/kismet-divide-percent-native-capture-current-20261103.json": "81255d4b8d90c76bf339496a574533b2619f8828ec976c70c6077a394d26aaad",
+        "tools/BotSim/Fixtures/kismet-divide-percent-native-20261103.json": "4389a72ccfdf208362850310db6e103fdfdaae1f07a9b04054aaaa8c939369b1",
+        "out/audit/systematic-rules/divide-percent-focused-selftest-20261103.txt": "a9c2e0f5cbaad15972e1bcb178ab0a1f1a4c4f44bfa8fbc083049a63add3306d",
+        "out/audit/systematic-rules/divide-percent-full-selftest-20261103.txt": "39d3e18430ac5bf056ebb33568edeff6aa6cdc738542862a9c86ff14d2bb6edc",
+        "out/audit/systematic-rules/divide-percent-botsim-build-20261103.txt": "4a4b70f0812ac7cf6e0e669b8c75bc1003332535fc5d98afcb2ac49b3921f57e",
+        "out/audit/systematic-rules/divide-percent-solution-build-20261103.txt": "50701635a27c2ea34d199644c07866ebc8a29b7b4370ad336f3c16ee7e9334ea",
+        "D:/Program Files/KARDS - The WWII Card Game/KARDS/default/game/kards/Binaries/Win64/kards-Win64-Shipping.exe": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305"
+      },
+      "limitations": [
+        "Not full UFunction marshaling or in-process invocation.",
+        "INT_MIN / -1 exception handling is unresolved.",
+        "Static IR inventory does not prove PvP reachability or certify complete cards.",
+        "Current executable hash must match; asset and client version equivalence remains separately required."
+      ]
     }
   ],
   "scope_reviews": {},
@@ -8526,8 +8596,8 @@
       "id": "RULE-KISMET-MATH-CATALOG",
       "title": "Kismet数学节点清单与语义核验",
       "status": "open",
-      "scope": "按当前 card-ir.json 对 69 种数学调用的 9,281 个静态调用点建立可复跑目录。2026-11-03 盘点覆盖 1,709 个 IR 资产；ImplementedMathNames 与 EvalMath 分支名集合为 73/73 一致，但这只验证名称表相互一致，不验证运算语义。IR 中有 61 个不在 VM 声明/分支中的调用点：Format 57、GetDisplayName 1、GetOrSpawnActor 1、PrintString 2；与现有静态派发缺口报告计数相符。另有 8 个已声明名称未在当前 IR 出现。目录包含显示、战役、Brawl 等资产，不建立 PvP 分母或可达性结论；逐项分类 PvP 范围，并与权威客户端行为核验语义和调用分派后，才能决定实现与准入影响。 已依据客户端 UE4SS CoreUObject_enums.hpp 确认 ESearchCase（CaseSensitive=0、IgnoreCase=1）与 ESearchDir（FromStart=0、FromEnd=1）；修正 KismetVm EndsWith/Split 的 ESearchCase 映射，保留 Split 的方向映射，并以 BotSim 定向回归覆盖大小写、起始/末尾查找和失败时输出引用不变。该修复只覆盖这两个字符串节点，其他数学节点语义仍未逐项认证。 2026-11-03：EnumCompareSide 静态核对当前 IR 56 个调用点、52 个资产/52 个程序；SDK 明确 ESideEnum 的 0/1/2 与 EnumAreTheyEqual 的 0/1，56 个首个局部消费者均为 NotEqual_ByteByte；另有独立分支读取盘点为 62 次读取（其中 6 个调用点重复读取）；BotSim 3×3 映射回归通过。SDK 未含原生函数体，客户端等价、越界语义和 PvP 可达性仍未确认，保持 open。 2026-11-03：FMod 原生包装器 RVA 0x3db24a0 的有限输入商/余数路径和除零分支已建立局部证据；当前 BotSim 四个有符号有限回归通过。两个 IR 调用点均位于 card_location_british_scen5.OnStartOfGame。NaN、无穷大、转换溢出、完整参数封送及 PvP 可达性仍未认证，目录保持 open。",
-      "source": "klink bot/tools/audit-kismet-math-catalog.py; out/audit/systematic-rules/kismet-math-node-catalog-20261103.json; out/audit/math-catalog-dispatch-gap-20261103.txt; D:/Program Files/KARDS - The WWII Card Game/KARDS/default/game/kards/Binaries/Win64/ue4ss/CXXHeaderDump/CoreUObject_enums.hpp; src/KLink.Bot/Effects/Blueprint/KismetVm.cs; tools/BotSim/SelfTest.KismetMath.cs; klink bot/tools/audit-enum-compare-side.py; out/audit/systematic-rules/enum-compare-side-sdk-contract-20261103.json; D:/Program Files/KARDS - The WWII Card Game/KARDS/default/game/kards/Binaries/Win64/ue4ss/CXXHeaderDump/kards.hpp; D:/Program Files/KARDS - The WWII Card Game/KARDS/default/game/kards/Binaries/Win64/ue4ss/CXXHeaderDump/kards_enums.hpp; tools/BotSim/SelfTest.KismetMath.cs; out/audit/systematic-rules/fmod-native-contract-20261103.json; out/audit/systematic-rules/fmod-native-contract-20261103.md"
+      "scope": "按当前 card-ir.json 对 69 种数学调用的 9,281 个静态调用点建立可复跑目录。2026-11-03 盘点覆盖 1,709 个 IR 资产；ImplementedMathNames 与 EvalMath 分支名集合为 73/73 一致，但这只验证名称表相互一致，不验证运算语义。IR 中有 61 个不在 VM 声明/分支中的调用点：Format 57、GetDisplayName 1、GetOrSpawnActor 1、PrintString 2；与现有静态派发缺口报告计数相符。另有 8 个已声明名称未在当前 IR 出现。目录包含显示、战役、Brawl 等资产，不建立 PvP 分母或可达性结论；逐项分类 PvP 范围，并与权威客户端行为核验语义和调用分派后，才能决定实现与准入影响。 已依据客户端 UE4SS CoreUObject_enums.hpp 确认 ESearchCase（CaseSensitive=0、IgnoreCase=1）与 ESearchDir（FromStart=0、FromEnd=1）；修正 KismetVm EndsWith/Split 的 ESearchCase 映射，保留 Split 的方向映射，并以 BotSim 定向回归覆盖大小写、起始/末尾查找和失败时输出引用不变。该修复只覆盖这两个字符串节点，其他数学节点语义仍未逐项认证。 2026-11-03：EnumCompareSide 静态核对当前 IR 56 个调用点、52 个资产/52 个程序；SDK 明确 ESideEnum 的 0/1/2 与 EnumAreTheyEqual 的 0/1，56 个首个局部消费者均为 NotEqual_ByteByte；另有独立分支读取盘点为 62 次读取（其中 6 个调用点重复读取）；BotSim 3×3 映射回归通过。SDK 未含原生函数体，客户端等价、越界语义和 PvP 可达性仍未确认，保持 open。 2026-11-03：FMod 原生包装器 RVA 0x3db24a0 的有限输入商/余数路径和除零分支已建立局部证据；当前 BotSim 四个有符号有限回归通过。两个 IR 调用点均位于 card_location_british_scen5.OnStartOfGame。NaN、无穷大、转换溢出、完整参数封送及 PvP 可达性仍未认证，目录保持 open。  2026-11-03 Divide_IntInt and Percent_IntInt native wrapper contract is now recorded (report: out/audit/systematic-rules/divide-percent-native-contract-20261103.json; 37 Divide sites / 26 card records and 14 Percent sites / 5 records; zero-divisor and signed int32 paths covered). The catalog and broader Kismet semantic review remain open; INT_MIN / -1 handling, UFunction marshaling, PvP reachability, and card-level closure are unresolved.",
+      "source": "klink bot/tools/audit-kismet-math-catalog.py; out/audit/systematic-rules/kismet-math-node-catalog-20261103.json; out/audit/math-catalog-dispatch-gap-20261103.txt; D:/Program Files/KARDS - The WWII Card Game/KARDS/default/game/kards/Binaries/Win64/ue4ss/CXXHeaderDump/CoreUObject_enums.hpp; src/KLink.Bot/Effects/Blueprint/KismetVm.cs; tools/BotSim/SelfTest.KismetMath.cs; klink bot/tools/audit-enum-compare-side.py; out/audit/systematic-rules/enum-compare-side-sdk-contract-20261103.json; D:/Program Files/KARDS - The WWII Card Game/KARDS/default/game/kards/Binaries/Win64/ue4ss/CXXHeaderDump/kards.hpp; D:/Program Files/KARDS - The WWII Card Game/KARDS/default/game/kards/Binaries/Win64/ue4ss/CXXHeaderDump/kards_enums.hpp; tools/BotSim/SelfTest.KismetMath.cs; out/audit/systematic-rules/fmod-native-contract-20261103.json; out/audit/systematic-rules/fmod-native-contract-20261103.md; out/audit/systematic-rules/divide-percent-native-contract-20261103.json; out/audit/systematic-rules/kismet-divide-percent-native-capture-current-20261103.json; tools/BotSim/Fixtures/kismet-divide-percent-native-20261103.json; out/audit/systematic-rules/divide-percent-focused-selftest-20261103.txt; out/audit/systematic-rules/divide-percent-full-selftest-20261103.txt; out/audit/systematic-rules/divide-percent-botsim-build-20261103.txt; out/audit/systematic-rules/divide-percent-solution-build-20261103.txt"
     }
   ],
   "training_contract_reviews": [

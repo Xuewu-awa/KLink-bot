@@ -1,0 +1,719 @@
+{
+  "schema_version": 1,
+  "report_id": "KISMET-MATH-DIVIDE-PERCENT/native-int32-contract-20261103",
+  "status": "partial",
+  "scope": "Current-client KismetMathLibrary Divide_IntInt and Percent_IntInt wrappers, simulator integer VM behavior, and static card-IR inventory. This is a shared-operation contract, not full-card or PvP certification.",
+  "authority": {
+    "client_executable": "D:/Program Files/KARDS - The WWII Card Game/KARDS/default/game/kards/Binaries/Win64/kards-Win64-Shipping.exe",
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "capture": "out/audit/systematic-rules/kismet-divide-percent-native-capture-current-20261103.json",
+    "capture_sha256": "81255d4b8d90c76bf339496a574533b2619f8828ec976c70c6077a394d26aaad"
+  },
+  "native_boundary": {
+    "owner": "/Script/Engine.KismetMathLibrary",
+    "functions": {
+      "Divide_IntInt": {
+        "exec_rva": "0x3daadb0",
+        "capture_sha256": "2019773711d3b3c23d5f667de49f4b2d310b5d3a65823803ebf3c25229fbf20b",
+        "boundary_hint": "capture window; control-flow tail verified at listed RVAs",
+        "tail_instructions": [
+          {
+            "rva": "0x3daae5d",
+            "bytes": "85c9",
+            "instruction": "test ecx, ecx"
+          },
+          {
+            "rva": "0x3daae5f",
+            "bytes": "7526",
+            "instruction": "jne 0x7ff70dfcae87"
+          },
+          {
+            "rva": "0x3daae76",
+            "bytes": "c70700000000",
+            "instruction": "mov dword ptr [rdi], 0"
+          },
+          {
+            "rva": "0x3daae90",
+            "bytes": "99",
+            "instruction": "cdq "
+          },
+          {
+            "rva": "0x3daae91",
+            "bytes": "f7f9",
+            "instruction": "idiv ecx"
+          },
+          {
+            "rva": "0x3daae93",
+            "bytes": "8907",
+            "instruction": "mov dword ptr [rdi], eax"
+          },
+          {
+            "rva": "0x3daae9a",
+            "bytes": "c3",
+            "instruction": "ret "
+          }
+        ],
+        "calls": 37,
+        "cards": 26,
+        "literal_divisors": [
+          2,
+          10
+        ],
+        "zero_literal_divisors": 0
+      },
+      "Percent_IntInt": {
+        "exec_rva": "0x3dd80f0",
+        "capture_sha256": "8beff787a00e0262748106de7d90845f1e32e65f9ad69a0fccbb000785aaf13b",
+        "boundary_hint": "capture window; control-flow tail verified at listed RVAs",
+        "tail_instructions": [
+          {
+            "rva": "0x3dd819d",
+            "bytes": "85c9",
+            "instruction": "test ecx, ecx"
+          },
+          {
+            "rva": "0x3dd819f",
+            "bytes": "7526",
+            "instruction": "jne 0x7ff70dff81c7"
+          },
+          {
+            "rva": "0x3dd81b6",
+            "bytes": "c70700000000",
+            "instruction": "mov dword ptr [rdi], 0"
+          },
+          {
+            "rva": "0x3dd81d0",
+            "bytes": "99",
+            "instruction": "cdq "
+          },
+          {
+            "rva": "0x3dd81d1",
+            "bytes": "f7f9",
+            "instruction": "idiv ecx"
+          },
+          {
+            "rva": "0x3dd81d3",
+            "bytes": "8917",
+            "instruction": "mov dword ptr [rdi], edx"
+          },
+          {
+            "rva": "0x3dd81da",
+            "bytes": "c3",
+            "instruction": "ret "
+          }
+        ],
+        "calls": 14,
+        "cards": 5,
+        "literal_divisors": [
+          2
+        ],
+        "zero_literal_divisors": 0
+      }
+    }
+  },
+  "native_expression": {
+    "zero_divisor": "Both wrappers write output 0 when the signed int32 divisor is zero.",
+    "nonzero_divisor": "Both wrappers execute signed x86 cdq; idiv ecx. Divide_IntInt stores EAX (quotient); Percent_IntInt stores EDX (remainder).",
+    "signed_behavior": "For representable nonzero operands, quotient truncates toward zero and remainder has the dividend sign."
+  },
+  "fixture": {
+    "path": "tools/BotSim/Fixtures/kismet-divide-percent-native-20261103.json",
+    "sha256": "4389a72ccfdf208362850310db6e103fdfdaae1f07a9b04054aaaa8c939369b1",
+    "capture_sha256": "81255d4b8d90c76bf339496a574533b2619f8828ec976c70c6077a394d26aaad",
+    "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "cases": [
+      [
+        7,
+        3,
+        2,
+        1
+      ],
+      [
+        -7,
+        3,
+        -2,
+        -1
+      ],
+      [
+        7,
+        -3,
+        -2,
+        1
+      ],
+      [
+        -7,
+        -3,
+        2,
+        -1
+      ],
+      [
+        -2147483648,
+        1,
+        -2147483648,
+        0
+      ],
+      [
+        -2147483648,
+        2,
+        -1073741824,
+        0
+      ],
+      [
+        2147483647,
+        -1,
+        -2147483647,
+        0
+      ],
+      [
+        -2147483648,
+        2147483647,
+        -1,
+        -1
+      ],
+      [
+        -2147483648,
+        0,
+        0,
+        0
+      ],
+      [
+        2147483647,
+        0,
+        0,
+        0
+      ]
+    ],
+    "limitations": [
+      "The fixture validates finite, representable int32 inputs only.",
+      "INT_MIN / -1 is excluded because native signed IDIV faults and game-level handling is unresolved.",
+      "The read-only native capture and offline VM regression do not certify full UFunction marshaling or card reachability."
+    ]
+  },
+  "ir_inventory": {
+    "source": "klink bot/docs/card-ir.json",
+    "sha256": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b",
+    "operations": {
+      "Divide_IntInt": {
+        "calls": 37,
+        "cards": 26,
+        "argument_counts": [
+          2
+        ],
+        "literal_divisors": [
+          2,
+          10
+        ],
+        "zero_literal_divisors": 0
+      },
+      "Percent_IntInt": {
+        "calls": 14,
+        "cards": 5,
+        "argument_counts": [
+          2
+        ],
+        "literal_divisors": [
+          2
+        ],
+        "zero_literal_divisors": 0
+      }
+    },
+    "sites": {
+      "Divide_IntInt": [
+        {
+          "card": "card_location_british_scen1",
+          "program": "@ubergraph",
+          "step_path": "$[68].src",
+          "argument_count": 2,
+          "divisor": {
+            "int": 2
+          }
+        },
+        {
+          "card": "card_location_british_scen3",
+          "program": "@ubergraph",
+          "step_path": "$[121].src",
+          "argument_count": 2,
+          "divisor": {
+            "int": 2
+          }
+        },
+        {
+          "card": "card_location_british_scen5",
+          "program": "@ubergraph",
+          "step_path": "$[192].src",
+          "argument_count": 2,
+          "divisor": {
+            "int": 2
+          }
+        },
+        {
+          "card": "card_location_british_scen5",
+          "program": "@ubergraph",
+          "step_path": "$[221].src",
+          "argument_count": 2,
+          "divisor": {
+            "int": 2
+          }
+        },
+        {
+          "card": "card_location_german_scen1",
+          "program": "@ubergraph",
+          "step_path": "$[104].src",
+          "argument_count": 2,
+          "divisor": {
+            "int": 2
+          }
+        },
+        {
+          "card": "card_location_german_scen1",
+          "program": "@ubergraph",
+          "step_path": "$[132].src",
+          "argument_count": 2,
+          "divisor": {
+            "int": 2
+          }
+        },
+        {
+          "card": "card_location_german_scen1",
+          "program": "@ubergraph",
+          "step_path": "$[149].src",
+          "argument_count": 2,
+          "divisor": {
+            "int": 2
+          }
+        },
+        {
+          "card": "card_location_german_scen2",
+          "program": "@ubergraph",
+          "step_path": "$[72].src",
+          "argument_count": 2,
+          "divisor": {
+            "int": 2
+          }
+        },
+        {
+          "card": "card_location_german_scen3",
+          "program": "@ubergraph",
+          "step_path": "$[374].src",
+          "argument_count": 2,
+          "divisor": {
+            "int": 2
+          }
+        },
+        {
+          "card": "card_location_german_scen3",
+          "program": "@ubergraph",
+          "step_path": "$[396].src",
+          "argument_count": 2,
+          "divisor": {
+            "int": 2
+          }
+        },
+        {
+          "card": "card_location_german_scen4",
+          "program": "@ubergraph",
+          "step_path": "$[99].src",
+          "argument_count": 2,
+          "divisor": {
+            "int": 2
+          }
+        },
+        {
+          "card": "card_location_german_scen5",
+          "program": "@ubergraph",
+          "step_path": "$[147].src",
+          "argument_count": 2,
+          "divisor": {
+            "int": 2
+          }
+        },
+        {
+          "card": "card_unit_4th_alpini_regiment",
+          "program": "@ubergraph",
+          "step_path": "$[3].src",
+          "argument_count": 2,
+          "divisor": {
+            "int": 10
+          }
+        },
+        {
+          "card": "card_location_japan_scen1",
+          "program": "@ubergraph",
+          "step_path": "$[97].src",
+          "argument_count": 2,
+          "divisor": {
+            "int": 2
+          }
+        },
+        {
+          "card": "card_location_japan_scen1",
+          "program": "@ubergraph",
+          "step_path": "$[118].src",
+          "argument_count": 2,
+          "divisor": {
+            "int": 2
+          }
+        },
+        {
+          "card": "card_location_japan_scen2",
+          "program": "@ubergraph",
+          "step_path": "$[156].src",
+          "argument_count": 2,
+          "divisor": {
+            "int": 2
+          }
+        },
+        {
+          "card": "card_location_japan_scen3",
+          "program": "@ubergraph",
+          "step_path": "$[93].src",
+          "argument_count": 2,
+          "divisor": {
+            "int": 2
+          }
+        },
+        {
+          "card": "card_location_japan_scen4",
+          "program": "@ubergraph",
+          "step_path": "$[136].src",
+          "argument_count": 2,
+          "divisor": {
+            "int": 2
+          }
+        },
+        {
+          "card": "card_location_japan_scen5",
+          "program": "@ubergraph",
+          "step_path": "$[116].src",
+          "argument_count": 2,
+          "divisor": {
+            "int": 2
+          }
+        },
+        {
+          "card": "card_location_japan_scen5",
+          "program": "@ubergraph",
+          "step_path": "$[140].src",
+          "argument_count": 2,
+          "divisor": {
+            "int": 2
+          }
+        },
+        {
+          "card": "card_unit_115th_separate_btn",
+          "program": "@ubergraph",
+          "step_path": "$[39].src",
+          "argument_count": 2,
+          "divisor": {
+            "int": 2
+          }
+        },
+        {
+          "card": "card_unit_115th_separate_btn",
+          "program": "@ubergraph",
+          "step_path": "$[61].src",
+          "argument_count": 2,
+          "divisor": {
+            "int": 2
+          }
+        },
+        {
+          "card": "card_unit_38th_guards_rifles",
+          "program": "@ubergraph",
+          "step_path": "$[18].src",
+          "argument_count": 2,
+          "divisor": {
+            "int": 2
+          }
+        },
+        {
+          "card": "card_location_soviet_scen1",
+          "program": "@ubergraph",
+          "step_path": "$[208].src",
+          "argument_count": 2,
+          "divisor": {
+            "int": 2
+          }
+        },
+        {
+          "card": "card_location_soviet_scen1",
+          "program": "@ubergraph",
+          "step_path": "$[229].src",
+          "argument_count": 2,
+          "divisor": {
+            "int": 2
+          }
+        },
+        {
+          "card": "card_location_soviet_scen2",
+          "program": "@ubergraph",
+          "step_path": "$[150].src",
+          "argument_count": 2,
+          "divisor": {
+            "int": 2
+          }
+        },
+        {
+          "card": "card_location_soviet_scen3",
+          "program": "@ubergraph",
+          "step_path": "$[164].src",
+          "argument_count": 2,
+          "divisor": {
+            "int": 2
+          }
+        },
+        {
+          "card": "card_location_soviet_scen4",
+          "program": "@ubergraph",
+          "step_path": "$[198].src",
+          "argument_count": 2,
+          "divisor": {
+            "int": 2
+          }
+        },
+        {
+          "card": "card_location_soviet_scen5",
+          "program": "@ubergraph",
+          "step_path": "$[94].src",
+          "argument_count": 2,
+          "divisor": {
+            "int": 2
+          }
+        },
+        {
+          "card": "card_event_seaborne_invasion",
+          "program": "getTwoCardsFromPossibleCards",
+          "step_path": "$[11].src",
+          "argument_count": 2,
+          "divisor": {
+            "int": 2
+          }
+        },
+        {
+          "card": "card_unit_133rd_ironman",
+          "program": "@ubergraph",
+          "step_path": "$[11].src",
+          "argument_count": 2,
+          "divisor": {
+            "int": 2
+          }
+        },
+        {
+          "card": "card_unit_133rd_ironman",
+          "program": "@ubergraph",
+          "step_path": "$[18].src",
+          "argument_count": 2,
+          "divisor": {
+            "int": 2
+          }
+        },
+        {
+          "card": "card_unit_133rd_ironman",
+          "program": "@ubergraph",
+          "step_path": "$[27].src",
+          "argument_count": 2,
+          "divisor": {
+            "int": 2
+          }
+        },
+        {
+          "card": "card_unit_103rd_cavalry_recon",
+          "program": "@ubergraph",
+          "step_path": "$[39].src",
+          "argument_count": 2,
+          "divisor": {
+            "int": 2
+          }
+        },
+        {
+          "card": "card_location_usa_scen3",
+          "program": "@ubergraph",
+          "step_path": "$[134].src",
+          "argument_count": 2,
+          "divisor": {
+            "int": 2
+          }
+        },
+        {
+          "card": "card_location_usa_scen3",
+          "program": "@ubergraph",
+          "step_path": "$[153].src",
+          "argument_count": 2,
+          "divisor": {
+            "int": 2
+          }
+        },
+        {
+          "card": "card_location_usa_scen5",
+          "program": "@ubergraph",
+          "step_path": "$[108].src",
+          "argument_count": 2,
+          "divisor": {
+            "int": 2
+          }
+        }
+      ],
+      "Percent_IntInt": [
+        {
+          "card": "card_event_front_and_homeland",
+          "program": "@ubergraph",
+          "step_path": "$[21].src",
+          "argument_count": 2,
+          "divisor": {
+            "int": 2
+          }
+        },
+        {
+          "card": "card_unit_43_infantry_regiment",
+          "program": "@ubergraph",
+          "step_path": "$[14].src",
+          "argument_count": 2,
+          "divisor": {
+            "int": 2
+          }
+        },
+        {
+          "card": "card_unit_jet_protoype_a",
+          "program": "@ubergraph",
+          "step_path": "$[6].src",
+          "argument_count": 2,
+          "divisor": {
+            "int": 2
+          }
+        },
+        {
+          "card": "card_unit_115th_separate_btn",
+          "program": "@ubergraph",
+          "step_path": "$[5].src",
+          "argument_count": 2,
+          "divisor": {
+            "int": 2
+          }
+        },
+        {
+          "card": "card_unit_115th_separate_btn",
+          "program": "@ubergraph",
+          "step_path": "$[7].src",
+          "argument_count": 2,
+          "divisor": {
+            "int": 2
+          }
+        },
+        {
+          "card": "card_unit_115th_separate_btn",
+          "program": "@ubergraph",
+          "step_path": "$[17].src",
+          "argument_count": 2,
+          "divisor": {
+            "int": 2
+          }
+        },
+        {
+          "card": "card_unit_115th_separate_btn",
+          "program": "@ubergraph",
+          "step_path": "$[19].src",
+          "argument_count": 2,
+          "divisor": {
+            "int": 2
+          }
+        },
+        {
+          "card": "card_unit_115th_separate_btn",
+          "program": "@ubergraph",
+          "step_path": "$[24].src",
+          "argument_count": 2,
+          "divisor": {
+            "int": 2
+          }
+        },
+        {
+          "card": "card_unit_115th_separate_btn",
+          "program": "@ubergraph",
+          "step_path": "$[30].src",
+          "argument_count": 2,
+          "divisor": {
+            "int": 2
+          }
+        },
+        {
+          "card": "card_unit_115th_separate_btn",
+          "program": "@ubergraph",
+          "step_path": "$[32].src",
+          "argument_count": 2,
+          "divisor": {
+            "int": 2
+          }
+        },
+        {
+          "card": "card_unit_115th_separate_btn",
+          "program": "@ubergraph",
+          "step_path": "$[37].src",
+          "argument_count": 2,
+          "divisor": {
+            "int": 2
+          }
+        },
+        {
+          "card": "card_unit_115th_separate_btn",
+          "program": "@ubergraph",
+          "step_path": "$[51].src",
+          "argument_count": 2,
+          "divisor": {
+            "int": 2
+          }
+        },
+        {
+          "card": "card_event_naval_battle",
+          "program": "@ubergraph",
+          "step_path": "$[4].src",
+          "argument_count": 2,
+          "divisor": {
+            "int": 2
+          }
+        },
+        {
+          "card": "card_event_naval_battle",
+          "program": "@ubergraph",
+          "step_path": "$[27].src",
+          "argument_count": 2,
+          "divisor": {
+            "int": 2
+          }
+        }
+      ]
+    }
+  },
+  "implementation": {
+    "vm": "src/KLink.Bot/Effects/Blueprint/KismetVm.cs",
+    "vm_sha256": "faf5604ccaea7321c70d2164390b1ca41e3cd6a2f605f9006baffed0d89cfbee",
+    "behavior": "zero divisor returns 0; otherwise C# int division/remainder, matching the captured finite int32 contract."
+  },
+  "regression": {
+    "build_log": "out/audit/systematic-rules/divide-percent-botsim-build-20261103.txt",
+    "focused_selftest": "out/audit/systematic-rules/divide-percent-focused-selftest-20261103.txt",
+    "full_selftest": "out/audit/systematic-rules/divide-percent-full-selftest-20261103.txt",
+    "solution_build": "out/audit/systematic-rules/divide-percent-solution-build-20261103.txt",
+    "focused_result": "1 passed",
+    "full_result": "1109 passed",
+    "build_result": "BotSim and full solution build passed with 0 warnings and 0 errors."
+  },
+  "limitations": [
+    "Read-only native capture and offline VM regression do not certify full UFunction marshaling, malformed frames, or in-process native invocation.",
+    "INT_MIN / -1 is excluded: signed IDIV raises a processor exception on that pair and game-level exception handling is unresolved.",
+    "The static IR sites are candidate reachability inventory only; they do not certify PvP reachability, trigger ordering, card legality, or complete single-card behavior.",
+    "The evidence is bound to executable SHA-256 b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305; a different client build invalidates this native contract."
+  ],
+  "source_sha256": {
+    "capture": "81255d4b8d90c76bf339496a574533b2619f8828ec976c70c6077a394d26aaad",
+    "fixture": "4389a72ccfdf208362850310db6e103fdfdaae1f07a9b04054aaaa8c939369b1",
+    "ir": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b",
+    "vm": "faf5604ccaea7321c70d2164390b1ca41e3cd6a2f605f9006baffed0d89cfbee",
+    "selftest_math": "24bcd774214036be65678aab0f0ee99bc60a0b7fada27f79c7147e7b7c7cb5da",
+    "selftest_registry": "577269da9988b623d0d69b69cc6530790685bd1e36cf74356bdc4614d9cc91f2",
+    "project": "e0d8c27b356764777d482e99003985a14b1424e56f1d3381310567bb552f58b9",
+    "focused_log": "a9c2e0f5cbaad15972e1bcb178ab0a1f1a4c4f44bfa8fbc083049a63add3306d",
+    "full_log": "39d3e18430ac5bf056ebb33568edeff6aa6cdc738542862a9c86ff14d2bb6edc",
+    "build_log": "4a4b70f0812ac7cf6e0e669b8c75bc1003332535fc5d98afcb2ac49b3921f57e",
+    "solution_build_log": "50701635a27c2ea34d199644c07866ebc8a29b7b4370ad336f3c16ee7e9334ea"
+  }
+}

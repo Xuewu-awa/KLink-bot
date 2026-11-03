@@ -89,6 +89,88 @@ internal static partial class SelfTest
         return null;
     }
 
+    private static string? KismetDividePercentNativeContract(CardDatabase db)
+    {
+        // The fixture is bound to the ownership-checked current-client capture.
+        // It covers truncation toward zero, remainder sign, zero-divisor output,
+        // and representable int32 endpoints. INT_MIN / -1 is excluded because
+        // native IDIV raises a processor exception there and its game-level
+        // handling has not been established.
+        string path = Path.Combine(AppContext.BaseDirectory, "Fixtures", "kismet-divide-percent-native-20261103.json");
+        using var document = System.Text.Json.JsonDocument.Parse(File.ReadAllText(path));
+        var root = document.RootElement;
+        DirectoryInfo? repository = new(AppContext.BaseDirectory);
+        while (repository is not null && !File.Exists(Path.Combine(repository.FullName, "KLink.slnx")))
+            repository = repository.Parent;
+        if (repository is null)
+            return "could not locate repository root for the native capture fixture";
+        string capturePath = Path.Combine(repository.FullName,
+            root.GetProperty("capture_path").GetString()!.Replace('/', Path.DirectorySeparatorChar));
+        if (!File.Exists(capturePath))
+            return $"native capture not found at fixture path {root.GetProperty("capture_path").GetString()}";
+        string captureHash = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(capturePath))).ToLowerInvariant();
+        if (!string.Equals(captureHash, root.GetProperty("capture_sha256").GetString(), StringComparison.Ordinal))
+            return "Divide/Percent native capture SHA-256 differs from the regression fixture";
+        using var capture = System.Text.Json.JsonDocument.Parse(File.ReadAllText(capturePath));
+        var captureRoot = capture.RootElement;
+        if (!string.Equals(captureRoot.GetProperty("exe_sha256").GetString(),
+                root.GetProperty("exe_sha256").GetString(), StringComparison.Ordinal))
+            return "Divide/Percent executable identity differs from the regression fixture";
+        foreach (var function in root.GetProperty("native_functions").EnumerateObject())
+        {
+            var native = captureRoot.GetProperty("functions").GetProperty(function.Name);
+            if (!string.Equals(native.GetProperty("exec_rva").GetString(),
+                    function.Value.GetProperty("exec_rva").GetString(), StringComparison.Ordinal))
+                return $"{function.Name} entry RVA differs from the regression fixture";
+            foreach (var expected in function.Value.GetProperty("instructions").EnumerateArray())
+            {
+                string rva = expected.GetProperty("rva").GetString()!;
+                string bytes = expected.GetProperty("bytes").GetString()!;
+                bool found = native.GetProperty("instructions").EnumerateArray().Any(actual =>
+                    string.Equals(actual.GetProperty("rva").GetString(), rva, StringComparison.Ordinal)
+                    && string.Equals(actual.GetProperty("bytes").GetString(), bytes, StringComparison.Ordinal));
+                if (!found)
+                    return $"{function.Name} instruction at {rva} differs from the regression fixture";
+            }
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        var ctx = new EffectContext { Engine = engine, State = state, Controller = Side.Left };
+        var cases = root.GetProperty("cases").EnumerateArray()
+            .Select(row => (Dividend: row[0].GetInt32(), Divisor: row[1].GetInt32(),
+                Quotient: row[2].GetInt32(), Remainder: row[3].GetInt32())).ToArray();
+        var steps = new List<KismetStep>(cases.Length * 2);
+        var outputs = new List<string>(cases.Length * 2);
+        for (int i = 0; i < cases.Length; i++)
+        {
+            var c = cases[i];
+            string quotient = $"quotient{i}", remainder = $"remainder{i}";
+            outputs.Add(quotient);
+            outputs.Add(remainder);
+            steps.Add(SetMathResult(steps.Count, quotient,
+                MathExpr("Divide_IntInt", IntExpr(c.Dividend), IntExpr(c.Divisor))));
+            steps.Add(SetMathResult(steps.Count, remainder,
+                MathExpr("Percent_IntInt", IntExpr(c.Dividend), IntExpr(c.Divisor))));
+        }
+
+        long faults = engine.Api.Vm.FaultedPrograms;
+        var result = engine.Api.Vm.RunLocalProgramMulti(
+            new KismetProgram(steps, 0), ctx, null, outputs.ToArray());
+        if (engine.Api.Vm.FaultedPrograms != faults)
+            return "Divide_IntInt/Percent_IntInt finite integer probe unexpectedly faulted the VM";
+        for (int i = 0; i < cases.Length; i++)
+        {
+            var c = cases[i];
+            if (!Equals(result[$"quotient{i}"], c.Quotient)
+                || !Equals(result[$"remainder{i}"], c.Remainder))
+                return $"Divide/Percent({c.Dividend},{c.Divisor}) returned "
+                    + $"q={result[$"quotient{i}"] ?? "<null>"}, r={result[$"remainder{i}"] ?? "<null>"}; "
+                    + $"expected q={c.Quotient}, r={c.Remainder}";
+        }
+
+        return null;
+    }
+
     private static string? KismetFModFiniteContract(CardDatabase db)
     {
         // The current client wrapper computes the quotient with cvttsd2si

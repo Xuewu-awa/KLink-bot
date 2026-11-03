@@ -1,30 +1,17 @@
 {
   "schema_version": 1,
   "report_id": "RULE-KISMET-DIVIDE-PERCENT-BOUNDARY-20261103",
-  "status": "mechanical_inventory_complete; native_semantics_unconfirmed",
-  "scope": "Current card-ir.json math nodes for Divide_IntInt and Percent_IntInt; inventory and operand-shape review only.",
+  "status": "superseded_by_current_client_native_contract",
+  "scope": "Historical inventory and operand-shape snapshot created before the ownership-checked native capture; this is not the current semantic conclusion.",
   "counts": {
     "Divide_IntInt": 37,
     "Percent_IntInt": 14,
     "zero_divisor_sites": 0
   },
-  "observed_facts": [
-    "All 51 traversed IR math nodes have exactly two arguments.",
-    "No traversed node uses a literal zero divisor; 50 divisor literals are 2 and one is 10.",
-    "Engine.hpp contains declarations only for Divide_IntInt and Percent_IntInt; no implementation body is present in the SDK dump.",
-    "KismetVm.cs currently returns 0 for divisor zero and uses C# integer division/remainder for nonzero divisors.",
-    "The IR contains difference-derived dividends, so negative operands are structurally possible, but runtime reachability and native sign behavior are unconfirmed."
-  ],
-  "semantic_risks": [
-    "Zero-divisor fallback is an authored VM convention, not established client behavior.",
-    "Negative odd remainder sign and truncation behavior may affect parity/rounding logic in card_unit_115th_separate_btn.",
-    "int.MinValue / -1 overflow behavior is not established by the available sources."
-  ],
-  "evidence_level": "static IR plus SDK declaration and local implementation inspection; no authoritative native-body or runtime observation",
+  "evidence_level": "Historical pre-capture static IR plus SDK declaration and local implementation inspection; current native-body evidence is in superseded_by.",
   "recommendations": [
-    "Do not change Divide_IntInt or Percent_IntInt semantics until native implementation or controlled client observation is available.",
-    "Keep all affected cards open in coverage and add boundary regressions only when expected values are grounded in authoritative evidence.",
-    "Resolve five pre-entrypoint step attributions before using program-level reachability conclusions."
+    "Use the linked current-client native contract for Divide_IntInt and Percent_IntInt zero-divisor and signed int32 semantics.",
+    "Keep the operation contract partial: INT_MIN / -1 handling, complete UFunction marshaling, PvP reachability, and full-card behavior remain unresolved."
   ],
   "worker_artifact": "D:\\Codex Workshop\\KLink-bot\\out\\audit\\deepseek-divide-percent-boundary-20261103\\report.json",
   "worker_sha256": "4cd644ea36a4802267126059feafdb3c38dafa1731c622cae221e2933358fd24",
@@ -32,5 +19,20 @@
     "D:\\Codex Workshop\\KLink-bot\\klink bot\\docs\\card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b",
     "D:\\Codex Workshop\\KLink-bot\\src\\KLink.Bot\\Effects\\Blueprint\\KismetVm.cs": "0af6f3eb2bc660bb7025a2c5eda928802eb723cffa2de3d18a5e01a0d49f41ae",
     "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\ue4ss\\CXXHeaderDump\\Engine.hpp": "6ff639c0078e8800c5bc6aae8090beda97d4265ad5f3ba35e13f6e65128c82fb"
-  }
+  },
+  "previous_status": "mechanical_inventory_complete; native_semantics_unconfirmed",
+  "superseded_by": "out/audit/systematic-rules/divide-percent-native-contract-20261103.json",
+  "superseded_on": "2026-11-03",
+  "historical_observations": [
+    "All 51 traversed IR math nodes have exactly two arguments.",
+    "No traversed node uses a literal zero divisor; 50 divisor literals are 2 and one is 10.",
+    "Engine.hpp contains declarations only for Divide_IntInt and Percent_IntInt; no implementation body is present in the SDK dump.",
+    "KismetVm.cs currently returns 0 for divisor zero and uses C# integer division/remainder for nonzero divisors.",
+    "The IR contains difference-derived dividends, so negative operands are structurally possible, but runtime reachability and native sign behavior are unconfirmed."
+  ],
+  "historical_semantic_risks": [
+    "Zero-divisor fallback is an authored VM convention, not established client behavior.",
+    "Negative odd remainder sign and truncation behavior may affect parity/rounding logic in card_unit_115th_separate_btn.",
+    "int.MinValue / -1 overflow behavior is not established by the available sources."
+  ]
 }

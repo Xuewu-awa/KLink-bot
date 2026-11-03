@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <None Update="Fixtures/kismet-clamp-native-20261103.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="Fixtures/kismet-divide-percent-native-20261103.json" CopyToOutputDirectory="PreserveNewest" />
     <None Update="Fixtures/damage-observer-chain-20261030.json" CopyToOutputDirectory="PreserveNewest" />
     <None Update="Fixtures/damage-modifier-own-overrides-20261030.json" CopyToOutputDirectory="PreserveNewest" />
     <None Update="Fixtures/damage-modifier-default-order-20261030.json" CopyToOutputDirectory="PreserveNewest" />
