@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "rule": "Array_AddUnique",
+  "date": "2026-11-04",
+  "status": "partial audit; no current PvP card IR consumer",
+  "findings": [
+    "The installed UE4SS SDK declares void Array_AddUnique(const TArray<int32>& TargetArray, const int32& NewItem) in Engine.hpp. This is the reflected function declaration; it does not describe all generic FProperty lifecycle behavior.",
+    "The checked card IR contains 1,709 asset programs and zero Array_AddUnique calls. Package-wide occurrences in campaign, equipment, UI, or other non-card blueprints are outside the current PvP card IR scope.",
+    "Prior RULE-513 evidence reconstructed the native GenericArray_AddUnique body from seven chained code fragments totaling 521 bytes and executed it in Unicorn with supplied FArray, ArrayProperty, frame, element, and allocation helpers. It records duplicate input returning -1 without an append and new input returning the prior array length.",
+    "The simulator dispatch currently returns the existing index for duplicates and the prior length for new elements. Its existing tests exercise string equality, integer/card-ID equivalence, and object identity. Since the installed SDK declares the node void and no PvP card IR site consumes an Array_AddUnique result, no card-kernel output mismatch is currently evidenced; no dispatch change is made.",
+    "The RULE-513 native execution is bounded by supplied helper behavior and does not certify the actual UE allocator, arbitrary FProperty operations, GC, or current live UFunction identity."
+  ],
+  "evidence": {
+    "sdk_header": "D:/Program Files/KARDS - The WWII Card Game/KARDS/default/game/kards/Binaries/Win64/ue4ss/CXXHeaderDump/Engine.hpp",
+    "sdk_declaration_line": 16358,
+    "sdk_header_sha256": "6ff639c0078e8800c5bc6aae8090beda97d4265ad5f3ba35e13f6e65128c82fb",
+    "prior_native_report": "out/audit/systematic-rules/array-unwind-chain-reconstruction-and-native-return-semantics-20261028.json",
+    "prior_native_report_sha256": "f1da71be9d8ac93a859ea2e90ab50c62cd562cb49b606fdf468c4abd16b4d8d2",
+    "ir_inventory": "out/audit/systematic-rules/array-addunique-ir-call-sites-20261104.json",
+    "ir_inventory_sha256": "bec43d01126f60a81d7da4923f20288c47ef4bee79e26dab499f028fde28bf59",
+    "client_exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305"
+  },
+  "verification": {
+    "botsim_full_selftest": "passed on current sources",
+    "passed_cases": 1122,
+    "existing_tests": [
+      "BlueprintValueArrays: string-valued uniqueness and duplicate suppression",
+      "BlueprintArrayAndLocationQueries: integer IDs and CardInstance IDs deduplicate",
+      "ObjectArrayIdentity: distinct object references remain distinct despite matching card IDs"
+    ],
+    "current_pvp_ir_call_sites": 0
+  },
+  "limitations": [
+    "No current live native function capture or execution was performed in this audit turn.",
+    "Native helper return values are not the reflected Blueprint node return contract; only the SDK declaration is available here.",
+    "No card is promoted to full audit based on a shared primitive review."
+  ]
+}

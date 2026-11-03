@@ -9268,6 +9268,30 @@
         "Self-append/overlapping storage semantics are unresolved; current two card IR sites use distinct variables.",
         "Two call sites are inventoried, not certified end to end; no card is promoted to full audit."
       ]
+    },
+    {
+      "id": "KISMET-ARRAY/Array_AddUnique/no-card-ir-consumer-20261104",
+      "symbol": "Array_AddUnique",
+      "modes": [0],
+      "status": "partial",
+      "validated_scope": "No call sites in 1,709 current card IR asset programs; prior bounded native helper evidence and SDK void declaration recorded.",
+      "report": "out/audit/systematic-rules/array-addunique-audit-20261104.json",
+      "report_sha256": "1d7a40c97d5a85c42061d05c250172e41d88d4c2f0b4cb2df87d5e28fad298e2",
+      "client_exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+      "source_bindings": {
+        "src/KLink.Bot/Effects/CardApiDispatch.cs": "b7188eace3ff3ad55eac7985b4b92e437f208e0b0e5ddc74e3cd572c0c79c7f3",
+        "klink bot/docs/card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b"
+      },
+      "evidence_bindings": {
+        "out/audit/systematic-rules/array-addunique-ir-call-sites-20261104.json": "bec43d01126f60a81d7da4923f20288c47ef4bee79e26dab499f028fde28bf59",
+        "out/audit/systematic-rules/array-unwind-chain-reconstruction-and-native-return-semantics-20261028.json": "f1da71be9d8ac93a859ea2e90ab50c62cd562cb49b606fdf468c4abd16b4d8d2",
+        "D:/Program Files/KARDS - The WWII Card Game/KARDS/default/game/kards/Binaries/Win64/ue4ss/CXXHeaderDump/Engine.hpp": "6ff639c0078e8800c5bc6aae8090beda97d4265ad5f3ba35e13f6e65128c82fb"
+      },
+      "limitations": [
+        "The native helper was executed with supplied property, allocator, frame, and element helpers; this is not full UE lifecycle certification.",
+        "The report records a zero-call-site result for current card IR and does not classify non-card Blueprint usage.",
+        "No card is promoted to full audit."
+      ]
     }
   ],
   "scope_reviews": {},
