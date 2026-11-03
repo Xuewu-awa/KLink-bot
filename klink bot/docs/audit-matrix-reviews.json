@@ -9721,6 +9721,30 @@
         "Runtime hash changed since the prior model artifact, so the model was retrained with identical parameters before evaluation.",
         "No promotion to default strategy."
       ]
+    },
+    {
+      "id": "KISMET-ARRAY/Array_Resize/Semper-Fi-integer-target-20261104",
+      "symbol": "Array_Resize",
+      "modes": [null],
+      "status": "partial",
+      "validated_scope": "One current card IR site calls the void resize operation on the instance integer-ID list, requesting length 8; existing BotSim regression covers in-place shrink/growth, zero, negative preservation, and VM continuation.",
+      "report": "out/audit/systematic-rules/array-resize-audit-20261104.json",
+      "report_sha256": "032f88a790521fa6d004c667a70566f18d8aa9564e76894a56c419260b930b56",
+      "client_exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+      "source_bindings": {
+        "src/KLink.Bot/Effects/CardApiDispatch.cs": "ba6e1909eb57cffd2f326274a8fc35ff9caf82d8d923619eca913fdaae4b9a1a",
+        "tools/BotSim/SelfTest.cs": "cb8cac96854eb8db1cf3b195b3ffbcef49ed6d62c117cd03078ad0e414ab254b",
+        "klink bot/docs/card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b"
+      },
+      "evidence_bindings": {
+        "out/audit/systematic-rules/array-resize-ir-call-sites-20261104.json": "05e77060b17a085ba30fdb4d73e30d654a9f36db405d795a7dfe2392d5dd8c10",
+        "D:/Program Files/KARDS - The WWII Card Game/KARDS/default/game/kards/Binaries/Win64/ue4ss/CXXHeaderDump/Engine.hpp": "6ff639c0078e8800c5bc6aae8090beda97d4265ad5f3ba35e13f6e65128c82fb"
+      },
+      "limitations": [
+        "Negative-size native behavior is supported by historical RULE-107 analysis of an older executable fingerprint, not revalidated against the current client.",
+        "Current card IR inventory contains one consumer; this evidence does not certify Semper Fi end to end.",
+        "Generic reflected-array allocation, destruction/copy operations, and all element types remain outside the validated scope."
+      ]
     }
   ]
 }

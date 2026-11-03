@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "rule": "Array_Resize",
+  "date": "2026-11-04",
+  "status": "partial simulator behavior review; one current PvP card IR call site",
+  "findings": [
+    "Current card IR has one direct Array_Resize call: card_event_semper_fi.OnPlayedFromHand at statement/bytecode offset 1510. It targets the instance integer-ID array cardsToRandom, requests length 8, has no output pins, and is reached only when the deck-derived candidate array exceeds 8 entries.",
+    "The installed SDK declares void Array_Resize(const TArray<int32>& TargetArray, int32 Size) in Engine.hpp. The current simulator mutates IList in place, truncates from the tail, zero-fills integer growth, clears at zero, returns null, and leaves the array unchanged for negative sizes.",
+    "Existing BotSim tests cover shrink, integer growth, zero, negative-size preservation, void return, and continuation after negative-size invocation in both direct dispatch and VM paths. The existing regression is sufficient; no duplicate test was added.",
+    "The negative-size behavior is supported by historical RULE-107 analysis of a prior installed executable (SHA-256 09df6b669944d5ca68f5b56741c05f591c03bfd3600f75829364a3452e661dc0). The currently installed executable has SHA-256 b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305, so the native implementation claim is not current-version revalidation.",
+    "The simulator implementation and regression establish local consistency for the exercised element types; they do not establish full Unreal FProperty lifecycle, allocation behavior, or end-to-end Semper Fi card correctness."
+  ],
+  "evidence": {
+    "sdk_header": "D:/Program Files/KARDS - The WWII Card Game/KARDS/default/game/kards/Binaries/Win64/ue4ss/CXXHeaderDump/Engine.hpp",
+    "sdk_declaration_line": 16341,
+    "sdk_header_sha256": "6ff639c0078e8800c5bc6aae8090beda97d4265ad5f3ba35e13f6e65128c82fb",
+    "ir_inventory": "out/audit/systematic-rules/array-resize-ir-call-sites-20261104.json",
+    "ir_inventory_sha256": "05e77060b17a085ba30fdb4d73e30d654a9f36db405d795a7dfe2392d5dd8c10",
+    "historical_native_record": "klink bot/docs/系统规则审计-20261014.md#RULE-107",
+    "current_client_exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305"
+  },
+  "verification": {
+    "existing_regression": "Blueprint Array_Resize：原地裁剪/扩容且负长度保留原数组",
+    "focused_selftest": "passed: 1 case",
+    "full_selftest": "passed: 1,123 cases",
+    "solution_build_errors": 0,
+    "solution_build_warnings": 10,
+    "audit_matrix_tests": "passed: 17 tests",
+    "current_card_ir_sites": 1
+  },
+  "limitations": [
+    "Negative-size native semantics come from a historical executable fingerprint and have not been revalidated against the current executable.",
+    "The single call-site inventory does not certify Semper Fi or any other card end to end.",
+    "Generic reflected-array allocation, destructor/copy operations, and non-integer element semantics were not independently captured in this review."
+  ]
+}
