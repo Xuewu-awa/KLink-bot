@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "report_id": "KISMET-BOOL-OPERATORS-NATIVE-CONTRACT-20261104",
+  "status": "partial",
+  "scope": "Current-client KismetMathLibrary BooleanAND, BooleanOR and Not_PreBool wrappers, local VM truth-table regressions, and static repository IR inventory; not full-card or PvP certification.",
+  "client": {
+    "executable": "D:/Program Files/KARDS - The WWII Card Game/KARDS/default/game/kards/Binaries/Win64/kards-Win64-Shipping.exe",
+    "sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305"
+  },
+  "capture": {
+    "path": "out/audit/systematic-rules/kismet-bool-operators-native-capture-current-20261104.json",
+    "sha256": "b55cff45508d259b75cca3c510245934861cbbd1bee4083d2ecd83947fe037d1",
+    "owner": "/Script/Engine.KismetMathLibrary",
+    "all_live_ufunction_owners_verified": true,
+    "method": "Read-only machine-code capture. BooleanAND/BooleanOR include both result return paths; Not_PreBool includes its result path. No native function was invoked and no game memory was written."
+  },
+  "semantics": {
+    "BooleanAND": {
+      "signature": "bool BooleanAND(bool A, bool B)",
+      "result": "A && B",
+      "return_paths": ["both operands true writes 1", "otherwise writes 0"]
+    },
+    "BooleanOR": {
+      "signature": "bool BooleanOR(bool A, bool B)",
+      "result": "A || B",
+      "return_paths": ["either operand true writes 1", "both false writes 0"]
+    },
+    "Not_PreBool": {
+      "signature": "bool Not_PreBool(bool A)",
+      "result": "!A",
+      "condition_instruction": "sete al after comparing the parsed Boolean local with zero"
+    },
+    "operand_parsing": "BooleanAND and BooleanOR each parse both Boolean parameters before branching to a result path; the wrapper does not skip parsing B based on A."
+  },
+  "static_ir_inventory": {
+    "source": "out/audit/systematic-rules/kismet-math-node-catalog-20261103.json",
+    "source_sha256": "f05ec7c8ebcbe668acf2a715c933f1abd39758fd2db2e208d605245b45fd8682",
+    "BooleanAND": { "call_sites": 1529, "card_records": 766 },
+    "BooleanOR": { "call_sites": 157, "card_records": 113 },
+    "Not_PreBool": { "call_sites": 203, "card_records": 162 },
+    "total_call_sites": 1889,
+    "note": "The repository IR snapshot includes non-PvP assets and does not establish current-client reachability or PvP eligibility."
+  },
+  "regression": {
+    "fixture": "tools/BotSim/Fixtures/kismet-bool-operators-native-20261104.json",
+    "cases": "All four BooleanAND/BooleanOR input combinations and both Not_PreBool inputs.",
+    "result": "All 10 simulator outputs match the captured Boolean contract; no VM faults."
+  },
+  "limitations": [
+    "The evidence covers valid Boolean inputs and observed wrapper paths, not malformed UFunction frames or every property flag.",
+    "BotSim tests the local VM; it does not call the client executable for differential runtime testing.",
+    "Static IR counts do not establish PvP eligibility, execution reachability, or complete card behavior.",
+    "Evidence is valid only when the executable SHA-256 matches the value above."
+  ]
+}

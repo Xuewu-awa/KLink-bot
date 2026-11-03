@@ -387,6 +387,93 @@ internal static partial class SelfTest
         return null;
     }
 
+    private static string? KismetBooleanOperatorsNativeContract(CardDatabase db)
+    {
+        string path = Path.Combine(AppContext.BaseDirectory, "Fixtures", "kismet-bool-operators-native-20261104.json");
+        using var document = System.Text.Json.JsonDocument.Parse(File.ReadAllText(path));
+        var root = document.RootElement;
+        DirectoryInfo? repository = new(AppContext.BaseDirectory);
+        while (repository is not null && !File.Exists(Path.Combine(repository.FullName, "KLink.slnx")))
+            repository = repository.Parent;
+        if (repository is null)
+            return "could not locate repository root for the native Boolean-operator fixture";
+        string relative = root.GetProperty("capture_path").GetString()!;
+        string capturePath = Path.Combine(repository.FullName, relative.Replace('/', Path.DirectorySeparatorChar));
+        if (!File.Exists(capturePath))
+            return $"native Boolean-operator capture not found at {relative}";
+        string captureHash = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(capturePath))).ToLowerInvariant();
+        if (!string.Equals(captureHash, root.GetProperty("capture_sha256").GetString(), StringComparison.Ordinal))
+            return "Boolean-operator capture SHA-256 differs from the regression fixture";
+        using var capture = System.Text.Json.JsonDocument.Parse(File.ReadAllText(capturePath));
+        var captureRoot = capture.RootElement;
+        if (!string.Equals(captureRoot.GetProperty("exe_sha256").GetString(),
+                root.GetProperty("exe_sha256").GetString(), StringComparison.Ordinal))
+            return "Boolean-operator executable identity differs from the regression fixture";
+
+        foreach (var expected in root.GetProperty("functions").EnumerateObject())
+        {
+            var native = captureRoot.GetProperty("functions").GetProperty(expected.Name);
+            if (!string.Equals(native.GetProperty("exec_rva").GetString(),
+                    expected.Value.GetProperty("exec_rva").GetString(), StringComparison.Ordinal))
+                return $"{expected.Name} entry RVA differs from the regression fixture";
+            foreach (var instruction in expected.Value.GetProperty("instructions").EnumerateArray())
+            {
+                string text = instruction[0].GetString()!;
+                string bytes = instruction[1].GetString()!;
+                bool found = native.GetProperty("instructions_through_return_paths").EnumerateArray().Any(actual =>
+                    string.Equals(actual.GetProperty("instruction").GetString(), text, StringComparison.Ordinal)
+                    && string.Equals(actual.GetProperty("bytes").GetString(), bytes, StringComparison.Ordinal));
+                if (!found)
+                    return $"{expected.Name} instruction {text} differs from the native fixture";
+            }
+        }
+
+        var steps = new List<KismetStep>();
+        var expectedResults = new List<(string Name, bool Value)>();
+        var binaryCases = root.GetProperty("binary_cases").EnumerateArray()
+            .Select(row => (A: row[0].GetBoolean(), B: row[1].GetBoolean())).ToArray();
+        foreach (string functionName in new[] { "BooleanAND", "BooleanOR" })
+        {
+            var values = root.GetProperty("functions").GetProperty(functionName)
+                .GetProperty("results").EnumerateArray().Select(x => x.GetBoolean()).ToArray();
+            if (values.Length != binaryCases.Length)
+                return $"{functionName} fixture result count does not match the Boolean input pairs";
+            for (int i = 0; i < binaryCases.Length; i++)
+            {
+                string output = $"result{steps.Count}";
+                steps.Add(SetMathResult(steps.Count, output, MathExpr(functionName,
+                    new KismetExpr { Bool = binaryCases[i].A }, new KismetExpr { Bool = binaryCases[i].B })));
+                expectedResults.Add((output, values[i]));
+            }
+        }
+
+        var notValues = root.GetProperty("functions").GetProperty("Not_PreBool")
+            .GetProperty("results").EnumerateArray().Select(x => x.GetBoolean()).ToArray();
+        var unaryCases = root.GetProperty("unary_cases").EnumerateArray()
+            .Select(row => row[0].GetBoolean()).ToArray();
+        if (notValues.Length != unaryCases.Length)
+            return "Not_PreBool fixture result count does not match the Boolean inputs";
+        for (int i = 0; i < unaryCases.Length; i++)
+        {
+            string output = $"result{steps.Count}";
+            steps.Add(SetMathResult(steps.Count, output,
+                MathExpr("Not_PreBool", new KismetExpr { Bool = unaryCases[i] })));
+            expectedResults.Add((output, notValues[i]));
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        var context = new EffectContext { Engine = engine, State = state, Controller = Side.Left };
+        long faults = engine.Api.Vm.FaultedPrograms;
+        var actual = engine.Api.Vm.RunLocalProgramMulti(
+            new KismetProgram(steps, 0), context, null, expectedResults.Select(x => x.Name).ToArray());
+        if (engine.Api.Vm.FaultedPrograms != faults)
+            return "Boolean operator truth-table probe unexpectedly faulted the VM";
+        foreach (var expected in expectedResults)
+            if (!Equals(actual[expected.Name], expected.Value))
+                return $"{expected.Name} returned {actual[expected.Name] ?? "<null>"}; expected {expected.Value}";
+        return null;
+    }
+
     private static string? KismetFModFiniteContract(CardDatabase db)
     {
         // The current client wrapper computes the quotient with cvttsd2si
@@ -606,6 +693,80 @@ internal static partial class SelfTest
             }
         }
 
+        return null;
+    }
+
+    private static string? KismetEnumCompareCardLocationNativeContract(CardDatabase db)
+    {
+        string path = Path.Combine(AppContext.BaseDirectory, "Fixtures", "kismet-cardlocation-compare-native-20261104.json");
+        using var document = System.Text.Json.JsonDocument.Parse(File.ReadAllText(path));
+        var root = document.RootElement;
+        DirectoryInfo? repository = new(AppContext.BaseDirectory);
+        while (repository is not null && !File.Exists(Path.Combine(repository.FullName, "KLink.slnx")))
+            repository = repository.Parent;
+        if (repository is null)
+            return "could not locate repository root for the card-location comparator fixture";
+        string relative = root.GetProperty("capture_path").GetString()!;
+        string capturePath = Path.Combine(repository.FullName, relative.Replace('/', Path.DirectorySeparatorChar));
+        if (!File.Exists(capturePath))
+            return $"card-location comparator capture not found at {relative}";
+        string captureHash = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(capturePath))).ToLowerInvariant();
+        if (!string.Equals(captureHash, root.GetProperty("capture_sha256").GetString(), StringComparison.Ordinal))
+            return "card-location comparator capture SHA-256 differs from the regression fixture";
+        using var capture = System.Text.Json.JsonDocument.Parse(File.ReadAllText(capturePath));
+        var captureRoot = capture.RootElement;
+        if (!string.Equals(captureRoot.GetProperty("exe_sha256").GetString(),
+                root.GetProperty("exe_sha256").GetString(), StringComparison.Ordinal)
+            || !string.Equals(captureRoot.GetProperty("owner").GetString(), "/Script/kards.FunctionLibrary", StringComparison.Ordinal)
+            || !string.Equals(captureRoot.GetProperty("function").GetString(), "EnumCompareCardLocation", StringComparison.Ordinal)
+            || !string.Equals(captureRoot.GetProperty("exec_rva").GetString(),
+                root.GetProperty("exec_rva").GetString(), StringComparison.Ordinal)
+            || !string.Equals(captureRoot.GetProperty("trailing_call_target_rva").GetString(),
+                root.GetProperty("implementation_rva").GetString(), StringComparison.Ordinal))
+            return "card-location comparator capture identity differs from the regression fixture";
+
+        bool HasInstruction(System.Text.Json.JsonElement instructions, string rva, string bytes) =>
+            instructions.EnumerateArray().Any(actual =>
+                string.Equals(actual.GetProperty("rva").GetString(), rva, StringComparison.Ordinal)
+                && string.Equals(actual.GetProperty("bytes").GetString(), bytes, StringComparison.Ordinal));
+        var wrapper = captureRoot.GetProperty("instructions_to_first_ret");
+        foreach (var expected in root.GetProperty("wrapper_instructions").EnumerateArray())
+            if (!HasInstruction(wrapper, expected[0].GetString()!, expected[1].GetString()!))
+                return $"card-location wrapper instruction at {expected[0].GetString()} differs from the native fixture";
+        var implementation = captureRoot.GetProperty("trailing_call_target_instructions_to_first_ret");
+        foreach (var expected in root.GetProperty("implementation_instructions").EnumerateArray())
+            if (!HasInstruction(implementation, expected[0].GetString()!, expected[1].GetString()!))
+                return $"card-location implementation instruction at {expected[0].GetString()} differs from the native fixture";
+
+        var locations = root.GetProperty("location_values").EnumerateArray()
+            .Select(x => x.GetProperty("value").GetInt32()).ToArray();
+        if (locations.Length != 10 || !locations.SequenceEqual(Enumerable.Range(0, 10)))
+            return "card-location enum fixture does not cover SDK values 0 through 9 exactly";
+        var (engine, state) = EmptyBoard(db);
+        var context = new EffectContext { Engine = engine, State = state, Controller = Side.Left };
+        var steps = new List<KismetStep>(locations.Length * locations.Length);
+        var slots = new List<string>(locations.Length * locations.Length);
+        foreach (int left in locations)
+        foreach (int right in locations)
+        {
+            string slot = $"branch_{left}_{right}";
+            slots.Add(slot);
+            steps.Add(new KismetStep(steps.Count, "math", "EnumCompareCardLocation",
+                [IntExpr(left), IntExpr(right), LocalExpr(slot)], [2], null, null, -1, null, null));
+        }
+
+        long faults = engine.Api.Vm.FaultedPrograms;
+        var result = engine.Api.Vm.RunLocalProgramMulti(new KismetProgram(steps, 0), context, null, slots.ToArray());
+        if (engine.Api.Vm.FaultedPrograms != faults)
+            return "card-location enum comparison probe unexpectedly faulted the VM";
+        foreach (int left in locations)
+        foreach (int right in locations)
+        {
+            int expected = left == right ? 0 : 1;
+            string slot = $"branch_{left}_{right}";
+            if (!Equals(result[slot], expected))
+                return $"EnumCompareCardLocation({left},{right}) returned {result[slot] ?? "<null>"}; expected {expected}";
+        }
         return null;
     }
 }

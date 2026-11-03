@@ -33,8 +33,8 @@ Array_Length	762	811	1144	"[""expression_call""]"	"[{""path"": ""src/KLink.Bot/E
 Array_RemoveItem	17	17	19	"[""expression_call""]"	"[{""path"": ""src/KLink.Bot/Effects/CardApiDispatch.cs"", ""line"": 1073, ""kind"": ""dispatch_key""}]"	[]	"[""out/audit/systematic-rules/array-remove-contracts-20261018.json""]"	not_fully_reviewed	static direct use count; not execution frequency
 Array_Resize	1	1	1	"[""call""]"	"[{""path"": ""src/KLink.Bot/Effects/CardApiDispatch.cs"", ""line"": 1032, ""kind"": ""dispatch_key""}]"	[]	[]	not_fully_reviewed	static direct use count; not execution frequency
 Array_Reverse	4	4	4	"[""call""]"	"[{""path"": ""src/KLink.Bot/Effects/CardApiDispatch.cs"", ""line"": 1457, ""kind"": ""dispatch_key""}]"	[]	[]	not_fully_reviewed	static direct use count; not execution frequency
-BooleanAND	766	836	1529	"[""math""]"	[]	[]	[]	not_fully_reviewed	static direct use count; not execution frequency
-BooleanOR	113	115	157	"[""math""]"	[]	[]	"[""out/audit/systematic-rules/battlefield-spawn-wrapper-guard-and-gold-20261026.json""]"	not_fully_reviewed	static direct use count; not execution frequency
+BooleanAND	766	836	1529	"[""math""]"	[]	"[""KISMET-MATH/BooleanAND/native-bool-contract-20261104""]"	"[""out/audit/systematic-rules/bool-operators-native-contract-20261104.json""]"	not_fully_reviewed	static direct use count; not execution frequency
+BooleanOR	113	115	157	"[""math""]"	[]	"[""KISMET-MATH/BooleanOR/native-bool-contract-20261104""]"	"[""out/audit/systematic-rules/battlefield-spawn-wrapper-guard-and-gold-20261026.json"", ""out/audit/systematic-rules/bool-operators-native-contract-20261104.json""]"	not_fully_reviewed	static direct use count; not execution frequency
 BreakVector	1	2	7	"[""math""]"	[]	[]	"[""out/audit/systematic-rules/kismet-clamp-native-contract-20261103.json""]"	not_fully_reviewed	static direct use count; not execution frequency
 CampaignAddAmbush	16	16	16	"[""call""]"	[]	[]	[]	not_fully_reviewed	static direct use count; not execution frequency
 CampaignAddAttack	37	37	59	"[""call""]"	[]	[]	[]	not_fully_reviewed	static direct use count; not execution frequency
@@ -111,7 +111,7 @@ DrawSpecificCardFromDeckBySide	41	41	46	"[""call""]"	"[{""path"": ""src/KLink.Bo
 EnableDoubleCostAbility	1	1	2	"[""call""]"	[]	[]	[]	not_fully_reviewed	static direct use count; not execution frequency
 EndMatch	15	15	15	"[""call""]"	[]	[]	"[""out/audit/systematic-rules/hq-finish-notification-and-action-boundary-20261024.json""]"	not_fully_reviewed	static direct use count; not execution frequency
 EndsWith	1	1	2	"[""math""]"	[]	[]	[]	not_fully_reviewed	static direct use count; not execution frequency
-EnumCompareCardLocation	49	49	55	"[""math""]"	[]	[]	[]	not_fully_reviewed	static direct use count; not execution frequency
+EnumCompareCardLocation	49	49	55	"[""math""]"	[]	"[""KISMET-MATH/EnumCompareCardLocation/native-byte-branch-20261104""]"	"[""out/audit/systematic-rules/enum-compare-cardlocation-native-contract-20261104.json""]"	not_fully_reviewed	static direct use count; not execution frequency
 EnumCompareFaction	76	77	98	"[""math""]"	[]	[]	"[""out/audit/systematic-rules/enum-compare-faction-sdk-contract-20261103.json""]"	not_fully_reviewed	static direct use count; not execution frequency
 EnumCompareSide	52	52	56	"[""math""]"	[]	"[""RULE-KISMET-MATH-CATALOG/EnumCompareSide-SDK-contract-20261103""]"	"[""out/audit/systematic-rules/enum-compare-side-sdk-contract-20261103.json""]"	not_fully_reviewed	static direct use count; not execution frequency
 EqualEqual_BoolBool	1	1	3	"[""math""]"	[]	[]	[]	not_fully_reviewed	static direct use count; not execution frequency
@@ -285,7 +285,7 @@ NotEqual_IntInt	124	127	428	"[""math""]"	[]	"[""KISMET-MATH/NotEqual_IntInt/nati
 NotEqual_NameName	2	2	2	"[""math""]"	[]	[]	[]	not_fully_reviewed	static direct use count; not execution frequency
 NotEqual_ObjectObject	17	17	18	"[""math""]"	[]	[]	"[""out/audit/systematic-rules/object-operators-20261018.json""]"	not_fully_reviewed	static direct use count; not execution frequency
 NotEqual_StriStri	4	4	10	"[""math""]"	[]	[]	[]	not_fully_reviewed	static direct use count; not execution frequency
-Not_PreBool	162	169	203	"[""math""]"	[]	[]	[]	not_fully_reviewed	static direct use count; not execution frequency
+Not_PreBool	162	169	203	"[""math""]"	[]	"[""KISMET-MATH/Not_PreBool/native-bool-contract-20261104""]"	"[""out/audit/systematic-rules/bool-operators-native-contract-20261104.json""]"	not_fully_reviewed	static direct use count; not execution frequency
 OnEnterPlay	1	1	1	"[""call""]"	[]	[]	"[""out/audit/systematic-rules/reveal-observer-snapshots-and-entry-arguments-20261027.json""]"	not_fully_reviewed	static direct use count; not execution frequency
 Percent_IntInt	5	5	14	"[""math""]"	[]	"[""KISMET-MATH/Percent_IntInt/native-int32-contract-20261103""]"	"[""out/audit/systematic-rules/divide-percent-native-contract-20261103.json""]"	not_fully_reviewed	static direct use count; not execution frequency
 PersistCustomFields	217	230	504	"[""call""]"	"[{""path"": ""src/KLink.Bot/Effects/CardApi.cs"", ""line"": 5445, ""kind"": ""declaration""}, {""path"": ""src/KLink.Bot/Effects/CardApi.cs"", ""line"": 5447, ""kind"": ""declaration""}, {""path"": ""src/KLink.Bot/Effects/CardApiDispatch.cs"", ""line"": 786, ""kind"": ""dispatch_key""}]"	[]	"[""out/audit/systematic-rules/json-copy-serialization-isolation-20261025.json"", ""out/audit/systematic-rules/json-deserialization-receive-boundary-20261025.json"", ""out/audit/systematic-rules/persist-defaults-20261018.json""]"	not_fully_reviewed	static direct use count; not execution frequency

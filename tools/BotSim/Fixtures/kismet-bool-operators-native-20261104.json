@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "capture_path": "out/audit/systematic-rules/kismet-bool-operators-native-capture-current-20261104.json",
+  "capture_sha256": "b55cff45508d259b75cca3c510245934861cbbd1bee4083d2ecd83947fe037d1",
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "binary_cases": [
+    [false, false],
+    [false, true],
+    [true, false],
+    [true, true]
+  ],
+  "unary_cases": [
+    [false],
+    [true]
+  ],
+  "functions": {
+    "BooleanAND": {
+      "exec_rva": "0x3d94f00",
+      "instructions": [
+        ["setne bpl", "400f95c5"],
+        ["cmp dword ptr [rsp + 0x50], 0", "837c245000"],
+        ["mov byte ptr [rsi], 1", "c60601"],
+        ["mov byte ptr [rsi], 0", "c60600"]
+      ],
+      "results": [false, false, false, true]
+    },
+    "BooleanOR": {
+      "exec_rva": "0x3d951a0",
+      "instructions": [
+        ["setne bpl", "400f95c5"],
+        ["cmp dword ptr [rsp + 0x50], 0", "837c245000"],
+        ["mov byte ptr [rsi], bpl", "40882e"],
+        ["mov byte ptr [rsi], 1", "c60601"]
+      ],
+      "results": [false, true, true, true]
+    },
+    "Not_PreBool": {
+      "exec_rva": "0x3dd7310",
+      "instructions": [
+        ["sete al", "0f94c0"],
+        ["mov byte ptr [rsi], al", "8806"]
+      ],
+      "results": [true, false]
+    }
+  },
+  "limitations": [
+    "The result contract covers valid Boolean inputs and visible local wrapper paths, not malformed UFunction frames.",
+    "BotSim evaluates local VM expressions and does not call the client executable.",
+    "Static IR counts do not establish PvP reachability or complete card behavior.",
+    "The fixture is valid only for the executable SHA-256 recorded above."
+  ]
+}

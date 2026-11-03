@@ -8692,6 +8692,111 @@
       "source_bindings": { "src/KLink.Bot/Effects/Blueprint/KismetVm.cs": "0a6d8e23a98e27b02d3d702ab00ca2d22c046c16ca0aa0ee339981bf03e9c416", "klink bot/docs/card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b", "tools/BotSim/SelfTest.KismetMath.cs": "d80a91a4256db5fe456bacc1fc1016664759f14470f5d4209dd03281aa985b23", "tools/BotSim/SelfTest.cs": "e330ba434d576bd5b30aa7a631f79e509508ac072cb6aee54701f28f60bf5287", "tools/BotSim/BotSim.csproj": "dd2e9a85c9cdc604d664b3593a25d540c6db20ffdfd68c9643c709f3979403e8", "tools/BotSim/Fixtures/kismet-byte-comparisons-native-20261103.json": "5a4e9687ebd469ef4360b445a8409b799b9851db0ecdd15e0c325516d9b21029" },
       "evidence_bindings": { "out/audit/systematic-rules/kismet-byte-comparisons-native-capture-current-20261103.json": "1fec3a603d8a6bdc53921e8dc9139c2603fdca4c6d72ddeb377a5fda273b3422", "out/audit/systematic-rules/byte-comparison-focused-selftest-20261104.txt": "b3e5eb44d8e731bfc5964f214f41e5ab649ef8997a07bb8b505114e472b8a69f", "out/audit/systematic-rules/byte-comparison-full-selftest-20261104.txt": "c491ae996e29f0817be33d161eb425882f1c2ec5e0a258ca59f2def0e46f64db", "out/audit/systematic-rules/byte-comparison-solution-build-20261104.txt": "148d18e3eeaf339c7a74ddf7840347c17748c3371fc4a869c003420696a1e716" },
       "limitations": [ "Valid byte operands only; BotSim is not an in-process client call; static IR does not prove PvP reachability or complete-card behavior." ]
+    },
+    {
+      "id": "KISMET-MATH/BooleanAND/native-bool-contract-20261104",
+      "symbol": "BooleanAND",
+      "modes": [ null ],
+      "status": "partial",
+      "validated_scope": "Current-client BooleanAND input parsing, both result paths, all four truth-table pairs, and the latest 1,114-case full BotSim regression. Static IR occurrence counts do not establish PvP reachability or card certification.",
+      "report": "out/audit/systematic-rules/bool-operators-native-contract-20261104.json",
+      "report_sha256": "c3ceb7438de8f48eeba36b2f29b53e3b942c686e90380631bfc2df62c49dd8db",
+      "client_exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+      "source_bindings": {
+        "src/KLink.Bot/Effects/Blueprint/KismetVm.cs": "0a6d8e23a98e27b02d3d702ab00ca2d22c046c16ca0aa0ee339981bf03e9c416",
+        "klink bot/docs/card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b",
+        "tools/BotSim/SelfTest.KismetMath.cs": "8cd9ca3144f63846cadf296caf289d6dfde51773977c44ebb4c8131f2865213a",
+        "tools/BotSim/SelfTest.cs": "c869798a2f264e1aca416ff904f8480a733c2698f3b7bc618408759e683a275c",
+        "tools/BotSim/BotSim.csproj": "0673f8fd6b909df1494c24cb657b9b49ee7d383263942fe032f315e429e3abe0",
+        "tools/BotSim/Fixtures/kismet-bool-operators-native-20261104.json": "604f8d67bf76ab0800cc31e7bebd09f208c929e8f24359dd125e17b7686f692f",
+        "out/audit/capture-kismet-bool-operators-current-20261104.py": "0cf91bef41fac6a925e97bad68da48f89d5b3c7d6abb421047765b32c7e126be"
+      },
+      "evidence_bindings": {
+        "out/audit/systematic-rules/kismet-bool-operators-native-capture-current-20261104.json": "b55cff45508d259b75cca3c510245934861cbbd1bee4083d2ecd83947fe037d1",
+        "out/audit/systematic-rules/bool-operators-focused-selftest-20261104.txt": "788e7b7ff5bd696c32a9ed25137c90e8295afe3955794aabc0050987df36eba4",
+        "out/audit/systematic-rules/cardlocation-compare-full-selftest-20261104.txt": "4786366bca4574f9149adca6072ea6157316255ae82a83730a1cb95495608938",
+        "out/audit/systematic-rules/cardlocation-compare-solution-build-20261104.txt": "56936511e3f908c70efbc9f83912d310e95c2a34295ae97eaa95604bf4cdb347"
+      },
+      "limitations": [ "Only valid Boolean inputs and captured wrapper paths are covered; malformed UFunction frames are not certified.", "Static IR counts do not establish PvP reachability or complete card behavior.", "BotSim exercises the local VM; it does not invoke the client executable." ]
+    },
+    {
+      "id": "KISMET-MATH/BooleanOR/native-bool-contract-20261104",
+      "symbol": "BooleanOR",
+      "modes": [ null ],
+      "status": "partial",
+      "validated_scope": "Current-client BooleanOR input parsing, both result paths, all four truth-table pairs, and the latest 1,114-case full BotSim regression. Static IR occurrence counts do not establish PvP reachability or card certification.",
+      "report": "out/audit/systematic-rules/bool-operators-native-contract-20261104.json",
+      "report_sha256": "c3ceb7438de8f48eeba36b2f29b53e3b942c686e90380631bfc2df62c49dd8db",
+      "client_exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+      "source_bindings": {
+        "src/KLink.Bot/Effects/Blueprint/KismetVm.cs": "0a6d8e23a98e27b02d3d702ab00ca2d22c046c16ca0aa0ee339981bf03e9c416",
+        "klink bot/docs/card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b",
+        "tools/BotSim/SelfTest.KismetMath.cs": "8cd9ca3144f63846cadf296caf289d6dfde51773977c44ebb4c8131f2865213a",
+        "tools/BotSim/SelfTest.cs": "c869798a2f264e1aca416ff904f8480a733c2698f3b7bc618408759e683a275c",
+        "tools/BotSim/BotSim.csproj": "0673f8fd6b909df1494c24cb657b9b49ee7d383263942fe032f315e429e3abe0",
+        "tools/BotSim/Fixtures/kismet-bool-operators-native-20261104.json": "604f8d67bf76ab0800cc31e7bebd09f208c929e8f24359dd125e17b7686f692f",
+        "out/audit/capture-kismet-bool-operators-current-20261104.py": "0cf91bef41fac6a925e97bad68da48f89d5b3c7d6abb421047765b32c7e126be"
+      },
+      "evidence_bindings": {
+        "out/audit/systematic-rules/kismet-bool-operators-native-capture-current-20261104.json": "b55cff45508d259b75cca3c510245934861cbbd1bee4083d2ecd83947fe037d1",
+        "out/audit/systematic-rules/bool-operators-focused-selftest-20261104.txt": "788e7b7ff5bd696c32a9ed25137c90e8295afe3955794aabc0050987df36eba4",
+        "out/audit/systematic-rules/cardlocation-compare-full-selftest-20261104.txt": "4786366bca4574f9149adca6072ea6157316255ae82a83730a1cb95495608938",
+        "out/audit/systematic-rules/cardlocation-compare-solution-build-20261104.txt": "56936511e3f908c70efbc9f83912d310e95c2a34295ae97eaa95604bf4cdb347"
+      },
+      "limitations": [ "Only valid Boolean inputs and captured wrapper paths are covered; malformed UFunction frames are not certified.", "Static IR counts do not establish PvP reachability or complete card behavior.", "BotSim exercises the local VM; it does not invoke the client executable." ]
+    },
+    {
+      "id": "KISMET-MATH/Not_PreBool/native-bool-contract-20261104",
+      "symbol": "Not_PreBool",
+      "modes": [ null ],
+      "status": "partial",
+      "validated_scope": "Current-client Not_PreBool condition/result path, both unary truth-table inputs, and the latest 1,114-case full BotSim regression. Static IR occurrence counts do not establish PvP reachability or card certification.",
+      "report": "out/audit/systematic-rules/bool-operators-native-contract-20261104.json",
+      "report_sha256": "c3ceb7438de8f48eeba36b2f29b53e3b942c686e90380631bfc2df62c49dd8db",
+      "client_exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+      "source_bindings": {
+        "src/KLink.Bot/Effects/Blueprint/KismetVm.cs": "0a6d8e23a98e27b02d3d702ab00ca2d22c046c16ca0aa0ee339981bf03e9c416",
+        "klink bot/docs/card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b",
+        "tools/BotSim/SelfTest.KismetMath.cs": "8cd9ca3144f63846cadf296caf289d6dfde51773977c44ebb4c8131f2865213a",
+        "tools/BotSim/SelfTest.cs": "c869798a2f264e1aca416ff904f8480a733c2698f3b7bc618408759e683a275c",
+        "tools/BotSim/BotSim.csproj": "0673f8fd6b909df1494c24cb657b9b49ee7d383263942fe032f315e429e3abe0",
+        "tools/BotSim/Fixtures/kismet-bool-operators-native-20261104.json": "604f8d67bf76ab0800cc31e7bebd09f208c929e8f24359dd125e17b7686f692f",
+        "out/audit/capture-kismet-bool-operators-current-20261104.py": "0cf91bef41fac6a925e97bad68da48f89d5b3c7d6abb421047765b32c7e126be"
+      },
+      "evidence_bindings": {
+        "out/audit/systematic-rules/kismet-bool-operators-native-capture-current-20261104.json": "b55cff45508d259b75cca3c510245934861cbbd1bee4083d2ecd83947fe037d1",
+        "out/audit/systematic-rules/bool-operators-focused-selftest-20261104.txt": "788e7b7ff5bd696c32a9ed25137c90e8295afe3955794aabc0050987df36eba4",
+        "out/audit/systematic-rules/cardlocation-compare-full-selftest-20261104.txt": "4786366bca4574f9149adca6072ea6157316255ae82a83730a1cb95495608938",
+        "out/audit/systematic-rules/cardlocation-compare-solution-build-20261104.txt": "56936511e3f908c70efbc9f83912d310e95c2a34295ae97eaa95604bf4cdb347"
+      },
+      "limitations": [ "Only valid Boolean inputs and captured wrapper paths are covered; malformed UFunction frames are not certified.", "Static IR counts do not establish PvP reachability or complete card behavior.", "BotSim exercises the local VM; it does not invoke the client executable." ]
+    },
+    {
+      "id": "KISMET-MATH/EnumCompareCardLocation/native-byte-branch-20261104",
+      "symbol": "EnumCompareCardLocation",
+      "modes": [ null ],
+      "status": "partial",
+      "validated_scope": "Current-client FunctionLibrary wrapper reads byte enum inputs and routes them to cmp cl,dl; setne al; store output. All 100 SDK ECardLocationEnum pairs (0..9) match Equal=0/NotEqual=1 in BotSim. Static IR contains 55 callsites across 49 assets/programs; PvP eligibility and full-card reachability remain unverified.",
+      "report": "out/audit/systematic-rules/enum-compare-cardlocation-native-contract-20261104.json",
+      "report_sha256": "67dcfcc0fc14f3ca70773b1e223f3757985e6aa1544e7c9d12e83eb0a79f9819",
+      "client_exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+      "source_bindings": {
+        "src/KLink.Bot/Effects/Blueprint/KismetVm.cs": "0a6d8e23a98e27b02d3d702ab00ca2d22c046c16ca0aa0ee339981bf03e9c416",
+        "klink bot/docs/card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b",
+        "tools/BotSim/SelfTest.KismetMath.cs": "8cd9ca3144f63846cadf296caf289d6dfde51773977c44ebb4c8131f2865213a",
+        "tools/BotSim/SelfTest.cs": "c869798a2f264e1aca416ff904f8480a733c2698f3b7bc618408759e683a275c",
+        "tools/BotSim/BotSim.csproj": "0673f8fd6b909df1494c24cb657b9b49ee7d383263942fe032f315e429e3abe0",
+        "tools/BotSim/Fixtures/kismet-cardlocation-compare-native-20261104.json": "7c26c640c67e38c5daccc6e38740c6e8ab38683b669c1b6f40d921d27bbb3a24",
+        "klink bot/tools/audit-enum-compare-cardlocation.py": "88f5e3afa6016c19647ed090c37e42a4847e509f014e7a739ffc394a5567918c"
+      },
+      "evidence_bindings": {
+        "out/audit/systematic-rules/kismet-cardlocation-compare-native-capture-current-20261104.json": "35d84ccf4025a4ebd9738bb37f4ff4708ddbce9a038e5f4e93f5c1a210abf466",
+        "out/audit/systematic-rules/cardlocation-compare-focused-selftest-20261104.txt": "e23e52dc150bd8eda2c1546599141b5b3c1958a74b8fc2d4df637ed27c497ede",
+        "out/audit/systematic-rules/cardlocation-compare-full-selftest-20261104.txt": "4786366bca4574f9149adca6072ea6157316255ae82a83730a1cb95495608938",
+        "out/audit/systematic-rules/cardlocation-compare-solution-build-20261104.txt": "56936511e3f908c70efbc9f83912d310e95c2a34295ae97eaa95604bf4cdb347",
+        "out/audit/systematic-rules/cardlocation-compare-audit-matrix-tests-20261104.txt": "7eab9f2707d3e633bf1c94f5d355d955e45f2612e2a8dc04d810d405870374b3"
+      },
+      "limitations": [ "Only valid SDK enum values are in the BotSim matrix; no malformed parameter frame or out-of-domain enum is certified.", "The shared primitive result is captured from the current client; static IR occurrences do not prove PvP eligibility or runtime reachability.", "No card is certified end-to-end by this shared-operation regression." ]
     }
   ],
   "scope_reviews": {},

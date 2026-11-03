@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "capture_path": "out/audit/systematic-rules/kismet-cardlocation-compare-native-capture-current-20261104.json",
+  "capture_sha256": "35d84ccf4025a4ebd9738bb37f4ff4708ddbce9a038e5f4e93f5c1a210abf466",
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "owner": "/Script/kards.FunctionLibrary",
+  "function": "EnumCompareCardLocation",
+  "signature": "void EnumCompareCardLocation(ECardLocationEnum location1, ECardLocationEnum location2, EnumAreTheyEqual& Branches)",
+  "exec_rva": "0x4a89260",
+  "implementation_rva": "0x4b24ec0",
+  "wrapper_instructions": [
+    ["0x4a8933a", "0fb6542458"],
+    ["0x4a89342", "0fb64c2420"],
+    ["0x4a8935d", "e85ebb0900"]
+  ],
+  "implementation_instructions": [
+    ["0x4b24ec0", "3aca"],
+    ["0x4b24ec2", "0f95c0"],
+    ["0x4b24ec5", "418800"],
+    ["0x4b24ec8", "c3"]
+  ],
+  "location_values": [
+    {"name": "NotAvailable", "value": 0},
+    {"name": "Deck_Left", "value": 1},
+    {"name": "Deck_Right", "value": 2},
+    {"name": "Hand_Left", "value": 3},
+    {"name": "Hand_Right", "value": 4},
+    {"name": "Board_HQLeft", "value": 5},
+    {"name": "Board_HQRight", "value": 6},
+    {"name": "Board_Frontline", "value": 7},
+    {"name": "Discard", "value": 8},
+    {"name": "Deck", "value": 9}
+  ],
+  "branch_values": [
+    {"name": "Equal", "value": 0},
+    {"name": "NotEqual", "value": 1}
+  ]
+}

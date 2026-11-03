@@ -1,0 +1,220 @@
+{
+  "schema_version": 1,
+  "report_id": "ENUM-COMPARE-CARDLOCATION-NATIVE-CONTRACT-20261104",
+  "status": "partial",
+  "scope": "Current-client EnumCompareCardLocation wrapper and implementation, SDK enum values, local VM regression and static IR callsite inventory; not card-effect or PvP certification.",
+  "client": {
+    "executable": "D:/Program Files/KARDS - The WWII Card Game/KARDS/default/game/kards/Binaries/Win64/kards-Win64-Shipping.exe",
+    "sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305"
+  },
+  "native_capture": {
+    "path": "out/audit/systematic-rules/kismet-cardlocation-compare-native-capture-current-20261104.json",
+    "sha256": "35d84ccf4025a4ebd9738bb37f4ff4708ddbce9a038e5f4e93f5c1a210abf466",
+    "owner": "/Script/kards.FunctionLibrary",
+    "function": "EnumCompareCardLocation",
+    "exec_rva": "0x4a89260",
+    "implementation_rva": "0x4b24ec0",
+    "wrapper_instructions": [
+      {
+        "rva": "0x4a8933a",
+        "bytes": "0fb6542458",
+        "meaning": "zero-extend the second byte enum parameter"
+      },
+      {
+        "rva": "0x4a89342",
+        "bytes": "0fb64c2420",
+        "meaning": "zero-extend the first byte enum parameter"
+      },
+      {
+        "rva": "0x4a8935d",
+        "bytes": "e85ebb0900",
+        "meaning": "call the captured comparison implementation"
+      }
+    ],
+    "implementation_instructions": [
+      {
+        "rva": "0x4b24ec0",
+        "bytes": "3aca",
+        "meaning": "cmp cl, dl"
+      },
+      {
+        "rva": "0x4b24ec2",
+        "bytes": "0f95c0",
+        "meaning": "set result to 1 exactly when unequal"
+      },
+      {
+        "rva": "0x4b24ec5",
+        "bytes": "418800",
+        "meaning": "write the byte result through the output pointer"
+      },
+      {
+        "rva": "0x4b24ec8",
+        "bytes": "c3",
+        "meaning": "return"
+      }
+    ],
+    "method": "Read-only live UFunction ownership and ExecFunction capture; wrapper input/output flow traced to a direct native comparator. No function was invoked and no game memory was written."
+  },
+  "sdk": {
+    "function_signature": "void EnumCompareCardLocation(ECardLocationEnum location1, ECardLocationEnum location2, EnumAreTheyEqual& Branches)",
+    "location_enum": [
+      {
+        "name": "NotAvailable",
+        "value": 0
+      },
+      {
+        "name": "Deck_Left",
+        "value": 1
+      },
+      {
+        "name": "Deck_Right",
+        "value": 2
+      },
+      {
+        "name": "Hand_Left",
+        "value": 3
+      },
+      {
+        "name": "Hand_Right",
+        "value": 4
+      },
+      {
+        "name": "Board_HQLeft",
+        "value": 5
+      },
+      {
+        "name": "Board_HQRight",
+        "value": 6
+      },
+      {
+        "name": "Board_Frontline",
+        "value": 7
+      },
+      {
+        "name": "Discard",
+        "value": 8
+      },
+      {
+        "name": "Deck",
+        "value": 9
+      }
+    ],
+    "branch_enum": [
+      {
+        "name": "Equal",
+        "value": 0
+      },
+      {
+        "name": "NotEqual",
+        "value": 1
+      }
+    ],
+    "native_body_present_in_sdk_dump": false
+  },
+  "semantics": {
+    "result": "Branches = Equal (0) iff location1 == location2; otherwise NotEqual (1).",
+    "basis": "Wrapper reads both enum inputs as bytes and passes them in CL/DL; the native body executes cmp cl, dl; setne al; stores AL through the out pointer.",
+    "validated_input_domain": "All 10 SDK-defined ECardLocationEnum values, pairwise."
+  },
+  "inventory": {
+    "source": "klink bot/docs/card-ir.json",
+    "callsite_count": 55,
+    "asset_count": 49,
+    "program_count": 49,
+    "sample_callsites": [
+      {
+        "card": "card_event_tactical_withdrawal",
+        "program": "locals.CanPlayFromHand",
+        "instruction_i": 133,
+        "byte_offset": 133
+      },
+      {
+        "card": "card_event_airdrop",
+        "program": "locals.CanPlayFromHand",
+        "instruction_i": 171,
+        "byte_offset": 171
+      },
+      {
+        "card": "card_event_frozen_assets",
+        "program": "steps",
+        "instruction_i": 10,
+        "byte_offset": 10
+      },
+      {
+        "card": "card_unit_uusimaa_regiment",
+        "program": "steps",
+        "instruction_i": 120,
+        "byte_offset": 120
+      },
+      {
+        "card": "card_event_chasing_shadows",
+        "program": "locals.CanPlayFromHand",
+        "instruction_i": 69,
+        "byte_offset": 69
+      },
+      {
+        "card": "card_event_chasing_shadows",
+        "program": "locals.CanPlayFromHand",
+        "instruction_i": 1249,
+        "byte_offset": 1249
+      },
+      {
+        "card": "card_event_escaut_plan",
+        "program": "locals.CanPlayFromHand",
+        "instruction_i": 69,
+        "byte_offset": 69
+      },
+      {
+        "card": "card_event_escaut_plan",
+        "program": "locals.CanPlayFromHand",
+        "instruction_i": 1249,
+        "byte_offset": 1249
+      },
+      {
+        "card": "card_event_fortified_position",
+        "program": "steps",
+        "instruction_i": 86,
+        "byte_offset": 86
+      },
+      {
+        "card": "card_unit_5r_chasseurs",
+        "program": "steps",
+        "instruction_i": 53,
+        "byte_offset": 53
+      },
+      {
+        "card": "card_event_encirclement",
+        "program": "locals.CanPlayFromHand",
+        "instruction_i": 222,
+        "byte_offset": 222
+      },
+      {
+        "card": "card_event_rapid_engagement",
+        "program": "steps",
+        "instruction_i": 72,
+        "byte_offset": 72
+      }
+    ],
+    "note": "Inventory includes all card IR modes/assets and does not establish PvP eligibility or runtime reachability."
+  },
+  "regression": {
+    "fixture": "tools/BotSim/Fixtures/kismet-cardlocation-compare-native-20261104.json",
+    "cases": 100,
+    "result": "All SDK-defined location pairs are checked against the captured byte comparison and branch enum values.",
+    "native_equivalence_established_for_scope": true
+  },
+  "source_sha256": {
+    "card_ir": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b",
+    "vm": "0a6d8e23a98e27b02d3d702ab00ca2d22c046c16ca0aa0ee339981bf03e9c416",
+    "selftest": "8cd9ca3144f63846cadf296caf289d6dfde51773977c44ebb4c8131f2865213a",
+    "selftest_registry": "c869798a2f264e1aca416ff904f8480a733c2698f3b7bc618408759e683a275c",
+    "sdk_function": "f8039a5583a5db8be8c73470418b5b94f6cc1e856d402ffd75403c0fa8a2ac78",
+    "sdk_enums": "547f570a5bb9ab42ebd69e7628a3e07dcaa10181d7bb4d06e10ed15aac8ac9bd"
+  },
+  "limitations": [
+    "The machine-code evidence is valid only when the executable SHA-256 matches the value above.",
+    "The capture establishes this primitive's byte comparison and output encoding, not which assets are legal or reachable in PvP.",
+    "Static IR counts include non-PvP content and do not establish execution or full-card behavior.",
+    "No malformed parameter frame or enum value outside the SDK-defined set was tested in BotSim."
+  ]
+}
