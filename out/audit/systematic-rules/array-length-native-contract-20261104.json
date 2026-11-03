@@ -1,0 +1,231 @@
+{
+  "schema_version": 1,
+  "report_id": "KISMET-ARRAY-LENGTH-NATIVE-CONTRACT-20261104",
+  "status": "partial",
+  "scope": "Current-client UKismetArrayLibrary Array_Length ownership, wrapper output field, SDK declaration, managed IList regression and static IR input-shape inventory; not complete generic property ABI or card certification.",
+  "client": {
+    "executable": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
+    "sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305"
+  },
+  "native_capture": {
+    "path": "out/audit/systematic-rules/kismet-array-length-native-capture-current-20261104.json",
+    "sha256": "58fd213c9e9cfb5fd3284033357f128366f2d252b15e6093659b167a9e3b78f1",
+    "owner": "/Script/Engine.KismetArrayLibrary",
+    "function": {
+      "name": "Array_Length",
+      "exec_rva": "0x3d93400",
+      "ownership_verified": true
+    },
+    "observed_output_instructions": [
+      [
+        "0x3d93499",
+        "8b7e08"
+      ],
+      [
+        "0x3d9349c",
+        "41893e"
+      ]
+    ],
+    "method": "Read-only live UFunction ownership and entry-byte capture. The code reads a 32-bit value at array-data offset +8 and stores it to the integer output; no native call or process-memory write."
+  },
+  "sdk": {
+    "header": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\ue4ss\\CXXHeaderDump\\Engine.hpp",
+    "sha256": "6ff639c0078e8800c5bc6aae8090beda97d4265ad5f3ba35e13f6e65128c82fb",
+    "declaration": "void Array_Length(const TArray<int32>& TargetArray);"
+  },
+  "simulator": {
+    "implementation": "KismetVm.Array_Length returns IList.Count; null and non-IList values use the existing zero fallback.",
+    "regression_cases": [
+      "empty int[]",
+      "nonempty int[]",
+      "heterogeneous List<object?>",
+      "Dictionary fallback",
+      "string fallback",
+      "null fallback"
+    ],
+    "native_comparison": "Valid array count is consistent with the captured read/store and SDK function declaration. Malformed non-array behavior is not compared to the native error path."
+  },
+  "inventory": {
+    "callsite_count": 1144,
+    "asset_count": 762,
+    "program_count": 811,
+    "input_expression_shapes": {
+      "element_type,scope,var": 1081,
+      "ctx,scope,var": 3,
+      "scope,var": 55,
+      "ctx,var": 5
+    },
+    "input_element_types": {
+      "Object": 906,
+      "String": 9,
+      "Int": 163,
+      "None": 63,
+      "Byte": 1,
+      "Name": 1,
+      "Struct": 1
+    },
+    "sample_callsites": [
+      {
+        "card": "card_event_anzac_spirit",
+        "program": "steps",
+        "instruction_i": null,
+        "byte_offset": null,
+        "input_expression_keys": [
+          "element_type",
+          "scope",
+          "var"
+        ],
+        "input_element_type": "Object"
+      },
+      {
+        "card": "card_event_corps_command",
+        "program": "locals._DoOnCardPlayedOrGotchaTriggered",
+        "instruction_i": null,
+        "byte_offset": null,
+        "input_expression_keys": [
+          "element_type",
+          "scope",
+          "var"
+        ],
+        "input_element_type": "String"
+      },
+      {
+        "card": "card_event_corps_command",
+        "program": "locals._DoOnCardPlayedOrGotchaTriggered",
+        "instruction_i": null,
+        "byte_offset": null,
+        "input_expression_keys": [
+          "element_type",
+          "scope",
+          "var"
+        ],
+        "input_element_type": "Object"
+      },
+      {
+        "card": "card_event_forward_base_anzac",
+        "program": "locals.CanPlayFromHand",
+        "instruction_i": null,
+        "byte_offset": null,
+        "input_expression_keys": [
+          "element_type",
+          "scope",
+          "var"
+        ],
+        "input_element_type": "Object"
+      },
+      {
+        "card": "card_event_forward_base_anzac",
+        "program": "locals.GetPlayFromHandDamage",
+        "instruction_i": null,
+        "byte_offset": null,
+        "input_expression_keys": [
+          "element_type",
+          "scope",
+          "var"
+        ],
+        "input_element_type": "Object"
+      },
+      {
+        "card": "card_event_guerilla_warfare_school",
+        "program": "steps",
+        "instruction_i": null,
+        "byte_offset": null,
+        "input_expression_keys": [
+          "element_type",
+          "scope",
+          "var"
+        ],
+        "input_element_type": "Object"
+      },
+      {
+        "card": "card_event_repel_the_attack",
+        "program": "steps",
+        "instruction_i": null,
+        "byte_offset": null,
+        "input_expression_keys": [
+          "element_type",
+          "scope",
+          "var"
+        ],
+        "input_element_type": "Object"
+      },
+      {
+        "card": "card_event_the_double_sunrise",
+        "program": "steps",
+        "instruction_i": null,
+        "byte_offset": null,
+        "input_expression_keys": [
+          "element_type",
+          "scope",
+          "var"
+        ],
+        "input_element_type": "Object"
+      },
+      {
+        "card": "card_event_the_double_sunrise",
+        "program": "steps",
+        "instruction_i": null,
+        "byte_offset": null,
+        "input_expression_keys": [
+          "element_type",
+          "scope",
+          "var"
+        ],
+        "input_element_type": "Object"
+      },
+      {
+        "card": "card_event_the_double_sunrise",
+        "program": "steps",
+        "instruction_i": null,
+        "byte_offset": null,
+        "input_expression_keys": [
+          "element_type",
+          "scope",
+          "var"
+        ],
+        "input_element_type": "Object"
+      },
+      {
+        "card": "card_event_the_double_sunrise",
+        "program": "steps",
+        "instruction_i": null,
+        "byte_offset": null,
+        "input_expression_keys": [
+          "element_type",
+          "scope",
+          "var"
+        ],
+        "input_element_type": "Object"
+      },
+      {
+        "card": "card_unit_16th_infantry_brigade",
+        "program": "steps",
+        "instruction_i": null,
+        "byte_offset": null,
+        "input_expression_keys": [
+          "element_type",
+          "scope",
+          "var"
+        ],
+        "input_element_type": "Object"
+      }
+    ]
+  },
+  "source_sha256": {
+    "card_ir": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b",
+    "vm": "ab7a396c4c9ff77a078c9393a15c01352d04d4aba9578e014edb127a75bfdacc",
+    "selftest": "92f85366a5837982a9325a9d436eaea48c8215bd6a361bd5c2a38c482116f661",
+    "selftest_registry": "80cff54eb5c4066a7ce4cb2e222e78570b4d2201077332635f609a86262d9e12",
+    "project": "5c2659472f8d8bb609f30bacf896240d9024a398bf1cce6015e3eb04fa0ca4bb",
+    "fixture": "2a6b0a8b6c0aa461cbf98addc4f3bc2f08e0bbfd7dc28680890eb6c29a1869de",
+    "capture_script": "22ec2f9733a2310d89d7175d3c17c360b14647bfb39e0e18986362f17416de52",
+    "audit_script": "dc24bdd1933485847b7de7f253774362a054439b0a472770e6d2d91a093e5de6"
+  },
+  "limitations": [
+    "The captured wrapper reads a 32-bit field at array-data offset +8 and stores it to the output; valid-array results are not obtained by invoking the native function.",
+    "The local regression models supported array containers as IList. Non-array inputs are malformed for this UFunction; their native error/output behavior is not asserted.",
+    "BotSim exercises the local VM and does not establish PvP reachability or complete-card behavior.",
+    "Static IR use counts and input expression shapes do not establish current PvP eligibility or runtime reachability.",
+    "The machine-code capture does not independently execute or trace the virtual property helper used to validate the generic array parameter."
+  ]
+}

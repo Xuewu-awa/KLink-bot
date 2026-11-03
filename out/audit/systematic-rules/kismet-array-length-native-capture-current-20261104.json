@@ -1,0 +1,294 @@
+{
+  "schema_version": 1,
+  "read_only": true,
+  "pid": 24220,
+  "module": {
+    "name": "kards-Win64-Shipping.exe",
+    "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
+    "base": 140699003650048,
+    "size": 164368384
+  },
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "source_index": "D:\\Codex Workshop\\KLink-bot\\out\\audit\\tmp-current-index-20261103.json",
+  "source_index_sha256": "8fcd8651cf27b1adefffe231c3414f01aaa257e26b3e696e681b4105e6ab17a2",
+  "global_rvas": {
+    "fname_pool": "0x91156c0",
+    "objects": "0x91f91d0"
+  },
+  "owner": "/Script/Engine.KismetArrayLibrary",
+  "function": {
+    "name": "Array_Length",
+    "signature_from_sdk": "void Array_Length(const TArray<int32>& TargetArray)",
+    "ownership_verified": true,
+    "exec_rva": "0x3d93400",
+    "capture_hex": "48895c2408488974241048897c241841564883ec2033ff4d8bf048897a30488bdae8ea057bfd488bcb48397b20740e488b53184533c0e8a5da80fdeb194c8b838800000033d2498b401848898388000000e8bada80fd488b5330488b73384885d2743e488b42088b481048c1e915f6c101742e488b4320488bcf4885c00f95c14803c848894b204885f67410488b4a78488b01ff90680100008b7e0841893eeb07c683a000000001488b5c2430488b742438488b7c24404883c420415ec3cccc40535556574883ec3833ff488bda48897a30e839057bfd488bcb48397b20740e488b53184533c0e8f4d980fdeb194c8b838800000033d2498b40184889838800",
+    "capture_sha256": "9c720d1680bf749350bc626e9659e5e13b044b3f6c2d28e54ab9dffae905f3d8",
+    "instructions_to_first_ret": [
+      {
+        "rva": "0x3d93400",
+        "bytes": "48895c2408",
+        "instruction": "mov qword ptr [rsp + 8], rbx"
+      },
+      {
+        "rva": "0x3d93405",
+        "bytes": "4889742410",
+        "instruction": "mov qword ptr [rsp + 0x10], rsi"
+      },
+      {
+        "rva": "0x3d9340a",
+        "bytes": "48897c2418",
+        "instruction": "mov qword ptr [rsp + 0x18], rdi"
+      },
+      {
+        "rva": "0x3d9340f",
+        "bytes": "4156",
+        "instruction": "push r14"
+      },
+      {
+        "rva": "0x3d93411",
+        "bytes": "4883ec20",
+        "instruction": "sub rsp, 0x20"
+      },
+      {
+        "rva": "0x3d93415",
+        "bytes": "33ff",
+        "instruction": "xor edi, edi"
+      },
+      {
+        "rva": "0x3d93417",
+        "bytes": "4d8bf0",
+        "instruction": "mov r14, r8"
+      },
+      {
+        "rva": "0x3d9341a",
+        "bytes": "48897a30",
+        "instruction": "mov qword ptr [rdx + 0x30], rdi"
+      },
+      {
+        "rva": "0x3d9341e",
+        "bytes": "488bda",
+        "instruction": "mov rbx, rdx"
+      },
+      {
+        "rva": "0x3d93421",
+        "bytes": "e8ea057bfd",
+        "instruction": "call 0x7ff70b763a10"
+      },
+      {
+        "rva": "0x3d93426",
+        "bytes": "488bcb",
+        "instruction": "mov rcx, rbx"
+      },
+      {
+        "rva": "0x3d93429",
+        "bytes": "48397b20",
+        "instruction": "cmp qword ptr [rbx + 0x20], rdi"
+      },
+      {
+        "rva": "0x3d9342d",
+        "bytes": "740e",
+        "instruction": "je 0x7ff70dfb343d"
+      },
+      {
+        "rva": "0x3d9342f",
+        "bytes": "488b5318",
+        "instruction": "mov rdx, qword ptr [rbx + 0x18]"
+      },
+      {
+        "rva": "0x3d93433",
+        "bytes": "4533c0",
+        "instruction": "xor r8d, r8d"
+      },
+      {
+        "rva": "0x3d93436",
+        "bytes": "e8a5da80fd",
+        "instruction": "call 0x7ff70b7c0ee0"
+      },
+      {
+        "rva": "0x3d9343b",
+        "bytes": "eb19",
+        "instruction": "jmp 0x7ff70dfb3456"
+      },
+      {
+        "rva": "0x3d9343d",
+        "bytes": "4c8b8388000000",
+        "instruction": "mov r8, qword ptr [rbx + 0x88]"
+      },
+      {
+        "rva": "0x3d93444",
+        "bytes": "33d2",
+        "instruction": "xor edx, edx"
+      },
+      {
+        "rva": "0x3d93446",
+        "bytes": "498b4018",
+        "instruction": "mov rax, qword ptr [r8 + 0x18]"
+      },
+      {
+        "rva": "0x3d9344a",
+        "bytes": "48898388000000",
+        "instruction": "mov qword ptr [rbx + 0x88], rax"
+      },
+      {
+        "rva": "0x3d93451",
+        "bytes": "e8bada80fd",
+        "instruction": "call 0x7ff70b7c0f10"
+      },
+      {
+        "rva": "0x3d93456",
+        "bytes": "488b5330",
+        "instruction": "mov rdx, qword ptr [rbx + 0x30]"
+      },
+      {
+        "rva": "0x3d9345a",
+        "bytes": "488b7338",
+        "instruction": "mov rsi, qword ptr [rbx + 0x38]"
+      },
+      {
+        "rva": "0x3d9345e",
+        "bytes": "4885d2",
+        "instruction": "test rdx, rdx"
+      },
+      {
+        "rva": "0x3d93461",
+        "bytes": "743e",
+        "instruction": "je 0x7ff70dfb34a1"
+      },
+      {
+        "rva": "0x3d93463",
+        "bytes": "488b4208",
+        "instruction": "mov rax, qword ptr [rdx + 8]"
+      },
+      {
+        "rva": "0x3d93467",
+        "bytes": "8b4810",
+        "instruction": "mov ecx, dword ptr [rax + 0x10]"
+      },
+      {
+        "rva": "0x3d9346a",
+        "bytes": "48c1e915",
+        "instruction": "shr rcx, 0x15"
+      },
+      {
+        "rva": "0x3d9346e",
+        "bytes": "f6c101",
+        "instruction": "test cl, 1"
+      },
+      {
+        "rva": "0x3d93471",
+        "bytes": "742e",
+        "instruction": "je 0x7ff70dfb34a1"
+      },
+      {
+        "rva": "0x3d93473",
+        "bytes": "488b4320",
+        "instruction": "mov rax, qword ptr [rbx + 0x20]"
+      },
+      {
+        "rva": "0x3d93477",
+        "bytes": "488bcf",
+        "instruction": "mov rcx, rdi"
+      },
+      {
+        "rva": "0x3d9347a",
+        "bytes": "4885c0",
+        "instruction": "test rax, rax"
+      },
+      {
+        "rva": "0x3d9347d",
+        "bytes": "0f95c1",
+        "instruction": "setne cl"
+      },
+      {
+        "rva": "0x3d93480",
+        "bytes": "4803c8",
+        "instruction": "add rcx, rax"
+      },
+      {
+        "rva": "0x3d93483",
+        "bytes": "48894b20",
+        "instruction": "mov qword ptr [rbx + 0x20], rcx"
+      },
+      {
+        "rva": "0x3d93487",
+        "bytes": "4885f6",
+        "instruction": "test rsi, rsi"
+      },
+      {
+        "rva": "0x3d9348a",
+        "bytes": "7410",
+        "instruction": "je 0x7ff70dfb349c"
+      },
+      {
+        "rva": "0x3d9348c",
+        "bytes": "488b4a78",
+        "instruction": "mov rcx, qword ptr [rdx + 0x78]"
+      },
+      {
+        "rva": "0x3d93490",
+        "bytes": "488b01",
+        "instruction": "mov rax, qword ptr [rcx]"
+      },
+      {
+        "rva": "0x3d93493",
+        "bytes": "ff9068010000",
+        "instruction": "call qword ptr [rax + 0x168]"
+      },
+      {
+        "rva": "0x3d93499",
+        "bytes": "8b7e08",
+        "instruction": "mov edi, dword ptr [rsi + 8]"
+      },
+      {
+        "rva": "0x3d9349c",
+        "bytes": "41893e",
+        "instruction": "mov dword ptr [r14], edi"
+      },
+      {
+        "rva": "0x3d9349f",
+        "bytes": "eb07",
+        "instruction": "jmp 0x7ff70dfb34a8"
+      },
+      {
+        "rva": "0x3d934a1",
+        "bytes": "c683a000000001",
+        "instruction": "mov byte ptr [rbx + 0xa0], 1"
+      },
+      {
+        "rva": "0x3d934a8",
+        "bytes": "488b5c2430",
+        "instruction": "mov rbx, qword ptr [rsp + 0x30]"
+      },
+      {
+        "rva": "0x3d934ad",
+        "bytes": "488b742438",
+        "instruction": "mov rsi, qword ptr [rsp + 0x38]"
+      },
+      {
+        "rva": "0x3d934b2",
+        "bytes": "488b7c2440",
+        "instruction": "mov rdi, qword ptr [rsp + 0x40]"
+      },
+      {
+        "rva": "0x3d934b7",
+        "bytes": "4883c420",
+        "instruction": "add rsp, 0x20"
+      },
+      {
+        "rva": "0x3d934bb",
+        "bytes": "415e",
+        "instruction": "pop r14"
+      },
+      {
+        "rva": "0x3d934bd",
+        "bytes": "c3",
+        "instruction": "ret"
+      }
+    ]
+  },
+  "limitations": [
+    "Read-only live UObject class/UFunction ownership and entry-code capture; no native call, injection or game-memory write.",
+    "The wrapper is captured only through its first return; generic property marshaling and malformed frames are outside the claim.",
+    "The capture does not execute the native length helper or establish behavior for malformed TArray data."
+  ]
+}

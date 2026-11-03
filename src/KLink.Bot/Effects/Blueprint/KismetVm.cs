@@ -1190,7 +1190,8 @@ public sealed partial class KismetVm
                     ? ToInt(a)
                     : ToInt(b);
             case "IsValid": return a is CardInstance;
-            case "Array_Length": return a is System.Collections.ICollection col ? col.Count : 0;
+            // UE receives a TArray property; keep this aligned with Array_Get's list representation.
+            case "Array_Length": return a is System.Collections.IList arrayList ? arrayList.Count : 0;
             case "Conv_IntToString": return ToInt(a).ToString();
             case "Conv_IntToInt64": return (long)ToInt(a);
             case "Conv_IntToDouble": return (double)ToInt(a);

@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "capture_path": "out/audit/systematic-rules/kismet-array-length-native-capture-current-20261104.json",
+  "capture_sha256": "58fd213c9e9cfb5fd3284033357f128366f2d252b15e6093659b167a9e3b78f1",
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "owner": "/Script/Engine.KismetArrayLibrary",
+  "function": "Array_Length",
+  "signature": "void Array_Length(const TArray<int32>& TargetArray)",
+  "exec_rva": "0x3d93400",
+  "native_instruction_checks": [
+    ["0x3d93499", "8b7e08"],
+    ["0x3d9349c", "41893e"]
+  ],
+  "limitations": [
+    "The captured wrapper reads a 32-bit field at array-data offset +8 and stores it to the output; valid-array results are not obtained by invoking the native function.",
+    "The local regression models supported array containers as IList. Non-array inputs are malformed for this UFunction; their native error/output behavior is not asserted.",
+    "BotSim exercises the local VM and does not establish PvP reachability or complete-card behavior."
+  ]
+}

@@ -979,4 +979,65 @@ internal static partial class SelfTest
                 return $"IsValid local object case {i} returned {results[outputs[i]] ?? "<null>"}; expected {expectedResults[i]}";
         return null;
     }
+
+    private static string? KismetArrayLengthNativeContract(CardDatabase db)
+    {
+        string fixturePath = Path.Combine(AppContext.BaseDirectory, "Fixtures", "kismet-array-length-native-20261104.json");
+        using var fixtureDocument = System.Text.Json.JsonDocument.Parse(File.ReadAllText(fixturePath));
+        var fixture = fixtureDocument.RootElement;
+        DirectoryInfo? repository = new(AppContext.BaseDirectory);
+        while (repository is not null && !File.Exists(Path.Combine(repository.FullName, "KLink.slnx")))
+            repository = repository.Parent;
+        if (repository is null) return "could not locate repository root for Array_Length fixture";
+        string captureRelative = fixture.GetProperty("capture_path").GetString()!;
+        string capturePath = Path.Combine(repository.FullName, captureRelative.Replace('/', Path.DirectorySeparatorChar));
+        if (!File.Exists(capturePath)) return $"Array_Length native capture not found at {captureRelative}";
+        string captureHash = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(capturePath))).ToLowerInvariant();
+        if (!string.Equals(captureHash, fixture.GetProperty("capture_sha256").GetString(), StringComparison.Ordinal))
+            return "Array_Length native capture SHA-256 differs from the fixture";
+        using var captureDocument = System.Text.Json.JsonDocument.Parse(File.ReadAllText(capturePath));
+        var capture = captureDocument.RootElement;
+        var native = capture.GetProperty("function");
+        if (!string.Equals(capture.GetProperty("exe_sha256").GetString(), fixture.GetProperty("exe_sha256").GetString(), StringComparison.Ordinal)
+            || !string.Equals(capture.GetProperty("owner").GetString(), fixture.GetProperty("owner").GetString(), StringComparison.Ordinal)
+            || !native.GetProperty("ownership_verified").GetBoolean()
+            || !string.Equals(native.GetProperty("name").GetString(), fixture.GetProperty("function").GetString(), StringComparison.Ordinal)
+            || !string.Equals(native.GetProperty("exec_rva").GetString(), fixture.GetProperty("exec_rva").GetString(), StringComparison.Ordinal))
+            return "Array_Length native function identity differs from the fixture";
+        foreach (var expected in fixture.GetProperty("native_instruction_checks").EnumerateArray())
+            if (!native.GetProperty("instructions_to_first_ret").EnumerateArray().Any(actual =>
+                    string.Equals(actual.GetProperty("rva").GetString(), expected[0].GetString(), StringComparison.Ordinal)
+                    && string.Equals(actual.GetProperty("bytes").GetString(), expected[1].GetString(), StringComparison.Ordinal)))
+                return $"Array_Length native instruction at {expected[0].GetString()} differs from the capture";
+
+        object?[] values =
+        [
+            Array.Empty<int>(),
+            new[] { 4, 9, 16 },
+            new List<object?> { "a", null, "c", "d" },
+            new Dictionary<int, string> { [1] = "a", [2] = "b" },
+            "not-an-array",
+            null,
+        ];
+        int[] expectedCounts = [0, 3, 4, 0, 0, 0];
+        var steps = new List<KismetStep>(values.Length);
+        var outputs = new string[values.Length];
+        for (int i = 0; i < values.Length; i++)
+        {
+            string input = $"array{i}", output = $"length{i}";
+            outputs[i] = output;
+            steps.Add(SetMathResult(i, output, MathExpr("Array_Length", new KismetExpr { Var = input })));
+        }
+        var locals = values.Select((value, index) => (value, index))
+            .ToDictionary(pair => $"array{pair.index}", pair => pair.value);
+        var (engine, state) = EmptyBoard(db);
+        var context = new EffectContext { Engine = engine, State = state, Controller = Side.Left };
+        long faults = engine.Api.Vm.FaultedPrograms;
+        var results = engine.Api.Vm.RunLocalProgramMulti(new KismetProgram(steps, 0), context, locals, outputs);
+        if (engine.Api.Vm.FaultedPrograms != faults) return "Array_Length probe unexpectedly faulted the VM";
+        for (int i = 0; i < outputs.Length; i++)
+            if (!Equals(results[outputs[i]], expectedCounts[i]))
+                return $"Array_Length local case {i} returned {results[outputs[i]] ?? "<null>"}; expected {expectedCounts[i]}";
+        return null;
+    }
 }

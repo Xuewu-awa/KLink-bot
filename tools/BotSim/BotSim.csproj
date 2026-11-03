@@ -20,6 +20,7 @@
     <None Update="Fixtures/kismet-faction-side-compare-native-20261104.json" CopyToOutputDirectory="PreserveNewest" />
     <None Update="Fixtures/kismet-bool-comparisons-native-20261104.json" CopyToOutputDirectory="PreserveNewest" />
     <None Update="Fixtures/kismet-isvalid-native-20261104.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="Fixtures/kismet-array-length-native-20261104.json" CopyToOutputDirectory="PreserveNewest" />
     <None Update="Fixtures/damage-observer-chain-20261030.json" CopyToOutputDirectory="PreserveNewest" />
     <None Update="Fixtures/damage-modifier-own-overrides-20261030.json" CopyToOutputDirectory="PreserveNewest" />
     <None Update="Fixtures/damage-modifier-default-order-20261030.json" CopyToOutputDirectory="PreserveNewest" />
