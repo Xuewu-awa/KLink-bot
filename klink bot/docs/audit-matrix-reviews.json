@@ -9244,6 +9244,30 @@
         "BotSim validates List-backed clear and reuse only; it does not certify TArray capacity, allocator, FProperty destruction, GC, or all element types.",
         "140 IR call sites across 126 assets are inventoried, not certified end to end."
       ]
+    },
+    {
+      "id": "KISMET-ARRAY/Array_Append/distinct-target-source-20261104",
+      "symbol": "Array_Append",
+      "modes": [0],
+      "status": "partial",
+      "validated_scope": "BotSim appends distinct integer/object sources in order, preserves duplicates and object identity, leaves source unchanged, and treats empty source as no-op.",
+      "report": "out/audit/systematic-rules/array-append-audit-20261104.json",
+      "report_sha256": "6c7d6a3267cf3b97a95759db9c7f682e161f50a88b2195390ea09c22123d2df9",
+      "client_exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+      "source_bindings": {
+        "tools/BotSim/SelfTest.cs": "4d092f97f55c835f46b71b7962cc3658f54da9dabec5655c62ad8f18a59f7c97",
+        "tools/BotSim/SelfTest.KismetMath.cs": "acbac139b090fe020c1213d8781d3ed774af6e8f75004fa0ce5fa06a48c44d0a",
+        "klink bot/docs/card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b"
+      },
+      "evidence_bindings": {
+        "out/audit/systematic-rules/array-append-ir-call-sites-20261104.json": "20ebff0aa010740597549c4905966458b55b4f890c7d2a570092692e6c0c3270",
+        "D:/Program Files/KARDS - The WWII Card Game/KARDS/default/game/kards/Binaries/Win64/ue4ss/CXXHeaderDump/Engine.hpp": "6ff639c0078e8800c5bc6aae8090beda97d4265ad5f3ba35e13f6e65128c82fb"
+      },
+      "limitations": [
+        "Native Array_Append machine code and generic property lifecycle were not captured or executed.",
+        "Self-append/overlapping storage semantics are unresolved; current two card IR sites use distinct variables.",
+        "Two call sites are inventoried, not certified end to end; no card is promoted to full audit."
+      ]
     }
   ],
   "scope_reviews": {},

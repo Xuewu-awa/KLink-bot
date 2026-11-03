@@ -1225,4 +1225,46 @@ internal static partial class SelfTest
             return "Array_Clear on an empty list must remain an empty list";
         return null;
     }
+
+    private static string? KismetArrayAppendTargetAndSourceContract(CardDatabase db)
+    {
+        var (engine, state) = EmptyBoard(db);
+        var cardA = state.CreateWithId(PlainUnit, Side.Left, 1404, CardLocation.BoardHqLeft, 0);
+        var cardB = state.CreateWithId(PlainUnit, Side.Left, 1405, CardLocation.BoardHqLeft, 1);
+        var integers = new List<int> { 1, 2 };
+        var integerSource = new List<int> { 2, 3, 4 };
+        var objects = new List<object?> { cardA };
+        var objectSource = new List<object?> { cardB, cardA };
+        var emptySource = new List<object?>();
+        var locals = new Dictionary<string, object?>
+        {
+            ["integers"] = integers,
+            ["integerSource"] = integerSource,
+            ["objects"] = objects,
+            ["objectSource"] = objectSource,
+            ["emptySource"] = emptySource,
+        };
+        KismetStep Append(int index, string target, string source) => new(index, "call", "Array_Append",
+            new[] { new KismetExpr { Var = target }, new KismetExpr { Var = source } },
+            Array.Empty<int>(), null, null, -1, null, null);
+        var steps = new List<KismetStep>
+        {
+            Append(0, "integers", "integerSource"),
+            Append(1, "objects", "objectSource"),
+            Append(2, "objects", "emptySource"),
+        };
+        var context = new EffectContext { Engine = engine, State = state, Controller = Side.Left };
+        long faults = engine.Api.Vm.FaultedPrograms;
+        engine.Api.Vm.RunLocalProgramMulti(new KismetProgram(steps, 0), context, locals);
+        if (engine.Api.Vm.FaultedPrograms != faults) return "Array_Append dispatch probe unexpectedly faulted the VM";
+        if (!integers.SequenceEqual(new[] { 1, 2, 2, 3, 4 })
+            || !integerSource.SequenceEqual(new[] { 2, 3, 4 }))
+            return "Array_Append must append source values in order, retain duplicates, and leave the source unchanged";
+        if (objects.Count != 3 || !ReferenceEquals(objects[0], cardA)
+            || !ReferenceEquals(objects[1], cardB) || !ReferenceEquals(objects[2], cardA)
+            || objectSource.Count != 2 || !ReferenceEquals(objectSource[0], cardB)
+            || !ReferenceEquals(objectSource[1], cardA))
+            return "Array_Append must preserve object identity and leave the source list unchanged";
+        return null;
+    }
 }

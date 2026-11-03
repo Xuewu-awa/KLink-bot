@@ -55,6 +55,7 @@ internal static partial class SelfTest
         new("Kismet array: Array_Get dispatch and output-slot boundaries", KismetArrayGetNativeContract),
         new("Kismet array: Array_Add mutation and result-slot contract", KismetArrayAddNativeContract),
         new("Kismet array: Array_Clear in-place reset and reuse", KismetArrayClearResetAndReuse),
+        new("Kismet array: Array_Append target mutation and source preservation", KismetArrayAppendTargetAndSourceContract),
         new("Kismet math: Clamp native signed bounds including reversed limits", KismetClampNativeBounds),
         new("Kismet math: SelectInt conditional integer contract", KismetSelectIntContract),
         new("Kismet math: Divide_IntInt and Percent_IntInt native integer contract", KismetDividePercentNativeContract),

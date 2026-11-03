@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "source_ir": "klink bot/docs/card-ir.json",
+  "source_ir_sha256": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b",
+  "function": "/Script/Engine.KismetArrayLibrary.Array_Append",
+  "sdk_signature": "void Array_Append(const TArray<int32>& TargetArray, const TArray<int32>& SourceArray)",
+  "call_count": 2,
+  "asset_count": 2,
+  "sites": [
+    {
+      "asset": "card_event_rain4_monsoon_rain",
+      "program": "locals/DiscardHighestCostCardBySide",
+      "statement_index": 165,
+      "bytecode_offset": 165,
+      "target": { "var": "allCards", "scope": "local", "element_type": "Object" },
+      "source": { "var": "CallFunc_GetCardsInHandBySide_cards", "scope": "local", "element_type": "Object" }
+    },
+    {
+      "asset": "card_event_ural_factories_cam1",
+      "program": "steps",
+      "statement_index": 4037,
+      "bytecode_offset": 4037,
+      "target": { "var": "CardsToChek", "scope": "instance", "element_type": "Object" },
+      "source": { "var": "CallFunc_GetAdjacentCards_adjacentCards", "scope": "local", "element_type": "Object" }
+    }
+  ]
+}

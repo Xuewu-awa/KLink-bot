@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "rule": "Array_Append",
+  "date": "2026-11-04",
+  "status": "partial simulator-observable contract; native lifecycle and self-aliasing unresolved",
+  "findings": [
+    "The installed UE4SS SDK declares void Array_Append(const TArray<int32>& TargetArray, const TArray<int32>& SourceArray) in Engine.hpp. The reflected API's generic array behavior is not established by this int32 declaration alone.",
+    "The current card IR contains two call sites across two assets. Both use Object arrays and distinct target/source variables: monsoon-rain merges a hand-card query into a local list; Ural Factories merges adjacent cards into an instance list.",
+    "BotSim verifies the simulator appends source elements in order, retains duplicates, preserves CardInstance identity, leaves source lists unchanged, and treats an empty source as a no-op. These tests cover current List-backed behavior, not native TArray execution.",
+    "No current card IR call site aliases target and source. The simulator currently skips identical list references; the native self-append behavior has not been established, so that branch is not certified.",
+    "No native UFunction identity, current machine-code capture, FProperty lifecycle execution, or allocator behavior is claimed."
+  ],
+  "evidence": {
+    "sdk_header": "D:/Program Files/KARDS - The WWII Card Game/KARDS/default/game/kards/Binaries/Win64/ue4ss/CXXHeaderDump/Engine.hpp",
+    "sdk_declaration_line": 16357,
+    "sdk_header_sha256": "6ff639c0078e8800c5bc6aae8090beda97d4265ad5f3ba35e13f6e65128c82fb",
+    "ir_inventory": "out/audit/systematic-rules/array-append-ir-call-sites-20261104.json",
+    "ir_inventory_sha256": "20ebff0aa010740597549c4905966458b55b4f890c7d2a570092692e6c0c3270",
+    "client_exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305"
+  },
+  "verification": {
+    "botsim_full_selftest": "passed",
+    "passed_cases": 1122,
+    "new_test": "Kismet array: Array_Append target mutation and source preservation",
+    "native_execution": "not performed"
+  },
+  "limitations": [
+    "Self-append and partially overlapping array storage are unresolved.",
+    "No native allocator, FProperty, GC, or all-element-type behavior certified.",
+    "Two call sites are inventoried, not certified end to end; neither is promoted to full-card audit."
+  ]
+}
