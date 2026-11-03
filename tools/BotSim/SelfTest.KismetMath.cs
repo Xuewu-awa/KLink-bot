@@ -769,4 +769,83 @@ internal static partial class SelfTest
         }
         return null;
     }
+
+    private static string? KismetFactionSideEnumComparatorsNativeContract(CardDatabase db)
+    {
+        string path = Path.Combine(AppContext.BaseDirectory, "Fixtures", "kismet-faction-side-compare-native-20261104.json");
+        using var document = System.Text.Json.JsonDocument.Parse(File.ReadAllText(path));
+        var root = document.RootElement;
+        DirectoryInfo? repository = new(AppContext.BaseDirectory);
+        while (repository is not null && !File.Exists(Path.Combine(repository.FullName, "KLink.slnx")))
+            repository = repository.Parent;
+        if (repository is null)
+            return "could not locate repository root for faction/side native comparator fixture";
+        string relative = root.GetProperty("capture_path").GetString()!;
+        string capturePath = Path.Combine(repository.FullName, relative.Replace('/', Path.DirectorySeparatorChar));
+        if (!File.Exists(capturePath))
+            return $"faction/side comparator capture not found at {relative}";
+        string captureHash = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(capturePath))).ToLowerInvariant();
+        if (!string.Equals(captureHash, root.GetProperty("capture_sha256").GetString(), StringComparison.Ordinal))
+            return "faction/side comparator capture SHA-256 differs from the regression fixture";
+        using var capture = System.Text.Json.JsonDocument.Parse(File.ReadAllText(capturePath));
+        var captureRoot = capture.RootElement;
+        if (!string.Equals(captureRoot.GetProperty("exe_sha256").GetString(),
+                root.GetProperty("exe_sha256").GetString(), StringComparison.Ordinal)
+            || !string.Equals(captureRoot.GetProperty("owner").GetString(), "/Script/kards.FunctionLibrary", StringComparison.Ordinal))
+            return "faction/side comparator executable or owner differs from the regression fixture";
+
+        bool HasInstruction(System.Text.Json.JsonElement instructions, string rva, string bytes) =>
+            instructions.EnumerateArray().Any(actual =>
+                string.Equals(actual.GetProperty("rva").GetString(), rva, StringComparison.Ordinal)
+                && string.Equals(actual.GetProperty("bytes").GetString(), bytes, StringComparison.Ordinal));
+        var steps = new List<KismetStep>();
+        var slots = new List<string>();
+        var expected = new List<(string Slot, int Value)>();
+        foreach (var contract in root.GetProperty("functions").EnumerateObject())
+        {
+            var native = captureRoot.GetProperty("functions").GetProperty(contract.Name);
+            if (!native.GetProperty("ownership_verified").GetBoolean()
+                || !string.Equals(native.GetProperty("exec_rva").GetString(),
+                    contract.Value.GetProperty("exec_rva").GetString(), StringComparison.Ordinal)
+                || !string.Equals(native.GetProperty("implementation_rva").GetString(),
+                    contract.Value.GetProperty("implementation_rva").GetString(), StringComparison.Ordinal))
+                return $"{contract.Name} native identity differs from the regression fixture";
+            foreach (var instruction in root.GetProperty("wrapper_instructions").EnumerateArray())
+                if (!HasInstruction(native.GetProperty("instructions_to_first_ret"),
+                        instruction[0].GetString()!, instruction[1].GetString()!))
+                    return $"{contract.Name} wrapper instruction at {instruction[0].GetString()} differs from the native fixture";
+            foreach (var instruction in root.GetProperty("implementation_instructions").EnumerateArray())
+                if (!HasInstruction(native.GetProperty("implementation_instructions_to_first_ret"),
+                        instruction[0].GetString()!, instruction[1].GetString()!))
+                    return $"{contract.Name} implementation instruction at {instruction[0].GetString()} differs from the native fixture";
+
+            string valuesKey = contract.Name == "EnumCompareFaction" ? "faction_values" : "side_values";
+            var values = root.GetProperty(valuesKey).EnumerateArray()
+                .Select(x => x.GetProperty("value").GetInt32()).ToArray();
+            if (values.Length < 2 || !values.SequenceEqual(Enumerable.Range(0, values.Length)))
+                return $"{contract.Name} enum fixture values are not a contiguous range from zero";
+            int equal = root.GetProperty("branch_values").GetProperty("Equal").GetInt32();
+            int notEqual = root.GetProperty("branch_values").GetProperty("NotEqual").GetInt32();
+            foreach (int left in values)
+            foreach (int right in values)
+            {
+                string slot = $"{contract.Name}_{left}_{right}";
+                slots.Add(slot);
+                expected.Add((slot, left == right ? equal : notEqual));
+                steps.Add(new KismetStep(steps.Count, "math", contract.Name,
+                    [IntExpr(left), IntExpr(right), LocalExpr(slot)], [2], null, null, -1, null, null));
+            }
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        var context = new EffectContext { Engine = engine, State = state, Controller = Side.Left };
+        long faults = engine.Api.Vm.FaultedPrograms;
+        var result = engine.Api.Vm.RunLocalProgramMulti(new KismetProgram(steps, 0), context, null, slots.ToArray());
+        if (engine.Api.Vm.FaultedPrograms != faults)
+            return "faction/side enum comparison probe unexpectedly faulted the VM";
+        foreach (var item in expected)
+            if (!Equals(result[item.Slot], item.Value))
+                return $"{item.Slot} returned {result[item.Slot] ?? "<null>"}; expected {item.Value}";
+        return null;
+    }
 }

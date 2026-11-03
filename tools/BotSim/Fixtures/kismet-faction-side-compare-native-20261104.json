@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "capture_path": "out/audit/systematic-rules/kismet-faction-side-compare-native-capture-current-20261104.json",
+  "capture_sha256": "35234179fc282ff3487838ee7228ce723d9c21cbc4dcdcafcc4ad54d2b614465",
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "owner": "/Script/kards.FunctionLibrary",
+  "branch_values": {"Equal": 0, "NotEqual": 1},
+  "functions": {
+    "EnumCompareFaction": {"exec_rva": "0x4a89260", "implementation_rva": "0x4b24ec0"},
+    "EnumCompareSide": {"exec_rva": "0x4a89260", "implementation_rva": "0x4b24ec0"}
+  },
+  "wrapper_instructions": [
+    ["0x4a8933a", "0fb6542458"],
+    ["0x4a89342", "0fb64c2420"],
+    ["0x4a8935d", "e85ebb0900"]
+  ],
+  "implementation_instructions": [
+    ["0x4b24ec0", "3aca"],
+    ["0x4b24ec2", "0f95c0"],
+    ["0x4b24ec5", "418800"],
+    ["0x4b24ec8", "c3"]
+  ],
+  "faction_values": [
+    {"name": "NotAvailable", "value": 0},
+    {"name": "Germany", "value": 1},
+    {"name": "Britain", "value": 2},
+    {"name": "Japan", "value": 3},
+    {"name": "Soviet", "value": 4},
+    {"name": "USA", "value": 5},
+    {"name": "France", "value": 6},
+    {"name": "Italy", "value": 7},
+    {"name": "Poland", "value": 8},
+    {"name": "Finland", "value": 9},
+    {"name": "Anzac", "value": 10},
+    {"name": "Allies", "value": 11},
+    {"name": "Neutral", "value": 12}
+  ],
+  "side_values": [
+    {"name": "NotAvailable", "value": 0},
+    {"name": "left", "value": 1},
+    {"name": "right", "value": 2}
+  ]
+}

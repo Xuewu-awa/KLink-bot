@@ -1,0 +1,313 @@
+{
+  "schema_version": 1,
+  "report_id": "ENUM-COMPARE-FACTION-SIDE-NATIVE-CONTRACT-20261104",
+  "status": "partial",
+  "scope": "Current-client FunctionLibrary.EnumCompareFaction and EnumCompareSide wrappers/shared comparator, SDK enum maps, local BotSim pairwise regression and static IR callsite inventory; not card-effect or PvP certification.",
+  "client": {
+    "executable": "D:/Program Files/KARDS - The WWII Card Game/KARDS/default/game/kards/Binaries/Win64/kards-Win64-Shipping.exe",
+    "sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305"
+  },
+  "native_capture": {
+    "path": "out/audit/systematic-rules/kismet-faction-side-compare-native-capture-current-20261104.json",
+    "sha256": "35234179fc282ff3487838ee7228ce723d9c21cbc4dcdcafcc4ad54d2b614465",
+    "owner": "/Script/kards.FunctionLibrary",
+    "shared_exec_rva": "0x4a89260",
+    "shared_implementation_rva": "0x4b24ec0",
+    "wrapper_instructions": [
+      {
+        "rva": "0x4a8933a",
+        "bytes": "0fb6542458",
+        "meaning": "zero-extend the second byte enum parameter"
+      },
+      {
+        "rva": "0x4a89342",
+        "bytes": "0fb64c2420",
+        "meaning": "zero-extend the first byte enum parameter"
+      },
+      {
+        "rva": "0x4a8935d",
+        "bytes": "e85ebb0900",
+        "meaning": "call the shared enum comparator"
+      }
+    ],
+    "implementation_instructions": [
+      {
+        "rva": "0x4b24ec0",
+        "bytes": "3aca",
+        "meaning": "cmp cl, dl"
+      },
+      {
+        "rva": "0x4b24ec2",
+        "bytes": "0f95c0",
+        "meaning": "set result to 1 exactly when unequal"
+      },
+      {
+        "rva": "0x4b24ec5",
+        "bytes": "418800",
+        "meaning": "write the byte result through the output pointer"
+      },
+      {
+        "rva": "0x4b24ec8",
+        "bytes": "c3",
+        "meaning": "return"
+      }
+    ],
+    "method": "Read-only live UFunction ownership capture and direct-call tracing. Both UFunctions share the byte-parameter wrapper and cmp/setne implementation. No game function was invoked and no memory was written."
+  },
+  "sdk": {
+    "function_signatures": {
+      "EnumCompareFaction": "void EnumCompareFaction(EFactionEnum faction1, EFactionEnum faction2, EnumAreTheyEqual& Branches)",
+      "EnumCompareSide": "void EnumCompareSide(ESideEnum side1, ESideEnum side2, EnumAreTheyEqual& Branches)"
+    },
+    "faction_enum_source": "Existing cross-checked EnumCompareFaction and GetFactionEnum contract artifacts; their ordered values agree.",
+    "faction_enum": [
+      {
+        "name": "NotAvailable",
+        "value": 0
+      },
+      {
+        "name": "Germany",
+        "value": 1
+      },
+      {
+        "name": "Britain",
+        "value": 2
+      },
+      {
+        "name": "Japan",
+        "value": 3
+      },
+      {
+        "name": "Soviet",
+        "value": 4
+      },
+      {
+        "name": "USA",
+        "value": 5
+      },
+      {
+        "name": "France",
+        "value": 6
+      },
+      {
+        "name": "Italy",
+        "value": 7
+      },
+      {
+        "name": "Poland",
+        "value": 8
+      },
+      {
+        "name": "Finland",
+        "value": 9
+      },
+      {
+        "name": "Anzac",
+        "value": 10
+      },
+      {
+        "name": "Allies",
+        "value": 11
+      },
+      {
+        "name": "Neutral",
+        "value": 12
+      }
+    ],
+    "side_enum": [
+      {
+        "name": "NotAvailable",
+        "value": 0
+      },
+      {
+        "name": "left",
+        "value": 1
+      },
+      {
+        "name": "right",
+        "value": 2
+      }
+    ],
+    "branch_enum": [
+      {
+        "name": "Equal",
+        "value": 0
+      },
+      {
+        "name": "NotEqual",
+        "value": 1
+      }
+    ],
+    "faction_enum_declaration_present_in_header_dump": false
+  },
+  "semantics": {
+    "result": "Branches = Equal (0) iff the two enum bytes are equal; otherwise NotEqual (1).",
+    "basis": "Wrappers zero-extend both byte parameters and pass their low bytes to the shared body: cmp cl, dl; setne al; store AL through the out pointer.",
+    "validated_input_domains": {
+      "EnumCompareFaction": "All 13 values 0..12 pairwise.",
+      "EnumCompareSide": "All 3 values 0..2 pairwise."
+    }
+  },
+  "inventory": {
+    "EnumCompareFaction": {
+      "callsite_count": 98,
+      "asset_count": 76,
+      "program_count": 77,
+      "sample_callsites": [
+        {
+          "card": "card_event_hmas_warramunga",
+          "program": "steps",
+          "instruction_i": 306,
+          "byte_offset": 306
+        },
+        {
+          "card": "card_event_atlantic_convoy",
+          "program": "steps",
+          "instruction_i": 79,
+          "byte_offset": 79
+        },
+        {
+          "card": "card_event_close_air_support",
+          "program": "locals.CanPlayFromHand",
+          "instruction_i": 188,
+          "byte_offset": 188
+        },
+        {
+          "card": "card_event_radar_alert",
+          "program": "locals.GetRandomBritishAir",
+          "instruction_i": 362,
+          "byte_offset": 362
+        },
+        {
+          "card": "card_event_kangaroo_transport",
+          "program": "locals.CanPlayFromHand",
+          "instruction_i": 69,
+          "byte_offset": 69
+        },
+        {
+          "card": "card_event_strong_bond",
+          "program": "steps",
+          "instruction_i": 1005,
+          "byte_offset": 1005
+        },
+        {
+          "card": "card_event_baker_street_irregulars",
+          "program": "locals.GetChooseSpawnCards",
+          "instruction_i": 1110,
+          "byte_offset": 1110
+        },
+        {
+          "card": "card_event_sea_embargo",
+          "program": "locals.GetChooseSpawnCards",
+          "instruction_i": 362,
+          "byte_offset": 362
+        },
+        {
+          "card": "card_unit_beaufighter_vi_f",
+          "program": "steps",
+          "instruction_i": 313,
+          "byte_offset": 313
+        },
+        {
+          "card": "card_event_combined_chiefs_of_staff",
+          "program": "steps",
+          "instruction_i": 365,
+          "byte_offset": 365
+        }
+      ]
+    },
+    "EnumCompareSide": {
+      "callsite_count": 56,
+      "asset_count": 52,
+      "program_count": 52,
+      "sample_callsites": [
+        {
+          "card": "card_unit_22nd_guards_brigade",
+          "program": "steps",
+          "instruction_i": 79,
+          "byte_offset": 79
+        },
+        {
+          "card": "card_event_echelon",
+          "program": "steps",
+          "instruction_i": 79,
+          "byte_offset": 79
+        },
+        {
+          "card": "card_unit_6th_airlanding_brigade",
+          "program": "locals.OnOtherCardDealDamageAddDamage",
+          "instruction_i": 33,
+          "byte_offset": 33
+        },
+        {
+          "card": "card_event_first_responders",
+          "program": "steps",
+          "instruction_i": 79,
+          "byte_offset": 79
+        },
+        {
+          "card": "card_unit_royal_fusiliers",
+          "program": "steps",
+          "instruction_i": 234,
+          "byte_offset": 234
+        },
+        {
+          "card": "card_unit_halifax",
+          "program": "steps",
+          "instruction_i": 282,
+          "byte_offset": 282
+        },
+        {
+          "card": "card_unit_sissiosasto_5d",
+          "program": "steps",
+          "instruction_i": 141,
+          "byte_offset": 141
+        },
+        {
+          "card": "card_unit_sissiosasto_5d",
+          "program": "steps",
+          "instruction_i": 631,
+          "byte_offset": 631
+        },
+        {
+          "card": "card_event_provence_landing",
+          "program": "steps",
+          "instruction_i": 10,
+          "byte_offset": 10
+        },
+        {
+          "card": "card_unit_110e_regiment_motorize",
+          "program": "steps",
+          "instruction_i": 79,
+          "byte_offset": 79
+        }
+      ]
+    }
+  },
+  "regression": {
+    "fixture": "tools/BotSim/Fixtures/kismet-faction-side-compare-native-20261104.json",
+    "cases": {
+      "EnumCompareFaction": 169,
+      "EnumCompareSide": 9
+    },
+    "result": "All 178 valid enum pairs match the captured native comparison and output encoding.",
+    "native_equivalence_established_for_scope": true
+  },
+  "source_sha256": {
+    "card_ir": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b",
+    "vm": "0a6d8e23a98e27b02d3d702ab00ca2d22c046c16ca0aa0ee339981bf03e9c416",
+    "selftest": "390c3771aa3aaada775995362fd9889ea1e02ec2567b39933801ae7f6c30a53a",
+    "selftest_registry": "0c36abed90119319b0e849f42a7906af5f5e1d08a923cb897515e1a306ff0ba8",
+    "sdk_function": "f8039a5583a5db8be8c73470418b5b94f6cc1e856d402ffd75403c0fa8a2ac78",
+    "sdk_enums": "547f570a5bb9ab42ebd69e7628a3e07dcaa10181d7bb4d06e10ed15aac8ac9bd",
+    "faction_contract": "f4d472facd83234bc57a39a19aaa01626c64a548e55e6bb1de3d5815d612827f",
+    "side_contract": "412efbafa083d7d58ac3ce07893660c07595bd381712c9771c7e3097294a701c",
+    "faction_enum_map": "dc3cae95e053ac1dc12a653e2fe978fbd8d64654fb2b36735463ae063b993eae"
+  },
+  "limitations": [
+    "Faction values reuse the existing current enum mapping artifacts because the SDK dump has no EFactionEnum declaration; those mappings are cross-checked against each other but not newly read from this capture.",
+    "Machine-code evidence is valid only when the executable SHA-256 matches the recorded value.",
+    "Static IR counts include non-PvP assets and do not prove runtime reachability or complete card behavior.",
+    "Malformed parameter frames and values outside each documented enum range are not tested."
+  ]
+}
