@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "capture_path": "out/audit/systematic-rules/kismet-int-comparisons-native-capture-current-20261103.json",
+  "capture_sha256": "2e4587a4820e3bf03008d3452dfdb06034a90a4e58c5ebba5e414c339b178371",
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "functions": {
+    "Less_IntInt": { "exec_rva": "0x3dc6340", "condition_instruction": "setl al", "condition_bytes": "0f9cc0", "results": [false, true, true, false, false, false, false, false] },
+    "Greater_IntInt": { "exec_rva": "0x3dbd6a0", "condition_instruction": "setg al", "condition_bytes": "0f9fc0", "results": [false, false, false, true, false, true, true, false] },
+    "LessEqual_IntInt": { "exec_rva": "0x3dc5e30", "condition_instruction": "setle al", "condition_bytes": "0f9ec0", "results": [true, true, true, false, true, false, false, true] },
+    "GreaterEqual_IntInt": { "exec_rva": "0x3dbd190", "condition_instruction": "setge al", "condition_bytes": "0f9dc0", "results": [true, false, false, true, true, true, true, true] },
+    "EqualEqual_IntInt": { "exec_rva": "0x3dafae0", "condition_instruction": "sete al", "condition_bytes": "0f94c0", "results": [true, false, false, false, true, false, false, true] },
+    "NotEqual_IntInt": { "exec_rva": "0x3dd6020", "condition_instruction": "setne al", "condition_bytes": "0f95c0", "results": [false, true, true, true, false, true, true, false] }
+  },
+  "cases": [
+    [-2147483648, -2147483648],
+    [-2147483648, 2147483647],
+    [-1, 0],
+    [0, -1],
+    [0, 0],
+    [1, 0],
+    [2147483647, -2147483648],
+    [2147483647, 2147483647]
+  ],
+  "limitations": [
+    "The wrappers parse two int operands and emit a bool through captured setcc paths; this does not certify malformed UFunction payload handling.",
+    "Static IR sites are inventory candidates only; PvP reachability and complete card behavior remain unresolved.",
+    "The fixture is valid only for the executable SHA-256 recorded above."
+  ]
+}

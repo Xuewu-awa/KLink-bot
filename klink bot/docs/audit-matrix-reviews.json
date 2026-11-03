@@ -8518,6 +8518,95 @@
         "Static IR inventory does not prove PvP reachability or certify complete cards.",
         "Current executable hash must match; asset and client version equivalence remains separately required."
       ]
+    },
+    {
+      "id": "KISMET-MATH/Less_IntInt/native-signed-comparison-20261103",
+      "symbol": "Less_IntInt",
+      "status": "partial",
+      "validated_scope": "Current-client signed Int32 A < B condition-code path; eight boundary pairs; static IR inventory only.",
+      "report": "out/audit/systematic-rules/int-comparison-native-contract-20261103.json",
+      "report_sha256": "cc18bdb82b9df3d63f199959faaf9e74c491d1332da7b61dc68b9a7559f04dd4",
+      "client_exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+      "source_bindings": {
+        "src/KLink.Bot/Effects/Blueprint/KismetVm.cs": "faf5604ccaea7321c70d2164390b1ca41e3cd6a2f605f9006baffed0d89cfbee",
+        "klink bot/docs/card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b",
+        "tools/BotSim/SelfTest.KismetMath.cs": "016d57a91b2c025c92efb388a2692ae3a0ebb1175682afc9218dda11b39f38d5",
+        "tools/BotSim/SelfTest.cs": "cdf6d6604730674f7fc2b2e9fc979f6c6b8522a64bf9173df0abc9688f17fd8c",
+        "tools/BotSim/BotSim.csproj": "bda8bb701dd837c22be5352a6f943dd97fefc65cbc290fd45c80c6d36f0c4d0e",
+        "tools/BotSim/Fixtures/kismet-int-comparisons-native-20261103.json": "5a1a0a0c4051fccd197c07940cc2e4dc0413bfb214c68a47b196ac6a9f609c8c"
+      },
+      "evidence_bindings": {
+        "out/audit/systematic-rules/kismet-int-comparisons-native-capture-current-20261103.json": "2e4587a4820e3bf03008d3452dfdb06034a90a4e58c5ebba5e414c339b178371",
+        "out/audit/systematic-rules/int-comparison-focused-selftest-20261103.txt": "78050298aa964d9b1a1537bb247e7a0138ab67bd7db5a97928d35539ad5bf59b",
+        "out/audit/systematic-rules/int-comparison-full-selftest-20261103.txt": "049a749eeb4f537bca7d26655976373dec8050df91f2a473b62bca1e7ae945b3",
+        "out/audit/systematic-rules/int-comparison-solution-build-20261103.txt": "c59b49128f43c1da48c4269ad53b1625d7bdcdca3a67cd6f0e55bfc238b106b8",
+        "out/audit/systematic-rules/int-comparison-audit-matrix-tests-20261103.txt": "9ecc9067eb16b46fa0cda124a1884d8e88d381a46016e382eb1e3ce7d41b2957"
+      },
+      "limitations": [
+        "The local regression exercises BotSim, not an in-process call to the client.",
+        "Static IR inventory contains 996 callsites across 709 records but does not establish PvP eligibility or reachability.",
+        "This partial primitive result does not certify any complete card."
+      ]
+    },
+    {
+      "id": "KISMET-MATH/Greater_IntInt/native-signed-comparison-20261103",
+      "symbol": "Greater_IntInt",
+      "status": "partial",
+      "validated_scope": "Current-client signed Int32 A > B condition-code path; eight boundary pairs; static IR inventory only.",
+      "report": "out/audit/systematic-rules/int-comparison-native-contract-20261103.json",
+      "report_sha256": "cc18bdb82b9df3d63f199959faaf9e74c491d1332da7b61dc68b9a7559f04dd4",
+      "client_exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+      "source_bindings": { "src/KLink.Bot/Effects/Blueprint/KismetVm.cs": "faf5604ccaea7321c70d2164390b1ca41e3cd6a2f605f9006baffed0d89cfbee", "klink bot/docs/card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b", "tools/BotSim/SelfTest.KismetMath.cs": "016d57a91b2c025c92efb388a2692ae3a0ebb1175682afc9218dda11b39f38d5", "tools/BotSim/SelfTest.cs": "cdf6d6604730674f7fc2b2e9fc979f6c6b8522a64bf9173df0abc9688f17fd8c", "tools/BotSim/BotSim.csproj": "bda8bb701dd837c22be5352a6f943dd97fefc65cbc290fd45c80c6d36f0c4d0e", "tools/BotSim/Fixtures/kismet-int-comparisons-native-20261103.json": "5a1a0a0c4051fccd197c07940cc2e4dc0413bfb214c68a47b196ac6a9f609c8c" },
+      "evidence_bindings": { "out/audit/systematic-rules/kismet-int-comparisons-native-capture-current-20261103.json": "2e4587a4820e3bf03008d3452dfdb06034a90a4e58c5ebba5e414c339b178371", "out/audit/systematic-rules/int-comparison-focused-selftest-20261103.txt": "78050298aa964d9b1a1537bb247e7a0138ab67bd7db5a97928d35539ad5bf59b", "out/audit/systematic-rules/int-comparison-full-selftest-20261103.txt": "049a749eeb4f537bca7d26655976373dec8050df91f2a473b62bca1e7ae945b3", "out/audit/systematic-rules/int-comparison-solution-build-20261103.txt": "c59b49128f43c1da48c4269ad53b1625d7bdcdca3a67cd6f0e55bfc238b106b8", "out/audit/systematic-rules/int-comparison-audit-matrix-tests-20261103.txt": "9ecc9067eb16b46fa0cda124a1884d8e88d381a46016e382eb1e3ce7d41b2957" },
+      "limitations": [ "BotSim regression is local and static IR inventory (605 callsites/449 records) does not prove PvP reachability or complete-card behavior." ]
+    },
+    {
+      "id": "KISMET-MATH/LessEqual_IntInt/native-signed-comparison-20261103",
+      "symbol": "LessEqual_IntInt",
+      "status": "partial",
+      "validated_scope": "Current-client signed Int32 A <= B condition-code path; eight boundary pairs; static IR inventory only.",
+      "report": "out/audit/systematic-rules/int-comparison-native-contract-20261103.json",
+      "report_sha256": "cc18bdb82b9df3d63f199959faaf9e74c491d1332da7b61dc68b9a7559f04dd4",
+      "client_exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+      "source_bindings": { "src/KLink.Bot/Effects/Blueprint/KismetVm.cs": "faf5604ccaea7321c70d2164390b1ca41e3cd6a2f605f9006baffed0d89cfbee", "klink bot/docs/card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b", "tools/BotSim/SelfTest.KismetMath.cs": "016d57a91b2c025c92efb388a2692ae3a0ebb1175682afc9218dda11b39f38d5", "tools/BotSim/SelfTest.cs": "cdf6d6604730674f7fc2b2e9fc979f6c6b8522a64bf9173df0abc9688f17fd8c", "tools/BotSim/BotSim.csproj": "bda8bb701dd837c22be5352a6f943dd97fefc65cbc290fd45c80c6d36f0c4d0e", "tools/BotSim/Fixtures/kismet-int-comparisons-native-20261103.json": "5a1a0a0c4051fccd197c07940cc2e4dc0413bfb214c68a47b196ac6a9f609c8c" },
+      "evidence_bindings": { "out/audit/systematic-rules/kismet-int-comparisons-native-capture-current-20261103.json": "2e4587a4820e3bf03008d3452dfdb06034a90a4e58c5ebba5e414c339b178371", "out/audit/systematic-rules/int-comparison-focused-selftest-20261103.txt": "78050298aa964d9b1a1537bb247e7a0138ab67bd7db5a97928d35539ad5bf59b", "out/audit/systematic-rules/int-comparison-full-selftest-20261103.txt": "049a749eeb4f537bca7d26655976373dec8050df91f2a473b62bca1e7ae945b3", "out/audit/systematic-rules/int-comparison-solution-build-20261103.txt": "c59b49128f43c1da48c4269ad53b1625d7bdcdca3a67cd6f0e55bfc238b106b8", "out/audit/systematic-rules/int-comparison-audit-matrix-tests-20261103.txt": "9ecc9067eb16b46fa0cda124a1884d8e88d381a46016e382eb1e3ce7d41b2957" },
+      "limitations": [ "BotSim regression is local and static IR inventory (218 callsites/150 records) does not prove PvP reachability or complete-card behavior." ]
+    },
+    {
+      "id": "KISMET-MATH/GreaterEqual_IntInt/native-signed-comparison-20261103",
+      "symbol": "GreaterEqual_IntInt",
+      "status": "partial",
+      "validated_scope": "Current-client signed Int32 A >= B condition-code path; eight boundary pairs; static IR inventory only.",
+      "report": "out/audit/systematic-rules/int-comparison-native-contract-20261103.json",
+      "report_sha256": "cc18bdb82b9df3d63f199959faaf9e74c491d1332da7b61dc68b9a7559f04dd4",
+      "client_exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+      "source_bindings": { "src/KLink.Bot/Effects/Blueprint/KismetVm.cs": "faf5604ccaea7321c70d2164390b1ca41e3cd6a2f605f9006baffed0d89cfbee", "klink bot/docs/card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b", "tools/BotSim/SelfTest.KismetMath.cs": "016d57a91b2c025c92efb388a2692ae3a0ebb1175682afc9218dda11b39f38d5", "tools/BotSim/SelfTest.cs": "cdf6d6604730674f7fc2b2e9fc979f6c6b8522a64bf9173df0abc9688f17fd8c", "tools/BotSim/BotSim.csproj": "bda8bb701dd837c22be5352a6f943dd97fefc65cbc290fd45c80c6d36f0c4d0e", "tools/BotSim/Fixtures/kismet-int-comparisons-native-20261103.json": "5a1a0a0c4051fccd197c07940cc2e4dc0413bfb214c68a47b196ac6a9f609c8c" },
+      "evidence_bindings": { "out/audit/systematic-rules/kismet-int-comparisons-native-capture-current-20261103.json": "2e4587a4820e3bf03008d3452dfdb06034a90a4e58c5ebba5e414c339b178371", "out/audit/systematic-rules/int-comparison-focused-selftest-20261103.txt": "78050298aa964d9b1a1537bb247e7a0138ab67bd7db5a97928d35539ad5bf59b", "out/audit/systematic-rules/int-comparison-full-selftest-20261103.txt": "049a749eeb4f537bca7d26655976373dec8050df91f2a473b62bca1e7ae945b3", "out/audit/systematic-rules/int-comparison-solution-build-20261103.txt": "c59b49128f43c1da48c4269ad53b1625d7bdcdca3a67cd6f0e55bfc238b106b8", "out/audit/systematic-rules/int-comparison-audit-matrix-tests-20261103.txt": "9ecc9067eb16b46fa0cda124a1884d8e88d381a46016e382eb1e3ce7d41b2957" },
+      "limitations": [ "BotSim regression is local and static IR inventory (141 callsites/71 records) does not prove PvP reachability or complete-card behavior." ]
+    },
+    {
+      "id": "KISMET-MATH/EqualEqual_IntInt/native-signed-comparison-20261103",
+      "symbol": "EqualEqual_IntInt",
+      "status": "partial",
+      "validated_scope": "Current-client Int32 A == B condition-code path; eight boundary pairs; static IR inventory only.",
+      "report": "out/audit/systematic-rules/int-comparison-native-contract-20261103.json",
+      "report_sha256": "cc18bdb82b9df3d63f199959faaf9e74c491d1332da7b61dc68b9a7559f04dd4",
+      "client_exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+      "source_bindings": { "src/KLink.Bot/Effects/Blueprint/KismetVm.cs": "faf5604ccaea7321c70d2164390b1ca41e3cd6a2f605f9006baffed0d89cfbee", "klink bot/docs/card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b", "tools/BotSim/SelfTest.KismetMath.cs": "016d57a91b2c025c92efb388a2692ae3a0ebb1175682afc9218dda11b39f38d5", "tools/BotSim/SelfTest.cs": "cdf6d6604730674f7fc2b2e9fc979f6c6b8522a64bf9173df0abc9688f17fd8c", "tools/BotSim/BotSim.csproj": "bda8bb701dd837c22be5352a6f943dd97fefc65cbc290fd45c80c6d36f0c4d0e", "tools/BotSim/Fixtures/kismet-int-comparisons-native-20261103.json": "5a1a0a0c4051fccd197c07940cc2e4dc0413bfb214c68a47b196ac6a9f609c8c" },
+      "evidence_bindings": { "out/audit/systematic-rules/kismet-int-comparisons-native-capture-current-20261103.json": "2e4587a4820e3bf03008d3452dfdb06034a90a4e58c5ebba5e414c339b178371", "out/audit/systematic-rules/int-comparison-focused-selftest-20261103.txt": "78050298aa964d9b1a1537bb247e7a0138ab67bd7db5a97928d35539ad5bf59b", "out/audit/systematic-rules/int-comparison-full-selftest-20261103.txt": "049a749eeb4f537bca7d26655976373dec8050df91f2a473b62bca1e7ae945b3", "out/audit/systematic-rules/int-comparison-solution-build-20261103.txt": "c59b49128f43c1da48c4269ad53b1625d7bdcdca3a67cd6f0e55bfc238b106b8", "out/audit/systematic-rules/int-comparison-audit-matrix-tests-20261103.txt": "9ecc9067eb16b46fa0cda124a1884d8e88d381a46016e382eb1e3ce7d41b2957" },
+      "limitations": [ "BotSim regression is local and static IR inventory (435 callsites/262 records) does not prove PvP reachability or complete-card behavior." ]
+    },
+    {
+      "id": "KISMET-MATH/NotEqual_IntInt/native-signed-comparison-20261103",
+      "symbol": "NotEqual_IntInt",
+      "status": "partial",
+      "validated_scope": "Current-client Int32 A != B condition-code path; eight boundary pairs; static IR inventory only.",
+      "report": "out/audit/systematic-rules/int-comparison-native-contract-20261103.json",
+      "report_sha256": "cc18bdb82b9df3d63f199959faaf9e74c491d1332da7b61dc68b9a7559f04dd4",
+      "client_exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+      "source_bindings": { "src/KLink.Bot/Effects/Blueprint/KismetVm.cs": "faf5604ccaea7321c70d2164390b1ca41e3cd6a2f605f9006baffed0d89cfbee", "klink bot/docs/card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b", "tools/BotSim/SelfTest.KismetMath.cs": "016d57a91b2c025c92efb388a2692ae3a0ebb1175682afc9218dda11b39f38d5", "tools/BotSim/SelfTest.cs": "cdf6d6604730674f7fc2b2e9fc979f6c6b8522a64bf9173df0abc9688f17fd8c", "tools/BotSim/BotSim.csproj": "bda8bb701dd837c22be5352a6f943dd97fefc65cbc290fd45c80c6d36f0c4d0e", "tools/BotSim/Fixtures/kismet-int-comparisons-native-20261103.json": "5a1a0a0c4051fccd197c07940cc2e4dc0413bfb214c68a47b196ac6a9f609c8c" },
+      "evidence_bindings": { "out/audit/systematic-rules/kismet-int-comparisons-native-capture-current-20261103.json": "2e4587a4820e3bf03008d3452dfdb06034a90a4e58c5ebba5e414c339b178371", "out/audit/systematic-rules/int-comparison-focused-selftest-20261103.txt": "78050298aa964d9b1a1537bb247e7a0138ab67bd7db5a97928d35539ad5bf59b", "out/audit/systematic-rules/int-comparison-full-selftest-20261103.txt": "049a749eeb4f537bca7d26655976373dec8050df91f2a473b62bca1e7ae945b3", "out/audit/systematic-rules/int-comparison-solution-build-20261103.txt": "c59b49128f43c1da48c4269ad53b1625d7bdcdca3a67cd6f0e55bfc238b106b8", "out/audit/systematic-rules/int-comparison-audit-matrix-tests-20261103.txt": "9ecc9067eb16b46fa0cda124a1884d8e88d381a46016e382eb1e3ce7d41b2957" },
+      "limitations": [ "BotSim regression is local and static IR inventory (428 callsites/124 records) does not prove PvP reachability or complete-card behavior." ]
     }
   ],
   "scope_reviews": {},
@@ -8596,7 +8685,7 @@
       "id": "RULE-KISMET-MATH-CATALOG",
       "title": "Kismet数学节点清单与语义核验",
       "status": "open",
-      "scope": "按当前 card-ir.json 对 69 种数学调用的 9,281 个静态调用点建立可复跑目录。2026-11-03 盘点覆盖 1,709 个 IR 资产；ImplementedMathNames 与 EvalMath 分支名集合为 73/73 一致，但这只验证名称表相互一致，不验证运算语义。IR 中有 61 个不在 VM 声明/分支中的调用点：Format 57、GetDisplayName 1、GetOrSpawnActor 1、PrintString 2；与现有静态派发缺口报告计数相符。另有 8 个已声明名称未在当前 IR 出现。目录包含显示、战役、Brawl 等资产，不建立 PvP 分母或可达性结论；逐项分类 PvP 范围，并与权威客户端行为核验语义和调用分派后，才能决定实现与准入影响。 已依据客户端 UE4SS CoreUObject_enums.hpp 确认 ESearchCase（CaseSensitive=0、IgnoreCase=1）与 ESearchDir（FromStart=0、FromEnd=1）；修正 KismetVm EndsWith/Split 的 ESearchCase 映射，保留 Split 的方向映射，并以 BotSim 定向回归覆盖大小写、起始/末尾查找和失败时输出引用不变。该修复只覆盖这两个字符串节点，其他数学节点语义仍未逐项认证。 2026-11-03：EnumCompareSide 静态核对当前 IR 56 个调用点、52 个资产/52 个程序；SDK 明确 ESideEnum 的 0/1/2 与 EnumAreTheyEqual 的 0/1，56 个首个局部消费者均为 NotEqual_ByteByte；另有独立分支读取盘点为 62 次读取（其中 6 个调用点重复读取）；BotSim 3×3 映射回归通过。SDK 未含原生函数体，客户端等价、越界语义和 PvP 可达性仍未确认，保持 open。 2026-11-03：FMod 原生包装器 RVA 0x3db24a0 的有限输入商/余数路径和除零分支已建立局部证据；当前 BotSim 四个有符号有限回归通过。两个 IR 调用点均位于 card_location_british_scen5.OnStartOfGame。NaN、无穷大、转换溢出、完整参数封送及 PvP 可达性仍未认证，目录保持 open。  2026-11-03 Divide_IntInt and Percent_IntInt native wrapper contract is now recorded (report: out/audit/systematic-rules/divide-percent-native-contract-20261103.json; 37 Divide sites / 26 card records and 14 Percent sites / 5 records; zero-divisor and signed int32 paths covered). The catalog and broader Kismet semantic review remain open; INT_MIN / -1 handling, UFunction marshaling, PvP reachability, and card-level closure are unresolved.",
+      "scope": "按当前 card-ir.json 对 69 种数学调用的 9,281 个静态调用点建立可复跑目录。2026-11-03 盘点覆盖 1,709 个 IR 资产；ImplementedMathNames 与 EvalMath 分支名集合为 73/73 一致，但这只验证名称表相互一致，不验证运算语义。IR 中有 61 个不在 VM 声明/分支中的调用点：Format 57、GetDisplayName 1、GetOrSpawnActor 1、PrintString 2；与现有静态派发缺口报告计数相符。另有 8 个已声明名称未在当前 IR 出现。目录包含显示、战役、Brawl 等资产，不建立 PvP 分母或可达性结论；逐项分类 PvP 范围，并与权威客户端行为核验语义和调用分派后，才能决定实现与准入影响。 已依据客户端 UE4SS CoreUObject_enums.hpp 确认 ESearchCase（CaseSensitive=0、IgnoreCase=1）与 ESearchDir（FromStart=0、FromEnd=1）；修正 KismetVm EndsWith/Split 的 ESearchCase 映射，保留 Split 的方向映射，并以 BotSim 定向回归覆盖大小写、起始/末尾查找和失败时输出引用不变。该修复只覆盖这两个字符串节点，其他数学节点语义仍未逐项认证。 2026-11-03：EnumCompareSide 静态核对当前 IR 56 个调用点、52 个资产/52 个程序；SDK 明确 ESideEnum 的 0/1/2 与 EnumAreTheyEqual 的 0/1，56 个首个局部消费者均为 NotEqual_ByteByte；另有独立分支读取盘点为 62 次读取（其中 6 个调用点重复读取）；BotSim 3×3 映射回归通过。SDK 未含原生函数体，客户端等价、越界语义和 PvP 可达性仍未确认，保持 open。 2026-11-03：FMod 原生包装器 RVA 0x3db24a0 的有限输入商/余数路径和除零分支已建立局部证据；当前 BotSim 四个有符号有限回归通过。两个 IR 调用点均位于 card_location_british_scen5.OnStartOfGame。NaN、无穷大、转换溢出、完整参数封送及 PvP 可达性仍未认证，目录保持 open。  2026-11-03 Divide_IntInt and Percent_IntInt native wrapper contract is now recorded (report: out/audit/systematic-rules/divide-percent-native-contract-20261103.json; 37 Divide sites / 26 card records and 14 Percent sites / 5 records; zero-divisor and signed int32 paths covered). The catalog and broader Kismet semantic review remain open; INT_MIN / -1 handling, UFunction marshaling, PvP reachability, and card-level closure are unresolved. 2026-11-03: six signed Int32 comparison wrappers (Less/Greater/LessEqual/GreaterEqual/EqualEqual/NotEqual) were captured from the current executable at verified KismetMathLibrary-owned UFunctions. Their setcc paths and eight signed boundary pairs per operation are documented in int-comparison-native-contract-20261103.json; 2,823 static IR callsites across the repository snapshot are inventory only. Full UFunction ABI, current PvP reachability, and card-level closure remain open.",
       "source": "klink bot/tools/audit-kismet-math-catalog.py; out/audit/systematic-rules/kismet-math-node-catalog-20261103.json; out/audit/math-catalog-dispatch-gap-20261103.txt; D:/Program Files/KARDS - The WWII Card Game/KARDS/default/game/kards/Binaries/Win64/ue4ss/CXXHeaderDump/CoreUObject_enums.hpp; src/KLink.Bot/Effects/Blueprint/KismetVm.cs; tools/BotSim/SelfTest.KismetMath.cs; klink bot/tools/audit-enum-compare-side.py; out/audit/systematic-rules/enum-compare-side-sdk-contract-20261103.json; D:/Program Files/KARDS - The WWII Card Game/KARDS/default/game/kards/Binaries/Win64/ue4ss/CXXHeaderDump/kards.hpp; D:/Program Files/KARDS - The WWII Card Game/KARDS/default/game/kards/Binaries/Win64/ue4ss/CXXHeaderDump/kards_enums.hpp; tools/BotSim/SelfTest.KismetMath.cs; out/audit/systematic-rules/fmod-native-contract-20261103.json; out/audit/systematic-rules/fmod-native-contract-20261103.md; out/audit/systematic-rules/divide-percent-native-contract-20261103.json; out/audit/systematic-rules/kismet-divide-percent-native-capture-current-20261103.json; tools/BotSim/Fixtures/kismet-divide-percent-native-20261103.json; out/audit/systematic-rules/divide-percent-focused-selftest-20261103.txt; out/audit/systematic-rules/divide-percent-full-selftest-20261103.txt; out/audit/systematic-rules/divide-percent-botsim-build-20261103.txt; out/audit/systematic-rules/divide-percent-solution-build-20261103.txt"
     }
   ],

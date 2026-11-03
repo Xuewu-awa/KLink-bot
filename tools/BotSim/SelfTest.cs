@@ -50,6 +50,7 @@ internal static partial class SelfTest
         new("Kismet math: Clamp native signed bounds including reversed limits", KismetClampNativeBounds),
         new("Kismet math: SelectInt conditional integer contract", KismetSelectIntContract),
         new("Kismet math: Divide_IntInt and Percent_IntInt native integer contract", KismetDividePercentNativeContract),
+        new("Kismet math: Int32 comparison native signed contract", KismetIntComparisonNativeContract),
         new("Kismet math: FMod finite quotient and remainder contract", KismetFModFiniteContract),
         new("GameStateClone: exact field coverage", GameStateCloneFieldCoverage),
         new("GameStateClone: roots aliases and isolation", GameStateCloneGraphIsolation),

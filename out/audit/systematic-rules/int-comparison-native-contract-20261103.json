@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "report_id": "KISMET-INT-COMPARISON-NATIVE-CONTRACT-20261103",
+  "status": "partial",
+  "scope": "Current-client KismetMathLibrary signed Int32 comparison wrappers and simulator results at selected signed boundaries; not full-card or PvP certification.",
+  "client": {
+    "executable": "D:/Program Files/KARDS - The WWII Card Game/KARDS/default/game/kards/Binaries/Win64/kards-Win64-Shipping.exe",
+    "sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305"
+  },
+  "capture": {
+    "path": "out/audit/systematic-rules/kismet-int-comparisons-native-capture-current-20261103.json",
+    "sha256": "2e4587a4820e3bf03008d3452dfdb06034a90a4e58c5ebba5e414c339b178371",
+    "owner": "/Script/Engine.KismetMathLibrary",
+    "all_live_ufunction_owners_verified": true,
+    "method": "Read-only machine-code capture. Six UFunctions were rediscovered from the live UObject array, checked against the KismetMathLibrary class, and captured through the first RET. No native function was invoked and no game memory was written."
+  },
+  "semantics": {
+    "operand_types": "signed int32",
+    "result_type": "bool",
+    "operand_order": "SDK declarations are (A, B); each wrapper parses two int32 locals in order and compares the first parsed local against the second.",
+    "condition_codes": {
+      "Less_IntInt": { "exec_rva": "0x3dc6340", "condition": "setl", "meaning": "A < B" },
+      "Greater_IntInt": { "exec_rva": "0x3dbd6a0", "condition": "setg", "meaning": "A > B" },
+      "LessEqual_IntInt": { "exec_rva": "0x3dc5e30", "condition": "setle", "meaning": "A <= B" },
+      "GreaterEqual_IntInt": { "exec_rva": "0x3dbd190", "condition": "setge", "meaning": "A >= B" },
+      "EqualEqual_IntInt": { "exec_rva": "0x3dafae0", "condition": "sete", "meaning": "A == B" },
+      "NotEqual_IntInt": { "exec_rva": "0x3dd6020", "condition": "setne", "meaning": "A != B" }
+    }
+  },
+  "static_ir_inventory": {
+    "source": "out/audit/systematic-rules/kismet-math-node-catalog-20261103.json",
+    "source_sha256": "f05ec7c8ebcbe668acf2a715c933f1abd39758fd2db2e208d605245b45fd8682",
+    "Less_IntInt": { "call_sites": 996, "card_records": 709 },
+    "Greater_IntInt": { "call_sites": 605, "card_records": 449 },
+    "LessEqual_IntInt": { "call_sites": 218, "card_records": 150 },
+    "GreaterEqual_IntInt": { "call_sites": 141, "card_records": 71 },
+    "EqualEqual_IntInt": { "call_sites": 435, "card_records": 262 },
+    "NotEqual_IntInt": { "call_sites": 428, "card_records": 124 },
+    "total_call_sites": 2823,
+    "note": "Counts describe the repository IR snapshot, include non-PvP assets, and are neither current-client reachability nor current PvP denominator evidence."
+  },
+  "regression": {
+    "fixture": "tools/BotSim/Fixtures/kismet-int-comparisons-native-20261103.json",
+    "cases_per_operator": 8,
+    "covered_inputs": [
+      "int.MinValue == int.MinValue",
+      "int.MinValue < int.MaxValue",
+      "-1 compared with 0",
+      "0 compared with -1",
+      "0 == 0",
+      "1 compared with 0",
+      "int.MaxValue compared with int.MinValue",
+      "int.MaxValue == int.MaxValue"
+    ],
+    "result": "All 48 simulator outputs match the expected condition-code outcomes; no VM faults."
+  },
+  "limitations": [
+    "The capture establishes the visible parse/compare/result path only; malformed UFunction frames, every property flag, and all exceptional ABI behavior are not certified.",
+    "BotSim evaluates the local VM and does not invoke the game executable for differential runtime testing.",
+    "IR inventory does not establish PvP eligibility, execution reachability, or complete card behavior.",
+    "This evidence is invalid if the executable SHA-256 changes."
+  ]
+}
