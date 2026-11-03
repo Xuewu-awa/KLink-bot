@@ -49,6 +49,7 @@ internal static partial class SelfTest
         new("Kismet math: EnumCompareSide SDK branch contract", KismetEnumCompareSideSdkBranchContract),
         new("Kismet math: EnumCompareCardLocation native branch contract", KismetEnumCompareCardLocationNativeContract),
         new("Kismet math: faction and side enum comparators native contract", KismetFactionSideEnumComparatorsNativeContract),
+        new("Kismet math: Boolean equality native contract", KismetBooleanComparisonsNativeContract),
         new("Kismet math: Clamp native signed bounds including reversed limits", KismetClampNativeBounds),
         new("Kismet math: SelectInt conditional integer contract", KismetSelectIntContract),
         new("Kismet math: Divide_IntInt and Percent_IntInt native integer contract", KismetDividePercentNativeContract),

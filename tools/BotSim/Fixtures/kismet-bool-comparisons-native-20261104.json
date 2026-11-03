@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "capture_path": "out/audit/systematic-rules/kismet-bool-comparisons-native-capture-current-20261104.json",
+  "capture_sha256": "823ff5e18e130422e4035356bcc1235d0ac24728153bc01afb1c5bbdece01643",
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "binary_cases": [[false, false], [false, true], [true, false], [true, true]],
+  "functions": {
+    "EqualEqual_BoolBool": {
+      "exec_rva": "0x3daf370",
+      "signature": "void EqualEqual_BoolBool(bool A, bool B)",
+      "instructions": [["0x3daf433", "0f94c0"], ["0x3daf436", "418806"]],
+      "results": [true, false, false, true]
+    },
+    "NotEqual_BoolBool": {
+      "exec_rva": "0x3dd5ad0",
+      "signature": "void NotEqual_BoolBool(bool A, bool B)",
+      "instructions": [["0x3dd5b93", "0f95c0"], ["0x3dd5b96", "418806"]],
+      "results": [false, true, true, false]
+    }
+  },
+  "limitations": [
+    "The SDK declares both functions and Boolean inputs are tested over the complete two-value domain.",
+    "Captured native UFunction machine code is not invoked by this regression; BotSim checks its local VM implementation against the captured condition/output instructions.",
+    "This primitive test does not establish PvP reachability or complete-card behavior."
+  ]
+}

@@ -1,0 +1,33 @@
+  KLink.Bot -> D:\Codex Workshop\KLink-bot\src\KLink.Bot\bin\Debug\net10.0\KLink.Bot.dll
+  BotSim -> D:\Codex Workshop\KLink-bot\tools\BotSim\bin\Debug\net10.0\BotSim.dll
+  AotProbe -> D:\Codex Workshop\KLink-bot\tools\AotProbe\bin\Debug\net10.0\AotProbe.dll
+D:\Codex Workshop\KLink-bot\tools\NNTrain\ActionDatasetTool.cs(17,80): warning CS8632: 只能在 "#nullable" 注释上下文内的代码中使用可为 null 的引用类型的注释。 [D:\Codex Workshop\KLink-bot\tools\NNTrain\NNTrain.csproj]
+D:\Codex Workshop\KLink-bot\tools\NNTrain\PolicyMatchEvaluation.cs(15,45): warning CS8632: 只能在 "#nullable" 注释上下文内的代码中使用可为 null 的引用类型的注释。 [D:\Codex Workshop\KLink-bot\tools\NNTrain\NNTrain.csproj]
+D:\Codex Workshop\KLink-bot\tools\NNTrain\RankingMetricSelfTest.cs(25,51): warning CS8632: 只能在 "#nullable" 注释上下文内的代码中使用可为 null 的引用类型的注释。 [D:\Codex Workshop\KLink-bot\tools\NNTrain\NNTrain.csproj]
+D:\Codex Workshop\KLink-bot\tools\NNTrain\RankingMetricSelfTest.cs(25,68): warning CS8632: 只能在 "#nullable" 注释上下文内的代码中使用可为 null 的引用类型的注释。 [D:\Codex Workshop\KLink-bot\tools\NNTrain\NNTrain.csproj]
+D:\Codex Workshop\KLink-bot\tools\NNTrain\RankingMetricSelfTest.cs(25,85): warning CS8632: 只能在 "#nullable" 注释上下文内的代码中使用可为 null 的引用类型的注释。 [D:\Codex Workshop\KLink-bot\tools\NNTrain\NNTrain.csproj]
+D:\Codex Workshop\KLink-bot\tools\NNTrain\RankingMetricSelfTest.cs(26,20): warning CS8632: 只能在 "#nullable" 注释上下文内的代码中使用可为 null 的引用类型的注释。 [D:\Codex Workshop\KLink-bot\tools\NNTrain\NNTrain.csproj]
+D:\Codex Workshop\KLink-bot\tools\NNTrain\RankingMetricSelfTest.cs(26,39): warning CS8632: 只能在 "#nullable" 注释上下文内的代码中使用可为 null 的引用类型的注释。 [D:\Codex Workshop\KLink-bot\tools\NNTrain\NNTrain.csproj]
+D:\Codex Workshop\KLink-bot\tools\NNTrain\AfterstateWinTraining.cs(52,46): warning CS8632: 只能在 "#nullable" 注释上下文内的代码中使用可为 null 的引用类型的注释。 [D:\Codex Workshop\KLink-bot\tools\NNTrain\NNTrain.csproj]
+D:\Codex Workshop\KLink-bot\tools\NNTrain\AfterstateWinTraining.cs(55,62): warning CS8632: 只能在 "#nullable" 注释上下文内的代码中使用可为 null 的引用类型的注释。 [D:\Codex Workshop\KLink-bot\tools\NNTrain\NNTrain.csproj]
+D:\Codex Workshop\KLink-bot\tools\NNTrain\Program.cs(508,59): warning CS8632: 只能在 "#nullable" 注释上下文内的代码中使用可为 null 的引用类型的注释。 [D:\Codex Workshop\KLink-bot\tools\NNTrain\NNTrain.csproj]
+  NNPlay -> D:\Codex Workshop\KLink-bot\tools\NNPlay\bin\Debug\net10.0\NNPlay.dll
+  NNTrain -> D:\Codex Workshop\KLink-bot\tools\NNTrain\bin\Debug\net10.0\NNTrain.dll
+  ServerBridgeTest -> D:\Codex Workshop\KLink-bot\tools\ServerBridgeTest\bin\Debug\net10.0\ServerBridgeTest.dll
+
+已成功生成。
+
+D:\Codex Workshop\KLink-bot\tools\NNTrain\ActionDatasetTool.cs(17,80): warning CS8632: 只能在 "#nullable" 注释上下文内的代码中使用可为 null 的引用类型的注释。 [D:\Codex Workshop\KLink-bot\tools\NNTrain\NNTrain.csproj]
+D:\Codex Workshop\KLink-bot\tools\NNTrain\PolicyMatchEvaluation.cs(15,45): warning CS8632: 只能在 "#nullable" 注释上下文内的代码中使用可为 null 的引用类型的注释。 [D:\Codex Workshop\KLink-bot\tools\NNTrain\NNTrain.csproj]
+D:\Codex Workshop\KLink-bot\tools\NNTrain\RankingMetricSelfTest.cs(25,51): warning CS8632: 只能在 "#nullable" 注释上下文内的代码中使用可为 null 的引用类型的注释。 [D:\Codex Workshop\KLink-bot\tools\NNTrain\NNTrain.csproj]
+D:\Codex Workshop\KLink-bot\tools\NNTrain\RankingMetricSelfTest.cs(25,68): warning CS8632: 只能在 "#nullable" 注释上下文内的代码中使用可为 null 的引用类型的注释。 [D:\Codex Workshop\KLink-bot\tools\NNTrain\NNTrain.csproj]
+D:\Codex Workshop\KLink-bot\tools\NNTrain\RankingMetricSelfTest.cs(25,85): warning CS8632: 只能在 "#nullable" 注释上下文内的代码中使用可为 null 的引用类型的注释。 [D:\Codex Workshop\KLink-bot\tools\NNTrain\NNTrain.csproj]
+D:\Codex Workshop\KLink-bot\tools\NNTrain\RankingMetricSelfTest.cs(26,20): warning CS8632: 只能在 "#nullable" 注释上下文内的代码中使用可为 null 的引用类型的注释。 [D:\Codex Workshop\KLink-bot\tools\NNTrain\NNTrain.csproj]
+D:\Codex Workshop\KLink-bot\tools\NNTrain\RankingMetricSelfTest.cs(26,39): warning CS8632: 只能在 "#nullable" 注释上下文内的代码中使用可为 null 的引用类型的注释。 [D:\Codex Workshop\KLink-bot\tools\NNTrain\NNTrain.csproj]
+D:\Codex Workshop\KLink-bot\tools\NNTrain\AfterstateWinTraining.cs(52,46): warning CS8632: 只能在 "#nullable" 注释上下文内的代码中使用可为 null 的引用类型的注释。 [D:\Codex Workshop\KLink-bot\tools\NNTrain\NNTrain.csproj]
+D:\Codex Workshop\KLink-bot\tools\NNTrain\AfterstateWinTraining.cs(55,62): warning CS8632: 只能在 "#nullable" 注释上下文内的代码中使用可为 null 的引用类型的注释。 [D:\Codex Workshop\KLink-bot\tools\NNTrain\NNTrain.csproj]
+D:\Codex Workshop\KLink-bot\tools\NNTrain\Program.cs(508,59): warning CS8632: 只能在 "#nullable" 注释上下文内的代码中使用可为 null 的引用类型的注释。 [D:\Codex Workshop\KLink-bot\tools\NNTrain\NNTrain.csproj]
+    10 个警告
+    0 个错误
+
+已用时间 00:00:01.36

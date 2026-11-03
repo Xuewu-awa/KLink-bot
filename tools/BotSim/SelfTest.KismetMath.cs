@@ -848,4 +848,75 @@ internal static partial class SelfTest
                 return $"{item.Slot} returned {result[item.Slot] ?? "<null>"}; expected {item.Value}";
         return null;
     }
+
+    private static string? KismetBooleanComparisonsNativeContract(CardDatabase db)
+    {
+        string path = Path.Combine(AppContext.BaseDirectory, "Fixtures", "kismet-bool-comparisons-native-20261104.json");
+        using var document = System.Text.Json.JsonDocument.Parse(File.ReadAllText(path));
+        var root = document.RootElement;
+        DirectoryInfo? repository = new(AppContext.BaseDirectory);
+        while (repository is not null && !File.Exists(Path.Combine(repository.FullName, "KLink.slnx")))
+            repository = repository.Parent;
+        if (repository is null)
+            return "could not locate repository root for Boolean comparison fixture";
+        string captureRelative = root.GetProperty("capture_path").GetString()!;
+        string capturePath = Path.Combine(repository.FullName, captureRelative.Replace('/', Path.DirectorySeparatorChar));
+        if (!File.Exists(capturePath))
+            return $"Boolean comparison capture not found at {captureRelative}";
+        string captureHash = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(capturePath))).ToLowerInvariant();
+        if (!string.Equals(captureHash, root.GetProperty("capture_sha256").GetString(), StringComparison.Ordinal))
+            return "Boolean comparison capture SHA-256 differs from the regression fixture";
+        using var capture = System.Text.Json.JsonDocument.Parse(File.ReadAllText(capturePath));
+        var captureRoot = capture.RootElement;
+        if (!string.Equals(captureRoot.GetProperty("exe_sha256").GetString(),
+                root.GetProperty("exe_sha256").GetString(), StringComparison.Ordinal)
+            || !string.Equals(captureRoot.GetProperty("owner").GetString(),
+                "/Script/Engine.KismetMathLibrary", StringComparison.Ordinal))
+            return "Boolean comparison executable or owner differs from the regression fixture";
+
+        foreach (var contract in root.GetProperty("functions").EnumerateObject())
+        {
+            var native = captureRoot.GetProperty("functions").GetProperty(contract.Name);
+            if (!native.GetProperty("ownership_verified").GetBoolean()
+                || !string.Equals(native.GetProperty("exec_rva").GetString(),
+                    contract.Value.GetProperty("exec_rva").GetString(), StringComparison.Ordinal))
+                return $"{contract.Name} native identity differs from the regression fixture";
+            foreach (var instruction in contract.Value.GetProperty("instructions").EnumerateArray())
+                if (!native.GetProperty("instructions_to_first_ret").EnumerateArray().Any(actual =>
+                        string.Equals(actual.GetProperty("rva").GetString(), instruction[0].GetString(), StringComparison.Ordinal)
+                        && string.Equals(actual.GetProperty("bytes").GetString(), instruction[1].GetString(), StringComparison.Ordinal)))
+                    return $"{contract.Name} instruction at {instruction[0].GetString()} differs from the native capture";
+        }
+
+        var binaryCases = root.GetProperty("binary_cases").EnumerateArray()
+            .Select(row => (A: row[0].GetBoolean(), B: row[1].GetBoolean())).ToArray();
+        var steps = new List<KismetStep>();
+        var expectedResults = new List<(string Name, bool Value)>();
+        foreach (var contract in root.GetProperty("functions").EnumerateObject())
+        {
+            var expected = contract.Value.GetProperty("results").EnumerateArray()
+                .Select(value => value.GetBoolean()).ToArray();
+            if (expected.Length != binaryCases.Length)
+                return $"{contract.Name} case count differs from the Boolean input matrix";
+            for (int i = 0; i < binaryCases.Length; i++)
+            {
+                string output = $"{contract.Name}_{i}";
+                steps.Add(SetMathResult(steps.Count, output, MathExpr(contract.Name,
+                    new KismetExpr { Bool = binaryCases[i].A }, new KismetExpr { Bool = binaryCases[i].B })));
+                expectedResults.Add((output, expected[i]));
+            }
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        var context = new EffectContext { Engine = engine, State = state, Controller = Side.Left };
+        long faults = engine.Api.Vm.FaultedPrograms;
+        var actualResults = engine.Api.Vm.RunLocalProgramMulti(
+            new KismetProgram(steps, 0), context, null, expectedResults.Select(row => row.Name).ToArray());
+        if (engine.Api.Vm.FaultedPrograms != faults)
+            return "Boolean equality truth table probe unexpectedly faulted the VM";
+        foreach (var expected in expectedResults)
+            if (!Equals(actualResults[expected.Name], expected.Value))
+                return $"{expected.Name} returned {actualResults[expected.Name] ?? "<null>"}; expected {expected.Value}";
+        return null;
+    }
 }

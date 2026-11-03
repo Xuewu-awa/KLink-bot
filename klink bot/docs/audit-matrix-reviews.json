@@ -8863,6 +8863,68 @@
         "Only valid enum inputs are covered; malformed UFunction frames and out-of-domain bytes are not certified.",
         "Static IR occurrence counts do not establish PvP reachability or full-card behavior."
       ]
+    },
+    {
+      "id": "KISMET-MATH/EqualEqual_BoolBool/native-boolean-equality-20261104",
+      "symbol": "EqualEqual_BoolBool",
+      "modes": [null],
+      "status": "partial",
+      "validated_scope": "Current-client KismetMathLibrary UFunction ownership and final sete/output-store path; all four Boolean pairs match BotSim. Static IR has 3 callsites in 1 asset; not PvP or full-card certification.",
+      "report": "out/audit/systematic-rules/bool-comparisons-native-contract-20261104.json",
+      "report_sha256": "ecef7840e61b1e8c3a15d242329f0dd5f61974b6026f59060f51774d8a466e5e",
+      "client_exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+      "source_bindings": {
+        "src/KLink.Bot/Effects/Blueprint/KismetVm.cs": "0a6d8e23a98e27b02d3d702ab00ca2d22c046c16ca0aa0ee339981bf03e9c416",
+        "klink bot/docs/card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b",
+        "tools/BotSim/SelfTest.KismetMath.cs": "2c7b38efaf3693efe99fab885465cb963e5949ae3b84fa5a789708126f62f7eb",
+        "tools/BotSim/SelfTest.cs": "4070961e3a47252cf564398b627887f68722011f8be11bf3dfaa8eb8ab11569e",
+        "tools/BotSim/BotSim.csproj": "46b6642bf537a3c6d57daa6147a5489e77afd4592c71e14ead0fd94c5dde2f01",
+        "tools/BotSim/Fixtures/kismet-bool-comparisons-native-20261104.json": "8d1b3c298cec876df3a1df721d1170f843305852fddd457b44a2a0e8f1390e86",
+        "klink bot/tools/audit-bool-comparisons.py": "d018d0bc057d769686b813db07700a7116b3229ac56849e058ec9e0cc42dda5e"
+      },
+      "evidence_bindings": {
+        "out/audit/systematic-rules/kismet-bool-comparisons-native-capture-current-20261104.json": "823ff5e18e130422e4035356bcc1235d0ac24728153bc01afb1c5bbdece01643",
+        "out/audit/systematic-rules/bool-comparisons-focused-selftest-20261104.txt": "389d3422c19536b6bcaa8846f6a8f615dbae334e071c375eab22fb9199ea6102",
+        "out/audit/systematic-rules/bool-comparisons-full-selftest-20261104.txt": "542126e50d1ecbcdff4981c8fecfcbe3e1a904fa9726143c586b246181492467",
+        "out/audit/systematic-rules/bool-comparisons-solution-build-20261104.txt": "e45e12feb5dec171e5d5c7a0a6ba28d0d2856e45435ae5b75029204a2482b772",
+        "out/audit/systematic-rules/bool-comparisons-audit-matrix-tests-20261104.txt": "0a9f4fcb5bfce6e6c771ef9b3a5a4d73d943acac8ccf7430a9bdeb0393241834"
+      },
+      "limitations": [
+        "Only valid Boolean inputs are covered; malformed parameter frames are not.",
+        "BotSim validates the local VM and does not invoke the client executable.",
+        "Static callsite count does not establish PvP eligibility, runtime reachability or full-card behavior."
+      ]
+    },
+    {
+      "id": "KISMET-MATH/NotEqual_BoolBool/native-boolean-inequality-20261104",
+      "symbol": "NotEqual_BoolBool",
+      "modes": [null],
+      "status": "partial",
+      "validated_scope": "Current-client KismetMathLibrary UFunction ownership and final setne/output-store path; all four Boolean pairs match BotSim. Static IR has 1 callsite in 1 asset; not PvP or full-card certification.",
+      "report": "out/audit/systematic-rules/bool-comparisons-native-contract-20261104.json",
+      "report_sha256": "ecef7840e61b1e8c3a15d242329f0dd5f61974b6026f59060f51774d8a466e5e",
+      "client_exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+      "source_bindings": {
+        "src/KLink.Bot/Effects/Blueprint/KismetVm.cs": "0a6d8e23a98e27b02d3d702ab00ca2d22c046c16ca0aa0ee339981bf03e9c416",
+        "klink bot/docs/card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b",
+        "tools/BotSim/SelfTest.KismetMath.cs": "2c7b38efaf3693efe99fab885465cb963e5949ae3b84fa5a789708126f62f7eb",
+        "tools/BotSim/SelfTest.cs": "4070961e3a47252cf564398b627887f68722011f8be11bf3dfaa8eb8ab11569e",
+        "tools/BotSim/BotSim.csproj": "46b6642bf537a3c6d57daa6147a5489e77afd4592c71e14ead0fd94c5dde2f01",
+        "tools/BotSim/Fixtures/kismet-bool-comparisons-native-20261104.json": "8d1b3c298cec876df3a1df721d1170f843305852fddd457b44a2a0e8f1390e86",
+        "klink bot/tools/audit-bool-comparisons.py": "d018d0bc057d769686b813db07700a7116b3229ac56849e058ec9e0cc42dda5e"
+      },
+      "evidence_bindings": {
+        "out/audit/systematic-rules/kismet-bool-comparisons-native-capture-current-20261104.json": "823ff5e18e130422e4035356bcc1235d0ac24728153bc01afb1c5bbdece01643",
+        "out/audit/systematic-rules/bool-comparisons-focused-selftest-20261104.txt": "389d3422c19536b6bcaa8846f6a8f615dbae334e071c375eab22fb9199ea6102",
+        "out/audit/systematic-rules/bool-comparisons-full-selftest-20261104.txt": "542126e50d1ecbcdff4981c8fecfcbe3e1a904fa9726143c586b246181492467",
+        "out/audit/systematic-rules/bool-comparisons-solution-build-20261104.txt": "e45e12feb5dec171e5d5c7a0a6ba28d0d2856e45435ae5b75029204a2482b772",
+        "out/audit/systematic-rules/bool-comparisons-audit-matrix-tests-20261104.txt": "0a9f4fcb5bfce6e6c771ef9b3a5a4d73d943acac8ccf7430a9bdeb0393241834"
+      },
+      "limitations": [
+        "Only valid Boolean inputs are covered; malformed parameter frames are not.",
+        "BotSim validates the local VM and does not invoke the client executable.",
+        "Static callsite count does not establish PvP eligibility, runtime reachability or full-card behavior."
+      ]
     }
   ],
   "scope_reviews": {},

@@ -1,0 +1,142 @@
+{
+  "schema_version": 1,
+  "report_id": "KISMET-BOOL-COMPARISONS-NATIVE-CONTRACT-20261104",
+  "status": "partial",
+  "scope": "Current-client KismetMathLibrary Boolean equality wrappers, complete two-value BotSim truth tables, SDK declaration and static IR callsite inventory; not card-effect or PvP certification.",
+  "client": {
+    "executable": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
+    "sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305"
+  },
+  "native_capture": {
+    "path": "out/audit/systematic-rules/kismet-bool-comparisons-native-capture-current-20261104.json",
+    "sha256": "823ff5e18e130422e4035356bcc1235d0ac24728153bc01afb1c5bbdece01643",
+    "owner": "/Script/Engine.KismetMathLibrary",
+    "functions": {
+      "EqualEqual_BoolBool": {
+        "exec_rva": "0x3daf370",
+        "ownership_verified": true,
+        "output_instructions": [
+          [
+            "0x3daf433",
+            "0f94c0"
+          ],
+          [
+            "0x3daf436",
+            "418806"
+          ]
+        ]
+      },
+      "NotEqual_BoolBool": {
+        "exec_rva": "0x3dd5ad0",
+        "ownership_verified": true,
+        "output_instructions": [
+          [
+            "0x3dd5b93",
+            "0f95c0"
+          ],
+          [
+            "0x3dd5b96",
+            "418806"
+          ]
+        ]
+      }
+    },
+    "method": "Read-only live UFunction ownership and entry-code capture. BotSim validates the local VM against the captured final condition-code and output-store instructions; the game functions were not called and process memory was not written."
+  },
+  "sdk": {
+    "header": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\ue4ss\\CXXHeaderDump\\Engine.hpp",
+    "sha256": "6ff639c0078e8800c5bc6aae8090beda97d4265ad5f3ba35e13f6e65128c82fb",
+    "function_signatures": {
+      "EqualEqual_BoolBool": "void EqualEqual_BoolBool(bool A, bool B);",
+      "NotEqual_BoolBool": "void NotEqual_BoolBool(bool A, bool B);"
+    }
+  },
+  "semantics": {
+    "EqualEqual_BoolBool": "true iff both Boolean operands have the same value; final native output uses sete.",
+    "NotEqual_BoolBool": "true iff the Boolean operands differ; final native output uses setne.",
+    "validated_inputs": [
+      [
+        false,
+        false
+      ],
+      [
+        false,
+        true
+      ],
+      [
+        true,
+        false
+      ],
+      [
+        true,
+        true
+      ]
+    ],
+    "native_result_vectors": {
+      "EqualEqual_BoolBool": [
+        true,
+        false,
+        false,
+        true
+      ],
+      "NotEqual_BoolBool": [
+        false,
+        true,
+        true,
+        false
+      ]
+    },
+    "regression_cases": 8
+  },
+  "inventory": {
+    "EqualEqual_BoolBool": {
+      "callsite_count": 3,
+      "asset_count": 1,
+      "program_count": 1,
+      "sample_callsites": [
+        {
+          "card": "card_unit_115th_separate_btn",
+          "program": "steps",
+          "expression": true
+        },
+        {
+          "card": "card_unit_115th_separate_btn",
+          "program": "steps",
+          "expression": true
+        },
+        {
+          "card": "card_unit_115th_separate_btn",
+          "program": "steps",
+          "expression": true
+        }
+      ]
+    },
+    "NotEqual_BoolBool": {
+      "callsite_count": 1,
+      "asset_count": 1,
+      "program_count": 1,
+      "sample_callsites": [
+        {
+          "card": "card_unit_511th_regiment",
+          "program": "locals.checkAndUpdateBuffOnCard",
+          "expression": true
+        }
+      ]
+    }
+  },
+  "source_sha256": {
+    "card_ir": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b",
+    "vm": "0a6d8e23a98e27b02d3d702ab00ca2d22c046c16ca0aa0ee339981bf03e9c416",
+    "selftest": "2c7b38efaf3693efe99fab885465cb963e5949ae3b84fa5a789708126f62f7eb",
+    "selftest_registry": "4070961e3a47252cf564398b627887f68722011f8be11bf3dfaa8eb8ab11569e",
+    "project": "46b6642bf537a3c6d57daa6147a5489e77afd4592c71e14ead0fd94c5dde2f01",
+    "fixture": "8d1b3c298cec876df3a1df721d1170f843305852fddd457b44a2a0e8f1390e86",
+    "capture_script": "4d5155fb8c3c5fd38b6312f0b6702572060efa67cd695c3fbfaa9d36c9b1c58c",
+    "audit_script": "d018d0bc057d769686b813db07700a7116b3229ac56849e058ec9e0cc42dda5e"
+  },
+  "limitations": [
+    "The machine-code evidence is valid only for the recorded executable SHA-256.",
+    "Only the two valid Boolean values and their complete pairwise matrix are covered; malformed frames are not.",
+    "Static IR counts include non-PvP assets and do not establish runtime reachability or full-card behavior."
+  ]
+}
