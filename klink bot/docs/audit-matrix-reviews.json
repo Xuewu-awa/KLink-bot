@@ -9127,26 +9127,26 @@
       "status": "partial",
       "validated_scope": "Current-client UKismetArrayLibrary UFunction ownership and captured 32-bit array-data +8 read/output store; local CardApiDispatch/EvalList call-path regression counts empty and populated IList-backed arrays and checks the simulator's non-array fallback. Static IR inventory is 1,144 callsites across 762 assets and does not establish PvP reachability.",
       "report": "out/audit/systematic-rules/array-length-native-contract-20261104.json",
-      "report_sha256": "074c928f054db2ec99dd854cc0dec85f3795051e1bd1b5d5f91648cf35b4a5bb",
+      "report_sha256": "a516d4a2bfdbf4cefd16f29c8e02293214db29539c4df6b0d70bc6654592563d",
       "client_exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
       "source_bindings": {
         "klink bot/docs/card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b",
         "src/KLink.Bot/Effects/CardApiDispatch.cs": "b7188eace3ff3ad55eac7985b4b92e437f208e0b0e5ddc74e3cd572c0c79c7f3",
         "src/KLink.Bot/Effects/CardApi.cs": "8008eaef80bdbd395fb45bc16486cf503ae9d2e4e1d36ea97ee6e850b47965db",
-        "tools/BotSim/SelfTest.KismetMath.cs": "3b4755f50a06b630ded24d26eebad855280c4af64ec66e2760a509622831144a",
-        "tools/BotSim/SelfTest.cs": "228da8d4baf046288b3e608c8acc7d95b127069b43bb1f2adff4703fd5e5f769",
-        "tools/BotSim/BotSim.csproj": "a3e4a46611488f0a4268a454734d06079286f7fd855ee342f2376b55285a7d0f",
+        "tools/BotSim/SelfTest.KismetMath.cs": "c1e6256feff91a14ccb66a633e205973cfc87de0d612e27601818e1470cd285a",
+        "tools/BotSim/SelfTest.cs": "614e3be4b75c79948fdfaf295f84fc364dbe0abef441a1f6f3aa672ea130a0e6",
+        "tools/BotSim/BotSim.csproj": "a74dd999fc8a9b4df1422f79e16719c05873bfa5230afd70d7271241f0082c04",
         "tools/BotSim/Fixtures/kismet-array-length-native-20261104.json": "2a6b0a8b6c0aa461cbf98addc4f3bc2f08e0bbfd7dc28680890eb6c29a1869de",
         "out/audit/capture-kismet-array-length-current-20261104.py": "22ec2f9733a2310d89d7175d3c17c360b14647bfb39e0e18986362f17416de52",
         "klink bot/tools/audit-array-length.py": "2ea135deba0e492d338edd00e25987788cf2425d1a60ae327cd9d57f5f627bd2"
       },
       "evidence_bindings": {
         "out/audit/systematic-rules/kismet-array-length-native-capture-current-20261104.json": "58fd213c9e9cfb5fd3284033357f128366f2d252b15e6093659b167a9e3b78f1",
-        "out/audit/systematic-rules/array-length-native-contract-20261104.json": "074c928f054db2ec99dd854cc0dec85f3795051e1bd1b5d5f91648cf35b4a5bb",
+        "out/audit/systematic-rules/array-length-native-contract-20261104.json": "a516d4a2bfdbf4cefd16f29c8e02293214db29539c4df6b0d70bc6654592563d",
         "out/audit/systematic-rules/array-length-focused-selftest-20261104.txt": "fffb86fd15bea77a2cc3f275ee1e7b41607bd30f4d50c427367c0e5e59c13826",
-        "out/audit/systematic-rules/array-get-full-selftest-20261104.txt": "4d8b3ac8770480ba6152ed5a3affc8a8e0960bc2ea25f2592b20b562f7255633",
-        "out/audit/systematic-rules/array-get-solution-build-20261104.txt": "6091032c28ad3d6fe96b2ab3601d8fff17f1b39da61026857d1a2c652f87c9f9",
-        "out/audit/systematic-rules/array-get-audit-matrix-tests-20261104.txt": "fc04d250327fc44f32a83f8f573d08d731aca82ebf5dac850192c694d59e1991"
+        "out/audit/systematic-rules/array-add-full-selftest-20261104.txt": "fa7c4fa1624b261f2bfac560073c2b6e278e241788bfce6a5813da9aead16cf8",
+        "out/audit/systematic-rules/array-add-solution-build-20261104.txt": "43551ce046f99890f0b7fa8402909b976dfe4c4dbc54f3e6583f61c78458a145",
+        "out/audit/systematic-rules/array-add-audit-matrix-tests-20261104.txt": "859ff227f49634051e6546ce7d6128da1c5f867281096e1e1569cd77bb42aeea"
       },
       "limitations": [
         "Native Array_Length was not invoked; generic property marshaling and malformed array-frame behavior remain unverified.",
@@ -9163,28 +9163,62 @@
       "status": "partial",
       "validated_scope": "Current-client UKismetArrayLibrary ownership, SDK declaration, captured index/read/output instruction sites, and local CardApiDispatch output slot 2 regression. Invalid-index and malformed-input output values are simulator-only expectations. Static IR inventory is 1,744 callsites across 705 assets and does not establish PvP reachability.",
       "report": "out/audit/systematic-rules/array-get-native-contract-20261104.json",
-      "report_sha256": "f519086c8330d1448eab584bc6efccb83a7a7222f7076d66f7dc1b8babae19f0",
+      "report_sha256": "85255d60895fe893e1f0bf6e39e55107c1908be97ada5219e446605a0aaf3976",
       "client_exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
       "source_bindings": {
         "klink bot/docs/card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b",
         "src/KLink.Bot/Effects/CardApiDispatch.cs": "b7188eace3ff3ad55eac7985b4b92e437f208e0b0e5ddc74e3cd572c0c79c7f3",
-        "tools/BotSim/SelfTest.KismetMath.cs": "3b4755f50a06b630ded24d26eebad855280c4af64ec66e2760a509622831144a",
-        "tools/BotSim/SelfTest.cs": "228da8d4baf046288b3e608c8acc7d95b127069b43bb1f2adff4703fd5e5f769",
-        "tools/BotSim/BotSim.csproj": "a3e4a46611488f0a4268a454734d06079286f7fd855ee342f2376b55285a7d0f",
+        "tools/BotSim/SelfTest.KismetMath.cs": "c1e6256feff91a14ccb66a633e205973cfc87de0d612e27601818e1470cd285a",
+        "tools/BotSim/SelfTest.cs": "614e3be4b75c79948fdfaf295f84fc364dbe0abef441a1f6f3aa672ea130a0e6",
+        "tools/BotSim/BotSim.csproj": "a74dd999fc8a9b4df1422f79e16719c05873bfa5230afd70d7271241f0082c04",
         "tools/BotSim/Fixtures/kismet-array-get-native-20261104.json": "d17ffd0882337d0106f453b5247570ea82bcab5797472b92f39ddbe7c3c3f53c",
         "out/audit/capture-kismet-array-get-current-20261104.py": "8d7ab6500ec392e72cbd86b99121b4316af282deb50f6865dba86953fe8d4368",
         "klink bot/tools/audit-array-get.py": "c9bd70d9c04f56d5fdbc6d454824e36251dd64c372ee19c38501d9e5a0bfea64"
       },
       "evidence_bindings": {
         "out/audit/systematic-rules/kismet-array-get-native-capture-current-20261104.json": "eafca517af6b874d7a17282425b2c667dac100d353742bd24d851070c8422ef3",
-        "out/audit/systematic-rules/array-get-native-contract-20261104.json": "f519086c8330d1448eab584bc6efccb83a7a7222f7076d66f7dc1b8babae19f0",
+        "out/audit/systematic-rules/array-get-native-contract-20261104.json": "85255d60895fe893e1f0bf6e39e55107c1908be97ada5219e446605a0aaf3976",
         "out/audit/systematic-rules/array-get-focused-selftest-20261104.txt": "49fd1b12f7e65e148d0e6cba31159ebdd2818ad43da50e870e0ffff8b759db75",
-        "out/audit/systematic-rules/array-get-full-selftest-20261104.txt": "4d8b3ac8770480ba6152ed5a3affc8a8e0960bc2ea25f2592b20b562f7255633",
-        "out/audit/systematic-rules/array-get-solution-build-20261104.txt": "6091032c28ad3d6fe96b2ab3601d8fff17f1b39da61026857d1a2c652f87c9f9",
-        "out/audit/systematic-rules/array-get-audit-matrix-tests-20261104.txt": "fc04d250327fc44f32a83f8f573d08d731aca82ebf5dac850192c694d59e1991"
+        "out/audit/systematic-rules/array-add-full-selftest-20261104.txt": "fa7c4fa1624b261f2bfac560073c2b6e278e241788bfce6a5813da9aead16cf8",
+        "out/audit/systematic-rules/array-add-solution-build-20261104.txt": "43551ce046f99890f0b7fa8402909b976dfe4c4dbc54f3e6583f61c78458a145",
+        "out/audit/systematic-rules/array-add-audit-matrix-tests-20261104.txt": "859ff227f49634051e6546ce7d6128da1c5f867281096e1e1569cd77bb42aeea"
       },
       "limitations": [
         "Native Array_Get was not invoked; complete generic property marshaling and native invalid-index output values remain unverified.",
+        "Static IR call counts do not establish PvP eligibility, runtime reachability, or full-card behavior."
+      ]
+    },
+    {
+      "id": "KISMET-ARRAY/Array_Add/append-result-frame-20261104",
+      "symbol": "Array_Add",
+      "modes": [
+        null
+      ],
+      "status": "partial",
+      "validated_scope": "Current-client UKismetArrayLibrary ownership, SDK void declaration, wrapper call followed by a 32-bit result-frame store, local list mutation/result regression, and static IR inventory of 306 callsites across 229 assets. The helper's result meaning and complete generic property behavior are not established.",
+      "report": "out/audit/systematic-rules/array-add-native-contract-20261104.json",
+      "report_sha256": "8dc659c87d9de98a827d3ae6048f113fde0f263864fb828703a76d2bb56007f7",
+      "client_exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+      "source_bindings": {
+        "klink bot/docs/card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b",
+        "src/KLink.Bot/Effects/CardApiDispatch.cs": "b7188eace3ff3ad55eac7985b4b92e437f208e0b0e5ddc74e3cd572c0c79c7f3",
+        "tools/BotSim/SelfTest.KismetMath.cs": "c1e6256feff91a14ccb66a633e205973cfc87de0d612e27601818e1470cd285a",
+        "tools/BotSim/SelfTest.cs": "614e3be4b75c79948fdfaf295f84fc364dbe0abef441a1f6f3aa672ea130a0e6",
+        "tools/BotSim/BotSim.csproj": "a74dd999fc8a9b4df1422f79e16719c05873bfa5230afd70d7271241f0082c04",
+        "tools/BotSim/Fixtures/kismet-array-add-native-20261104.json": "d0c86bbd6a52384362c33b7fd651fcc8a9db249f9c5c8c0ad14cf1e8ee39c904",
+        "out/audit/capture-kismet-array-add-current-20261104.py": "ecc40f1f707f208c160c89f541157d1132af98701ee3f621bcd330456980ceee",
+        "klink bot/tools/audit-array-add.py": "d4d89472f9f4ab9ecaf99d213523da2248f1ae424045e6c8cff4a1814aefafc1"
+      },
+      "evidence_bindings": {
+        "out/audit/systematic-rules/kismet-array-add-native-capture-current-20261104.json": "babbb52d6332559635466860cd7a70382cc7cf75d959f47c3f433d5e4becc2a2",
+        "out/audit/systematic-rules/array-add-native-contract-20261104.json": "8dc659c87d9de98a827d3ae6048f113fde0f263864fb828703a76d2bb56007f7",
+        "out/audit/systematic-rules/array-add-focused-selftest-20261104.txt": "8d485db65dc97c85e5cd840a195fd6e81612ca48540af07a596b98779b49caf3",
+        "out/audit/systematic-rules/array-add-full-selftest-20261104.txt": "fa7c4fa1624b261f2bfac560073c2b6e278e241788bfce6a5813da9aead16cf8",
+        "out/audit/systematic-rules/array-add-solution-build-20261104.txt": "43551ce046f99890f0b7fa8402909b976dfe4c4dbc54f3e6583f61c78458a145",
+        "out/audit/systematic-rules/array-add-audit-matrix-tests-20261104.txt": "859ff227f49634051e6546ce7d6128da1c5f867281096e1e1569cd77bb42aeea"
+      },
+      "limitations": [
+        "Native Array_Add was not invoked; the append helper's return meaning, result property, and generic property lifecycle remain unresolved.",
         "Static IR call counts do not establish PvP eligibility, runtime reachability, or full-card behavior."
       ]
     }

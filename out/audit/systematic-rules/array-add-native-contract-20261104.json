@@ -1,0 +1,308 @@
+{
+  "schema_version": 1,
+  "report_id": "KISMET-ARRAY-ADD-NATIVE-CONTRACT-20261104",
+  "status": "partial",
+  "scope": "Current-client UKismetArrayLibrary Array_Add ownership, SDK declaration, observed wrapper result-frame store, local CardApiDispatch mutation/result regression and static IR inventory; not full helper execution or card certification.",
+  "client": {
+    "executable": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
+    "sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305"
+  },
+  "native_capture": {
+    "path": "out/audit/systematic-rules/kismet-array-add-native-capture-current-20261104.json",
+    "sha256": "babbb52d6332559635466860cd7a70382cc7cf75d959f47c3f433d5e4becc2a2",
+    "owner": "/Script/Engine.KismetArrayLibrary",
+    "function": {
+      "name": "Array_Add",
+      "exec_rva": "0x3d92120",
+      "ownership_verified": true
+    },
+    "observed_instruction_checks": [
+      [
+        "0x3d92283",
+        "e83878feff"
+      ],
+      [
+        "0x3d92288",
+        "41894500"
+      ],
+      [
+        "0x3d92443",
+        "e85878feff"
+      ],
+      [
+        "0x3d92448",
+        "41894500"
+      ]
+    ],
+    "method": "Read-only live UObject/UFunction identity and entry-code capture; no native invocation or process-memory write.",
+    "interpretation": "The wrapper calls an append helper and stores EAX to a 32-bit result-frame location. The called helper was not independently executed, so the stored value's precise semantic meaning remains unverified."
+  },
+  "sdk": {
+    "header": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\ue4ss\\CXXHeaderDump\\Engine.hpp",
+    "sha256": "6ff639c0078e8800c5bc6aae8090beda97d4265ad5f3ba35e13f6e65128c82fb",
+    "declaration": "void Array_Add(const TArray<int32>& TargetArray, const int32& NewItem);"
+  },
+  "simulator": {
+    "implementation": "var arr = EvalList(r, a);\n                if (a.Length > 0)\n                {\n                    ArrayAppendOne(c, arr, a[^1]);\n                }\n\n                return arr.Count - 1;",
+    "regression_cases": [
+      "integer append index and list mutation",
+      "duplicate integer append",
+      "string element preservation",
+      "object element identity and list mutation"
+    ],
+    "native_comparison": "BotSim verifies its own append and index behavior. The captured result-frame store is consistent with a result path but does not prove the helper returns the newly appended index."
+  },
+  "inventory": {
+    "callsite_count": 306,
+    "asset_count": 229,
+    "program_count": 239,
+    "arity_counts": {
+      "2": 306
+    },
+    "element_type_counts": {
+      "Int": 105,
+      "Object": 193,
+      "None": 1,
+      "Name": 6,
+      "Struct": 1
+    },
+    "sample_callsites": [
+      {
+        "card": "card_event_anzac_spirit",
+        "program": "steps",
+        "instruction_i": null,
+        "byte_offset": null,
+        "argument_shapes": [
+          [
+            "element_type",
+            "scope",
+            "var"
+          ],
+          [
+            "ctx",
+            "scope",
+            "var"
+          ]
+        ],
+        "element_type": "Int"
+      },
+      {
+        "card": "card_event_repel_the_attack",
+        "program": "steps",
+        "instruction_i": null,
+        "byte_offset": null,
+        "argument_shapes": [
+          [
+            "element_type",
+            "scope",
+            "var"
+          ],
+          [
+            "scope",
+            "var"
+          ]
+        ],
+        "element_type": "Object"
+      },
+      {
+        "card": "card_event_the_double_sunrise",
+        "program": "steps",
+        "instruction_i": null,
+        "byte_offset": null,
+        "argument_shapes": [
+          [
+            "element_type",
+            "scope",
+            "var"
+          ],
+          [
+            "scope",
+            "var"
+          ]
+        ],
+        "element_type": "Object"
+      },
+      {
+        "card": "card_event_the_double_sunrise",
+        "program": "steps",
+        "instruction_i": null,
+        "byte_offset": null,
+        "argument_shapes": [
+          [
+            "element_type",
+            "scope",
+            "var"
+          ],
+          [
+            "scope",
+            "var"
+          ]
+        ],
+        "element_type": "Object"
+      },
+      {
+        "card": "card_unit_3_7_inch_mountain_howitzer",
+        "program": "steps",
+        "instruction_i": null,
+        "byte_offset": null,
+        "argument_shapes": [
+          [
+            "element_type",
+            "scope",
+            "var"
+          ],
+          [
+            "scope",
+            "var"
+          ]
+        ],
+        "element_type": "Object"
+      },
+      {
+        "card": "card_event_firestorm_skirm",
+        "program": "steps",
+        "instruction_i": null,
+        "byte_offset": null,
+        "argument_shapes": [
+          [
+            "element_type",
+            "scope",
+            "var"
+          ],
+          [
+            "ctx",
+            "scope",
+            "var"
+          ]
+        ],
+        "element_type": "Int"
+      },
+      {
+        "card": "card_event_foreign_support_skirm",
+        "program": "locals.RandomChooseCards",
+        "instruction_i": null,
+        "byte_offset": null,
+        "argument_shapes": [
+          [
+            "element_type",
+            "scope",
+            "var"
+          ],
+          [
+            "scope",
+            "var"
+          ]
+        ],
+        "element_type": "Object"
+      },
+      {
+        "card": "card_event_foreign_support_skirm",
+        "program": "locals.RandomChooseCards",
+        "instruction_i": null,
+        "byte_offset": null,
+        "argument_shapes": [
+          [
+            "element_type",
+            "scope",
+            "var"
+          ],
+          [
+            "scope",
+            "var"
+          ]
+        ],
+        "element_type": "Object"
+      },
+      {
+        "card": "card_event_foreign_support_skirm",
+        "program": "locals.RandomChooseCards",
+        "instruction_i": null,
+        "byte_offset": null,
+        "argument_shapes": [
+          [
+            "element_type",
+            "scope",
+            "var"
+          ],
+          [
+            "scope",
+            "var"
+          ]
+        ],
+        "element_type": "Object"
+      },
+      {
+        "card": "card_event_foreign_support_skirm",
+        "program": "locals.RandomChooseCards",
+        "instruction_i": null,
+        "byte_offset": null,
+        "argument_shapes": [
+          [
+            "element_type",
+            "scope",
+            "var"
+          ],
+          [
+            "scope",
+            "var"
+          ]
+        ],
+        "element_type": "Object"
+      },
+      {
+        "card": "card_event_foreign_support_skirm",
+        "program": "locals.RandomChooseCards",
+        "instruction_i": null,
+        "byte_offset": null,
+        "argument_shapes": [
+          [
+            "element_type",
+            "scope",
+            "var"
+          ],
+          [
+            "scope",
+            "var"
+          ]
+        ],
+        "element_type": "Object"
+      },
+      {
+        "card": "card_event_foreign_support_skirm",
+        "program": "locals.RandomChooseCards",
+        "instruction_i": null,
+        "byte_offset": null,
+        "argument_shapes": [
+          [
+            "element_type",
+            "scope",
+            "var"
+          ],
+          [
+            "scope",
+            "var"
+          ]
+        ],
+        "element_type": "Object"
+      }
+    ]
+  },
+  "source_sha256": {
+    "card_ir": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b",
+    "dispatch": "b7188eace3ff3ad55eac7985b4b92e437f208e0b0e5ddc74e3cd572c0c79c7f3",
+    "selftest": "c1e6256feff91a14ccb66a633e205973cfc87de0d612e27601818e1470cd285a",
+    "selftest_registry": "614e3be4b75c79948fdfaf295f84fc364dbe0abef441a1f6f3aa672ea130a0e6",
+    "project": "a74dd999fc8a9b4df1422f79e16719c05873bfa5230afd70d7271241f0082c04",
+    "fixture": "d0c86bbd6a52384362c33b7fd651fcc8a9db249f9c5c8c0ad14cf1e8ee39c904",
+    "capture_script": "ecc40f1f707f208c160c89f541157d1132af98701ee3f621bcd330456980ceee",
+    "audit_script": "d4d89472f9f4ab9ecaf99d213523da2248f1ae424045e6c8cff4a1814aefafc1"
+  },
+  "limitations": [
+    "Read-only live UFunction ownership and instruction capture; no native call, injection or game-memory write.",
+    "The captured wrapper writes a 32-bit value to its result frame after an append-helper call, but the helper's return meaning was not independently executed.",
+    "The SDK header declares a void function; the exact reflected result-property contract and complete generic property lifecycle remain unresolved.",
+    "BotSim regression results describe simulator behavior and do not prove native equivalence for every FProperty element type.",
+    "Static IR counts do not establish PvP eligibility, runtime reachability, or complete-card behavior.",
+    "The SDK header does not expose a named output parameter although captured native code stores through a result-frame pointer; the reflected result property and helper semantics need further verification."
+  ]
+}

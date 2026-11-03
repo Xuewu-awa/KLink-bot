@@ -1121,4 +1121,70 @@ internal static partial class SelfTest
         }
         return null;
     }
+
+    private static string? KismetArrayAddNativeContract(CardDatabase db)
+    {
+        string fixturePath = Path.Combine(AppContext.BaseDirectory, "Fixtures", "kismet-array-add-native-20261104.json");
+        using var fixtureDocument = System.Text.Json.JsonDocument.Parse(File.ReadAllText(fixturePath));
+        var fixture = fixtureDocument.RootElement;
+        DirectoryInfo? repository = new(AppContext.BaseDirectory);
+        while (repository is not null && !File.Exists(Path.Combine(repository.FullName, "KLink.slnx")))
+            repository = repository.Parent;
+        if (repository is null) return "could not locate repository root for Array_Add fixture";
+        string captureRelative = fixture.GetProperty("capture_path").GetString()!;
+        string capturePath = Path.Combine(repository.FullName, captureRelative.Replace('/', Path.DirectorySeparatorChar));
+        if (!File.Exists(capturePath)) return $"Array_Add native capture not found at {captureRelative}";
+        string captureHash = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(capturePath))).ToLowerInvariant();
+        if (!string.Equals(captureHash, fixture.GetProperty("capture_sha256").GetString(), StringComparison.Ordinal))
+            return "Array_Add native capture SHA-256 differs from the fixture";
+        using var captureDocument = System.Text.Json.JsonDocument.Parse(File.ReadAllText(capturePath));
+        var capture = captureDocument.RootElement;
+        var native = capture.GetProperty("function");
+        if (!string.Equals(capture.GetProperty("exe_sha256").GetString(), fixture.GetProperty("exe_sha256").GetString(), StringComparison.Ordinal)
+            || !string.Equals(capture.GetProperty("owner").GetString(), fixture.GetProperty("owner").GetString(), StringComparison.Ordinal)
+            || !native.GetProperty("ownership_verified").GetBoolean()
+            || !string.Equals(native.GetProperty("name").GetString(), fixture.GetProperty("function").GetString(), StringComparison.Ordinal)
+            || !string.Equals(native.GetProperty("exec_rva").GetString(), fixture.GetProperty("exec_rva").GetString(), StringComparison.Ordinal))
+            return "Array_Add native function identity differs from the fixture";
+        foreach (var expected in fixture.GetProperty("native_instruction_checks").EnumerateArray())
+            if (!native.GetProperty("instructions_through_two_returns").EnumerateArray().Any(actual =>
+                    string.Equals(actual.GetProperty("rva").GetString(), expected[0].GetString(), StringComparison.Ordinal)
+                    && string.Equals(actual.GetProperty("bytes").GetString(), expected[1].GetString(), StringComparison.Ordinal)))
+                return $"Array_Add native instruction at {expected[0].GetString()} differs from the capture";
+
+        var (engine, state) = EmptyBoard(db);
+        var objectCard = state.CreateWithId(PlainUnit, Side.Left, 1402, CardLocation.BoardHqLeft, 0);
+        var integers = new List<int> { 17, -3 };
+        var strings = new List<object?> { "before" };
+        var objects = new List<object?> { objectCard };
+        var locals = new Dictionary<string, object?>
+        {
+            ["integers"] = integers,
+            ["strings"] = strings,
+            ["objects"] = objects,
+            ["objectCard"] = objectCard,
+        };
+        KismetExpr Call(string name, params KismetExpr[] args) => new() { Call = name, Args = args };
+        var steps = new List<KismetStep>
+        {
+            SetMathResult(0, "integerIndex0", Call("Array_Add", LocalExpr("integers"), IntExpr(44))),
+            SetMathResult(1, "integerIndex1", Call("Array_Add", LocalExpr("integers"), IntExpr(17))),
+            SetMathResult(2, "stringIndex", Call("Array_Add", LocalExpr("strings"), StringExpr("after"))),
+            SetMathResult(3, "objectIndex", Call("Array_Add", LocalExpr("objects"), LocalExpr("objectCard"))),
+        };
+        var context = new EffectContext { Engine = engine, State = state, Controller = Side.Left };
+        long faults = engine.Api.Vm.FaultedPrograms;
+        var results = engine.Api.Vm.RunLocalProgramMulti(new KismetProgram(steps, 0), context, locals,
+            "integerIndex0", "integerIndex1", "stringIndex", "objectIndex");
+        if (engine.Api.Vm.FaultedPrograms != faults) return "Array_Add dispatch probe unexpectedly faulted the VM";
+        if (!Equals(results["integerIndex0"], 2) || !Equals(results["integerIndex1"], 3)
+            || !integers.SequenceEqual(new[] { 17, -3, 44, 17 }))
+            return "Array_Add must append duplicate integer values in place and expose the appended slot index";
+        if (!Equals(results["stringIndex"], 1) || strings.Count != 2
+            || !Equals(strings[0], "before") || !Equals(strings[1], "after"))
+            return "Array_Add must preserve string element values and append to the original list";
+        if (!Equals(results["objectIndex"], 1) || objects.Count != 2 || !ReferenceEquals(objects[1], objectCard))
+            return "Array_Add must preserve object identity while mutating the original list";
+        return null;
+    }
 }

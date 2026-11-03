@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "capture_path": "out/audit/systematic-rules/kismet-array-add-native-capture-current-20261104.json",
+  "capture_sha256": "babbb52d6332559635466860cd7a70382cc7cf75d959f47c3f433d5e4becc2a2",
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "owner": "/Script/Engine.KismetArrayLibrary",
+  "function": "Array_Add",
+  "signature": "void Array_Add(const TArray<int32>& TargetArray, const int32& NewItem)",
+  "exec_rva": "0x3d92120",
+  "native_instruction_checks": [
+    ["0x3d92283", "e83878feff"],
+    ["0x3d92288", "41894500"],
+    ["0x3d92443", "e85878feff"],
+    ["0x3d92448", "41894500"]
+  ],
+  "limitations": [
+    "Read-only live UFunction ownership and instruction capture; no native call, injection or game-memory write.",
+    "The captured wrapper writes a 32-bit value to its result frame after an append-helper call, but the helper's return meaning was not independently executed.",
+    "The SDK header declares a void function; the exact reflected result-property contract and complete generic property lifecycle remain unresolved.",
+    "BotSim regression results describe simulator behavior and do not prove native equivalence for every FProperty element type."
+  ]
+}

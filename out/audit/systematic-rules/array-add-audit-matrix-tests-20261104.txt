@@ -1,0 +1,22 @@
+test_changed_or_missing_raw_evidence_invalidates_unit (__main__.MatrixTests.test_changed_or_missing_raw_evidence_invalidates_unit) ... ok
+test_changed_report_stale_and_historical_remaining_not_active (__main__.MatrixTests.test_changed_report_stale_and_historical_remaining_not_active) ... ok
+test_data_only_card_not_a_missing_effect (__main__.MatrixTests.test_data_only_card_not_a_missing_effect) ... ok
+test_duplicate_function_identity_rejected (__main__.MatrixTests.test_duplicate_function_identity_rejected) ... ok
+test_full_inventory_and_nested_calls_without_semantic_promotion (__main__.MatrixTests.test_full_inventory_and_nested_calls_without_semantic_promotion) ... ok
+test_ir_change_marks_unit_stale (__main__.MatrixTests.test_ir_change_marks_unit_stale) ... ok
+test_literal_mode_candidate_is_partial_only (__main__.MatrixTests.test_literal_mode_candidate_is_partial_only) ... ok
+test_malformed_report_fails_closed (__main__.MatrixTests.test_malformed_report_fails_closed) ... ok
+test_missing_or_null_exe_binding_fails_closed (__main__.MatrixTests.test_missing_or_null_exe_binding_fails_closed) ... ok
+test_nonmatching_mode_does_not_inherit_evidence (__main__.MatrixTests.test_nonmatching_mode_does_not_inherit_evidence) ... ok
+test_outputs_deterministic_and_tsv_roundtrip (__main__.MatrixTests.test_outputs_deterministic_and_tsv_roundtrip) ... ok
+test_refuse_blanket_full_certification (__main__.MatrixTests.test_refuse_blanket_full_certification) ... ok
+test_scope_exclusion_needs_current_pinned_proof (__main__.MatrixTests.test_scope_exclusion_needs_current_pinned_proof) ... ok
+test_source_change_marks_unit_stale (__main__.MatrixTests.test_source_change_marks_unit_stale) ... ok
+test_unbound_raw_evidence_cannot_claim_freshness (__main__.MatrixTests.test_unbound_raw_evidence_cannot_claim_freshness) ... ok
+test_unknown_card_scope_review_rejected (__main__.MatrixTests.test_unknown_card_scope_review_rejected) ... ok
+test_unknown_or_different_exe_never_fresh (__main__.MatrixTests.test_unknown_or_different_exe_never_fresh) ... ok
+
+----------------------------------------------------------------------
+Ran 17 tests in 0.248s
+
+OK

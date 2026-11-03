@@ -22,6 +22,7 @@
     <None Update="Fixtures/kismet-isvalid-native-20261104.json" CopyToOutputDirectory="PreserveNewest" />
     <None Update="Fixtures/kismet-array-length-native-20261104.json" CopyToOutputDirectory="PreserveNewest" />
     <None Update="Fixtures/kismet-array-get-native-20261104.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="Fixtures/kismet-array-add-native-20261104.json" CopyToOutputDirectory="PreserveNewest" />
     <None Update="Fixtures/damage-observer-chain-20261030.json" CopyToOutputDirectory="PreserveNewest" />
     <None Update="Fixtures/damage-modifier-own-overrides-20261030.json" CopyToOutputDirectory="PreserveNewest" />
     <None Update="Fixtures/damage-modifier-default-order-20261030.json" CopyToOutputDirectory="PreserveNewest" />
