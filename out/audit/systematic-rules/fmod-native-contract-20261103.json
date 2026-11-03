@@ -1,0 +1,160 @@
+{
+  "schema_version": 1,
+  "report_id": "KISMET-FMOD-NATIVE-20261103",
+  "scope": "FMod integer quotient and double remainder for well-typed finite operands, plus explicit zero-divisor branch. Does not certify malformed UFunction payloads, NaN/Infinity conversion behavior, or PvP reachability.",
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "native_boundary": {
+    "begin_rva": "0x3db24a0",
+    "end_rva_exclusive": "0x3db262b"
+  },
+  "wrapper_evidence": {
+    "exec_rva": "0x3db24a0",
+    "capture_sha256": "2c24a15bc2103ceb0876ad588bc5b80413e5136f1fd144ae6810fa5ee46b4c3e",
+    "quotient_instructions": [
+      {
+        "rva": "0x3db25b9",
+        "instruction": "movaps xmm4, xmm0"
+      },
+      {
+        "rva": "0x3db25bc",
+        "instruction": "divsd xmm4, xmm1"
+      },
+      {
+        "rva": "0x3db25d6",
+        "instruction": "cvtsd2si ebx, xmm3"
+      },
+      {
+        "rva": "0x3db25da",
+        "instruction": "sar ebx, 1"
+      },
+      {
+        "rva": "0x3db25e0",
+        "instruction": "comisd xmm4, xmm6"
+      },
+      {
+        "rva": "0x3db25e4",
+        "instruction": "cmovb ebx, eax"
+      },
+      {
+        "rva": "0x3db25e7",
+        "instruction": "call 0x7ff70b4202d0"
+      },
+      {
+        "rva": "0x3db25ec",
+        "instruction": "movsd qword ptr [rdi], xmm0"
+      },
+      {
+        "rva": "0x3db25f0",
+        "instruction": "mov dword ptr [rsi], ebx"
+      }
+    ],
+    "zero_divisor_branch": [
+      {
+        "rva": "0x3db25a9",
+        "instruction": "ucomisd xmm1, xmm6"
+      },
+      {
+        "rva": "0x3db25ad",
+        "instruction": "je zero_divisor"
+      },
+      {
+        "rva": "0x3db2614",
+        "instruction": "movsd qword ptr [rdi], xmm6"
+      },
+      {
+        "rva": "0x3db261d",
+        "instruction": "mov dword ptr [rsi], 0"
+      }
+    ]
+  },
+  "remainder_helper": {
+    "target_rva": "0x12002d0",
+    "capture_sha256": "299a7a18ca2c019092925e3d4e17db735a836d7ae6e7ad73bf8161c383ce8336",
+    "tail_target_rva": "0x6eabe85",
+    "tail_capture_sha256": "e5b45d44a2560ce4d2813fe22d911b15d5d09078b22486bc2033bd074fd37ccf",
+    "interpretation": "The wrapper delegates remainder production to the captured helper path; the simulator uses the corresponding IEEE remainder operator for finite operands."
+  },
+  "native_expression": "For finite in-range operands, quotient is truncation toward zero of dividend/divisor and remainder has the dividend sign; divisor zero writes remainder 0 and quotient 0.",
+  "offline_regression": {
+    "cases": 4,
+    "cases_detail": [
+      [
+        7.5,
+        2.0,
+        3,
+        1.5
+      ],
+      [
+        -7.5,
+        2.0,
+        -3,
+        -1.5
+      ],
+      [
+        7.5,
+        -2.0,
+        -3,
+        1.5
+      ],
+      [
+        -7.5,
+        -2.0,
+        3,
+        -1.5
+      ]
+    ],
+    "result": "pass"
+  },
+  "ir_callsites": [
+    {
+      "card": "card_location_british_scen5",
+      "program": "OnStartOfGame",
+      "step_i": 4935,
+      "divisor": 4.0,
+      "remainder_var": "CallFunc_FMod_Remainder"
+    },
+    {
+      "card": "card_location_british_scen5",
+      "program": "OnStartOfGame",
+      "step_i": 5556,
+      "divisor": 4.0,
+      "remainder_var": "CallFunc_FMod_Remainder_1"
+    }
+  ],
+  "source_sha256": {
+    "capture_report": "81255d4b8d90c76bf339496a574533b2619f8828ec976c70c6077a394d26aaad",
+    "helper_capture": "adbafda9603770d592046367f3f0c6d4edc8d0fdc5489c4e706e41200167b7da",
+    "tail_capture": "8147379328ef1139efe98b43d55de780fb77c85350f2e22f138b7492edd75a2a",
+    "ir": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b",
+    "vm": "4f958f61a67be1b14aa080f756a9132016ef7f1800056fbec516cf4cac74a780",
+    "regression_source": "2c798e1259f47a467714e93adba68d2ca55dc0601da8e63d55cc8ff990551164",
+    "focused_selftest_output": "2fdd860ab392ea2583c8c4d6cabc0871d756a8a07ed5a2466239d6e8369da244",
+    "full_selftest_output": "c5667765ee3695a758fbf5cd6f2d2c0df42ccc887b1a242847dd028062b437e5",
+    "build_output": "66a79b1e2958631bd3aab96fd2091d85a8657650100527f5b57363647856f6fd"
+  },
+  "limitations": [
+    "Read-only native capture and offline analysis; no in-process native calls or writes.",
+    "The quotient path and zero-divisor branch are directly identified; helper semantics are recorded only at captured call targets.",
+    "NaN, Infinity, subnormal, and conversion-out-of-int32-range behavior is not certified; current regression intentionally excludes those cases.",
+    "Two IR callsites are static inventory candidates and do not establish PvP reachability or complete card certification.",
+    "Current client identity is fixed by the executable SHA-256 above; a different client build invalidates this evidence."
+  ],
+  "test_results": {
+    "focused_selftest": {
+      "command": "dotnet run --no-build --project tools/BotSim -c Release -- selftest --filter \"FMod finite quotient and remainder contract\"",
+      "result": "pass",
+      "summary": "1 passed"
+    },
+    "full_selftest": {
+      "command": "dotnet run --project tools/BotSim -c Release -- selftest",
+      "result": "pass",
+      "summary": "1107 passed"
+    },
+    "build": {
+      "command": "dotnet build tools/BotSim/BotSim.csproj -c Release --no-restore",
+      "result": "pass",
+      "warnings": 0,
+      "errors": 0
+    }
+  }
+}

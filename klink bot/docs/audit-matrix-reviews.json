@@ -8386,6 +8386,39 @@
         "out/audit/systematic-rules/kismet-scalar-native-capture-20261103.json": "ea0367e1dd79346699f4ec9a94e4fe7bbf1554a7bd0996ce3c50fe9b78767df8",
         "tools/BotSim/kismet-clamp-full-selftest-20261103.txt": "90e90335b6241bbbe1644d74e594ad593abaedaa51d5e0df96b659504fbd6387"
       }
+    },
+    {
+      "id": "KISMET-MATH/FMod/native-finite-contract-20261103",
+      "symbol": "FMod",
+      "modes": [
+        0,
+        1
+      ],
+      "status": "partial",
+      "validated_scope": "Current client FMod wrapper: finite in-range quotient truncation toward zero, remainder sign contract, and explicit zero-divisor output; two static IR callsites.",
+      "report": "out/audit/systematic-rules/fmod-native-contract-20261103.json",
+      "report_sha256": "bf5fda17024856c87f952c2c27c9a8ac06d20032839fac90c46c2b37b315aaf1",
+      "client_exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+      "source_bindings": {
+        "src/KLink.Bot/Effects/Blueprint/KismetVm.cs": "4f958f61a67be1b14aa080f756a9132016ef7f1800056fbec516cf4cac74a780",
+        "tools/BotSim/SelfTest.KismetMath.cs": "2c798e1259f47a467714e93adba68d2ca55dc0601da8e63d55cc8ff990551164",
+        "klink bot/docs/card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b"
+      },
+      "evidence_bindings": {
+        "out/audit/systematic-rules/kismet-divide-percent-native-capture-current-20261103.json": "81255d4b8d90c76bf339496a574533b2619f8828ec976c70c6077a394d26aaad",
+        "out/audit/systematic-rules/fmod-helper-target-current-20261103.json": "adbafda9603770d592046367f3f0c6d4edc8d0fdc5489c4e706e41200167b7da",
+        "out/audit/systematic-rules/fmod-tail-helper-current-20261103.json": "8147379328ef1139efe98b43d55de780fb77c85350f2e22f138b7492edd75a2a",
+        "out/audit/systematic-rules/fmod-focused-selftest-20261103.txt": "2fdd860ab392ea2583c8c4d6cabc0871d756a8a07ed5a2466239d6e8369da244",
+        "out/audit/systematic-rules/fmod-full-selftest-20261103.txt": "c5667765ee3695a758fbf5cd6f2d2c0df42ccc887b1a242847dd028062b437e5",
+        "out/audit/systematic-rules/fmod-botsim-build-20261103.txt": "66a79b1e2958631bd3aab96fd2091d85a8657650100527f5b57363647856f6fd"
+      },
+      "limitations": [
+        "Read-only native capture and offline analysis; no in-process native calls or writes.",
+        "The quotient path and zero-divisor branch are directly identified; helper semantics are recorded only at captured call targets.",
+        "NaN, Infinity, subnormal, and conversion-out-of-int32-range behavior is not certified; current regression intentionally excludes those cases.",
+        "Two IR callsites are static inventory candidates and do not establish PvP reachability or complete card certification.",
+        "Current client identity is fixed by the executable SHA-256 above; a different client build invalidates this evidence."
+      ]
     }
   ],
   "scope_reviews": {},
@@ -8464,8 +8497,8 @@
       "id": "RULE-KISMET-MATH-CATALOG",
       "title": "Kismet数学节点清单与语义核验",
       "status": "open",
-      "scope": "按当前 card-ir.json 对 69 种数学调用的 9,281 个静态调用点建立可复跑目录。2026-11-03 盘点覆盖 1,709 个 IR 资产；ImplementedMathNames 与 EvalMath 分支名集合为 73/73 一致，但这只验证名称表相互一致，不验证运算语义。IR 中有 61 个不在 VM 声明/分支中的调用点：Format 57、GetDisplayName 1、GetOrSpawnActor 1、PrintString 2；与现有静态派发缺口报告计数相符。另有 8 个已声明名称未在当前 IR 出现。目录包含显示、战役、Brawl 等资产，不建立 PvP 分母或可达性结论；逐项分类 PvP 范围，并与权威客户端行为核验语义和调用分派后，才能决定实现与准入影响。 已依据客户端 UE4SS CoreUObject_enums.hpp 确认 ESearchCase（CaseSensitive=0、IgnoreCase=1）与 ESearchDir（FromStart=0、FromEnd=1）；修正 KismetVm EndsWith/Split 的 ESearchCase 映射，保留 Split 的方向映射，并以 BotSim 定向回归覆盖大小写、起始/末尾查找和失败时输出引用不变。该修复只覆盖这两个字符串节点，其他数学节点语义仍未逐项认证。 2026-11-03：EnumCompareSide 静态核对当前 IR 56 个调用点、52 个资产/52 个程序；SDK 明确 ESideEnum 的 0/1/2 与 EnumAreTheyEqual 的 0/1，56 个首个局部消费者均为 NotEqual_ByteByte；另有独立分支读取盘点为 62 次读取（其中 6 个调用点重复读取）；BotSim 3×3 映射回归通过。SDK 未含原生函数体，客户端等价、越界语义和 PvP 可达性仍未确认，保持 open。",
-      "source": "klink bot/tools/audit-kismet-math-catalog.py; out/audit/systematic-rules/kismet-math-node-catalog-20261103.json; out/audit/math-catalog-dispatch-gap-20261103.txt; D:/Program Files/KARDS - The WWII Card Game/KARDS/default/game/kards/Binaries/Win64/ue4ss/CXXHeaderDump/CoreUObject_enums.hpp; src/KLink.Bot/Effects/Blueprint/KismetVm.cs; tools/BotSim/SelfTest.KismetMath.cs; klink bot/tools/audit-enum-compare-side.py; out/audit/systematic-rules/enum-compare-side-sdk-contract-20261103.json; D:/Program Files/KARDS - The WWII Card Game/KARDS/default/game/kards/Binaries/Win64/ue4ss/CXXHeaderDump/kards.hpp; D:/Program Files/KARDS - The WWII Card Game/KARDS/default/game/kards/Binaries/Win64/ue4ss/CXXHeaderDump/kards_enums.hpp; tools/BotSim/SelfTest.KismetMath.cs"
+      "scope": "按当前 card-ir.json 对 69 种数学调用的 9,281 个静态调用点建立可复跑目录。2026-11-03 盘点覆盖 1,709 个 IR 资产；ImplementedMathNames 与 EvalMath 分支名集合为 73/73 一致，但这只验证名称表相互一致，不验证运算语义。IR 中有 61 个不在 VM 声明/分支中的调用点：Format 57、GetDisplayName 1、GetOrSpawnActor 1、PrintString 2；与现有静态派发缺口报告计数相符。另有 8 个已声明名称未在当前 IR 出现。目录包含显示、战役、Brawl 等资产，不建立 PvP 分母或可达性结论；逐项分类 PvP 范围，并与权威客户端行为核验语义和调用分派后，才能决定实现与准入影响。 已依据客户端 UE4SS CoreUObject_enums.hpp 确认 ESearchCase（CaseSensitive=0、IgnoreCase=1）与 ESearchDir（FromStart=0、FromEnd=1）；修正 KismetVm EndsWith/Split 的 ESearchCase 映射，保留 Split 的方向映射，并以 BotSim 定向回归覆盖大小写、起始/末尾查找和失败时输出引用不变。该修复只覆盖这两个字符串节点，其他数学节点语义仍未逐项认证。 2026-11-03：EnumCompareSide 静态核对当前 IR 56 个调用点、52 个资产/52 个程序；SDK 明确 ESideEnum 的 0/1/2 与 EnumAreTheyEqual 的 0/1，56 个首个局部消费者均为 NotEqual_ByteByte；另有独立分支读取盘点为 62 次读取（其中 6 个调用点重复读取）；BotSim 3×3 映射回归通过。SDK 未含原生函数体，客户端等价、越界语义和 PvP 可达性仍未确认，保持 open。 2026-11-03：FMod 原生包装器 RVA 0x3db24a0 的有限输入商/余数路径和除零分支已建立局部证据；当前 BotSim 四个有符号有限回归通过。两个 IR 调用点均位于 card_location_british_scen5.OnStartOfGame。NaN、无穷大、转换溢出、完整参数封送及 PvP 可达性仍未认证，目录保持 open。",
+      "source": "klink bot/tools/audit-kismet-math-catalog.py; out/audit/systematic-rules/kismet-math-node-catalog-20261103.json; out/audit/math-catalog-dispatch-gap-20261103.txt; D:/Program Files/KARDS - The WWII Card Game/KARDS/default/game/kards/Binaries/Win64/ue4ss/CXXHeaderDump/CoreUObject_enums.hpp; src/KLink.Bot/Effects/Blueprint/KismetVm.cs; tools/BotSim/SelfTest.KismetMath.cs; klink bot/tools/audit-enum-compare-side.py; out/audit/systematic-rules/enum-compare-side-sdk-contract-20261103.json; D:/Program Files/KARDS - The WWII Card Game/KARDS/default/game/kards/Binaries/Win64/ue4ss/CXXHeaderDump/kards.hpp; D:/Program Files/KARDS - The WWII Card Game/KARDS/default/game/kards/Binaries/Win64/ue4ss/CXXHeaderDump/kards_enums.hpp; tools/BotSim/SelfTest.KismetMath.cs; out/audit/systematic-rules/fmod-native-contract-20261103.json; out/audit/systematic-rules/fmod-native-contract-20261103.md"
     }
   ],
   "training_contract_reviews": [

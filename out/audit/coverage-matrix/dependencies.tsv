@@ -122,7 +122,7 @@ EqualEqual_NameName	90	94	164	"[""math""]"	[]	[]	[]	not_fully_reviewed	static di
 EqualEqual_ObjectObject	16	18	18	"[""math""]"	[]	[]	"[""out/audit/systematic-rules/object-operators-20261018.json""]"	not_fully_reviewed	static direct use count; not execution frequency
 EqualEqual_StrStr	3	3	3	"[""math""]"	[]	[]	[]	not_fully_reviewed	static direct use count; not execution frequency
 EqualEqual_StriStri	2	2	2	"[""math""]"	[]	[]	[]	not_fully_reviewed	static direct use count; not execution frequency
-FMod	1	1	2	"[""math""]"	[]	[]	[]	not_fully_reviewed	static direct use count; not execution frequency
+FMod	1	1	2	"[""math""]"	[]	"[""KISMET-MATH/FMod/native-finite-contract-20261103""]"	"[""out/audit/systematic-rules/fmod-helper-target-current-20261103.json"", ""out/audit/systematic-rules/fmod-native-contract-20261103.json"", ""out/audit/systematic-rules/fmod-tail-helper-current-20261103.json""]"	not_fully_reviewed	static direct use count; not execution frequency
 FTrunc	1	1	3	"[""math""]"	[]	[]	"[""out/audit/systematic-rules/kismet-clamp-native-contract-20261103.json""]"	not_fully_reviewed	static direct use count; not execution frequency
 ForceCardChangeLocation	3	3	8	"[""call""]"	"[{""path"": ""src/KLink.Bot/Effects/CardApiDispatch.cs"", ""line"": 1977, ""kind"": ""dispatch_key""}]"	[]	[]	not_fully_reviewed	static direct use count; not execution frequency
 ForceEndTurn	5	5	5	"[""call""]"	"[{""path"": ""src/KLink.Bot/Effects/CardApiDispatch.cs"", ""line"": 541, ""kind"": ""dispatch_key""}]"	[]	"[""out/audit/systematic-rules/player-move-next-autoplay-priority-and-drain-reset-20261028.json""]"	not_fully_reviewed	static direct use count; not execution frequency

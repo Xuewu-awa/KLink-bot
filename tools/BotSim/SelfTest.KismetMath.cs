@@ -40,6 +40,53 @@ internal static partial class SelfTest
         return null;
     }
 
+    private static string? KismetFModFiniteContract(CardDatabase db)
+    {
+        // The current client wrapper computes the quotient with cvttsd2si
+        // (truncate toward zero) and delegates the remainder to UCRT fmod.
+        // Keep this regression limited to finite, in-range operands: the
+        // zero-divisor, NaN/Infinity, and conversion-overflow paths remain
+        // explicitly unresolved in the native audit.
+        var (engine, state) = EmptyBoard(db);
+        var ctx = new EffectContext { Engine = engine, State = state, Controller = Side.Left };
+        var cases = new (double Dividend, double Divisor, int Quotient, double Remainder)[]
+        {
+            (7.5, 2.0, 3, 1.5),
+            (-7.5, 2.0, -3, -1.5),
+            (7.5, -2.0, -3, 1.5),
+            (-7.5, -2.0, 3, -1.5),
+        };
+        var steps = new List<KismetStep>(cases.Length);
+        var outputs = new List<string>(cases.Length * 2);
+        for (int i = 0; i < cases.Length; i++)
+        {
+            string quotient = $"quotient{i}";
+            string remainder = $"remainder{i}";
+            outputs.Add(quotient);
+            outputs.Add(remainder);
+            steps.Add(SetMathResult(i, quotient, MathExpr("FMod",
+                new KismetExpr { Float = cases[i].Dividend },
+                new KismetExpr { Float = cases[i].Divisor },
+                LocalExpr(remainder))));
+        }
+
+        var result = engine.Api.Vm.RunLocalProgramMulti(
+            new KismetProgram(steps, 0), ctx, null, outputs.ToArray());
+        for (int i = 0; i < cases.Length; i++)
+        {
+            int actualQuotient = result[$"quotient{i}"] is int q ? q : int.MinValue;
+            double actualRemainder = result[$"remainder{i}"] is double r ? r : double.NaN;
+            if (actualQuotient != cases[i].Quotient || actualRemainder != cases[i].Remainder)
+            {
+                return $"FMod({cases[i].Dividend},{cases[i].Divisor}) returned "
+                    + $"q={result[$"quotient{i}"] ?? "<null>"}, r={result[$"remainder{i}"] ?? "<null>"}; "
+                    + $"expected q={cases[i].Quotient}, r={cases[i].Remainder}";
+            }
+        }
+
+        return null;
+    }
+
     private static KismetStep SetMathResult(int index, string destination, KismetExpr expression) =>
         new(index, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), expression,
             null, -1, destination, null) { DestinationScope = "local" };
