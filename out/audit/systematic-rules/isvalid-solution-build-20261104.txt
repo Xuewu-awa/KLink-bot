@@ -1,0 +1,14 @@
+  正在确定要还原的项目…
+  所有项目均是最新的，无法还原。
+  KLink.Bot -> D:\Codex Workshop\KLink-bot\src\KLink.Bot\bin\Debug\net10.0\KLink.Bot.dll
+  BotSim -> D:\Codex Workshop\KLink-bot\tools\BotSim\bin\Debug\net10.0\BotSim.dll
+  NNPlay -> D:\Codex Workshop\KLink-bot\tools\NNPlay\bin\Debug\net10.0\NNPlay.dll
+  AotProbe -> D:\Codex Workshop\KLink-bot\tools\AotProbe\bin\Debug\net10.0\AotProbe.dll
+  NNTrain -> D:\Codex Workshop\KLink-bot\tools\NNTrain\bin\Debug\net10.0\NNTrain.dll
+  ServerBridgeTest -> D:\Codex Workshop\KLink-bot\tools\ServerBridgeTest\bin\Debug\net10.0\ServerBridgeTest.dll
+
+已成功生成。
+    0 个警告
+    0 个错误
+
+已用时间 00:00:01.01

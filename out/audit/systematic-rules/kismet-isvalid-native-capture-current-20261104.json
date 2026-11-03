@@ -1,0 +1,264 @@
+{
+  "schema_version": 1,
+  "read_only": true,
+  "pid": 24220,
+  "module": {
+    "name": "kards-Win64-Shipping.exe",
+    "path": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
+    "base": 140699003650048,
+    "size": 164368384
+  },
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "source_index": "D:\\Codex Workshop\\KLink-bot\\out\\audit\\tmp-current-index-20261103.json",
+  "source_index_sha256": "8fcd8651cf27b1adefffe231c3414f01aaa257e26b3e696e681b4105e6ab17a2",
+  "global_rvas": {
+    "fname_pool": "0x91156c0",
+    "objects": "0x91f91d0"
+  },
+  "owner": "/Script/Engine.KismetSystemLibrary",
+  "function": {
+    "name": "IsValid",
+    "signature_from_sdk": "void IsValid(const UObject* Object)",
+    "ownership_verified": true,
+    "exec_rva": "0x3dc1930",
+    "capture_hex": "48895c24084889742418574883ec2033ff498bf048897c2438488bdae81fbe7afd488bcb48397b207410488b53184c8d442438e878f57dfdeb1c4c8b8388000000488d542438498b401848898388000000e88af57dfd488b43204885c0400f95c74803f8488b44243848897b204885c0741f8b4008c1e81ef6d0a8017413c60601488b5c2430488b7424404883c4205fc3488b5c2430c60600488b7424404883c4205fc3cccccccccccccccccccccccc48895c24084889742410574883ec3033f60f57c0498bf8488bda488bca48897238f30f7f44242048897240483972207410488b52184c8d442420e8c1f47dfdeb1c4c8b8288000000498b401848898288",
+    "capture_sha256": "d7cbf3a353cdcce931f77968f2a5935ed0cdde45ba314b9fe28b9062d1522159",
+    "instructions_through_two_returns": [
+      {
+        "rva": "0x3dc1930",
+        "bytes": "48895c2408",
+        "instruction": "mov qword ptr [rsp + 8], rbx"
+      },
+      {
+        "rva": "0x3dc1935",
+        "bytes": "4889742418",
+        "instruction": "mov qword ptr [rsp + 0x18], rsi"
+      },
+      {
+        "rva": "0x3dc193a",
+        "bytes": "57",
+        "instruction": "push rdi"
+      },
+      {
+        "rva": "0x3dc193b",
+        "bytes": "4883ec20",
+        "instruction": "sub rsp, 0x20"
+      },
+      {
+        "rva": "0x3dc193f",
+        "bytes": "33ff",
+        "instruction": "xor edi, edi"
+      },
+      {
+        "rva": "0x3dc1941",
+        "bytes": "498bf0",
+        "instruction": "mov rsi, r8"
+      },
+      {
+        "rva": "0x3dc1944",
+        "bytes": "48897c2438",
+        "instruction": "mov qword ptr [rsp + 0x38], rdi"
+      },
+      {
+        "rva": "0x3dc1949",
+        "bytes": "488bda",
+        "instruction": "mov rbx, rdx"
+      },
+      {
+        "rva": "0x3dc194c",
+        "bytes": "e81fbe7afd",
+        "instruction": "call 0x7ff70b78d770"
+      },
+      {
+        "rva": "0x3dc1951",
+        "bytes": "488bcb",
+        "instruction": "mov rcx, rbx"
+      },
+      {
+        "rva": "0x3dc1954",
+        "bytes": "48397b20",
+        "instruction": "cmp qword ptr [rbx + 0x20], rdi"
+      },
+      {
+        "rva": "0x3dc1958",
+        "bytes": "7410",
+        "instruction": "je 0x7ff70dfe196a"
+      },
+      {
+        "rva": "0x3dc195a",
+        "bytes": "488b5318",
+        "instruction": "mov rdx, qword ptr [rbx + 0x18]"
+      },
+      {
+        "rva": "0x3dc195e",
+        "bytes": "4c8d442438",
+        "instruction": "lea r8, [rsp + 0x38]"
+      },
+      {
+        "rva": "0x3dc1963",
+        "bytes": "e878f57dfd",
+        "instruction": "call 0x7ff70b7c0ee0"
+      },
+      {
+        "rva": "0x3dc1968",
+        "bytes": "eb1c",
+        "instruction": "jmp 0x7ff70dfe1986"
+      },
+      {
+        "rva": "0x3dc196a",
+        "bytes": "4c8b8388000000",
+        "instruction": "mov r8, qword ptr [rbx + 0x88]"
+      },
+      {
+        "rva": "0x3dc1971",
+        "bytes": "488d542438",
+        "instruction": "lea rdx, [rsp + 0x38]"
+      },
+      {
+        "rva": "0x3dc1976",
+        "bytes": "498b4018",
+        "instruction": "mov rax, qword ptr [r8 + 0x18]"
+      },
+      {
+        "rva": "0x3dc197a",
+        "bytes": "48898388000000",
+        "instruction": "mov qword ptr [rbx + 0x88], rax"
+      },
+      {
+        "rva": "0x3dc1981",
+        "bytes": "e88af57dfd",
+        "instruction": "call 0x7ff70b7c0f10"
+      },
+      {
+        "rva": "0x3dc1986",
+        "bytes": "488b4320",
+        "instruction": "mov rax, qword ptr [rbx + 0x20]"
+      },
+      {
+        "rva": "0x3dc198a",
+        "bytes": "4885c0",
+        "instruction": "test rax, rax"
+      },
+      {
+        "rva": "0x3dc198d",
+        "bytes": "400f95c7",
+        "instruction": "setne dil"
+      },
+      {
+        "rva": "0x3dc1991",
+        "bytes": "4803f8",
+        "instruction": "add rdi, rax"
+      },
+      {
+        "rva": "0x3dc1994",
+        "bytes": "488b442438",
+        "instruction": "mov rax, qword ptr [rsp + 0x38]"
+      },
+      {
+        "rva": "0x3dc1999",
+        "bytes": "48897b20",
+        "instruction": "mov qword ptr [rbx + 0x20], rdi"
+      },
+      {
+        "rva": "0x3dc199d",
+        "bytes": "4885c0",
+        "instruction": "test rax, rax"
+      },
+      {
+        "rva": "0x3dc19a0",
+        "bytes": "741f",
+        "instruction": "je 0x7ff70dfe19c1"
+      },
+      {
+        "rva": "0x3dc19a2",
+        "bytes": "8b4008",
+        "instruction": "mov eax, dword ptr [rax + 8]"
+      },
+      {
+        "rva": "0x3dc19a5",
+        "bytes": "c1e81e",
+        "instruction": "shr eax, 0x1e"
+      },
+      {
+        "rva": "0x3dc19a8",
+        "bytes": "f6d0",
+        "instruction": "not al"
+      },
+      {
+        "rva": "0x3dc19aa",
+        "bytes": "a801",
+        "instruction": "test al, 1"
+      },
+      {
+        "rva": "0x3dc19ac",
+        "bytes": "7413",
+        "instruction": "je 0x7ff70dfe19c1"
+      },
+      {
+        "rva": "0x3dc19ae",
+        "bytes": "c60601",
+        "instruction": "mov byte ptr [rsi], 1"
+      },
+      {
+        "rva": "0x3dc19b1",
+        "bytes": "488b5c2430",
+        "instruction": "mov rbx, qword ptr [rsp + 0x30]"
+      },
+      {
+        "rva": "0x3dc19b6",
+        "bytes": "488b742440",
+        "instruction": "mov rsi, qword ptr [rsp + 0x40]"
+      },
+      {
+        "rva": "0x3dc19bb",
+        "bytes": "4883c420",
+        "instruction": "add rsp, 0x20"
+      },
+      {
+        "rva": "0x3dc19bf",
+        "bytes": "5f",
+        "instruction": "pop rdi"
+      },
+      {
+        "rva": "0x3dc19c0",
+        "bytes": "c3",
+        "instruction": "ret"
+      },
+      {
+        "rva": "0x3dc19c1",
+        "bytes": "488b5c2430",
+        "instruction": "mov rbx, qword ptr [rsp + 0x30]"
+      },
+      {
+        "rva": "0x3dc19c6",
+        "bytes": "c60600",
+        "instruction": "mov byte ptr [rsi], 0"
+      },
+      {
+        "rva": "0x3dc19c9",
+        "bytes": "488b742440",
+        "instruction": "mov rsi, qword ptr [rsp + 0x40]"
+      },
+      {
+        "rva": "0x3dc19ce",
+        "bytes": "4883c420",
+        "instruction": "add rsp, 0x20"
+      },
+      {
+        "rva": "0x3dc19d2",
+        "bytes": "5f",
+        "instruction": "pop rdi"
+      },
+      {
+        "rva": "0x3dc19d3",
+        "bytes": "c3",
+        "instruction": "ret"
+      }
+    ]
+  },
+  "limitations": [
+    "Read-only live UFunction ownership and machine-code capture; no native call, injection or game-memory write.",
+    "The wrapper is captured through its first two return instructions; later branches and called helper semantics are not inferred here.",
+    "This capture does not establish which UObject lifetime states occur for KARDS card objects or prove complete card behavior."
+  ]
+}

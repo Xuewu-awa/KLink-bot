@@ -919,4 +919,64 @@ internal static partial class SelfTest
                 return $"{expected.Name} returned {actualResults[expected.Name] ?? "<null>"}; expected {expected.Value}";
         return null;
     }
+
+    private static string? KismetIsValidObjectContract(CardDatabase db)
+    {
+        string fixturePath = Path.Combine(AppContext.BaseDirectory, "Fixtures", "kismet-isvalid-native-20261104.json");
+        using var fixtureDocument = System.Text.Json.JsonDocument.Parse(File.ReadAllText(fixturePath));
+        var fixture = fixtureDocument.RootElement;
+        DirectoryInfo? repository = new(AppContext.BaseDirectory);
+        while (repository is not null && !File.Exists(Path.Combine(repository.FullName, "KLink.slnx")))
+            repository = repository.Parent;
+        if (repository is null) return "could not locate repository root for IsValid fixture";
+        string captureRelative = fixture.GetProperty("capture_path").GetString()!;
+        string capturePath = Path.Combine(repository.FullName, captureRelative.Replace('/', Path.DirectorySeparatorChar));
+        if (!File.Exists(capturePath)) return $"IsValid native capture not found at {captureRelative}";
+        string captureHash = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(capturePath))).ToLowerInvariant();
+        if (!string.Equals(captureHash, fixture.GetProperty("capture_sha256").GetString(), StringComparison.Ordinal))
+            return "IsValid native capture SHA-256 differs from the fixture";
+        using var captureDocument = System.Text.Json.JsonDocument.Parse(File.ReadAllText(capturePath));
+        var capture = captureDocument.RootElement;
+        var native = capture.GetProperty("function");
+        if (!string.Equals(capture.GetProperty("exe_sha256").GetString(), fixture.GetProperty("exe_sha256").GetString(), StringComparison.Ordinal)
+            || !string.Equals(capture.GetProperty("owner").GetString(), fixture.GetProperty("owner").GetString(), StringComparison.Ordinal)
+            || !native.GetProperty("ownership_verified").GetBoolean()
+            || !string.Equals(native.GetProperty("name").GetString(), fixture.GetProperty("function").GetString(), StringComparison.Ordinal)
+            || !string.Equals(native.GetProperty("exec_rva").GetString(), fixture.GetProperty("exec_rva").GetString(), StringComparison.Ordinal))
+            return "IsValid native function identity differs from the fixture";
+        foreach (var expected in fixture.GetProperty("native_instruction_checks").EnumerateArray())
+            if (!native.GetProperty("instructions_through_two_returns").EnumerateArray().Any(actual =>
+                    string.Equals(actual.GetProperty("rva").GetString(), expected[0].GetString(), StringComparison.Ordinal)
+                    && string.Equals(actual.GetProperty("bytes").GetString(), expected[1].GetString(), StringComparison.Ordinal)))
+                return $"IsValid native instruction at {expected[0].GetString()} differs from the capture";
+
+        var (engine, state) = EmptyBoard(db);
+        var board = state.CreateWithId(PlainUnit, Side.Left, 1301, CardLocation.BoardHqLeft, 0);
+        var hand = state.CreateWithId(PlainUnit, Side.Left, 1302, CardLocation.HandLeft, 0);
+        var discarded = state.CreateWithId(PlainUnit, Side.Left, 1303, CardLocation.Discard, 0);
+        var unavailable = state.CreateWithId(PlainUnit, Side.Left, 1304, CardLocation.NotAvailable, 0);
+        if (discarded.IsAlive || unavailable.IsAlive)
+            return "IsValid fixture requires discard and NotAvailable cards to be outside IsAlive";
+
+        object?[] values = [null, "not-a-UObject", 17, board, hand, discarded, unavailable];
+        bool[] expectedResults = [false, false, false, true, true, true, true];
+        var steps = new List<KismetStep>(values.Length);
+        var outputs = new string[values.Length];
+        for (int i = 0; i < values.Length; i++)
+        {
+            string input = $"object{i}", output = $"valid{i}";
+            outputs[i] = output;
+            steps.Add(SetMathResult(i, output, MathExpr("IsValid", new KismetExpr { Var = input })));
+        }
+        var locals = values.Select((value, index) => (value, index))
+            .ToDictionary(pair => $"object{pair.index}", pair => pair.value);
+        var context = new EffectContext { Engine = engine, State = state, Controller = Side.Left };
+        long faults = engine.Api.Vm.FaultedPrograms;
+        var results = engine.Api.Vm.RunLocalProgramMulti(new KismetProgram(steps, 0), context, locals, outputs);
+        if (engine.Api.Vm.FaultedPrograms != faults) return "IsValid object-domain probe unexpectedly faulted the VM";
+        for (int i = 0; i < outputs.Length; i++)
+            if (!Equals(results[outputs[i]], expectedResults[i]))
+                return $"IsValid local object case {i} returned {results[outputs[i]] ?? "<null>"}; expected {expectedResults[i]}";
+        return null;
+    }
 }

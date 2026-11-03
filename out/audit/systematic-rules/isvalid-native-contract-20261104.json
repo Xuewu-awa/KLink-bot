@@ -1,0 +1,154 @@
+{
+  "schema_version": 1,
+  "report_id": "KISMET-ISVALID-NATIVE-CONTRACT-20261104",
+  "status": "partial",
+  "scope": "Current-client UKismetSystemLibrary IsValid wrapper structure, SDK declaration, managed CardInstance predicate regression and static IR callsite inventory; not complete UObject lifetime or card certification.",
+  "client": {
+    "executable": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\kards-Win64-Shipping.exe",
+    "sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305"
+  },
+  "native_capture": {
+    "path": "out/audit/systematic-rules/kismet-isvalid-native-capture-current-20261104.json",
+    "sha256": "b7c3fd92a939d2ad2eb7b287972d07799171a9fff50bddcafe113ba059e7e629",
+    "owner": "/Script/Engine.KismetSystemLibrary",
+    "function": {
+      "name": "IsValid",
+      "exec_rva": "0x3dc1930",
+      "ownership_verified": true
+    },
+    "observed_checks": [
+      [
+        "0x3dc199d",
+        "4885c0"
+      ],
+      [
+        "0x3dc19a2",
+        "8b4008"
+      ],
+      [
+        "0x3dc19a5",
+        "c1e81e"
+      ],
+      [
+        "0x3dc19a8",
+        "f6d0"
+      ],
+      [
+        "0x3dc19aa",
+        "a801"
+      ],
+      [
+        "0x3dc19ae",
+        "c60601"
+      ],
+      [
+        "0x3dc19c6",
+        "c60600"
+      ]
+    ],
+    "method": "Read-only live UObject class/UFunction ownership and entry-byte capture through both observed Boolean return paths; no native call or game-memory write."
+  },
+  "sdk": {
+    "header": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\ue4ss\\CXXHeaderDump\\Engine.hpp",
+    "sha256": "6ff639c0078e8800c5bc6aae8090beda97d4265ad5f3ba35e13f6e65128c82fb",
+    "declaration": "void IsValid(const class UObject* Object);"
+  },
+  "simulator": {
+    "implementation": "KismetVm.IsValid returns true for CardInstance objects and false for null/non-card values.",
+    "regression_cases": [
+      "null",
+      "non-UObject string",
+      "non-UObject integer",
+      "board card",
+      "hand card",
+      "discard card",
+      "NotAvailable card"
+    ],
+    "interpretation": "The managed predicate deliberately does not use IsAlive/location; removed or out-of-play CardInstance references remain modeled as valid UObject references."
+  },
+  "inventory": {
+    "callsite_count": 445,
+    "asset_count": 374,
+    "program_count": 382,
+    "sample_callsites": [
+      {
+        "card": "card_event_aans",
+        "program": "steps",
+        "expression": true
+      },
+      {
+        "card": "card_event_corps_command",
+        "program": "locals._DoOnCardPlayedOrGotchaTriggered",
+        "expression": true
+      },
+      {
+        "card": "card_event_guerilla_warfare_school",
+        "program": "steps",
+        "expression": true
+      },
+      {
+        "card": "card_event_the_double_sunrise",
+        "program": "steps",
+        "expression": true
+      },
+      {
+        "card": "card_event_the_double_sunrise",
+        "program": "steps",
+        "expression": true
+      },
+      {
+        "card": "card_unit_17th_infantry_brigade",
+        "program": "steps",
+        "expression": true
+      },
+      {
+        "card": "card_unit_coastwatchers",
+        "program": "steps",
+        "expression": true
+      },
+      {
+        "card": "card_brawl_test1",
+        "program": "locals.getSkirmishBP",
+        "expression": true
+      },
+      {
+        "card": "card_event_espionage_skirm",
+        "program": "steps",
+        "expression": true
+      },
+      {
+        "card": "card_event_foreign_support_skirm",
+        "program": "locals.RandomChooseCards",
+        "expression": true
+      },
+      {
+        "card": "card_event_foreign_support_skirm",
+        "program": "locals.RandomChooseCards",
+        "expression": true
+      },
+      {
+        "card": "card_event_foreign_support_skirm",
+        "program": "locals.RandomChooseCards",
+        "expression": true
+      }
+    ]
+  },
+  "source_sha256": {
+    "card_ir": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b",
+    "vm": "0a6d8e23a98e27b02d3d702ab00ca2d22c046c16ca0aa0ee339981bf03e9c416",
+    "selftest": "c792d3033737b5d10af031f1fcc4557e10d6863fab6271ae63046987a192b2c3",
+    "selftest_registry": "68274a2aeca6be28316dfd90373f4801990797cd2c8a119cbf7745186e154506",
+    "project": "00dd3fc2a3cbbc3c9f7fe12c8801649275d9a959351e5bf77c9ceee4c3aaf366",
+    "fixture": "19e4acfa5eae60969b9d1021be597dbce670b85ec155cae1f191de8be8fc5413",
+    "capture_script": "78e989bd4cd43533682bcf3b357cdfb5e76e1da2f322dc8dbe826401774c9285",
+    "audit_script": "e506d3baff9912704753778ecd2fd4c5296104edb786389a8fd76c27a811f0e4"
+  },
+  "limitations": [
+    "Captured wrapper bytes establish null and object-flag branches, but helper and complete UObject lifetime semantics are not independently reconstructed.",
+    "BotSim checks the managed VM mapping; it does not invoke the client UFunction.",
+    "CardInstance does not model UE BeginDestroyed, pending-kill, unreachable, or garbage-collection states.",
+    "This primitive check does not establish PvP reachability or certify any complete card.",
+    "IR callsite counts include non-PvP assets and do not establish runtime reachability.",
+    "The capture shows an object-pointer and object-flag check in this wrapper; it does not map every tested bit to all UE GC/destruction states."
+  ]
+}

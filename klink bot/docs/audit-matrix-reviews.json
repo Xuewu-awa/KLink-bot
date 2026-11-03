@@ -8925,6 +8925,38 @@
         "BotSim validates the local VM and does not invoke the client executable.",
         "Static callsite count does not establish PvP eligibility, runtime reachability or full-card behavior."
       ]
+    },
+    {
+      "id": "KISMET-SYSTEM/IsValid/object-validity-wrapper-20261104",
+      "symbol": "IsValid",
+      "modes": [null],
+      "status": "partial",
+      "validated_scope": "Current-client UKismetSystemLibrary IsValid ownership and both captured output paths; local VM distinguishes UObject-shaped CardInstance references from null/non-card values and does not use card location as validity. IR inventory is 445 callsites across 374 assets and is not a PvP or completion denominator.",
+      "report": "out/audit/systematic-rules/isvalid-native-contract-20261104.json",
+      "report_sha256": "89b451c1d5118510d85b2dd096140da81eb75b82ba2581c60cf835be7e19a0f1",
+      "client_exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+      "source_bindings": {
+        "src/KLink.Bot/Effects/Blueprint/KismetVm.cs": "0a6d8e23a98e27b02d3d702ab00ca2d22c046c16ca0aa0ee339981bf03e9c416",
+        "klink bot/docs/card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b",
+        "tools/BotSim/SelfTest.KismetMath.cs": "c792d3033737b5d10af031f1fcc4557e10d6863fab6271ae63046987a192b2c3",
+        "tools/BotSim/SelfTest.cs": "68274a2aeca6be28316dfd90373f4801990797cd2c8a119cbf7745186e154506",
+        "tools/BotSim/BotSim.csproj": "00dd3fc2a3cbbc3c9f7fe12c8801649275d9a959351e5bf77c9ceee4c3aaf366",
+        "tools/BotSim/Fixtures/kismet-isvalid-native-20261104.json": "19e4acfa5eae60969b9d1021be597dbce670b85ec155cae1f191de8be8fc5413",
+        "out/audit/capture-kismet-isvalid-current-20261104.py": "78e989bd4cd43533682bcf3b357cdfb5e76e1da2f322dc8dbe826401774c9285",
+        "klink bot/tools/audit-isvalid.py": "e506d3baff9912704753778ecd2fd4c5296104edb786389a8fd76c27a811f0e4"
+      },
+      "evidence_bindings": {
+        "out/audit/systematic-rules/kismet-isvalid-native-capture-current-20261104.json": "b7c3fd92a939d2ad2eb7b287972d07799171a9fff50bddcafe113ba059e7e629",
+        "out/audit/systematic-rules/isvalid-native-contract-20261104.json": "89b451c1d5118510d85b2dd096140da81eb75b82ba2581c60cf835be7e19a0f1",
+        "out/audit/systematic-rules/isvalid-focused-selftest-20261104.txt": "3175cbf59c2fdbbf01663b76469e31960a4126f2a902a4f4e5847d860ce793cf",
+        "out/audit/systematic-rules/isvalid-full-selftest-20261104.txt": "4c2c7044344adfb29dab876adac00df752e3ffedbb8eeb9fdc25269d3a2c498b",
+        "out/audit/systematic-rules/isvalid-solution-build-20261104.txt": "c4feaae99b3541601fb7d9829f3fb9a427465fd08aaa634462b2e267565802f8"
+      },
+      "limitations": [
+        "Native code was captured read-only and not called; the two wrapper return paths do not reconstruct every helper or UObject lifetime state.",
+        "CardInstance has no BeginDestroyed, pending-kill, unreachable, or garbage-collection state, so those states remain unmodeled.",
+        "BotSim tests the local VM only; IR callsite counts do not establish PvP reachability or full-card behavior."
+      ]
     }
   ],
   "scope_reviews": {},

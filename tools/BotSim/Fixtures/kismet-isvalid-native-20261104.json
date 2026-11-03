@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "capture_path": "out/audit/systematic-rules/kismet-isvalid-native-capture-current-20261104.json",
+  "capture_sha256": "b7c3fd92a939d2ad2eb7b287972d07799171a9fff50bddcafe113ba059e7e629",
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "owner": "/Script/Engine.KismetSystemLibrary",
+  "function": "IsValid",
+  "signature": "void IsValid(const UObject* Object)",
+  "exec_rva": "0x3dc1930",
+  "native_instruction_checks": [
+    ["0x3dc199d", "4885c0"],
+    ["0x3dc19a2", "8b4008"],
+    ["0x3dc19a5", "c1e81e"],
+    ["0x3dc19a8", "f6d0"],
+    ["0x3dc19aa", "a801"],
+    ["0x3dc19ae", "c60601"],
+    ["0x3dc19c6", "c60600"]
+  ],
+  "limitations": [
+    "Captured wrapper bytes establish null and object-flag branches, but helper and complete UObject lifetime semantics are not independently reconstructed.",
+    "BotSim checks the managed VM mapping; it does not invoke the client UFunction.",
+    "CardInstance does not model UE BeginDestroyed, pending-kill, unreachable, or garbage-collection states.",
+    "This primitive check does not establish PvP reachability or certify any complete card."
+  ]
+}
