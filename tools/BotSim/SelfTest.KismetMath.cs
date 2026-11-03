@@ -1267,4 +1267,43 @@ internal static partial class SelfTest
             return "Array_Append must preserve object identity and leave the source list unchanged";
         return null;
     }
+
+    private static string? KismetArrayReverseInPlace(CardDatabase db)
+    {
+        var (engine, state) = EmptyBoard(db);
+        var first = state.CreateWithId(PlainUnit, Side.Left, 1406, CardLocation.BoardHqLeft, 0);
+        var second = state.CreateWithId(PlainUnit, Side.Left, 1407, CardLocation.BoardHqLeft, 1);
+        var ids = new List<int> { 1406, 0, -7, 1406 };
+        var cards = new List<object?> { first, null, second };
+        var empty = new List<int>();
+        var singleton = new List<int> { int.MinValue };
+        var locals = new Dictionary<string, object?>
+        {
+            ["ids"] = ids,
+            ["cards"] = cards,
+            ["empty"] = empty,
+            ["singleton"] = singleton,
+        };
+        KismetStep Reverse(int index, string name) => new(index, "call", "Array_Reverse",
+            new[] { new KismetExpr { Var = name } }, Array.Empty<int>(), null, null, -1, null, null);
+        var steps = new List<KismetStep>
+        {
+            Reverse(0, "ids"),
+            Reverse(1, "cards"),
+            Reverse(2, "empty"),
+            Reverse(3, "singleton"),
+        };
+        var context = new EffectContext { Engine = engine, State = state, Controller = Side.Left };
+        long faults = engine.Api.Vm.FaultedPrograms;
+        engine.Api.Vm.RunLocalProgramMulti(new KismetProgram(steps, 0), context, locals);
+        if (engine.Api.Vm.FaultedPrograms != faults) return "Array_Reverse dispatch probe unexpectedly faulted the VM";
+        if (!ids.SequenceEqual(new[] { 1406, -7, 0, 1406 }))
+            return "Array_Reverse must reverse integer IDs in the original list without filtering or deduplicating";
+        if (cards.Count != 3 || !ReferenceEquals(cards[0], second) || cards[1] is not null
+            || !ReferenceEquals(cards[2], first))
+            return "Array_Reverse must preserve object identity and null slots in the original list";
+        if (empty.Count != 0 || !singleton.SequenceEqual(new[] { int.MinValue }))
+            return "Array_Reverse must preserve empty and singleton arrays";
+        return null;
+    }
 }

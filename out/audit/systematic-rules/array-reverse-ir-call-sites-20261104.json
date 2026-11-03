@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "source_ir": "klink bot/docs/card-ir.json",
+  "source_ir_sha256": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b",
+  "function": "/Script/Engine.KismetArrayLibrary.Array_Reverse",
+  "sdk_signature": "void Array_Reverse(const TArray<int32>& TargetArray)",
+  "call_count": 4,
+  "asset_count": 4,
+  "sites": [
+    {
+      "asset": "card_event_honorifics",
+      "statement_index": 2064,
+      "bytecode_offset": 2064,
+      "op": "call",
+      "outs": [],
+      "target": { "var": "allCardsDestroyedThisBattle", "scope": "instance", "element_type": "Int" }
+    },
+    {
+      "asset": "card_unit_kv_85",
+      "statement_index": 15,
+      "bytecode_offset": 15,
+      "op": "call",
+      "outs": [],
+      "target": { "var": "allCardsDestroyedThisBattle", "scope": "instance", "element_type": "Int" }
+    },
+    {
+      "asset": "card_event_special_reinforcements",
+      "statement_index": 1968,
+      "bytecode_offset": 1968,
+      "op": "call",
+      "outs": [],
+      "target": { "var": "allCardsDestroyedThisBattle", "scope": "instance", "element_type": "Int" }
+    },
+    {
+      "asset": "card_unit_ilyushin_10",
+      "statement_index": 608,
+      "bytecode_offset": 608,
+      "op": "call",
+      "outs": [],
+      "target": { "var": "allCardsDestroyedThisBattle", "scope": "instance", "element_type": "Int" }
+    }
+  ]
+}

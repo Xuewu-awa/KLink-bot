@@ -9292,6 +9292,31 @@
         "The report records a zero-call-site result for current card IR and does not classify non-card Blueprint usage.",
         "No card is promoted to full audit."
       ]
+    },
+    {
+      "id": "KISMET-ARRAY/Array_Reverse/in-place-integer-target-20261104",
+      "symbol": "Array_Reverse",
+      "modes": [null],
+      "status": "partial",
+      "validated_scope": "Four card IR call sites reverse the instance integer-ID list in place; BotSim now mutates generic IList targets and returns void/null.",
+      "report": "out/audit/systematic-rules/array-reverse-audit-20261104.json",
+      "report_sha256": "12d52aed4efacbfe854b1b8c84f6ca4b7cd1e1c2a70cba4d5c78801b4edda4bc",
+      "client_exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+      "source_bindings": {
+        "src/KLink.Bot/Effects/CardApiDispatch.cs": "ba6e1909eb57cffd2f326274a8fc35ff9caf82d8d923619eca913fdaae4b9a1a",
+        "tools/BotSim/SelfTest.cs": "cb8cac96854eb8db1cf3b195b3ffbcef49ed6d62c117cd03078ad0e414ab254b",
+        "tools/BotSim/SelfTest.KismetMath.cs": "fce849c105bdd92047b3a49c33846c365a55cba646a731d1f640260a6d84606f",
+        "klink bot/docs/card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b"
+      },
+      "evidence_bindings": {
+        "out/audit/systematic-rules/array-reverse-ir-call-sites-20261104.json": "116c93fb4d05fc62c17c56b8bd20ca6c64574df1b192375f9fd79abedc40182a",
+        "D:/Program Files/KARDS - The WWII Card Game/KARDS/default/game/kards/Binaries/Win64/ue4ss/CXXHeaderDump/Engine.hpp": "6ff639c0078e8800c5bc6aae8090beda97d4265ad5f3ba35e13f6e65128c82fb"
+      },
+      "limitations": [
+        "No current native Array_Reverse machine code or full generic property lifecycle was independently captured in this review.",
+        "The regression covers integer/object, empty/singleton, duplicate, and null-slot lists; it does not certify all reflected element types.",
+        "The four affected cards remain partial evidence, not full card certification."
+      ]
     }
   ],
   "scope_reviews": {},

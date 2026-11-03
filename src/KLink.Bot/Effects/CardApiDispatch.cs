@@ -1456,9 +1456,14 @@ public sealed partial class CardApi
             },
             ["Array_Reverse"] = (c, r, a) =>
             {
-                var copy = new List<CardInstance>(EvalArray(r, a));
-                copy.Reverse();
-                return copy;
+                var arr = EvalList(r, a);
+                for (int left = 0, right = arr.Count - 1; left < right; left++, right--)
+                {
+                    object? value = arr[left];
+                    arr[left] = arr[right];
+                    arr[right] = value;
+                }
+                return null;
             },
 
             // ---------------- 第三批（来自新控制流下的多卡组验证）----------------

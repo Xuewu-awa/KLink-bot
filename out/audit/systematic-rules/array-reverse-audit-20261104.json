@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "rule": "Array_Reverse",
+  "date": "2026-11-04",
+  "status": "partial simulator fix; four current card call sites covered",
+  "findings": [
+    "The installed SDK declares void Array_Reverse(const TArray<int32>& TargetArray) in Engine.hpp. All four current card IR uses are direct call statements with no output pins; each reverses the instance variable allCardsDestroyedThisBattle before the following loop reads it.",
+    "The prior simulator dispatch converted the target through EvalArray, built a new List<CardInstance>, reversed only that copy, and returned it. It did not mutate the original List<int> of destroyed card IDs, and conversion could discard IDs that were not resolvable as current CardInstance objects.",
+    "The dispatch now swaps elements in the original element-agnostic IList and returns null. This preserves integer values, duplicates, object identity and null slots while matching the in-place void-call shape required by the four IR sites.",
+    "The focused BotSim regression executes the call nodes against integer-ID, object, empty and singleton arrays. The full BotSim suite passes 1,123 cases, and the solution builds with zero errors.",
+    "No current native Array_Reverse UFunction machine-code capture or allocator/property behavior was established in this turn; the behavior claim is limited to the SDK signature, card IR call shape and simulator regression."
+  ],
+  "evidence": {
+    "sdk_header": "D:/Program Files/KARDS - The WWII Card Game/KARDS/default/game/kards/Binaries/Win64/ue4ss/CXXHeaderDump/Engine.hpp",
+    "sdk_declaration_line": 16340,
+    "sdk_header_sha256": "6ff639c0078e8800c5bc6aae8090beda97d4265ad5f3ba35e13f6e65128c82fb",
+    "ir_inventory": "out/audit/systematic-rules/array-reverse-ir-call-sites-20261104.json",
+    "ir_inventory_sha256": "116c93fb4d05fc62c17c56b8bd20ca6c64574df1b192375f9fd79abedc40182a",
+    "client_exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305"
+  },
+  "verification": {
+    "botsim_full_selftest": "passed",
+    "passed_cases": 1123,
+    "solution_build_errors": 0,
+    "focused_test": "Kismet array: Array_Reverse mutates typed target in place",
+    "affected_card_ir_sites": 4
+  },
+  "limitations": [
+    "No native function was invoked or machine-code captured during this turn.",
+    "Four current call sites do not certify all possible reflected array element types or native FProperty lifecycle behavior.",
+    "No affected card is promoted to fully audited."
+  ]
+}
