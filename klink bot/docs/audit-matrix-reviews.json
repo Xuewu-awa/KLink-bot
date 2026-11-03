@@ -8463,9 +8463,9 @@
       "source_bindings": {
         "src/KLink.Bot/Effects/Blueprint/KismetVm.cs": "0a6d8e23a98e27b02d3d702ab00ca2d22c046c16ca0aa0ee339981bf03e9c416",
         "klink bot/docs/card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b",
-        "tools/BotSim/SelfTest.KismetMath.cs": "79c631324df33df91403ca3be8ef00311fb8e64b4b71c7901f798c9d5c022212",
-        "tools/BotSim/SelfTest.cs": "4187dd760c42695a8dd66553efe992f56f9266d112e18c58eeb9974cc652f76d",
-        "tools/BotSim/BotSim.csproj": "3d10ec49e35fc1189bc6487eebd74f545e9490f47fb8dec063e3b239a3e2eda3",
+        "tools/BotSim/SelfTest.KismetMath.cs": "d80a91a4256db5fe456bacc1fc1016664759f14470f5d4209dd03281aa985b23",
+        "tools/BotSim/SelfTest.cs": "e330ba434d576bd5b30aa7a631f79e509508ac072cb6aee54701f28f60bf5287",
+        "tools/BotSim/BotSim.csproj": "dd2e9a85c9cdc604d664b3593a25d540c6db20ffdfd68c9643c709f3979403e8",
         "tools/BotSim/Fixtures/kismet-divide-percent-native-20261103.json": "4389a72ccfdf208362850310db6e103fdfdaae1f07a9b04054aaaa8c939369b1"
       },
       "evidence_bindings": {
@@ -8498,9 +8498,9 @@
       "source_bindings": {
         "src/KLink.Bot/Effects/Blueprint/KismetVm.cs": "0a6d8e23a98e27b02d3d702ab00ca2d22c046c16ca0aa0ee339981bf03e9c416",
         "klink bot/docs/card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b",
-        "tools/BotSim/SelfTest.KismetMath.cs": "79c631324df33df91403ca3be8ef00311fb8e64b4b71c7901f798c9d5c022212",
-        "tools/BotSim/SelfTest.cs": "4187dd760c42695a8dd66553efe992f56f9266d112e18c58eeb9974cc652f76d",
-        "tools/BotSim/BotSim.csproj": "3d10ec49e35fc1189bc6487eebd74f545e9490f47fb8dec063e3b239a3e2eda3",
+        "tools/BotSim/SelfTest.KismetMath.cs": "d80a91a4256db5fe456bacc1fc1016664759f14470f5d4209dd03281aa985b23",
+        "tools/BotSim/SelfTest.cs": "e330ba434d576bd5b30aa7a631f79e509508ac072cb6aee54701f28f60bf5287",
+        "tools/BotSim/BotSim.csproj": "dd2e9a85c9cdc604d664b3593a25d540c6db20ffdfd68c9643c709f3979403e8",
         "tools/BotSim/Fixtures/kismet-divide-percent-native-20261103.json": "4389a72ccfdf208362850310db6e103fdfdaae1f07a9b04054aaaa8c939369b1"
       },
       "evidence_bindings": {
@@ -8530,9 +8530,9 @@
       "source_bindings": {
         "src/KLink.Bot/Effects/Blueprint/KismetVm.cs": "0a6d8e23a98e27b02d3d702ab00ca2d22c046c16ca0aa0ee339981bf03e9c416",
         "klink bot/docs/card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b",
-        "tools/BotSim/SelfTest.KismetMath.cs": "79c631324df33df91403ca3be8ef00311fb8e64b4b71c7901f798c9d5c022212",
-        "tools/BotSim/SelfTest.cs": "4187dd760c42695a8dd66553efe992f56f9266d112e18c58eeb9974cc652f76d",
-        "tools/BotSim/BotSim.csproj": "3d10ec49e35fc1189bc6487eebd74f545e9490f47fb8dec063e3b239a3e2eda3",
+        "tools/BotSim/SelfTest.KismetMath.cs": "d80a91a4256db5fe456bacc1fc1016664759f14470f5d4209dd03281aa985b23",
+        "tools/BotSim/SelfTest.cs": "e330ba434d576bd5b30aa7a631f79e509508ac072cb6aee54701f28f60bf5287",
+        "tools/BotSim/BotSim.csproj": "dd2e9a85c9cdc604d664b3593a25d540c6db20ffdfd68c9643c709f3979403e8",
         "tools/BotSim/Fixtures/kismet-int-comparisons-native-20261103.json": "5a1a0a0c4051fccd197c07940cc2e4dc0413bfb214c68a47b196ac6a9f609c8c"
       },
       "evidence_bindings": {
@@ -8556,7 +8556,7 @@
       "report": "out/audit/systematic-rules/int-comparison-native-contract-20261103.json",
       "report_sha256": "cc18bdb82b9df3d63f199959faaf9e74c491d1332da7b61dc68b9a7559f04dd4",
       "client_exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
-      "source_bindings": { "src/KLink.Bot/Effects/Blueprint/KismetVm.cs": "0a6d8e23a98e27b02d3d702ab00ca2d22c046c16ca0aa0ee339981bf03e9c416", "klink bot/docs/card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b", "tools/BotSim/SelfTest.KismetMath.cs": "79c631324df33df91403ca3be8ef00311fb8e64b4b71c7901f798c9d5c022212", "tools/BotSim/SelfTest.cs": "4187dd760c42695a8dd66553efe992f56f9266d112e18c58eeb9974cc652f76d", "tools/BotSim/BotSim.csproj": "3d10ec49e35fc1189bc6487eebd74f545e9490f47fb8dec063e3b239a3e2eda3", "tools/BotSim/Fixtures/kismet-int-comparisons-native-20261103.json": "5a1a0a0c4051fccd197c07940cc2e4dc0413bfb214c68a47b196ac6a9f609c8c" },
+      "source_bindings": { "src/KLink.Bot/Effects/Blueprint/KismetVm.cs": "0a6d8e23a98e27b02d3d702ab00ca2d22c046c16ca0aa0ee339981bf03e9c416", "klink bot/docs/card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b", "tools/BotSim/SelfTest.KismetMath.cs": "d80a91a4256db5fe456bacc1fc1016664759f14470f5d4209dd03281aa985b23", "tools/BotSim/SelfTest.cs": "e330ba434d576bd5b30aa7a631f79e509508ac072cb6aee54701f28f60bf5287", "tools/BotSim/BotSim.csproj": "dd2e9a85c9cdc604d664b3593a25d540c6db20ffdfd68c9643c709f3979403e8", "tools/BotSim/Fixtures/kismet-int-comparisons-native-20261103.json": "5a1a0a0c4051fccd197c07940cc2e4dc0413bfb214c68a47b196ac6a9f609c8c" },
       "evidence_bindings": { "out/audit/systematic-rules/kismet-int-comparisons-native-capture-current-20261103.json": "2e4587a4820e3bf03008d3452dfdb06034a90a4e58c5ebba5e414c339b178371", "out/audit/systematic-rules/int-comparison-focused-selftest-20261103.txt": "78050298aa964d9b1a1537bb247e7a0138ab67bd7db5a97928d35539ad5bf59b", "out/audit/systematic-rules/int-comparison-full-selftest-20261103.txt": "049a749eeb4f537bca7d26655976373dec8050df91f2a473b62bca1e7ae945b3", "out/audit/systematic-rules/int-comparison-solution-build-20261103.txt": "c59b49128f43c1da48c4269ad53b1625d7bdcdca3a67cd6f0e55bfc238b106b8", "out/audit/systematic-rules/int-comparison-audit-matrix-tests-20261103.txt": "9ecc9067eb16b46fa0cda124a1884d8e88d381a46016e382eb1e3ce7d41b2957" },
       "limitations": [ "BotSim regression is local and static IR inventory (605 callsites/449 records) does not prove PvP reachability or complete-card behavior." ]
     },
@@ -8568,7 +8568,7 @@
       "report": "out/audit/systematic-rules/int-comparison-native-contract-20261103.json",
       "report_sha256": "cc18bdb82b9df3d63f199959faaf9e74c491d1332da7b61dc68b9a7559f04dd4",
       "client_exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
-      "source_bindings": { "src/KLink.Bot/Effects/Blueprint/KismetVm.cs": "0a6d8e23a98e27b02d3d702ab00ca2d22c046c16ca0aa0ee339981bf03e9c416", "klink bot/docs/card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b", "tools/BotSim/SelfTest.KismetMath.cs": "79c631324df33df91403ca3be8ef00311fb8e64b4b71c7901f798c9d5c022212", "tools/BotSim/SelfTest.cs": "4187dd760c42695a8dd66553efe992f56f9266d112e18c58eeb9974cc652f76d", "tools/BotSim/BotSim.csproj": "3d10ec49e35fc1189bc6487eebd74f545e9490f47fb8dec063e3b239a3e2eda3", "tools/BotSim/Fixtures/kismet-int-comparisons-native-20261103.json": "5a1a0a0c4051fccd197c07940cc2e4dc0413bfb214c68a47b196ac6a9f609c8c" },
+      "source_bindings": { "src/KLink.Bot/Effects/Blueprint/KismetVm.cs": "0a6d8e23a98e27b02d3d702ab00ca2d22c046c16ca0aa0ee339981bf03e9c416", "klink bot/docs/card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b", "tools/BotSim/SelfTest.KismetMath.cs": "d80a91a4256db5fe456bacc1fc1016664759f14470f5d4209dd03281aa985b23", "tools/BotSim/SelfTest.cs": "e330ba434d576bd5b30aa7a631f79e509508ac072cb6aee54701f28f60bf5287", "tools/BotSim/BotSim.csproj": "dd2e9a85c9cdc604d664b3593a25d540c6db20ffdfd68c9643c709f3979403e8", "tools/BotSim/Fixtures/kismet-int-comparisons-native-20261103.json": "5a1a0a0c4051fccd197c07940cc2e4dc0413bfb214c68a47b196ac6a9f609c8c" },
       "evidence_bindings": { "out/audit/systematic-rules/kismet-int-comparisons-native-capture-current-20261103.json": "2e4587a4820e3bf03008d3452dfdb06034a90a4e58c5ebba5e414c339b178371", "out/audit/systematic-rules/int-comparison-focused-selftest-20261103.txt": "78050298aa964d9b1a1537bb247e7a0138ab67bd7db5a97928d35539ad5bf59b", "out/audit/systematic-rules/int-comparison-full-selftest-20261103.txt": "049a749eeb4f537bca7d26655976373dec8050df91f2a473b62bca1e7ae945b3", "out/audit/systematic-rules/int-comparison-solution-build-20261103.txt": "c59b49128f43c1da48c4269ad53b1625d7bdcdca3a67cd6f0e55bfc238b106b8", "out/audit/systematic-rules/int-comparison-audit-matrix-tests-20261103.txt": "9ecc9067eb16b46fa0cda124a1884d8e88d381a46016e382eb1e3ce7d41b2957" },
       "limitations": [ "BotSim regression is local and static IR inventory (218 callsites/150 records) does not prove PvP reachability or complete-card behavior." ]
     },
@@ -8580,7 +8580,7 @@
       "report": "out/audit/systematic-rules/int-comparison-native-contract-20261103.json",
       "report_sha256": "cc18bdb82b9df3d63f199959faaf9e74c491d1332da7b61dc68b9a7559f04dd4",
       "client_exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
-      "source_bindings": { "src/KLink.Bot/Effects/Blueprint/KismetVm.cs": "0a6d8e23a98e27b02d3d702ab00ca2d22c046c16ca0aa0ee339981bf03e9c416", "klink bot/docs/card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b", "tools/BotSim/SelfTest.KismetMath.cs": "79c631324df33df91403ca3be8ef00311fb8e64b4b71c7901f798c9d5c022212", "tools/BotSim/SelfTest.cs": "4187dd760c42695a8dd66553efe992f56f9266d112e18c58eeb9974cc652f76d", "tools/BotSim/BotSim.csproj": "3d10ec49e35fc1189bc6487eebd74f545e9490f47fb8dec063e3b239a3e2eda3", "tools/BotSim/Fixtures/kismet-int-comparisons-native-20261103.json": "5a1a0a0c4051fccd197c07940cc2e4dc0413bfb214c68a47b196ac6a9f609c8c" },
+      "source_bindings": { "src/KLink.Bot/Effects/Blueprint/KismetVm.cs": "0a6d8e23a98e27b02d3d702ab00ca2d22c046c16ca0aa0ee339981bf03e9c416", "klink bot/docs/card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b", "tools/BotSim/SelfTest.KismetMath.cs": "d80a91a4256db5fe456bacc1fc1016664759f14470f5d4209dd03281aa985b23", "tools/BotSim/SelfTest.cs": "e330ba434d576bd5b30aa7a631f79e509508ac072cb6aee54701f28f60bf5287", "tools/BotSim/BotSim.csproj": "dd2e9a85c9cdc604d664b3593a25d540c6db20ffdfd68c9643c709f3979403e8", "tools/BotSim/Fixtures/kismet-int-comparisons-native-20261103.json": "5a1a0a0c4051fccd197c07940cc2e4dc0413bfb214c68a47b196ac6a9f609c8c" },
       "evidence_bindings": { "out/audit/systematic-rules/kismet-int-comparisons-native-capture-current-20261103.json": "2e4587a4820e3bf03008d3452dfdb06034a90a4e58c5ebba5e414c339b178371", "out/audit/systematic-rules/int-comparison-focused-selftest-20261103.txt": "78050298aa964d9b1a1537bb247e7a0138ab67bd7db5a97928d35539ad5bf59b", "out/audit/systematic-rules/int-comparison-full-selftest-20261103.txt": "049a749eeb4f537bca7d26655976373dec8050df91f2a473b62bca1e7ae945b3", "out/audit/systematic-rules/int-comparison-solution-build-20261103.txt": "c59b49128f43c1da48c4269ad53b1625d7bdcdca3a67cd6f0e55bfc238b106b8", "out/audit/systematic-rules/int-comparison-audit-matrix-tests-20261103.txt": "9ecc9067eb16b46fa0cda124a1884d8e88d381a46016e382eb1e3ce7d41b2957" },
       "limitations": [ "BotSim regression is local and static IR inventory (141 callsites/71 records) does not prove PvP reachability or complete-card behavior." ]
     },
@@ -8592,7 +8592,7 @@
       "report": "out/audit/systematic-rules/int-comparison-native-contract-20261103.json",
       "report_sha256": "cc18bdb82b9df3d63f199959faaf9e74c491d1332da7b61dc68b9a7559f04dd4",
       "client_exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
-      "source_bindings": { "src/KLink.Bot/Effects/Blueprint/KismetVm.cs": "0a6d8e23a98e27b02d3d702ab00ca2d22c046c16ca0aa0ee339981bf03e9c416", "klink bot/docs/card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b", "tools/BotSim/SelfTest.KismetMath.cs": "79c631324df33df91403ca3be8ef00311fb8e64b4b71c7901f798c9d5c022212", "tools/BotSim/SelfTest.cs": "4187dd760c42695a8dd66553efe992f56f9266d112e18c58eeb9974cc652f76d", "tools/BotSim/BotSim.csproj": "3d10ec49e35fc1189bc6487eebd74f545e9490f47fb8dec063e3b239a3e2eda3", "tools/BotSim/Fixtures/kismet-int-comparisons-native-20261103.json": "5a1a0a0c4051fccd197c07940cc2e4dc0413bfb214c68a47b196ac6a9f609c8c" },
+      "source_bindings": { "src/KLink.Bot/Effects/Blueprint/KismetVm.cs": "0a6d8e23a98e27b02d3d702ab00ca2d22c046c16ca0aa0ee339981bf03e9c416", "klink bot/docs/card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b", "tools/BotSim/SelfTest.KismetMath.cs": "d80a91a4256db5fe456bacc1fc1016664759f14470f5d4209dd03281aa985b23", "tools/BotSim/SelfTest.cs": "e330ba434d576bd5b30aa7a631f79e509508ac072cb6aee54701f28f60bf5287", "tools/BotSim/BotSim.csproj": "dd2e9a85c9cdc604d664b3593a25d540c6db20ffdfd68c9643c709f3979403e8", "tools/BotSim/Fixtures/kismet-int-comparisons-native-20261103.json": "5a1a0a0c4051fccd197c07940cc2e4dc0413bfb214c68a47b196ac6a9f609c8c" },
       "evidence_bindings": { "out/audit/systematic-rules/kismet-int-comparisons-native-capture-current-20261103.json": "2e4587a4820e3bf03008d3452dfdb06034a90a4e58c5ebba5e414c339b178371", "out/audit/systematic-rules/int-comparison-focused-selftest-20261103.txt": "78050298aa964d9b1a1537bb247e7a0138ab67bd7db5a97928d35539ad5bf59b", "out/audit/systematic-rules/int-comparison-full-selftest-20261103.txt": "049a749eeb4f537bca7d26655976373dec8050df91f2a473b62bca1e7ae945b3", "out/audit/systematic-rules/int-comparison-solution-build-20261103.txt": "c59b49128f43c1da48c4269ad53b1625d7bdcdca3a67cd6f0e55bfc238b106b8", "out/audit/systematic-rules/int-comparison-audit-matrix-tests-20261103.txt": "9ecc9067eb16b46fa0cda124a1884d8e88d381a46016e382eb1e3ce7d41b2957" },
       "limitations": [ "BotSim regression is local and static IR inventory (435 callsites/262 records) does not prove PvP reachability or complete-card behavior." ]
     },
@@ -8604,7 +8604,7 @@
       "report": "out/audit/systematic-rules/int-comparison-native-contract-20261103.json",
       "report_sha256": "cc18bdb82b9df3d63f199959faaf9e74c491d1332da7b61dc68b9a7559f04dd4",
       "client_exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
-      "source_bindings": { "src/KLink.Bot/Effects/Blueprint/KismetVm.cs": "0a6d8e23a98e27b02d3d702ab00ca2d22c046c16ca0aa0ee339981bf03e9c416", "klink bot/docs/card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b", "tools/BotSim/SelfTest.KismetMath.cs": "79c631324df33df91403ca3be8ef00311fb8e64b4b71c7901f798c9d5c022212", "tools/BotSim/SelfTest.cs": "4187dd760c42695a8dd66553efe992f56f9266d112e18c58eeb9974cc652f76d", "tools/BotSim/BotSim.csproj": "3d10ec49e35fc1189bc6487eebd74f545e9490f47fb8dec063e3b239a3e2eda3", "tools/BotSim/Fixtures/kismet-int-comparisons-native-20261103.json": "5a1a0a0c4051fccd197c07940cc2e4dc0413bfb214c68a47b196ac6a9f609c8c" },
+      "source_bindings": { "src/KLink.Bot/Effects/Blueprint/KismetVm.cs": "0a6d8e23a98e27b02d3d702ab00ca2d22c046c16ca0aa0ee339981bf03e9c416", "klink bot/docs/card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b", "tools/BotSim/SelfTest.KismetMath.cs": "d80a91a4256db5fe456bacc1fc1016664759f14470f5d4209dd03281aa985b23", "tools/BotSim/SelfTest.cs": "e330ba434d576bd5b30aa7a631f79e509508ac072cb6aee54701f28f60bf5287", "tools/BotSim/BotSim.csproj": "dd2e9a85c9cdc604d664b3593a25d540c6db20ffdfd68c9643c709f3979403e8", "tools/BotSim/Fixtures/kismet-int-comparisons-native-20261103.json": "5a1a0a0c4051fccd197c07940cc2e4dc0413bfb214c68a47b196ac6a9f609c8c" },
       "evidence_bindings": { "out/audit/systematic-rules/kismet-int-comparisons-native-capture-current-20261103.json": "2e4587a4820e3bf03008d3452dfdb06034a90a4e58c5ebba5e414c339b178371", "out/audit/systematic-rules/int-comparison-focused-selftest-20261103.txt": "78050298aa964d9b1a1537bb247e7a0138ab67bd7db5a97928d35539ad5bf59b", "out/audit/systematic-rules/int-comparison-full-selftest-20261103.txt": "049a749eeb4f537bca7d26655976373dec8050df91f2a473b62bca1e7ae945b3", "out/audit/systematic-rules/int-comparison-solution-build-20261103.txt": "c59b49128f43c1da48c4269ad53b1625d7bdcdca3a67cd6f0e55bfc238b106b8", "out/audit/systematic-rules/int-comparison-audit-matrix-tests-20261103.txt": "9ecc9067eb16b46fa0cda124a1884d8e88d381a46016e382eb1e3ce7d41b2957" },
       "limitations": [ "BotSim regression is local and static IR inventory (428 callsites/124 records) does not prove PvP reachability or complete-card behavior." ]
     },
@@ -8619,9 +8619,9 @@
       "source_bindings": {
         "src/KLink.Bot/Effects/Blueprint/KismetVm.cs": "0a6d8e23a98e27b02d3d702ab00ca2d22c046c16ca0aa0ee339981bf03e9c416",
         "klink bot/docs/card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b",
-        "tools/BotSim/SelfTest.KismetMath.cs": "79c631324df33df91403ca3be8ef00311fb8e64b4b71c7901f798c9d5c022212",
-        "tools/BotSim/SelfTest.cs": "4187dd760c42695a8dd66553efe992f56f9266d112e18c58eeb9974cc652f76d",
-        "tools/BotSim/BotSim.csproj": "3d10ec49e35fc1189bc6487eebd74f545e9490f47fb8dec063e3b239a3e2eda3",
+        "tools/BotSim/SelfTest.KismetMath.cs": "d80a91a4256db5fe456bacc1fc1016664759f14470f5d4209dd03281aa985b23",
+        "tools/BotSim/SelfTest.cs": "e330ba434d576bd5b30aa7a631f79e509508ac072cb6aee54701f28f60bf5287",
+        "tools/BotSim/BotSim.csproj": "dd2e9a85c9cdc604d664b3593a25d540c6db20ffdfd68c9643c709f3979403e8",
         "tools/BotSim/Fixtures/kismet-int-arithmetic-native-20261103.json": "1e23989c8a38a2878bd61e107d7790126f279f395d7caa94b781838b1c29fff7"
       },
       "evidence_bindings": {
@@ -8641,7 +8641,7 @@
       "report": "out/audit/systematic-rules/int-arithmetic-native-contract-20261103.json",
       "report_sha256": "3033492906e31c39a3dfdf3de4ca9484d8d40e987703cf2b2300e2eb9a852ac7",
       "client_exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
-      "source_bindings": { "src/KLink.Bot/Effects/Blueprint/KismetVm.cs": "0a6d8e23a98e27b02d3d702ab00ca2d22c046c16ca0aa0ee339981bf03e9c416", "klink bot/docs/card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b", "tools/BotSim/SelfTest.KismetMath.cs": "79c631324df33df91403ca3be8ef00311fb8e64b4b71c7901f798c9d5c022212", "tools/BotSim/SelfTest.cs": "4187dd760c42695a8dd66553efe992f56f9266d112e18c58eeb9974cc652f76d", "tools/BotSim/BotSim.csproj": "3d10ec49e35fc1189bc6487eebd74f545e9490f47fb8dec063e3b239a3e2eda3", "tools/BotSim/Fixtures/kismet-int-arithmetic-native-20261103.json": "1e23989c8a38a2878bd61e107d7790126f279f395d7caa94b781838b1c29fff7" },
+      "source_bindings": { "src/KLink.Bot/Effects/Blueprint/KismetVm.cs": "0a6d8e23a98e27b02d3d702ab00ca2d22c046c16ca0aa0ee339981bf03e9c416", "klink bot/docs/card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b", "tools/BotSim/SelfTest.KismetMath.cs": "d80a91a4256db5fe456bacc1fc1016664759f14470f5d4209dd03281aa985b23", "tools/BotSim/SelfTest.cs": "e330ba434d576bd5b30aa7a631f79e509508ac072cb6aee54701f28f60bf5287", "tools/BotSim/BotSim.csproj": "dd2e9a85c9cdc604d664b3593a25d540c6db20ffdfd68c9643c709f3979403e8", "tools/BotSim/Fixtures/kismet-int-arithmetic-native-20261103.json": "1e23989c8a38a2878bd61e107d7790126f279f395d7caa94b781838b1c29fff7" },
       "evidence_bindings": { "out/audit/systematic-rules/kismet-int-arithmetic-native-capture-current-20261103.json": "b8044e97a44dd48f55d63343e8711108ad81bed42fda71cff942699f37cfefc6", "out/audit/systematic-rules/int-arithmetic-focused-selftest-20261103.txt": "1894b1f21aba5efffe9ee404b96c2886c3816c2b3e07fd67b53a8f8a39435f15", "out/audit/systematic-rules/int-arithmetic-checked-selftest-20261103.txt": "1894b1f21aba5efffe9ee404b96c2886c3816c2b3e07fd67b53a8f8a39435f15", "out/audit/systematic-rules/int-arithmetic-full-selftest-20261103.txt": "a2a88dab7afc21c4d251528bace3f2c6e8966bcb804591ff6efd24b56cba3312", "out/audit/systematic-rules/int-arithmetic-solution-build-20261103.txt": "08bd82fa79bd51c20a9ffb36e411d7f9694f91e59478aa8a098c11b4011361e2", "out/audit/systematic-rules/int-arithmetic-audit-matrix-tests-20261103.txt": "2946b80b6f33d22f7d887676ce899b3587d0e06418e18a18054ee9a998373241" },
       "limitations": [ "The local test exercises BotSim, not the game executable; malformed UFunction frames, PvP reachability and complete card behavior are open." ]
     },
@@ -8653,9 +8653,45 @@
       "report": "out/audit/systematic-rules/int-arithmetic-native-contract-20261103.json",
       "report_sha256": "3033492906e31c39a3dfdf3de4ca9484d8d40e987703cf2b2300e2eb9a852ac7",
       "client_exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
-      "source_bindings": { "src/KLink.Bot/Effects/Blueprint/KismetVm.cs": "0a6d8e23a98e27b02d3d702ab00ca2d22c046c16ca0aa0ee339981bf03e9c416", "klink bot/docs/card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b", "tools/BotSim/SelfTest.KismetMath.cs": "79c631324df33df91403ca3be8ef00311fb8e64b4b71c7901f798c9d5c022212", "tools/BotSim/SelfTest.cs": "4187dd760c42695a8dd66553efe992f56f9266d112e18c58eeb9974cc652f76d", "tools/BotSim/BotSim.csproj": "3d10ec49e35fc1189bc6487eebd74f545e9490f47fb8dec063e3b239a3e2eda3", "tools/BotSim/Fixtures/kismet-int-arithmetic-native-20261103.json": "1e23989c8a38a2878bd61e107d7790126f279f395d7caa94b781838b1c29fff7" },
+      "source_bindings": { "src/KLink.Bot/Effects/Blueprint/KismetVm.cs": "0a6d8e23a98e27b02d3d702ab00ca2d22c046c16ca0aa0ee339981bf03e9c416", "klink bot/docs/card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b", "tools/BotSim/SelfTest.KismetMath.cs": "d80a91a4256db5fe456bacc1fc1016664759f14470f5d4209dd03281aa985b23", "tools/BotSim/SelfTest.cs": "e330ba434d576bd5b30aa7a631f79e509508ac072cb6aee54701f28f60bf5287", "tools/BotSim/BotSim.csproj": "dd2e9a85c9cdc604d664b3593a25d540c6db20ffdfd68c9643c709f3979403e8", "tools/BotSim/Fixtures/kismet-int-arithmetic-native-20261103.json": "1e23989c8a38a2878bd61e107d7790126f279f395d7caa94b781838b1c29fff7" },
       "evidence_bindings": { "out/audit/systematic-rules/kismet-int-arithmetic-native-capture-current-20261103.json": "b8044e97a44dd48f55d63343e8711108ad81bed42fda71cff942699f37cfefc6", "out/audit/systematic-rules/int-arithmetic-focused-selftest-20261103.txt": "1894b1f21aba5efffe9ee404b96c2886c3816c2b3e07fd67b53a8f8a39435f15", "out/audit/systematic-rules/int-arithmetic-checked-selftest-20261103.txt": "1894b1f21aba5efffe9ee404b96c2886c3816c2b3e07fd67b53a8f8a39435f15", "out/audit/systematic-rules/int-arithmetic-full-selftest-20261103.txt": "a2a88dab7afc21c4d251528bace3f2c6e8966bcb804591ff6efd24b56cba3312", "out/audit/systematic-rules/int-arithmetic-solution-build-20261103.txt": "08bd82fa79bd51c20a9ffb36e411d7f9694f91e59478aa8a098c11b4011361e2", "out/audit/systematic-rules/int-arithmetic-audit-matrix-tests-20261103.txt": "2946b80b6f33d22f7d887676ce899b3587d0e06418e18a18054ee9a998373241" },
       "limitations": [ "The local test exercises BotSim, not the game executable; malformed UFunction frames, PvP reachability and complete card behavior are open." ]
+    },
+    {
+      "id": "KISMET-MATH/EqualEqual_ByteByte/native-uint8-equality-20261104",
+      "symbol": "EqualEqual_ByteByte",
+      "status": "partial",
+      "validated_scope": "Current-client uint8 compare/sete wrapper path and eight valid byte-boundary pairs; static IR inventory only.",
+      "report": "out/audit/systematic-rules/byte-comparison-native-contract-20261104.json",
+      "report_sha256": "c85bd6cff1c7bdff50892aaf6e81b2a92cb60b7696b9d40136524102e2233ace",
+      "client_exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+      "source_bindings": {
+        "src/KLink.Bot/Effects/Blueprint/KismetVm.cs": "0a6d8e23a98e27b02d3d702ab00ca2d22c046c16ca0aa0ee339981bf03e9c416",
+        "klink bot/docs/card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b",
+        "tools/BotSim/SelfTest.KismetMath.cs": "d80a91a4256db5fe456bacc1fc1016664759f14470f5d4209dd03281aa985b23",
+        "tools/BotSim/SelfTest.cs": "e330ba434d576bd5b30aa7a631f79e509508ac072cb6aee54701f28f60bf5287",
+        "tools/BotSim/BotSim.csproj": "dd2e9a85c9cdc604d664b3593a25d540c6db20ffdfd68c9643c709f3979403e8",
+        "tools/BotSim/Fixtures/kismet-byte-comparisons-native-20261103.json": "5a4e9687ebd469ef4360b445a8409b799b9851db0ecdd15e0c325516d9b21029"
+      },
+      "evidence_bindings": {
+        "out/audit/systematic-rules/kismet-byte-comparisons-native-capture-current-20261103.json": "1fec3a603d8a6bdc53921e8dc9139c2603fdca4c6d72ddeb377a5fda273b3422",
+        "out/audit/systematic-rules/byte-comparison-focused-selftest-20261104.txt": "b3e5eb44d8e731bfc5964f214f41e5ab649ef8997a07bb8b505114e472b8a69f",
+        "out/audit/systematic-rules/byte-comparison-full-selftest-20261104.txt": "c491ae996e29f0817be33d161eb425882f1c2ec5e0a258ca59f2def0e46f64db",
+        "out/audit/systematic-rules/byte-comparison-solution-build-20261104.txt": "148d18e3eeaf339c7a74ddf7840347c17748c3371fc4a869c003420696a1e716"
+      },
+      "limitations": [ "Valid byte operands only; BotSim is not an in-process client call; static IR does not prove PvP reachability or complete-card behavior." ]
+    },
+    {
+      "id": "KISMET-MATH/NotEqual_ByteByte/native-uint8-inequality-20261104",
+      "symbol": "NotEqual_ByteByte",
+      "status": "partial",
+      "validated_scope": "Current-client uint8 compare/setne wrapper path and eight valid byte-boundary pairs; static IR inventory only.",
+      "report": "out/audit/systematic-rules/byte-comparison-native-contract-20261104.json",
+      "report_sha256": "c85bd6cff1c7bdff50892aaf6e81b2a92cb60b7696b9d40136524102e2233ace",
+      "client_exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+      "source_bindings": { "src/KLink.Bot/Effects/Blueprint/KismetVm.cs": "0a6d8e23a98e27b02d3d702ab00ca2d22c046c16ca0aa0ee339981bf03e9c416", "klink bot/docs/card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b", "tools/BotSim/SelfTest.KismetMath.cs": "d80a91a4256db5fe456bacc1fc1016664759f14470f5d4209dd03281aa985b23", "tools/BotSim/SelfTest.cs": "e330ba434d576bd5b30aa7a631f79e509508ac072cb6aee54701f28f60bf5287", "tools/BotSim/BotSim.csproj": "dd2e9a85c9cdc604d664b3593a25d540c6db20ffdfd68c9643c709f3979403e8", "tools/BotSim/Fixtures/kismet-byte-comparisons-native-20261103.json": "5a4e9687ebd469ef4360b445a8409b799b9851db0ecdd15e0c325516d9b21029" },
+      "evidence_bindings": { "out/audit/systematic-rules/kismet-byte-comparisons-native-capture-current-20261103.json": "1fec3a603d8a6bdc53921e8dc9139c2603fdca4c6d72ddeb377a5fda273b3422", "out/audit/systematic-rules/byte-comparison-focused-selftest-20261104.txt": "b3e5eb44d8e731bfc5964f214f41e5ab649ef8997a07bb8b505114e472b8a69f", "out/audit/systematic-rules/byte-comparison-full-selftest-20261104.txt": "c491ae996e29f0817be33d161eb425882f1c2ec5e0a258ca59f2def0e46f64db", "out/audit/systematic-rules/byte-comparison-solution-build-20261104.txt": "148d18e3eeaf339c7a74ddf7840347c17748c3371fc4a869c003420696a1e716" },
+      "limitations": [ "Valid byte operands only; BotSim is not an in-process client call; static IR does not prove PvP reachability or complete-card behavior." ]
     }
   ],
   "scope_reviews": {},

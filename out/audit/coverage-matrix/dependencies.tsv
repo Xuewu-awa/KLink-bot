@@ -115,7 +115,7 @@ EnumCompareCardLocation	49	49	55	"[""math""]"	[]	[]	[]	not_fully_reviewed	static
 EnumCompareFaction	76	77	98	"[""math""]"	[]	[]	"[""out/audit/systematic-rules/enum-compare-faction-sdk-contract-20261103.json""]"	not_fully_reviewed	static direct use count; not execution frequency
 EnumCompareSide	52	52	56	"[""math""]"	[]	"[""RULE-KISMET-MATH-CATALOG/EnumCompareSide-SDK-contract-20261103""]"	"[""out/audit/systematic-rules/enum-compare-side-sdk-contract-20261103.json""]"	not_fully_reviewed	static direct use count; not execution frequency
 EqualEqual_BoolBool	1	1	3	"[""math""]"	[]	[]	[]	not_fully_reviewed	static direct use count; not execution frequency
-EqualEqual_ByteByte	560	610	848	"[""math""]"	[]	[]	[]	not_fully_reviewed	static direct use count; not execution frequency
+EqualEqual_ByteByte	560	610	848	"[""math""]"	[]	"[""KISMET-MATH/EqualEqual_ByteByte/native-uint8-equality-20261104""]"	[]	not_fully_reviewed	static direct use count; not execution frequency
 EqualEqual_DoubleDouble	2	2	8	"[""math""]"	[]	[]	[]	not_fully_reviewed	static direct use count; not execution frequency
 EqualEqual_IntInt	262	283	435	"[""math""]"	[]	"[""KISMET-MATH/EqualEqual_IntInt/native-signed-comparison-20261103""]"	[]	not_fully_reviewed	static direct use count; not execution frequency
 EqualEqual_NameName	90	94	164	"[""math""]"	[]	[]	[]	not_fully_reviewed	static direct use count; not execution frequency
@@ -280,7 +280,7 @@ MoveUnitFromBoardToOwnersHand	21	21	23	"[""call""]"	"[{""path"": ""src/KLink.Bot
 MoveUnitFromSupportToFrontLine	7	7	7	"[""call""]"	"[{""path"": ""src/KLink.Bot/Effects/CardApiDispatch.cs"", ""line"": 1262, ""kind"": ""dispatch_key""}, {""path"": ""src/KLink.Bot/Engine/MatchEngine.cs"", ""line"": 2463, ""kind"": ""declaration""}]"	[]	[]	not_fully_reviewed	static direct use count; not execution frequency
 Multiply_IntInt	87	92	127	"[""math""]"	[]	"[""KISMET-MATH/Multiply_IntInt/native-int32-wrap-20261103""]"	"[""out/audit/systematic-rules/kismet-clamp-native-contract-20261103.json""]"	not_fully_reviewed	static direct use count; not execution frequency
 NotEqual_BoolBool	1	1	1	"[""math""]"	[]	[]	[]	not_fully_reviewed	static direct use count; not execution frequency
-NotEqual_ByteByte	314	338	591	"[""math""]"	[]	[]	[]	not_fully_reviewed	static direct use count; not execution frequency
+NotEqual_ByteByte	314	338	591	"[""math""]"	[]	"[""KISMET-MATH/NotEqual_ByteByte/native-uint8-inequality-20261104""]"	[]	not_fully_reviewed	static direct use count; not execution frequency
 NotEqual_IntInt	124	127	428	"[""math""]"	[]	"[""KISMET-MATH/NotEqual_IntInt/native-signed-comparison-20261103""]"	[]	not_fully_reviewed	static direct use count; not execution frequency
 NotEqual_NameName	2	2	2	"[""math""]"	[]	[]	[]	not_fully_reviewed	static direct use count; not execution frequency
 NotEqual_ObjectObject	17	17	18	"[""math""]"	[]	[]	"[""out/audit/systematic-rules/object-operators-20261018.json""]"	not_fully_reviewed	static direct use count; not execution frequency

@@ -314,6 +314,79 @@ internal static partial class SelfTest
         return null;
     }
 
+    private static string? KismetByteComparisonNativeContract(CardDatabase db)
+    {
+        string path = Path.Combine(AppContext.BaseDirectory, "Fixtures", "kismet-byte-comparisons-native-20261103.json");
+        using var document = System.Text.Json.JsonDocument.Parse(File.ReadAllText(path));
+        var root = document.RootElement;
+        DirectoryInfo? repository = new(AppContext.BaseDirectory);
+        while (repository is not null && !File.Exists(Path.Combine(repository.FullName, "KLink.slnx")))
+            repository = repository.Parent;
+        if (repository is null)
+            return "could not locate repository root for the native byte-comparison fixture";
+        string relative = root.GetProperty("capture_path").GetString()!;
+        string capturePath = Path.Combine(repository.FullName, relative.Replace('/', Path.DirectorySeparatorChar));
+        if (!File.Exists(capturePath))
+            return $"native byte-comparison capture not found at {relative}";
+        string captureHash = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(capturePath))).ToLowerInvariant();
+        if (!string.Equals(captureHash, root.GetProperty("capture_sha256").GetString(), StringComparison.Ordinal))
+            return "byte-comparison native capture SHA-256 differs from the regression fixture";
+        using var capture = System.Text.Json.JsonDocument.Parse(File.ReadAllText(capturePath));
+        var captureRoot = capture.RootElement;
+        if (!string.Equals(captureRoot.GetProperty("exe_sha256").GetString(),
+                root.GetProperty("exe_sha256").GetString(), StringComparison.Ordinal))
+            return "byte-comparison executable identity differs from the regression fixture";
+
+        foreach (var expected in root.GetProperty("functions").EnumerateObject())
+        {
+            var native = captureRoot.GetProperty("functions").GetProperty(expected.Name);
+            if (!string.Equals(native.GetProperty("exec_rva").GetString(),
+                    expected.Value.GetProperty("exec_rva").GetString(), StringComparison.Ordinal))
+                return $"{expected.Name} entry RVA differs from the regression fixture";
+            foreach (string key in new[] { "compare_instruction", "condition_instruction" })
+            {
+                string instruction = expected.Value.GetProperty(key).GetString()!;
+                string bytesKey = key == "compare_instruction" ? "compare_bytes" : "condition_bytes";
+                string bytes = expected.Value.GetProperty(bytesKey).GetString()!;
+                bool found = native.GetProperty("instructions_to_first_ret").EnumerateArray().Any(actual =>
+                    string.Equals(actual.GetProperty("instruction").GetString(), instruction, StringComparison.Ordinal)
+                    && string.Equals(actual.GetProperty("bytes").GetString(), bytes, StringComparison.Ordinal));
+                if (!found)
+                    return $"{expected.Name} instruction {instruction} differs from the native fixture";
+            }
+        }
+
+        var cases = root.GetProperty("cases").EnumerateArray()
+            .Select(row => (A: row[0].GetByte(), B: row[1].GetByte())).ToArray();
+        var steps = new List<KismetStep>();
+        var expectedResults = new List<(string Name, bool Value)>();
+        foreach (var function in root.GetProperty("functions").EnumerateObject())
+        {
+            var values = function.Value.GetProperty("results").EnumerateArray().Select(x => x.GetBoolean()).ToArray();
+            if (values.Length != cases.Length)
+                return $"{function.Name} fixture result count does not match the input pairs";
+            for (int i = 0; i < cases.Length; i++)
+            {
+                string output = $"result{steps.Count}";
+                steps.Add(SetMathResult(steps.Count, output,
+                    MathExpr(function.Name, IntExpr(cases[i].A), IntExpr(cases[i].B))));
+                expectedResults.Add((output, values[i]));
+            }
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        var context = new EffectContext { Engine = engine, State = state, Controller = Side.Left };
+        long faults = engine.Api.Vm.FaultedPrograms;
+        var actual = engine.Api.Vm.RunLocalProgramMulti(
+            new KismetProgram(steps, 0), context, null, expectedResults.Select(x => x.Name).ToArray());
+        if (engine.Api.Vm.FaultedPrograms != faults)
+            return "uint8 byte-comparison boundary probe unexpectedly faulted the VM";
+        foreach (var expected in expectedResults)
+            if (!Equals(actual[expected.Name], expected.Value))
+                return $"{expected.Name} returned {actual[expected.Name] ?? "<null>"}; expected {expected.Value}";
+        return null;
+    }
+
     private static string? KismetFModFiniteContract(CardDatabase db)
     {
         // The current client wrapper computes the quotient with cvttsd2si

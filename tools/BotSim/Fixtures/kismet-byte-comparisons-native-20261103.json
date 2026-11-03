@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "capture_path": "out/audit/systematic-rules/kismet-byte-comparisons-native-capture-current-20261103.json",
+  "capture_sha256": "1fec3a603d8a6bdc53921e8dc9139c2603fdca4c6d72ddeb377a5fda273b3422",
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "functions": {
+    "EqualEqual_ByteByte": {
+      "exec_rva": "0x3daf450",
+      "compare_instruction": "cmp byte ptr [rsp + 0x40], al",
+      "compare_bytes": "38442440",
+      "condition_instruction": "sete al",
+      "condition_bytes": "0f94c0",
+      "results": [true, false, true, false, false, false, true, false]
+    },
+    "NotEqual_ByteByte": {
+      "exec_rva": "0x3dd5bb0",
+      "compare_instruction": "cmp byte ptr [rsp + 0x40], al",
+      "compare_bytes": "38442440",
+      "condition_instruction": "setne al",
+      "condition_bytes": "0f95c0",
+      "results": [false, true, false, true, true, true, false, true]
+    }
+  },
+  "cases": [
+    [0, 0],
+    [0, 255],
+    [1, 1],
+    [127, 128],
+    [128, 127],
+    [254, 255],
+    [255, 255],
+    [255, 0]
+  ],
+  "limitations": [
+    "This contract covers uint8 equality results for valid byte operands only, not malformed UFunction frame behavior.",
+    "The regression evaluates BotSim and does not invoke the client executable.",
+    "Static IR counts are repository inventory only and do not establish PvP eligibility or reachability.",
+    "The fixture is valid only for the executable SHA-256 recorded above."
+  ]
+}

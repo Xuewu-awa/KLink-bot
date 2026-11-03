@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "report_id": "KISMET-BYTE-COMPARISON-NATIVE-CONTRACT-20261104",
+  "status": "partial",
+  "scope": "Current-client KismetMathLibrary uint8 equality and inequality wrappers, VM regression for selected byte boundaries, and repository IR inventory; not full-card or PvP certification.",
+  "client": {
+    "executable": "D:/Program Files/KARDS - The WWII Card Game/KARDS/default/game/kards/Binaries/Win64/kards-Win64-Shipping.exe",
+    "sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305"
+  },
+  "capture": {
+    "path": "out/audit/systematic-rules/kismet-byte-comparisons-native-capture-current-20261103.json",
+    "sha256": "1fec3a603d8a6bdc53921e8dc9139c2603fdca4c6d72ddeb377a5fda273b3422",
+    "owner": "/Script/Engine.KismetMathLibrary",
+    "all_live_ufunction_owners_verified": true,
+    "method": "Read-only machine-code capture. The live class and UFunction owners were checked. No game code was called and no game memory was written."
+  },
+  "semantics": {
+    "operand_types": "uint8 A, uint8 B",
+    "result_type": "bool",
+    "compare": "The wrappers load two byte operands and execute cmp byte ptr [rsp + 0x40], al.",
+    "condition_codes": {
+      "EqualEqual_ByteByte": { "exec_rva": "0x3daf450", "compare_bytes": "38442440", "condition": "sete al", "condition_bytes": "0f94c0", "meaning": "A == B" },
+      "NotEqual_ByteByte": { "exec_rva": "0x3dd5bb0", "compare_bytes": "38442440", "condition": "setne al", "condition_bytes": "0f95c0", "meaning": "A != B" }
+    }
+  },
+  "static_ir_inventory": {
+    "source": "out/audit/systematic-rules/kismet-math-node-catalog-20261103.json",
+    "source_sha256": "f05ec7c8ebcbe668acf2a715c933f1abd39758fd2db2e208d605245b45fd8682",
+    "EqualEqual_ByteByte": { "call_sites": 848, "card_records": 560 },
+    "NotEqual_ByteByte": { "call_sites": 591, "card_records": 314 },
+    "total_call_sites": 1439,
+    "note": "The repository snapshot includes assets outside PvP scope; these counts do not establish current-client reachability or PvP eligibility."
+  },
+  "regression": {
+    "fixture": "tools/BotSim/Fixtures/kismet-byte-comparisons-native-20261103.json",
+    "cases_per_operation": 8,
+    "result": "All 16 equality and inequality outputs match the captured condition-code contract for zero, high-bit, and 255 boundaries; no VM faults."
+  },
+  "limitations": [
+    "The capture covers valid byte operands and visible wrapper instructions, not malformed UFunction frames or all property flags.",
+    "The BotSim test evaluates the local VM and does not call the client executable for differential runtime testing.",
+    "Static IR usage does not establish PvP eligibility, reachability, or complete card behavior.",
+    "Evidence is valid only when the executable SHA-256 matches the value above."
+  ]
+}
