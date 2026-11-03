@@ -1,0 +1,806 @@
+{
+  "schema_version": 1,
+  "report_id": "KISMET-MATH-SELECTINT-NATIVE-20261103",
+  "scope": "Well-typed SelectInt over parsed signed int32 candidates and bool predicate; branch result agrees with the simulator. This is a primitive-level partial audit, not a PvP/card certification.",
+  "client_exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "sdk_declaration": {
+    "file": "D:\\Program Files\\KARDS - The WWII Card Game\\KARDS\\default\\game\\kards\\Binaries\\Win64\\ue4ss\\CXXHeaderDump\\Engine.hpp",
+    "line": 16613,
+    "signature": "void SelectInt(int32 A, int32 B, bool bPickA);",
+    "sha256": "6ff639c0078e8800c5bc6aae8090beda97d4265ad5f3ba35e13f6e65128c82fb",
+    "evidence_limit": "SDK declaration establishes the public signature only; it does not independently bind the SDK dump to the executable."
+  },
+  "native_capture": {
+    "owner": "/Script/Engine.KismetMathLibrary",
+    "exec_rva": "0x3de3070",
+    "capture_sha256": "75f5316d91ae311cb84550c07a4da3566a1b79cbbb4b98fa8d4da89ad04ac815",
+    "capture_report": "out/audit/systematic-rules/kismet-scalar-native-capture-current-20261103.json",
+    "relevant_instructions": [
+      {
+        "rva": "0x3de3148",
+        "bytes": "8b442448",
+        "instruction": "mov eax, dword ptr [rsp + 0x48]"
+      },
+      {
+        "rva": "0x3de314c",
+        "bytes": "837c245000",
+        "instruction": "cmp dword ptr [rsp + 0x50], 0"
+      },
+      {
+        "rva": "0x3de3155",
+        "bytes": "0f45442458",
+        "instruction": "cmovne eax, dword ptr [rsp + 0x58]"
+      },
+      {
+        "rva": "0x3de315a",
+        "bytes": "8906",
+        "instruction": "mov dword ptr [rsi], eax"
+      }
+    ],
+    "interpretation": "At the result stage the parsed B local initializes EAX; the parsed predicate is compared with zero; cmovne replaces EAX with the parsed A local when nonzero; the result is written through the output pointer. Combined with the SDK signature, true selects A and false selects B."
+  },
+  "simulator_implementation": {
+    "file": "src/KLink.Bot/Effects/Blueprint/KismetVm.cs",
+    "line": 1179,
+    "expression": "Truthy(third argument) ? ToInt(A) : ToInt(B)",
+    "implementation_sha256": "4f958f61a67be1b14aa080f756a9132016ef7f1800056fbec516cf4cac74a780"
+  },
+  "ir_inventory": {
+    "file": "klink bot/docs/card-ir.json",
+    "sha256": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b",
+    "selectint_node_count": 31,
+    "cards_with_selectint": 24,
+    "all_nodes_have_three_arguments": true,
+    "callsites": [
+      {
+        "card": "card_event_the_commonwealth",
+        "ir_path": [
+          "locals",
+          "GetPlayFromHandDamage",
+          3,
+          "src"
+        ],
+        "argument_count": 3,
+        "args": [
+          {
+            "int": 20
+          },
+          {
+            "int": 0
+          },
+          {
+            "var": "CallFunc_GreaterEqual_IntInt_ReturnValue",
+            "scope": "local"
+          }
+        ]
+      },
+      {
+        "card": "card_event_cup_of_tea_cam1",
+        "ir_path": [
+          "steps",
+          88,
+          "src"
+        ],
+        "argument_count": 3,
+        "args": [
+          {
+            "int": 3
+          },
+          {
+            "int": 2
+          },
+          {
+            "var": "CallFunc_HasCampaignUpgrade_doesIt_9",
+            "scope": "local"
+          }
+        ]
+      },
+      {
+        "card": "card_unit_commandos_cam1",
+        "ir_path": [
+          "steps",
+          52,
+          "src"
+        ],
+        "argument_count": 3,
+        "args": [
+          {
+            "int": 2
+          },
+          {
+            "int": 1
+          },
+          {
+            "var": "CallFunc_HasCampaignUpgrade_doesIt",
+            "scope": "local"
+          }
+        ]
+      },
+      {
+        "card": "card_event_fortified_position_cam1",
+        "ir_path": [
+          "steps",
+          72,
+          "src"
+        ],
+        "argument_count": 3,
+        "args": [
+          {
+            "int": 4
+          },
+          {
+            "int": 2
+          },
+          {
+            "var": "CallFunc_HasCampaignUpgrade_doesIt_8",
+            "scope": "local"
+          }
+        ]
+      },
+      {
+        "card": "card_event_fortified_position_cam1",
+        "ir_path": [
+          "steps",
+          100,
+          "src"
+        ],
+        "argument_count": 3,
+        "args": [
+          {
+            "int": 4
+          },
+          {
+            "int": 2
+          },
+          {
+            "var": "CallFunc_HasCampaignUpgrade_doesIt_6",
+            "scope": "local"
+          }
+        ]
+      },
+      {
+        "card": "card_event_tactical_strike",
+        "ir_path": [
+          "locals",
+          "GetPlayFromHandDamage",
+          3,
+          "src"
+        ],
+        "argument_count": 3,
+        "args": [
+          {
+            "int": 4
+          },
+          {
+            "int": 2
+          },
+          {
+            "var": "CallFunc_BooleanOR_ReturnValue",
+            "scope": "local"
+          }
+        ]
+      },
+      {
+        "card": "card_unit_panzer_iii_j_late",
+        "ir_path": [
+          "steps",
+          9,
+          "src"
+        ],
+        "argument_count": 3,
+        "args": [
+          {
+            "var": "CallFunc_JSON_GetInt_value",
+            "scope": "local"
+          },
+          {
+            "int": 0
+          },
+          {
+            "var": "CallFunc_JSON_GetInt_found",
+            "scope": "local"
+          }
+        ]
+      },
+      {
+        "card": "card_unit_panzer_iii_j_late",
+        "ir_path": [
+          "steps",
+          12,
+          "src"
+        ],
+        "argument_count": 3,
+        "args": [
+          {
+            "var": "CallFunc_JSON_GetInt_value",
+            "scope": "local"
+          },
+          {
+            "int": 0
+          },
+          {
+            "var": "CallFunc_JSON_GetInt_found",
+            "scope": "local"
+          }
+        ]
+      },
+      {
+        "card": "card_unit_panzer_iii_j_late",
+        "ir_path": [
+          "steps",
+          18,
+          "src"
+        ],
+        "argument_count": 3,
+        "args": [
+          {
+            "var": "CallFunc_JSON_GetInt_value",
+            "scope": "local"
+          },
+          {
+            "int": 0
+          },
+          {
+            "var": "CallFunc_JSON_GetInt_found",
+            "scope": "local"
+          }
+        ]
+      },
+      {
+        "card": "card_event_recuperation",
+        "ir_path": [
+          "steps",
+          4,
+          "src"
+        ],
+        "argument_count": 3,
+        "args": [
+          {
+            "int": 4
+          },
+          {
+            "int": 2
+          },
+          {
+            "var": "CallFunc_IsPinned_isPinned",
+            "scope": "local"
+          }
+        ]
+      },
+      {
+        "card": "card_event_through_the_breach",
+        "ir_path": [
+          "locals",
+          "GetPlayFromHandDamage",
+          3,
+          "src"
+        ],
+        "argument_count": 3,
+        "args": [
+          {
+            "int": 2
+          },
+          {
+            "int": 1
+          },
+          {
+            "var": "CallFunc_BooleanOR_ReturnValue",
+            "scope": "local"
+          }
+        ]
+      },
+      {
+        "card": "card_event_combined_arms_cam1",
+        "ir_path": [
+          "steps",
+          51,
+          "src"
+        ],
+        "argument_count": 3,
+        "args": [
+          {
+            "var": "CallFunc_Multiply_IntInt_ReturnValue",
+            "scope": "local"
+          },
+          {
+            "var": "count",
+            "scope": "instance"
+          },
+          {
+            "var": "CallFunc_HasCampaignUpgrade_doesIt_4",
+            "scope": "local"
+          }
+        ]
+      },
+      {
+        "card": "card_unit_3_fallschirmjager_cam1",
+        "ir_path": [
+          "steps",
+          94,
+          "src"
+        ],
+        "argument_count": 3,
+        "args": [
+          {
+            "var": "CallFunc_Multiply_IntInt_ReturnValue",
+            "scope": "local"
+          },
+          {
+            "var": "count",
+            "scope": "instance"
+          },
+          {
+            "var": "CallFunc_HasCampaignUpgrade_doesIt",
+            "scope": "local"
+          }
+        ]
+      },
+      {
+        "card": "card_unit_zero",
+        "ir_path": [
+          "locals",
+          "GetPlayFromHandDamage",
+          1,
+          "src"
+        ],
+        "argument_count": 3,
+        "args": [
+          {
+            "int": 1
+          },
+          {
+            "int": 0
+          },
+          {
+            "var": "CallFunc_IsValid_ReturnValue",
+            "scope": "local"
+          }
+        ]
+      },
+      {
+        "card": "card_event_for_prosperety_cam1",
+        "ir_path": [
+          "steps",
+          14,
+          "src"
+        ],
+        "argument_count": 3,
+        "args": [
+          {
+            "int": 2
+          },
+          {
+            "int": 1
+          },
+          {
+            "var": "CallFunc_HasCampaignUpgrade_doesIt_7",
+            "scope": "local"
+          }
+        ]
+      },
+      {
+        "card": "card_event_for_prosperety_cam1",
+        "ir_path": [
+          "steps",
+          17,
+          "src"
+        ],
+        "argument_count": 3,
+        "args": [
+          {
+            "int": 2
+          },
+          {
+            "int": 1
+          },
+          {
+            "var": "CallFunc_HasCampaignUpgrade_doesIt_8",
+            "scope": "local"
+          }
+        ]
+      },
+      {
+        "card": "card_event_sneak_maneuver_cam1",
+        "ir_path": [
+          "steps",
+          71,
+          "src"
+        ],
+        "argument_count": 3,
+        "args": [
+          {
+            "int": 3
+          },
+          {
+            "int": 2
+          },
+          {
+            "var": "CallFunc_HasCampaignUpgrade_doesIt_7",
+            "scope": "local"
+          }
+        ]
+      },
+      {
+        "card": "card_unit_1st_taipei_regiment_cam1",
+        "ir_path": [
+          "steps",
+          43,
+          "src"
+        ],
+        "argument_count": 3,
+        "args": [
+          {
+            "int": 3
+          },
+          {
+            "int": 2
+          },
+          {
+            "var": "CallFunc_HasCampaignUpgrade_doesIt",
+            "scope": "local"
+          }
+        ]
+      },
+      {
+        "card": "card_unit_type_97_cam1",
+        "ir_path": [
+          "steps",
+          50,
+          "src"
+        ],
+        "argument_count": 3,
+        "args": [
+          {
+            "int": 2
+          },
+          {
+            "int": 1
+          },
+          {
+            "var": "CallFunc_HasCampaignUpgrade_doesIt",
+            "scope": "local"
+          }
+        ]
+      },
+      {
+        "card": "card_unit_type_97_cam1",
+        "ir_path": [
+          "steps",
+          128,
+          "src"
+        ],
+        "argument_count": 3,
+        "args": [
+          {
+            "int": 2
+          },
+          {
+            "int": 1
+          },
+          {
+            "var": "CallFunc_HasCampaignUpgrade_doesIt_1",
+            "scope": "local"
+          }
+        ]
+      },
+      {
+        "card": "card_event_storm3_tropical_storm",
+        "ir_path": [
+          "locals",
+          "MoveCards",
+          88,
+          "src"
+        ],
+        "argument_count": 3,
+        "args": [
+          {
+            "int": 2
+          },
+          {
+            "int": 5
+          },
+          {
+            "var": "FrontlineLimited",
+            "scope": "local"
+          }
+        ]
+      },
+      {
+        "card": "card_unit_115th_separate_btn",
+        "ir_path": [
+          "steps",
+          10,
+          "src"
+        ],
+        "argument_count": 3,
+        "args": [
+          {
+            "int": 0
+          },
+          {
+            "int": 1
+          },
+          {
+            "var": "CallFunc_EqualEqual_BoolBool_ReturnValue",
+            "scope": "local"
+          }
+        ]
+      },
+      {
+        "card": "card_unit_115th_separate_btn",
+        "ir_path": [
+          "steps",
+          22,
+          "src"
+        ],
+        "argument_count": 3,
+        "args": [
+          {
+            "int": 0
+          },
+          {
+            "int": 1
+          },
+          {
+            "var": "CallFunc_EqualEqual_BoolBool_ReturnValue",
+            "scope": "local"
+          }
+        ]
+      },
+      {
+        "card": "card_unit_115th_separate_btn",
+        "ir_path": [
+          "steps",
+          35,
+          "src"
+        ],
+        "argument_count": 3,
+        "args": [
+          {
+            "int": 0
+          },
+          {
+            "int": 1
+          },
+          {
+            "var": "CallFunc_EqualEqual_BoolBool_ReturnValue",
+            "scope": "local"
+          }
+        ]
+      },
+      {
+        "card": "card_unit_511th_regiment",
+        "ir_path": [
+          "locals",
+          "checkAndUpdateBuffOnCard",
+          18,
+          "src"
+        ],
+        "argument_count": 3,
+        "args": [
+          {
+            "int": 2
+          },
+          {
+            "int": -2
+          },
+          {
+            "var": "ShouldBeBuffed",
+            "scope": "local"
+          }
+        ]
+      },
+      {
+        "card": "card_unit_10th_guards_regiment_cam1",
+        "ir_path": [
+          "steps",
+          47,
+          "src"
+        ],
+        "argument_count": 3,
+        "args": [
+          {
+            "int": 2
+          },
+          {
+            "int": 1
+          },
+          {
+            "var": "CallFunc_HasCampaignUpgrade_doesIt_1",
+            "scope": "local"
+          }
+        ]
+      },
+      {
+        "card": "card_unit_katyusha_cam1",
+        "ir_path": [
+          "steps",
+          46,
+          "src"
+        ],
+        "argument_count": 3,
+        "args": [
+          {
+            "int": 2
+          },
+          {
+            "int": 1
+          },
+          {
+            "var": "CallFunc_HasCampaignUpgrade_doesIt",
+            "scope": "local"
+          }
+        ]
+      },
+      {
+        "card": "card_event_night_bombing",
+        "ir_path": [
+          "locals",
+          "MoveCards",
+          88,
+          "src"
+        ],
+        "argument_count": 3,
+        "args": [
+          {
+            "int": 2
+          },
+          {
+            "int": 5
+          },
+          {
+            "var": "FrontlineLimited",
+            "scope": "local"
+          }
+        ]
+      },
+      {
+        "card": "card_unit_327th_pathfinders",
+        "ir_path": [
+          "locals",
+          "GetPlayFromHandDamage",
+          1,
+          "src"
+        ],
+        "argument_count": 3,
+        "args": [
+          {
+            "int": 2
+          },
+          {
+            "int": 0
+          },
+          {
+            "var": "CallFunc_IsValid_ReturnValue",
+            "scope": "local"
+          }
+        ]
+      },
+      {
+        "card": "card_event_naval_bombardment_cam1",
+        "ir_path": [
+          "steps",
+          22,
+          "src"
+        ],
+        "argument_count": 3,
+        "args": [
+          {
+            "int": -3
+          },
+          {
+            "int": -2
+          },
+          {
+            "var": "CallFunc_HasCampaignUpgrade_doesIt_8",
+            "scope": "local"
+          }
+        ]
+      },
+      {
+        "card": "card_event_unity_is_strength_cam1",
+        "ir_path": [
+          "steps",
+          20,
+          "src"
+        ],
+        "argument_count": 3,
+        "args": [
+          {
+            "var": "CallFunc_Multiply_IntInt_ReturnValue",
+            "scope": "local"
+          },
+          {
+            "var": "infantryCount",
+            "scope": "instance"
+          },
+          {
+            "var": "CallFunc_HasCampaignUpgrade_doesIt_10",
+            "scope": "local"
+          }
+        ]
+      }
+    ],
+    "scope_limit": "Static IR presence does not establish current-client asset identity, runtime execution, legal PvP reachability, or card-level completeness."
+  },
+  "regression": {
+    "focused_test": "tools/BotSim/SelfTest.KismetMath.cs:43+ (KismetSelectIntContract)",
+    "cases": [
+      {
+        "A": 17,
+        "B": -9,
+        "bPickA": true,
+        "expected": 17
+      },
+      {
+        "A": 17,
+        "B": -9,
+        "bPickA": false,
+        "expected": -9
+      },
+      {
+        "A": 0,
+        "B": -2147483648,
+        "bPickA": true,
+        "expected": 0
+      },
+      {
+        "A": 2147483647,
+        "B": 0,
+        "bPickA": false,
+        "expected": 0
+      },
+      {
+        "A": -2147483648,
+        "B": 2147483647,
+        "bPickA": true,
+        "expected": -2147483648
+      },
+      {
+        "A": -2147483648,
+        "B": 2147483647,
+        "bPickA": false,
+        "expected": 2147483647
+      }
+    ],
+    "focused_selftest": {
+      "file": "out/audit/systematic-rules/selectint-focused-selftest-20261103.txt",
+      "result": "pass",
+      "summary": "1 passed",
+      "sha256": "5bd084f1ce6f21adad2cd4b3a0f93d7acbb828c7c73145486c1298cfe4413e42"
+    },
+    "full_selftest": {
+      "file": "out/audit/systematic-rules/selectint-full-selftest-20261103.txt",
+      "result": "pass",
+      "summary": "1108 passed",
+      "sha256": "a4f85fed1709e42b52bccb6f6580ec12e83b5f6c045b992047ec6108e4152730"
+    },
+    "release_build": {
+      "file": "out/audit/systematic-rules/selectint-botsim-build-20261103.txt",
+      "result": "pass",
+      "warnings": 0,
+      "errors": 0,
+      "sha256": "e53ac7e57c962b4ad40c23a2362132330cb92cddf3ec658fab12490dfbd79445"
+    },
+    "malformed_ir_note": "The regression also records the current simulator fallback for a missing third argument (false, selecting B). Native acceptance of an omitted UFunction parameter is not asserted."
+  },
+  "source_sha256": {
+    "native_capture_report": "b7bcdda3848873141b1ef0a50887cf374396cbfd49694a9fd0c4c9ff2c12ebdc",
+    "exe": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+    "sdk": "6ff639c0078e8800c5bc6aae8090beda97d4265ad5f3ba35e13f6e65128c82fb",
+    "ir": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b",
+    "vm": "4f958f61a67be1b14aa080f756a9132016ef7f1800056fbec516cf4cac74a780",
+    "selftest_registry": "a37567009ee4b9891a0d0a569ff22dde69cc61b6aeca03d9425653dc7260ccdc",
+    "selftest_source": "bfc0adfe070de9a2307a4bc2fd5d61e087212fadefe73391a99f2ae87690e8eb",
+    "focused_test_output": "5bd084f1ce6f21adad2cd4b3a0f93d7acbb828c7c73145486c1298cfe4413e42",
+    "full_test_output": "a4f85fed1709e42b52bccb6f6580ec12e83b5f6c045b992047ec6108e4152730",
+    "build_output": "e53ac7e57c962b4ad40c23a2362132330cb92cddf3ec658fab12490dfbd79445"
+  },
+  "limitations": [
+    "The branch instruction sequence directly establishes the conditional selection over already-parsed locals; complete UFunction parameter decoding and malformed frame behavior are not certified.",
+    "SDK signature is type evidence and is not independently version-bound to the captured executable.",
+    "The local BotSim regression tests the simulator path, not an in-process call into the game binary.",
+    "31 static IR callsites across 24 repository card records are inventory candidates only; PvP reachability and current asset version are unresolved.",
+    "No full-card behavior, trigger scheduling, or interaction certification is implied."
+  ]
+}

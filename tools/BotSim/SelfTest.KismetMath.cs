@@ -40,6 +40,55 @@ internal static partial class SelfTest
         return null;
     }
 
+    private static string? KismetSelectIntContract(CardDatabase db)
+    {
+        // Native execSelectInt parses A, B, and bPickA and returns A only when
+        // the third argument is true; signed endpoints are copied unchanged.
+        var (engine, state) = EmptyBoard(db);
+        var ctx = new EffectContext { Engine = engine, State = state, Controller = Side.Left };
+        var cases = new (int A, int B, bool PickA, int Expected)[]
+        {
+            (17, -9, true, 17),
+            (17, -9, false, -9),
+            (0, int.MinValue, true, 0),
+            (int.MaxValue, 0, false, 0),
+            (int.MinValue, int.MaxValue, true, int.MinValue),
+            (int.MinValue, int.MaxValue, false, int.MaxValue),
+        };
+        var steps = new List<KismetStep>(cases.Length);
+        for (int i = 0; i < cases.Length; i++)
+        {
+            var c = cases[i];
+            steps.Add(SetMathResult(i, $"result{i}", MathExpr("SelectInt",
+                IntExpr(c.A), IntExpr(c.B), new KismetExpr { Bool = c.PickA })));
+        }
+
+        string[] outputs = Enumerable.Range(0, cases.Length).Select(i => $"result{i}").ToArray();
+        long faults = engine.Api.Vm.FaultedPrograms;
+        var result = engine.Api.Vm.RunLocalProgramMulti(new KismetProgram(steps, 0), ctx, null, outputs);
+        if (engine.Api.Vm.FaultedPrograms != faults)
+            return "SelectInt probe unexpectedly faulted the VM";
+        for (int i = 0; i < cases.Length; i++)
+        {
+            if (!Equals(result[outputs[i]], cases[i].Expected))
+                return $"SelectInt({cases[i].A},{cases[i].B},{cases[i].PickA}) returned "
+                    + $"{result[outputs[i]] ?? "<null>"}; expected {cases[i].Expected}";
+        }
+
+        // Malformed IR with a missing predicate currently evaluates the absent
+        // predicate as false and selects B. This is simulator fallback behavior,
+        // not a claim that the native UFunction accepts an omitted parameter.
+        var missingPredicate = new KismetProgram(new[]
+        {
+            SetMathResult(0, "missingPredicate", MathExpr("SelectInt", IntExpr(4), IntExpr(8))),
+        }, 0);
+        var malformed = engine.Api.Vm.RunLocalProgramMulti(missingPredicate, ctx, null, "missingPredicate");
+        if (!Equals(malformed["missingPredicate"], 8))
+            return $"missing-predicate simulator fallback returned {malformed["missingPredicate"] ?? "<null>"}; expected 8";
+
+        return null;
+    }
+
     private static string? KismetFModFiniteContract(CardDatabase db)
     {
         // The current client wrapper computes the quotient with cvttsd2si

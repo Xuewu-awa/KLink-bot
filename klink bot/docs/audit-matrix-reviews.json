@@ -8419,6 +8419,35 @@
         "Two IR callsites are static inventory candidates and do not establish PvP reachability or complete card certification.",
         "Current client identity is fixed by the executable SHA-256 above; a different client build invalidates this evidence."
       ]
+    },
+    {
+      "id": "KISMET-MATH/SelectInt/native-conditional-int32-20261103",
+      "symbol": "SelectInt",
+      "status": "partial",
+      "validated_scope": "Native conditional choice over parsed int32 candidates for bool true/false, with signed endpoint and zero regression cases; current repository IR inventory contains 31 nodes across 24 card records.",
+      "report": "out/audit/systematic-rules/selectint-native-contract-20261103.json",
+      "report_sha256": "5ba76faf7f631ec0e194f932e7c86e31e74fc98d099d6e12d926e4934901e840",
+      "client_exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+      "source_bindings": {
+        "src/KLink.Bot/Effects/Blueprint/KismetVm.cs": "4f958f61a67be1b14aa080f756a9132016ef7f1800056fbec516cf4cac74a780",
+        "tools/BotSim/SelfTest.cs": "a37567009ee4b9891a0d0a569ff22dde69cc61b6aeca03d9425653dc7260ccdc",
+        "tools/BotSim/SelfTest.KismetMath.cs": "bfc0adfe070de9a2307a4bc2fd5d61e087212fadefe73391a99f2ae87690e8eb",
+        "klink bot/docs/card-ir.json": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b"
+      },
+      "limitations": [
+        "The branch instruction sequence directly establishes the conditional selection over already-parsed locals; complete UFunction parameter decoding and malformed frame behavior are not certified.",
+        "SDK signature is type evidence and is not independently version-bound to the captured executable.",
+        "The local BotSim regression tests the simulator path, not an in-process call into the game binary.",
+        "31 static IR callsites across 24 repository card records are inventory candidates only; PvP reachability and current asset version are unresolved.",
+        "No full-card behavior, trigger scheduling, or interaction certification is implied."
+      ],
+      "evidence_bindings": {
+        "out/audit/systematic-rules/kismet-scalar-native-capture-current-20261103.json": "b7bcdda3848873141b1ef0a50887cf374396cbfd49694a9fd0c4c9ff2c12ebdc",
+        "D:/Program Files/KARDS - The WWII Card Game/KARDS/default/game/kards/Binaries/Win64/ue4ss/CXXHeaderDump/Engine.hpp": "6ff639c0078e8800c5bc6aae8090beda97d4265ad5f3ba35e13f6e65128c82fb",
+        "out/audit/systematic-rules/selectint-focused-selftest-20261103.txt": "5bd084f1ce6f21adad2cd4b3a0f93d7acbb828c7c73145486c1298cfe4413e42",
+        "out/audit/systematic-rules/selectint-full-selftest-20261103.txt": "a4f85fed1709e42b52bccb6f6580ec12e83b5f6c045b992047ec6108e4152730",
+        "out/audit/systematic-rules/selectint-botsim-build-20261103.txt": "e53ac7e57c962b4ad40c23a2362132330cb92cddf3ec658fab12490dfbd79445"
+      }
     }
   ],
   "scope_reviews": {},
