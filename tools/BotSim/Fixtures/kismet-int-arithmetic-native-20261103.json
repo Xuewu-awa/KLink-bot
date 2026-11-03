@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "capture_path": "out/audit/systematic-rules/kismet-int-arithmetic-native-capture-current-20261103.json",
+  "capture_sha256": "b8044e97a44dd48f55d63343e8711108ad81bed42fda71cff942699f37cfefc6",
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "functions": {
+    "Add_IntInt": {
+      "exec_rva": "0x3d91320",
+      "instruction": "add ecx, dword ptr [rsp + 0x40]",
+      "instruction_bytes": "034c2440",
+      "cases": [
+        [2147483647, 1, -2147483648],
+        [-2147483648, -1, 2147483647],
+        [-2147483648, 2147483647, -1],
+        [2147483647, 2147483647, -2],
+        [-1, 1, 0],
+        [123456789, 987654321, 1111111110]
+      ]
+    },
+    "Subtract_IntInt": {
+      "exec_rva": "0x3deb5b0",
+      "instruction": "sub eax, dword ptr [rsp + 0x40]",
+      "instruction_bytes": "2b442440",
+      "cases": [
+        [-2147483648, 1, 2147483647],
+        [2147483647, -1, -2147483648],
+        [-2147483648, 2147483647, 1],
+        [2147483647, -2147483648, -1],
+        [0, -2147483648, -2147483648],
+        [-1, 2147483647, -2147483648]
+      ]
+    },
+    "Multiply_IntInt": {
+      "exec_rva": "0x3dd34f0",
+      "instruction": "imul eax, dword ptr [rsp + 0x40]",
+      "instruction_bytes": "0faf442440",
+      "cases": [
+        [2147483647, 2, -2],
+        [-2147483648, -1, -2147483648],
+        [-2147483648, 2, 0],
+        [46341, 46341, -2147479015],
+        [-46341, 46341, 2147479015],
+        [-200000, 30000, -1705032704]
+      ]
+    }
+  },
+  "limitations": [
+    "The wrappers parse two int32 operands and use 32-bit arithmetic instructions; malformed UFunction frames are not certified.",
+    "The VM regression checks simulator arithmetic and does not invoke the native executable.",
+    "Static IR counts do not establish current PvP eligibility, reachability, or complete card behavior.",
+    "The fixture is valid only for the executable SHA-256 recorded above."
+  ]
+}

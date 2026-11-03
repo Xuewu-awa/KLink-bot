@@ -250,6 +250,70 @@ internal static partial class SelfTest
         return null;
     }
 
+    private static string? KismetIntArithmeticNativeContract(CardDatabase db)
+    {
+        string path = Path.Combine(AppContext.BaseDirectory, "Fixtures", "kismet-int-arithmetic-native-20261103.json");
+        using var document = System.Text.Json.JsonDocument.Parse(File.ReadAllText(path));
+        var root = document.RootElement;
+        DirectoryInfo? repository = new(AppContext.BaseDirectory);
+        while (repository is not null && !File.Exists(Path.Combine(repository.FullName, "KLink.slnx")))
+            repository = repository.Parent;
+        if (repository is null)
+            return "could not locate repository root for the native arithmetic capture fixture";
+        string relative = root.GetProperty("capture_path").GetString()!;
+        string capturePath = Path.Combine(repository.FullName, relative.Replace('/', Path.DirectorySeparatorChar));
+        if (!File.Exists(capturePath))
+            return $"native arithmetic capture not found at {relative}";
+        string captureHash = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(capturePath))).ToLowerInvariant();
+        if (!string.Equals(captureHash, root.GetProperty("capture_sha256").GetString(), StringComparison.Ordinal))
+            return "Int32 arithmetic native capture SHA-256 differs from the regression fixture";
+        using var capture = System.Text.Json.JsonDocument.Parse(File.ReadAllText(capturePath));
+        var captureRoot = capture.RootElement;
+        if (!string.Equals(captureRoot.GetProperty("exe_sha256").GetString(),
+                root.GetProperty("exe_sha256").GetString(), StringComparison.Ordinal))
+            return "Int32 arithmetic executable identity differs from the regression fixture";
+
+        foreach (var expected in root.GetProperty("functions").EnumerateObject())
+        {
+            var native = captureRoot.GetProperty("functions").GetProperty(expected.Name);
+            if (!string.Equals(native.GetProperty("exec_rva").GetString(),
+                    expected.Value.GetProperty("exec_rva").GetString(), StringComparison.Ordinal))
+                return $"{expected.Name} entry RVA differs from the regression fixture";
+            string instruction = expected.Value.GetProperty("instruction").GetString()!;
+            string bytes = expected.Value.GetProperty("instruction_bytes").GetString()!;
+            bool found = native.GetProperty("instructions_to_first_ret").EnumerateArray().Any(actual =>
+                string.Equals(actual.GetProperty("instruction").GetString(), instruction, StringComparison.Ordinal)
+                && string.Equals(actual.GetProperty("bytes").GetString(), bytes, StringComparison.Ordinal));
+            if (!found)
+                return $"{expected.Name} arithmetic instruction differs from the native fixture";
+        }
+
+        var (engine, state) = EmptyBoard(db);
+        var context = new EffectContext { Engine = engine, State = state, Controller = Side.Left };
+        var steps = new List<KismetStep>();
+        var expectedResults = new List<(string Name, int Value)>();
+        foreach (var function in root.GetProperty("functions").EnumerateObject())
+        {
+            foreach (var row in function.Value.GetProperty("cases").EnumerateArray())
+            {
+                int a = row[0].GetInt32(), b = row[1].GetInt32(), expected = row[2].GetInt32();
+                string output = $"result{steps.Count}";
+                steps.Add(SetMathResult(steps.Count, output, MathExpr(function.Name, IntExpr(a), IntExpr(b))));
+                expectedResults.Add((output, expected));
+            }
+        }
+
+        long faults = engine.Api.Vm.FaultedPrograms;
+        var actualResults = engine.Api.Vm.RunLocalProgramMulti(
+            new KismetProgram(steps, 0), context, null, expectedResults.Select(x => x.Name).ToArray());
+        if (engine.Api.Vm.FaultedPrograms != faults)
+            return "Int32 arithmetic signed-boundary probe unexpectedly faulted the VM";
+        foreach (var expected in expectedResults)
+            if (!Equals(actualResults[expected.Name], expected.Value))
+                return $"{expected.Name} returned {actualResults[expected.Name] ?? "<null>"}; expected {expected.Value}";
+        return null;
+    }
+
     private static string? KismetFModFiniteContract(CardDatabase db)
     {
         // The current client wrapper computes the quotient with cvttsd2si

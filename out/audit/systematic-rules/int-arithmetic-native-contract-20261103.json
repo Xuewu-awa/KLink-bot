@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "report_id": "KISMET-INT-ARITHMETIC-NATIVE-CONTRACT-20261103",
+  "status": "partial",
+  "scope": "Current-client KismetMathLibrary signed Int32 Add, Subtract and Multiply wrapper arithmetic, simulator wrapping semantics, and repository IR inventory; not full-card or PvP certification.",
+  "client": {
+    "executable": "D:/Program Files/KARDS - The WWII Card Game/KARDS/default/game/kards/Binaries/Win64/kards-Win64-Shipping.exe",
+    "sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305"
+  },
+  "capture": {
+    "path": "out/audit/systematic-rules/kismet-int-arithmetic-native-capture-current-20261103.json",
+    "sha256": "b8044e97a44dd48f55d63343e8711108ad81bed42fda71cff942699f37cfefc6",
+    "owner": "/Script/Engine.KismetMathLibrary",
+    "all_live_ufunction_owners_verified": true,
+    "method": "Read-only machine-code capture; live class/function ownership was checked. No function was invoked and no game memory was written. Captures stop at each first RET."
+  },
+  "semantics": {
+    "operand_types": "signed int32",
+    "result_type": "int32",
+    "overflow": "The operation is performed in a 32-bit register and the low 32-bit result is written. Signed overflow wraps modulo 2^32 and does not raise an arithmetic exception.",
+    "operations": {
+      "Add_IntInt": { "exec_rva": "0x3d91320", "instruction_rva": "0x3d913c5", "instruction_bytes": "034c2440", "instruction": "add ecx, dword ptr [rsp + 0x40]", "meaning": "A + B modulo 2^32" },
+      "Subtract_IntInt": { "exec_rva": "0x3deb5b0", "instruction_rva": "0x3deb655", "instruction_bytes": "2b442440", "instruction": "sub eax, dword ptr [rsp + 0x40]", "meaning": "A - B modulo 2^32" },
+      "Multiply_IntInt": { "exec_rva": "0x3dd34f0", "instruction_rva": "0x3dd3595", "instruction_bytes": "0faf442440", "instruction": "imul eax, dword ptr [rsp + 0x40]", "meaning": "low 32 bits of A * B" }
+    }
+  },
+  "static_ir_inventory": {
+    "source": "out/audit/systematic-rules/kismet-math-node-catalog-20261103.json",
+    "source_sha256": "f05ec7c8ebcbe668acf2a715c933f1abd39758fd2db2e208d605245b45fd8682",
+    "Add_IntInt": { "call_sites": 1416, "card_records": 835 },
+    "Subtract_IntInt": { "call_sites": 131, "card_records": 80 },
+    "Multiply_IntInt": { "call_sites": 127, "card_records": 87 },
+    "total_call_sites": 1674,
+    "note": "Counts describe the repository IR snapshot, include non-PvP assets, and do not establish current-client reachability or current PvP scope."
+  },
+  "regression": {
+    "fixture": "tools/BotSim/Fixtures/kismet-int-arithmetic-native-20261103.json",
+    "cases_per_operation": 6,
+    "result": "All 18 selected endpoint, overflow, sign and ordinary-value results match the native low-32-bit operation model; the VM reports no faults.",
+    "checked_overflow_compilation": "The focused BotSim regression also passes with CheckForOverflowUnderflow=true, confirming the explicit unchecked operations preserve wrapping under checked project settings.",
+    "checked_overflow_log": "out/audit/systematic-rules/int-arithmetic-checked-selftest-20261103.txt"
+  },
+  "implementation": {
+    "file": "src/KLink.Bot/Effects/Blueprint/KismetVm.cs",
+    "behavior": "Add_IntInt, Subtract_IntInt and Multiply_IntInt are now explicitly evaluated in unchecked int32 context so project-wide overflow-check settings cannot change the native wrap behavior."
+  },
+  "limitations": [
+    "The capture establishes the visible parsed-operand arithmetic and result writeback path, not malformed UFunction frames or every property flag.",
+    "The BotSim regression tests the local VM; it does not invoke the client executable for differential runtime testing.",
+    "Static IR sites do not prove PvP eligibility, execution reachability, or complete card behavior.",
+    "Evidence is valid only when the executable SHA-256 matches the value recorded above."
+  ]
+}

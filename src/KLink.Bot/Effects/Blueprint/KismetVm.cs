@@ -1132,9 +1132,11 @@ public sealed partial class KismetVm
             case "Array_Get":
                 return a is System.Collections.IList list && ToInt(b) >= 0 && ToInt(b) < list.Count
                     ? list[ToInt(b)] : null;
-            case "Add_IntInt": return ToInt(a) + ToInt(b);
-            case "Subtract_IntInt": return ToInt(a) - ToInt(b);
-            case "Multiply_IntInt": return ToInt(a) * ToInt(b);
+            // Current-client wrappers use 32-bit add/sub/imul and write the
+            // low 32-bit result; signed overflow wraps without an exception.
+            case "Add_IntInt": return unchecked(ToInt(a) + ToInt(b));
+            case "Subtract_IntInt": return unchecked(ToInt(a) - ToInt(b));
+            case "Multiply_IntInt": return unchecked(ToInt(a) * ToInt(b));
             // Current-client KismetMathLibrary execDivide_IntInt and
             // execPercent_IntInt (native capture
             // `out/audit/systematic-rules/kismet-divide-percent-native-capture-current-20261103.json`)
