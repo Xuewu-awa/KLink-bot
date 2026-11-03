@@ -296,8 +296,8 @@
   "source_sha256": {
     "card_ir": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b",
     "vm": "0a6d8e23a98e27b02d3d702ab00ca2d22c046c16ca0aa0ee339981bf03e9c416",
-    "selftest": "390c3771aa3aaada775995362fd9889ea1e02ec2567b39933801ae7f6c30a53a",
-    "selftest_registry": "0c36abed90119319b0e849f42a7906af5f5e1d08a923cb897515e1a306ff0ba8",
+    "selftest": "2c7b38efaf3693efe99fab885465cb963e5949ae3b84fa5a789708126f62f7eb",
+    "selftest_registry": "4070961e3a47252cf564398b627887f68722011f8be11bf3dfaa8eb8ab11569e",
     "sdk_function": "f8039a5583a5db8be8c73470418b5b94f6cc1e856d402ffd75403c0fa8a2ac78",
     "sdk_enums": "547f570a5bb9ab42ebd69e7628a3e07dcaa10181d7bb4d06e10ed15aac8ac9bd",
     "faction_contract": "f4d472facd83234bc57a39a19aaa01626c64a548e55e6bb1de3d5815d612827f",
