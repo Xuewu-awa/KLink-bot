@@ -8355,6 +8355,37 @@
         "仅对 SDK ESideEnum 的 0..2 做 3×3 回归；越界、非法值和运行时对象状态未认证。",
         "DeepSeek worker 仅用于重复静态整理，未作为规则语义或权威客户端证据。"
       ]
+    },
+    {
+      "id": "KISMET-MATH/Clamp/native-signed-bounds-20261103",
+      "symbol": "Clamp",
+      "modes": [
+        0,
+        1
+      ],
+      "status": "partial",
+      "validated_scope": "Current client integer Clamp wrapper and signed arithmetic tail; 512 offline machine-code cases including reversed bounds; IR callsite inventory only.",
+      "report": "out/audit/systematic-rules/kismet-clamp-native-contract-20261103.json",
+      "report_sha256": "36e02f40b0c9c4b3bc744b74e973a62a4d4c67c328645e3d874018d9d64cb720",
+      "client_exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+      "source_bindings": {
+        "src/KLink.Bot/Effects/Blueprint/KismetVm.cs": "4f958f61a67be1b14aa080f756a9132016ef7f1800056fbec516cf4cac74a780",
+        "tools/BotSim/SelfTest.cs": "84a9588bfc1dba9c09cc011dfa85060d3fc16b405735a254d190ef947af78d08",
+        "tools/BotSim/SelfTest.KismetMath.cs": "5b691a539ec2f0aceef7b21c67bceccf8a93eb5299318f4079fb80e8e1dd8abc",
+        "tools/BotSim/Fixtures/kismet-clamp-native-20261103.json": "49eb1908b25dfadc867692a1bc8eb9177d0bfb4475b0af3d982e4c126e9521af",
+        "klink bot/tools/verify-kismet-clamp-native.py": "c299fdcd524fba02b6bb37f0d99a471e59b25ae71240be0e23163c7c38dafd22",
+        "klink bot/tools/probe-kismet-scalar-native.py": "86cb3476cf3e01fad7f2e438237e6ecd099d2aea6207f33daff12261ca6e0523"
+      },
+      "limitations": [
+        "Read-only native capture and offline Unicorn execution; no in-process native calls or writes.",
+        "Validated arithmetic tail and wrapper boundaries, not complete UFunction marshaling or every malformed input.",
+        "Three IR Clamp sites are inventory candidates; current report does not establish PvP reachability or card legality.",
+        "SDK declaration is type/signature evidence; native body evidence is the current executable capture."
+      ],
+      "evidence_bindings": {
+        "out/audit/systematic-rules/kismet-scalar-native-capture-20261103.json": "ea0367e1dd79346699f4ec9a94e4fe7bbf1554a7bd0996ce3c50fe9b78767df8",
+        "tools/BotSim/kismet-clamp-full-selftest-20261103.txt": "90e90335b6241bbbe1644d74e594ad593abaedaa51d5e0df96b659504fbd6387"
+      }
     }
   ],
   "scope_reviews": {},

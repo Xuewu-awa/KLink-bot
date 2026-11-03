@@ -17,6 +17,29 @@ internal static partial class SelfTest
     private static KismetExpr IntExpr(int value) => new() { Int = value };
     private static KismetExpr LocalExpr(string name) => new() { Var = name, Scope = "local" };
 
+    private static string? KismetClampNativeBounds(CardDatabase db)
+    {
+        // Current-client execClamp tail computes max(minimum, min(value, maximum)),
+        // including minimum > maximum. Fixture outputs come from offline execution
+        // of that captured instruction slice, not from this C# expression.
+        string path = Path.Combine(AppContext.BaseDirectory, "Fixtures", "kismet-clamp-native-20261103.json");
+        using var document = System.Text.Json.JsonDocument.Parse(File.ReadAllText(path));
+        var (engine, state) = EmptyBoard(db);
+        var ctx = new EffectContext { Engine = engine, State = state, Controller = Side.Left };
+        foreach (var row in document.RootElement.GetProperty("cases").EnumerateArray())
+        {
+            int value = row[0].GetInt32(), minimum = row[1].GetInt32();
+            int maximum = row[2].GetInt32(), expected = row[3].GetInt32();
+            long faults = engine.Api.Vm.FaultedPrograms;
+            var program = new KismetProgram([SetMathResult(0, "result",
+                MathExpr("Clamp", IntExpr(value), IntExpr(minimum), IntExpr(maximum)))], 0);
+            var result = engine.Api.Vm.RunLocalProgramMulti(program, ctx, null, "result");
+            if (engine.Api.Vm.FaultedPrograms != faults || !Equals(result["result"], expected))
+                return $"Clamp({value},{minimum},{maximum}) returned {result["result"] ?? "<null>"}; expected {expected}; faults={engine.Api.Vm.FaultedPrograms - faults}";
+        }
+        return null;
+    }
+
     private static KismetStep SetMathResult(int index, string destination, KismetExpr expression) =>
         new(index, "set", null, Array.Empty<KismetExpr>(), Array.Empty<int>(), expression,
             null, -1, destination, null) { DestinationScope = "local" };

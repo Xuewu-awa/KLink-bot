@@ -1146,7 +1146,9 @@ public sealed partial class KismetVm
             case "Max": return Math.Max(ToInt(a), ToInt(b));
             case "Clamp":
                 var c = argExprs.Count > 2 ? Eval(argExprs[2], frame, ctx) : null;
-                return Math.Clamp(ToInt(a), ToInt(b), ToInt(c));
+                // Current native execClamp uses signed min followed by max.
+                // Unlike Math.Clamp, reversed bounds return the lower bound.
+                return Math.Max(ToInt(b), Math.Min(ToInt(a), ToInt(c)));
             case "Greater_IntInt": return ToInt(a) > ToInt(b);
             case "GreaterEqual_IntInt": return ToInt(a) >= ToInt(b);
             case "Less_IntInt": return ToInt(a) < ToInt(b);

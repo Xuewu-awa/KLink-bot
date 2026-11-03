@@ -1,0 +1,116 @@
+{
+  "schema_version": 1,
+  "report_id": "KISMET-CLAMP-NATIVE-20261103",
+  "scope": "Integer Clamp scalar result for well-typed int32 arguments; reversed bounds included. Does not certify card reachability or complete Kismet argument marshaling.",
+  "exe_sha256": "b6f4b6af2af3f9a596182df82abc4e87a2cb51abaff417f558d68e7bbb201305",
+  "native_boundaries": {
+    "SelectInt": {
+      "begin_rva": "0x3de3070",
+      "end_rva_exclusive": "0x3de3164",
+      "unwind_rva": "0x8a0ddd0",
+      "disk_matches_live_window": true
+    },
+    "Multiply_IntInt": {
+      "begin_rva": "0x3dd34f0",
+      "end_rva_exclusive": "0x3dd35b0",
+      "unwind_rva": "0x8a55ad4",
+      "disk_matches_live_window": true
+    },
+    "FTrunc": {
+      "begin_rva": "0x3db2630",
+      "end_rva_exclusive": "0x3db26ab",
+      "unwind_rva": "0x8a0d760",
+      "disk_matches_live_window": true
+    },
+    "clamp": {
+      "begin_rva": "0x3da02c0",
+      "end_rva_exclusive": "0x3da03bc",
+      "unwind_rva": "0x8a0ddd0",
+      "disk_matches_live_window": true
+    },
+    "BreakVector": {
+      "begin_rva": "0x3d9b240",
+      "end_rva_exclusive": "0x3d9b3e8",
+      "unwind_rva": "0x8c5bf6c",
+      "disk_matches_live_window": true
+    }
+  },
+  "clamp_tail_begin_rva": "0x3da038a",
+  "clamp_tail_end_rva_exclusive": "0x3da03b4",
+  "clamp_tail_hex": "488b43208b4c24484885c0400f95c74803f88b442458394c245048897b200f4c4c24503bc10f4cc18906",
+  "native_expression": "max(minimum, min(value, maximum)) using signed int32 comparisons",
+  "offline_machine_code_cases": 512,
+  "reversed_bound_cases": 224,
+  "observed_simulator_difference": "Math.Clamp throws when minimum > maximum; captured client result equals minimum.",
+  "ir_callsites": [
+    {
+      "path": "card_event_mass_deployment.locals.GetRandomKreditCombo[1].src",
+      "node": {
+        "math": "Clamp",
+        "args": [
+          {
+            "var": "InKreditSlot",
+            "scope": "local"
+          },
+          {
+            "int": 3
+          },
+          {
+            "int": 24
+          }
+        ]
+      }
+    },
+    {
+      "path": "card_unit_seagull.locals.GetReducedDamage[2].src",
+      "node": {
+        "math": "Clamp",
+        "args": [
+          {
+            "var": "CallFunc_Subtract_IntInt_ReturnValue",
+            "scope": "local"
+          },
+          {
+            "int": 0
+          },
+          {
+            "var": "Damage",
+            "scope": "local"
+          }
+        ]
+      }
+    },
+    {
+      "path": "card_unit_seagull.locals.OnCardDealDamage_ModifyDamageDealt[8].src",
+      "node": {
+        "math": "Clamp",
+        "args": [
+          {
+            "var": "CallFunc_Subtract_IntInt_ReturnValue",
+            "scope": "local"
+          },
+          {
+            "int": 0
+          },
+          {
+            "var": "damage",
+            "scope": "local"
+          }
+        ]
+      }
+    }
+  ],
+  "source_sha256": {
+    "capture": "ea0367e1dd79346699f4ec9a94e4fe7bbf1554a7bd0996ce3c50fe9b78767df8",
+    "sdk": "6ff639c0078e8800c5bc6aae8090beda97d4265ad5f3ba35e13f6e65128c82fb",
+    "fixture": "cf7bbf6f4e336a3221b5c9e9a391cd5991f94faab260497d6a1170a491d0b3d5",
+    "ir": "726b259f86ba9f5abbadd35d1262b8432f0ff3b9d7290c0b7261817c9888c56b"
+  },
+  "limitations": [
+    "Only the arithmetic/output tail is emulated, with parameter slots seeded; UFunction argument helpers are not executed.",
+    "SDK is a separately generated declaration dump, not proof it was generated from this EXE hash. Parameter slot order is also visible in the current wrapper.",
+    "FTrunc, BreakVector, SelectInt and Multiply_IntInt are captured and PE-checked only in this batch; full semantics and malformed inputs remain separate work.",
+    "IR Clamp is the simulator adapter key; identifying this native function does not certify all IR lowering or current-pak equivalence.",
+    "No claim that reversed bounds occur in legal PvP play; three IR sites are inventory candidates only."
+  ]
+}
