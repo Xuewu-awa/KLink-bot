@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "kind": "KLink.MainActionPolicyTrainingPilot",
+  "date": "2026-11-04",
+  "status": "offline teacher-imitation pilot; not deployed or strength-certified",
+  "provenance": {
+    "base_git_commit": "efcaf1138f2816cbad6706be956e3f25f373654d",
+    "working_tree_runtime_note": "The built simulator included a pre-existing uncommitted KismetVm.cs change; its exact source hash is recorded below. This pilot was not run from a clean commit checkout.",
+    "action_dataset": {
+      "path": "out/training-readiness/action-policy-pilot-20261104/actions.jsonl.gz",
+      "sha256": "3512a7157afcfbaddc449be04a6bb5504f19b11310206ad264f687760859c44f",
+      "quality_manifest_sha256": "9035556f64b782e72c360c2c3ede3db444a5e6460113948a02323ccf5aedf5d5"
+    },
+    "model": {
+      "path": "out/training-readiness/action-policy-pilot-20261104/model.json",
+      "sha256": "1f64fb8fc590821b3b96a2457390793b230f0acbfb019a70a45cb472597fd932",
+      "training_report_sha256": "36d4b61c4e7f3cc2028ec21a417c7a7da335e77c15f625c0111d5697b62744d4"
+    },
+    "runtime_sha256": {
+      "KLink.Bot.dll": "b0c3e3ce768c588afc483e00509c03cb8b231f81d2cf9d71ea68459d32f9b587",
+      "NNTrain.dll": "093f95c77a7f3543384712eab890ed465a224fe66af3fcf4434e7a93c8da909e"
+    },
+    "source_sha256": {
+      "src/KLink.Bot/Training/MainActionPolicyAdapter.cs": "5470e6c29235d862548c3a268e0d4fc9f37b522f7187991b6a0623d02a8ea2e2",
+      "src/KLink.Bot/NN/MainActionModel.cs": "54a6ee4d191a57ffbf52e579d9cf253ac542ee83111f87acf811fa3b88b3836c",
+      "src/KLink.Bot/Effects/Blueprint/KismetVm.cs": "0a6d8e23a98e27b02d3d702ab00ca2d22c046c16ca0aa0ee339981bf03e9c416",
+      "tools/NNTrain/ActionDatasetTool.cs": "b3a922bd3af774d3d8dda8aa19d5c437f1521dddca03658911f78d696534f227",
+      "tools/NNTrain/ActionModelTool.cs": "94b5ed94a491a74ec001586f40b974c724ea1b6ebe9dd57712b6c87a210122d3"
+    }
+  },
+  "dataset": {
+    "seed": 1,
+    "requested_games": 20,
+    "accepted_games": 20,
+    "rejected_games": 0,
+    "rows": 2306,
+    "teacher": "greedy-isolated-prefix/v3+choose-one-explicit/v1+first-index/v1+afterstate-left/v1",
+    "candidate_scope": "structural-superset",
+    "selection_split": "game-disjoint; split seed 1; 16 training games / 4 validation games"
+  },
+  "training": {
+    "epochs": 10,
+    "hidden_units": 16,
+    "learning_rate": 0.01,
+    "training_rows": 1818,
+    "validation_rows": 488,
+    "initial_training_cross_entropy": 4.153753356616678,
+    "final_training_cross_entropy": 2.5478077114492717,
+    "validation_cross_entropy": 2.888130923969298,
+    "validation_uniform_cross_entropy": 4.253552979450029,
+    "validation_top1": 0.29918032786885246,
+    "always_end_turn_top1": 0.20491803278688525,
+    "validation_rows_with_identical_chosen_candidate_features": 52,
+    "save_load_rows_compared": 2306,
+    "model_contract_verification": "passed"
+  },
+  "interpretation": [
+    "This shows that the offline scorer can fit greedy teacher labels on this fixed simulator-generated sample and reproduces probabilities after save/load.",
+    "The validation split contains only four games and is not evidence of competitive strength or generalization.",
+    "The teacher is GreedyBot, not an expert or game client oracle.",
+    "Candidates remain a structural superset with known legality, target, and placement gaps; the model was not connected to live match execution.",
+    "52 validation rows have identical features for the chosen action and at least one other candidate, so the current representation cannot distinguish those labels."
+  ]
+}

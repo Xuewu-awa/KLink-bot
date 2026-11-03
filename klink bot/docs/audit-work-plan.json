@@ -491,6 +491,6 @@
     "deferred": "Unproven normal-PvP boundary refinements unless they block the active loop.",
     "batch_policy": "Integrate related changes and run complete tests/inventories once per completed batch.",
     "rule_scope_or_completion_denominator_changed": false,
-    "latest_result": "Generic main-action structural adapterv1 and16features added;20oracle-directed mixed games match all4roots/trace/RNG/outcome. Value models now bindsampling/objective/JSON/simulator;strict consumers rejectstale/unknown.999core+28admission. Productiondump stillfixedGreedy/value samples;nextaction-index labels."
+    "latest_result": "Main-action index labels and offline scorer are implemented. Fixed-seed pilot: 20/20 games admitted, 2306 rows; 10-epoch model reached 29.9% Top-1 on 4 held-out games vs 20.5% always-end-turn, and save/load outputs matched all rows. This is GreedyBot imitation only; candidates are still a structural superset and duplicate chosen features remain. Next: resolve candidate/legal-action coverage and run controlled learned-policy evaluation before any deployment claim."
   }
 }
